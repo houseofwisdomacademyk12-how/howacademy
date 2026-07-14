@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المشغل — The Studio Digital Twin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a2e;--ink-2:#2e2e44;--ink-3:#5a5a78;--ink-4:#9a9ab0;--ink-5:#d0d0e0;
+  --parchment:#f9f7f4;--parchment-2:#f0ece4;--parchment-3:#e4ddd0;
+  --gold:#d4af37;--gold-l:#e8cc70;--gold-pale:#fdf5d0;
+  --teal:#1d6f6f;--teal-l:#d0eaea;
+  --coral:#8b3a2a;--coral-l:#f5e0da;
+  --blue:#1e4a7a;--blue-l:#ddeaf8;
+  --green:#3a6b2a;--green-l:#dcecd8;
+  --purple:#4a3580;--purple-l:#eceaf8;
+  --r:8px;--rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--ink);font-size:14px;line-height:1.6}
+
+/* NAV */
+.topnav{background:var(--ink);padding:0 24px;display:flex;align-items:center;gap:0;height:52px;position:sticky;top:0;z-index:50}
+.nav-logo{font-family:'Amiri',serif;font-size:17px;color:var(--gold);margin-right:24px;white-space:nowrap;letter-spacing:.02em}
+.nav-tabs{display:flex;height:100%}
+.nav-tab{font-size:13px;padding:0 14px;color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.nav-tab:hover{color:rgba(255,255,255,.8)}
+.nav-tab.active{color:var(--gold-l);border-bottom-color:var(--gold)}
+.nav-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.nav-btn{font-size:12px;padding:5px 13px;border-radius:var(--r);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.nav-btn:hover{background:rgba(255,255,255,.18)}
+.nav-btn.gold{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:500}
+.nav-btn.gold:hover{background:var(--gold-l)}
+
+/* LAYOUT */
+.body-wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 52px)}
+.sidebar{background:var(--parchment-2);border-right:1px solid var(--ink-5);padding:16px 0;height:calc(100vh - 52px);position:sticky;top:52px;overflow-y:auto}
+.main{padding:24px 28px}
+
+/* SIDEBAR */
+.sb-section{margin-bottom:8px}
+.sb-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);padding:0 14px;margin-bottom:5px;display:block}
+.sb-btn{display:flex;align-items:center;gap:8px;padding:7px 14px;width:100%;text-align:left;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-3);cursor:pointer;transition:all .12s}
+.sb-btn:hover{background:var(--parchment-3);color:var(--ink)}
+.sb-btn.active{background:var(--gold-pale);color:var(--gold);font-weight:500;border-right:2px solid var(--gold)}
+.sb-chip{margin-left:auto;font-size:10px;padding:1px 7px;border-radius:99px;background:var(--parchment-3);color:var(--ink-4)}
+.sb-divider{height:1px;background:var(--ink-5);margin:10px 0}
+.studio-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.sd-math{background:#534AB7} .sd-sky{background:#0F6E56}
+.sd-eng{background:#854F0B} .sd-med{background:#185FA5}
+.sd-hum{background:#712B13}
+
+/* STUDIO PILL */
+.studio-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid;font-weight:500}
+.sp-math{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC}
+.sp-sky{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.sp-eng{background:#FAEEDA;color:#633806;border-color:#EF9F27}
+.sp-med{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.sp-hum{background:#FAECE7;color:#712B13;border-color:#F5C4B3}
+
+/* PROJECT CARDS */
+.project-grid{display:grid;gap:12px}
+.p-card{background:white;border:1px solid var(--ink-5);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:border-color .15s}
+.p-card:hover{border-color:var(--gold-l)}
+.p-card-top{padding:14px 16px}
+.p-card-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.p-avatar{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.p-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px;line-height:1.3}
+.p-who{font-size:12px;color:var(--ink-4)}
+.p-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.badge{font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid;font-weight:500;white-space:nowrap}
+.badge-year{background:var(--parchment-2);color:var(--ink-3);border-color:var(--ink-5)}
+.badge-grade{background:var(--gold-pale);color:var(--gold);border-color:var(--gold-l)}
+.badge-built{background:var(--green-l);color:var(--green);border-color:#97C459}
+.badge-open{background:var(--coral-l);color:var(--coral);border-color:#F0997B}
+.p-summary{font-size:13px;color:var(--ink-3);line-height:1.65}
+.p-footer{padding:10px 16px;border-top:1px solid var(--ink-5);background:var(--parchment-2);display:flex;align-items:center;gap:10px}
+.p-stat{font-size:11px;color:var(--ink-4);display:flex;align-items:center;gap:4px}
+.p-actions{margin-left:auto;display:flex;gap:6px}
+.p-btn{font-size:11px;padding:4px 11px;border-radius:var(--r);border:1px solid var(--ink-5);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink-3);transition:all .12s}
+.p-btn:hover{background:var(--parchment-2)}
+.p-btn.primary{background:var(--gold-pale);border-color:var(--gold-l);color:var(--gold)}
+
+/* DETAIL */
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-4);cursor:pointer;margin-bottom:18px;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0}
+.back-btn:hover{color:var(--ink)}
+.detail-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.detail-main{}
+.detail-aside{}
+
+/* ARTIFACT VIEWER */
+.artifact-frame{background:white;border:1px solid var(--ink-5);border-radius:var(--rl);overflow:hidden;margin-bottom:14px}
+.artifact-toolbar{padding:10px 14px;border-bottom:1px solid var(--ink-5);background:var(--parchment-2);display:flex;align-items:center;gap:8px}
+.artifact-label{font-size:12px;font-weight:500;color:var(--ink-3)}
+.artifact-body{min-height:320px;padding:16px;display:flex;align-items:center;justify-content:center;position:relative}
+.artifact-placeholder{text-align:center;color:var(--ink-4)}
+.artifact-placeholder-icon{font-size:48px;margin-bottom:10px;color:var(--ink-5)}
+.artifact-placeholder-text{font-size:13px;line-height:1.6}
+
+/* ANNOTATION LAYER */
+.annotation{background:var(--gold-pale);border:1px solid var(--gold-l);border-radius:var(--r);padding:8px 12px;margin-bottom:8px;position:relative}
+.annotation.calc{background:var(--blue-l);border-color:#85B7EB}
+.annotation.question{background:var(--coral-l);border-color:#F0997B}
+.annotation.discovery{background:var(--green-l);border-color:#97C459}
+.annotation-label{font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.annotation-label.calc{color:var(--blue)}
+.annotation-label.question{color:var(--coral)}
+.annotation-label.discovery{color:var(--green)}
+.annotation-label.note{color:var(--gold)}
+.annotation-text{font-size:12px;color:var(--ink-2);line-height:1.6}
+.annotation-who{font-size:10px;color:var(--ink-4);margin-top:4px}
+
+/* BUILD-ON CHAIN */
+.chain-container{margin-top:8px}
+.chain-item{display:flex;gap:10px;margin-bottom:0}
+.chain-line-wrap{display:flex;flex-direction:column;align-items:center;gap:0;width:24px;flex-shrink:0}
+.chain-dot{width:14px;height:14px;border-radius:50%;border:2px solid;flex-shrink:0}
+.chain-dot.origin{background:var(--gold);border-color:var(--gold)}
+.chain-dot.buildon{background:white;border-color:var(--teal)}
+.chain-dot.question{background:white;border-color:var(--coral)}
+.chain-connector{width:2px;flex:1;min-height:12px}
+.chain-content{flex:1;padding-bottom:14px}
+.chain-card{background:white;border:1px solid var(--ink-5);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:border-color .15s}
+.chain-card:hover{border-color:var(--gold-l)}
+.chain-who{font-size:11px;color:var(--ink-4);margin-bottom:3px}
+.chain-text{font-size:13px;color:var(--ink-2);line-height:1.6}
+.chain-tag{font-size:10px;padding:2px 7px;border-radius:99px;border:1px solid;display:inline-block;margin-top:5px}
+.chain-tag.buildon{background:var(--teal-l);color:var(--teal);border-color:var(--teal)}
+.chain-tag.question{background:var(--coral-l);color:var(--coral);border-color:var(--coral)}
+.chain-tag.answered{background:var(--green-l);color:var(--green);border-color:var(--green)}
+
+/* SECTION CARD */
+.section-card{background:white;border:1px solid var(--ink-5);border-radius:var(--rl);padding:16px;margin-bottom:14px}
+.section-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px;display:block}
+
+/* RECORD STEPS */
+.rec-steps{display:flex;gap:0;margin-bottom:22px;border-radius:var(--r);overflow:hidden;border:1px solid var(--ink-5)}
+.rs{flex:1;padding:10px 6px;text-align:center;background:white;border-right:1px solid var(--ink-5);cursor:pointer;transition:all .15s}
+.rs:last-child{border-right:none}
+.rs.act{background:var(--gold-pale)}
+.rs.done{background:var(--green-l)}
+.rs-n{font-size:15px;font-weight:500;color:var(--ink-4)}
+.rs.act .rs-n{color:var(--gold)}
+.rs.done .rs-n{color:var(--green)}
+.rs-l{font-size:10px;color:var(--ink-4);line-height:1.3;margin-top:2px}
+.rs.act .rs-l{color:var(--gold)}
+
+/* MURSHID */
+.murshid-wrap{background:var(--gold-pale);border:1px solid var(--gold-l);border-radius:var(--rl);padding:14px;margin-bottom:14px}
+.m-hdr{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.m-av{width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Amiri',serif;font-size:12px;color:var(--parchment);flex-shrink:0}
+.m-name{font-size:12px;font-weight:500;color:var(--gold)}
+.m-sub{font-size:11px;color:var(--ink-4)}
+.m-text{font-family:'DM Serif Display',serif;font-style:italic;font-size:13px;color:var(--ink-2);line-height:1.75}
+
+/* MISC */
+.btn{font-size:12px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--ink-5);background:white;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--ink-3);transition:all .12s}
+.btn:hover{background:var(--parchment-2);border-color:var(--ink-4)}
+.btn.primary{background:var(--gold-pale);border-color:var(--gold-l);color:var(--gold);font-weight:500}
+.btn.primary:hover{background:var(--gold-l)}
+.btn.teal{background:var(--teal-l);border-color:var(--teal);color:var(--teal)}
+.btn.coral{background:var(--coral-l);border-color:var(--coral);color:var(--coral)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.highlight{background:var(--gold-pale);border-left:3px solid var(--gold);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:13px;color:var(--ink-2);line-height:1.7;margin:10px 0}
+.page-kicker{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);margin-bottom:4px}
+.page-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--ink);font-weight:400;line-height:1.2;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--ink-3);margin-bottom:20px;line-height:1.6}
+input.field,select.field,textarea.field{width:100%;border:1px solid var(--ink-5);border-radius:var(--r);padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--parchment);transition:border-color .15s;line-height:1.6}
+input.field:focus,select.field:focus,textarea.field:focus{outline:none;border-color:var(--gold);background:white}
+textarea.field{resize:vertical}
+.form-label{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px;display:block}
+.form-field{margin-bottom:12px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.stat-card{background:var(--parchment-2);border-radius:var(--r);padding:12px;text-align:center}
+.stat-n{font-size:20px;font-weight:500;color:var(--ink)}
+.stat-l{font-size:11px;color:var(--ink-4);line-height:1.4;margin-top:2px}
+.search-row{display:flex;gap:8px;margin-bottom:18px}
+.search-input{flex:1;border:1px solid var(--ink-5);border-radius:var(--r);padding:8px 13px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:white}
+.search-input:focus{outline:none;border-color:var(--gold)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:var(--parchment);padding:10px 18px;border-radius:var(--r);font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(26,18,8,.5);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--parchment);border:1px solid var(--ink-5);border-radius:var(--rl);padding:28px;width:460px;max-width:95vw}
+.modal-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px}
+.modal-sub{font-size:13px;color:var(--ink-3);margin-bottom:18px;line-height:1.6}
+.dot-pulse{display:flex;gap:4px;align-items:center}
+.dot-pulse span{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:dp 1.2s ease-in-out infinite}
+.dot-pulse span:nth-child(2){animation-delay:.2s}.dot-pulse span:nth-child(3){animation-delay:.4s}
+@keyframes dp{0%,80%,100%{opacity:.2}40%{opacity:1}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="api-modal">
+  <div class="modal">
+    <p class="modal-title">Connect the murshid</p>
+    <p class="modal-sub">The murshid reads your project documentation and helps you articulate the mathematics behind your physical work. API key stored only in this browser.</p>
+    <input class="field" type="password" id="api-key-input" placeholder="sk-ant-…" style="margin-bottom:12px">
+    <div class="btn-row">
+      <button class="btn primary" onclick="saveApiKey()">Connect</button>
+      <button class="btn" onclick="closeModal()">Continue without</button>
+    </div>
+    <p style="font-size:11px;color:var(--ink-4);margin-top:10px;line-height:1.5">Get a key at console.anthropic.com · uses claude-sonnet-4-20250514</p>
+  </div>
+</div>
+
+<nav class="topnav">
+  <span class="nav-logo">المشغل</span>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="explore" onclick="switchTab(this)">Explore projects</button>
+    <button class="nav-tab" data-tab="document" onclick="switchTab(this)">Document a project</button>
+    <button class="nav-tab" data-tab="mine" onclick="switchTab(this)">My projects</button>
+    <button class="nav-tab" data-tab="about" onclick="switchTab(this)">How it works</button>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="openModal()">API key</button>
+    <button class="nav-btn gold" onclick="switchTab(document.querySelector('[data-tab=document]'))">Document project +</button>
+  </div>
+</nav>
+
+<div class="body-wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-section">
+      <span class="sb-label">Browse by studio</span>
+      <button class="sb-btn active" data-filter="all" onclick="filterStudio(this)">
+        <span class="studio-dot" style="background:var(--ink-4)"></span>All studios
+        <span class="sb-chip" id="chip-all">9</span>
+      </button>
+      <button class="sb-btn" data-filter="eng" onclick="filterStudio(this)">
+        <span class="studio-dot sd-eng"></span>Civil & water engineering
+        <span class="sb-chip" id="chip-eng">3</span>
+      </button>
+      <button class="sb-btn" data-filter="sky" onclick="filterStudio(this)">
+        <span class="studio-dot sd-sky"></span>Observatory / Optics
+        <span class="sb-chip" id="chip-sky">2</span>
+      </button>
+      <button class="sb-btn" data-filter="med" onclick="filterStudio(this)">
+        <span class="studio-dot sd-med"></span>Pharmacopoeia / Anatomy
+        <span class="sb-chip" id="chip-med">2</span>
+      </button>
+      <button class="sb-btn" data-filter="math" onclick="filterStudio(this)">
+        <span class="studio-dot sd-math"></span>Algebra / Cipher
+        <span class="sb-chip" id="chip-math">1</span>
+      </button>
+      <button class="sb-btn" data-filter="hum" onclick="filterStudio(this)">
+        <span class="studio-dot sd-hum"></span>Philosophy / Translation
+        <span class="sb-chip" id="chip-hum">1</span>
+      </button>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <span class="sb-label">Filter by type</span>
+      <button class="sb-btn" data-type="has-buildon" onclick="filterType(this)">
+        Built upon by others
+        <span class="sb-chip">5</span>
+      </button>
+      <button class="sb-btn" data-type="has-question" onclick="filterType(this)">
+        Open questions
+        <span class="sb-chip">6</span>
+      </button>
+      <button class="sb-btn" data-type="recent" onclick="filterType(this)">
+        This year
+        <span class="sb-chip">3</span>
+      </button>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <span class="sb-label">My workspace</span>
+      <button class="sb-btn" onclick="switchTab(document.querySelector('[data-tab=mine]'))">
+        My documented projects
+        <span class="sb-chip" id="chip-mine">0</span>
+      </button>
+    </div>
+  </aside>
+  <main id="main-content" class="main"></main>
+</div>
+
+<script>
+const S={
+  get(k){try{return JSON.parse(localStorage.getItem('sdt_'+k))}catch{return null}},
+  set(k,v){localStorage.setItem('sdt_'+k,JSON.stringify(v))},
+};
+const getProjects=()=>S.get('projects')||[];
+const saveProjects=p=>{S.set('projects',p);updateChips()};
+const getSettings=()=>S.get('settings')||{name:'',grade:'',apiKey:''};
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
+
+// ── SEED DATA ──────────────────────────────────────────────────────
+const SEED=[
+{id:'p1',studio:'eng',studioName:'Civil & water engineering',title:'Gravity-fed irrigation channel — scale model',icon:'💧',
+ student:'Yusuf A.',initials:'YA',grade:'8',year:'2024',
+ summary:'A 1:50 scale model of a gravity-fed irrigation channel with adjustable slope, designed to deliver water at a controlled flow rate to three field zones. Built after the Grade 8 slope unit — the drainage gradient is slope applied to civil engineering.',
+ materials:'Foam board, vinyl tubing, wooden blocks for gradient adjustment, water tray, food colouring for flow visualisation.',
+ mathAnnotations:[
+  {type:'calc',label:'Slope calculation',text:'Gradient = rise/run = 3cm / 150cm = 0.02. In real-world units at 1:50 scale this is a 1m drop per 50m channel. The Baghdad engineers used 0.001–0.01 gradients. This model is steeper — flow is faster but erosion risk increases.'},
+  {type:'calc',label:'Flow rate estimation',text:'Using Q = A × v where A = cross-section area (2cm × 1.5cm = 3cm²) and v ≈ 8cm/s (measured with dye), Q ≈ 24cm³/s. At 1:50 scale this represents roughly 3,000 litres/second in a real channel.'},
+  {type:'question',label:'Open question',text:'If I double the gradient, does flow rate double? I tested it and the answer seems to be no — it\'s not linear. Why?'},
+  {type:'discovery',label:'Surprising discovery',text:'The branch points where one channel splits into two caused unexpected pooling. Equal cross-sections don\'t produce equal flow after a branch — pressure drops differently. This wasn\'t in any of the slope calculations.'},
+ ],
+ openQuestion:'Is the relationship between gradient and flow rate linear, quadratic, or something else? My tests suggest it\'s not linear but I don\'t have the physics to explain it.',
+ buildOns:[
+  {id:'b1',student:'Leila K.',grade:'9',year:'2024',type:'buildon',text:'The answer to Yusuf\'s question: flow velocity in open channels follows the Manning equation — v = (1/n) × R^(2/3) × S^(1/2) where S is the slope. The square root means doubling the slope increases velocity by only √2 ≈ 1.41×, not 2×. Yusuf\'s data was right. I verified it with the formula.',tag:'answered the open question'},
+  {id:'b2',student:'Tariq M.',grade:'10',year:'2024',type:'question',text:'Leila\'s answer raises a new question: the Manning roughness coefficient n changes with channel material. Yusuf\'s channel was smooth foam board. A real earthen canal has n ≈ 0.025 vs n ≈ 0.012 for smooth concrete. Could we model this by adding different surface textures to the channel walls?',tag:'new open question'},
+ ],
+ tags:['slope','flow rate','Civil Engineering studio','G8','Baghdad canals','scale model'],
+ views:34,interactions:12},
+
+{id:'p2',studio:'sky',studioName:'Observatory studio',title:'Functional simple astrolabe — Al-Battani type',icon:'🔭',
+ student:'Fatima B.',initials:'FB',grade:'9',year:'2024',
+ summary:'A working astrolabe built from laser-cut acrylic and brass fasteners, calibrated for the latitude of this city. Measures the altitude of Polaris to ±1.5 degrees. Built after the Grade 9 trigonometry unit — the altitude angle and the declination calculation both use sin and cos.',
+ materials:'3mm acrylic sheet, brass split pins, protractor printed on transparency film, plumb bob (bolt and thread), marking pen.',
+ mathAnnotations:[
+  {type:'calc',label:'Latitude calculation',text:'Altitude of Polaris = latitude of observer (approximately). Measured Polaris altitude = 38.5°. This city is at 38.9° N latitude. Error = 0.4°. Al-Battani\'s measurements were accurate to within 0.1° using instruments 100× larger.'},
+  {type:'calc',label:'Scale conversion for the rete',text:'The rete (star map) uses stereographic projection — a circle of radius r on the rete represents a declination circle at angle δ where r = R × tan(45° - δ/2). This projects the celestial sphere onto a flat plate without angular distortion.'},
+  {type:'discovery',label:'What I didn\'t expect',text:'The stereographic projection preserves angles (it\'s conformal) but not areas. Stars near the pole appear much farther apart on the rete than stars near the equator. Al-Battani chose this projection specifically because angle preservation matters for navigation — you need accurate bearings, not accurate areas.'},
+  {type:'question',label:'Open question',text:'Al-Battani computed the length of the solar year as 365 days 5 hours 46 minutes 24 seconds. The modern value is 365 days 5 hours 48 minutes 45 seconds. He was off by 2 minutes and 21 seconds. How? What method could produce that precision without calculus or modern instruments?'},
+ ],
+ openQuestion:'How did Al-Battani compute the solar year to within 2 minutes of accuracy using only naked-eye observations and geometry? I cannot reconstruct his method.',
+ buildOns:[
+  {id:'b3',student:'Hassan R.',grade:'11',year:'2024',type:'buildon',text:'Partial answer: Al-Battani tracked the sun\'s position at the same time each day for an entire year, watching it drift against the stars and return to the same point. By measuring many years of data and averaging, random errors cancel. It\'s the same principle as repeated trials in a science experiment — more measurements, smaller error. The precision came from time, not from better instruments.'},
+ ],
+ tags:['trigonometry','astrolabe','Al-Battani','Observatory studio','stereographic projection','G9'],
+ views:28,interactions:8},
+
+{id:'p3',studio:'eng',studioName:'Civil & water engineering',title:'Elevated aqueduct — Roman and Islamic compared',icon:'🏛️',
+ student:'Sara T.',initials:'ST',grade:'10',year:'2023',
+ summary:'A comparative structural model of two aqueduct types: Roman arch-based and the Islamic qanat (underground channel). Same water volume, same terrain, different structural principles. The Roman type resists gravity through arch compression; the qanat uses gradient and underground pressure.',
+ materials:'Air-dry clay for arches, wooden dowels for qanat shafts, acrylic sheet for terrain cross-section, blue-tinted water.',
+ mathAnnotations:[
+  {type:'calc',label:'Arch stress distribution',text:'In a semicircular arch, the load is redirected as compression along the arch curve. For a uniform load w per unit length, the horizontal thrust at the base H = wL²/8f where L = span and f = rise. My model span = 20cm, rise = 10cm, so H = w(400)/80 = 5w. The arch is self-reinforcing under load.'},
+  {type:'calc',label:'Qanat gradient calculation',text:'A qanat must fall 0.5–1.5m per 1000m to flow by gravity alone. My model gradient = 0.5cm/100cm = 0.5%. Converting: 5m fall per 1000m of channel. This is 5× steeper than minimum — I made it visible, not optimal.'},
+  {type:'discovery',label:'Key structural insight',text:'The Roman aqueduct fails catastrophically if one arch is damaged — the load redistributes to adjacent arches, which then overload. The qanat fails gradually and locally — a collapse in one shaft section floods that section but others continue flowing. The qanat is more resilient, not more fragile, despite looking simpler.'},
+  {type:'question',label:'Open question',text:'The Romans built aqueducts across the Islamic world (the Middle East had many Roman aqueducts). Did Islamic engineers modify the Roman arch design, abandon it for the qanat system, or use both? What determined which technology was used where?'},
+ ],
+ openQuestion:'Did Islamic engineers use Roman arch-aqueduct technology or replace it with the qanat system — and what drove the choice? I couldn\'t find a clear answer.',
+ buildOns:[
+  {id:'b4',student:'Aisha M.',grade:'11',year:'2024',type:'buildon',text:'Partial answer from my social studies research: both were used, but the choice depended on geology and climate. Qanat systems work best in arid zones with permeable alluvial fans (like Iran, Central Asia). Arch aqueducts work better when water sources are at lower elevation than the destination — you need the height. Islamic engineers inherited Roman infrastructure and maintained it, then added qanats where Roman systems hadn\'t reached. It wasn\'t replacement, it was integration.'},
+  {id:'b5',student:'Omar K.',grade:'9',year:'2023',type:'question',text:'Sara\'s arch stress formula — does it still apply if the arch isn\'t semicircular? I\'ve seen pointed arches in Islamic architecture (the ogival arch). Would H = wL²/8f give the wrong answer for a pointed arch?',tag:'new question'},
+ ],
+ tags:['arch stress','gradient','Civil Engineering studio','Roman vs Islamic','structural resilience','G10'],
+ views:41,interactions:15},
+
+{id:'p4',studio:'med',studioName:'Pharmacopoeia studio',title:'Al-Razi clinical notation — documenting a herb\'s active pathway',icon:'🌿',
+ student:'Nadia H.',initials:'NH',grade:'9',year:'2024',
+ summary:'A structured clinical documentation of chamomile following Al-Razi\'s method from the Hawi: Latin name, active compounds (apigenin, bisabolol), mechanism of action, preparation method, observed effects, and contradictions. Written as a clinical note that a healer could use — not a biology report.',
+ materials:'Dried chamomile, mortar and pestle, ethanol for extraction, pH paper, notebook following Al-Razi\'s documentation format.',
+ mathAnnotations:[
+  {type:'calc',label:'Concentration calculation',text:'Infusion: 2g dried chamomile in 200ml water = 1% w/v concentration. Al-Razi specified doses by weight not percentage — "two dirhams in one ratl of water." A dirham ≈ 3.1g, a ratl ≈ 406g. His ratio ≈ 0.76% w/v. My infusion is slightly stronger.'},
+  {type:'discovery',label:'What surprised me',text:'Apigenin (the primary anxiolytic compound) is fat-soluble, not water-soluble. A water infusion (tea) extracts only a small fraction of the apigenin. Al-Razi\'s oil-based preparations would extract far more. His method was chemically more effective than the tea most people make today.'},
+  {type:'question',label:'Open question',text:'Al-Razi documented contradictions — conditions under which a medicine shouldn\'t be used. Modern drug interactions work through enzyme pathways (especially CYP450). Did Al-Razi understand anything analogous to drug interaction mechanisms, or were his contradictions purely empirical observations?'},
+ ],
+ openQuestion:'Were Al-Razi\'s "contradictions" (contraindications) based on observed patterns or did he have a theoretical framework for why two substances might interact badly?',
+ buildOns:[
+  {id:'b6',student:'Khalid A.',grade:'10',year:'2024',type:'buildon',text:'From my reading: Al-Razi used humoral theory (hot/cold, wet/dry) to predict interactions — not enzyme pathways, but a systematic framework. He believed combining two "hot" substances could cause fever; two "cold" substances could cause lethargy. His framework was wrong by modern chemistry but wasn\'t random — it was a theory. The observations were empirical but the predictions were theoretical. This is what makes him a proto-scientist, not just a healer.'},
+ ],
+ tags:['concentration','Al-Razi','Pharmacopoeia studio','clinical documentation','chamomile','G9'],
+ views:22,interactions:7},
+
+{id:'p5',studio:'sky',studioName:'Optics & light lab',title:'Camera obscura — Ibn al-Haytham type, pinhole variant',icon:'👁',
+ student:'Leila K.',initials:'LK',grade:'10',year:'2023',
+ summary:'A working camera obscura in a shoebox, demonstrating image inversion and the relationship between pinhole size, image brightness, and image sharpness. Connected to Ibn al-Haytham\'s argument that vision is caused by light entering the eye — not by rays emitted from the eye as Greeks believed.',
+ materials:'Shoebox, black paint, baking paper (translucent screen), pin, tape, torch.',
+ mathAnnotations:[
+  {type:'calc',label:'Image size calculation',text:'Similar triangles: image_height / object_height = image_distance / object_distance. My object (window) ≈ 1.5m tall, 8m away. Box depth = 30cm. Image height = 1.5 × (0.3/8) = 0.056m = 5.6cm. Measured: 5.2cm. Error ≈ 7%. Likely because the window isn\'t a point source.'},
+  {type:'calc',label:'Pinhole size trade-off',text:'Smaller pinhole = sharper image (less overlap between adjacent image points) but dimmer. Larger pinhole = brighter but blurry. Optimal pinhole diameter d ≈ √(1.9λL) where λ = wavelength of light (~500nm) and L = box depth (30cm). d ≈ 0.53mm. My pin made a ≈ 0.8mm hole — slightly too large, explaining some blur.'},
+  {type:'discovery',label:'Connection to Ibn al-Haytham',text:'The camera obscura proves that light travels in straight lines from objects to the eye (or pinhole). The image is inverted because rays from the top of the object pass through the pinhole and hit the bottom of the screen, and vice versa. Ibn al-Haytham used this to argue that vision is passive reception of light — destroying the "extramission" theory that eyes emit rays. A 900-year-old argument that you can prove in a shoebox.'},
+  {type:'question',label:'Open question',text:'Modern cameras use lenses, not pinholes. A lens gathers light from a wider area and focuses it to a point — much brighter than a pinhole. How does a convex lens produce the same inversion as a pinhole? The geometry must be different.'},
+ ],
+ openQuestion:'A lens produces an inverted image like a pinhole camera, but the mechanism must be different — light enters from a wide angle, not a narrow hole. How does refraction produce inversion?',
+ buildOns:[],
+ tags:['similar triangles','optics','Ibn al-Haytham','camera obscura','pinhole','Optics studio','G10'],
+ views:19,interactions:5},
+
+{id:'p6',studio:'med',studioName:'Anatomy & surgery studio',title:'Surgical tool prototype — Al-Zahrawi forceps, modified',icon:'🫀',
+ student:'Omar K.',initials:'OK',grade:'11',year:'2024',
+ summary:'A redesigned version of Al-Zahrawi\'s nasal forceps from the Kitab al-Tasrif, scaled for a simulated triage scenario. The original design used a screw mechanism for tension control. This version adds a ratchet lock (inspired by modern haemostatic forceps) while preserving the original geometry.',
+ materials:'Aluminium wire, wooden dowels, rubber bands for grip, printed diagram from Kitab al-Tasrif reproduction.',
+ mathAnnotations:[
+  {type:'calc',label:'Mechanical advantage calculation',text:'Forceps act as a second-class lever — load between fulcrum and effort. MA = effort_arm / load_arm. Original Al-Zahrawi design: effort arm ≈ 14cm, load arm ≈ 3cm. MA = 4.7. My redesign: effort arm = 16cm, load arm = 2.5cm. MA = 6.4. More gripping force for the same hand pressure.'},
+  {type:'calc',label:'Ratchet tooth spacing',text:'For a ratchet with 8 teeth over 20mm of travel, tooth spacing = 2.5mm. Each tooth click = 2.5mm of jaw closure. At the jaw geometry I\'m using, 2.5mm jaw closure at the tip corresponds to ≈ 0.4mm at the working end. Precision adequate for the simulated task; insufficient for microsurgery.'},
+  {type:'discovery',label:'What I learned from the original',text:'Al-Zahrawi\'s screw mechanism is actually superior to my ratchet in one way: it\'s reversible at any point without releasing completely. A ratchet can only go forward (one direction). In a real triage context, you might need to adjust tension — a ratchet forces a full release. His 1000-year-old design solved a problem I created.'},
+  {type:'question',label:'Open question',text:'Al-Zahrawi described over 200 surgical instruments in the Tasrif. How many were original inventions vs. adaptations of Greek instruments? Was he innovating mechanically or primarily documenting?'},
+ ],
+ openQuestion:'How much of Al-Zahrawi\'s surgical instrument design was original innovation vs. documentation of existing Greco-Roman practice? What can we tell from comparing his instruments to surviving Roman surgical sets?',
+ buildOns:[
+  {id:'b7',student:'Sara T.',grade:'12',year:'2024',type:'buildon',text:'From my research for the anatomy studio capstone: the Roman Pompeii surgical sets (preserved by the eruption) show remarkable similarity to Al-Zahrawi\'s documented instruments — forceps, probes, scalpels. But Al-Zahrawi added the catgut suture (using sheep intestine), the vaginal speculum with a screw mechanism, and the lithotomy procedures that had no clear Greek precedent. He was both documenter and innovator. The proportion is roughly 60% Greek heritage, 40% original development — but the 40% is what changed surgery.'},
+ ],
+ tags:['mechanical advantage','lever','Al-Zahrawi','Anatomy studio','forceps','Kitab al-Tasrif','G11'],
+ views:31,interactions:10},
+
+{id:'p7',studio:'math',studioName:'Algebra atelier',title:'Al-jabr scroll — solving the inheritance problem',icon:'📐',
+ student:'Aisha M.',initials:'AM',grade:'7',year:'2023',
+ summary:'A hand-lettered al-jabr scroll presenting the classic Islamic inheritance problem that motivated Al-Khwarizmi\'s algebra: a man dies, leaving a wife, two sons, and three daughters. How is the estate divided according to Islamic inheritance law? The scroll shows the algebraic method alongside the geometric proof that x² + 10x = 39 has a positive solution.',
+ materials:'Parchment paper, calligraphy pen, red ink for geometric diagrams, translation of Al-Khwarizmi\'s problem statement.',
+ mathAnnotations:[
+  {type:'calc',label:'Inheritance calculation setup',text:'Wife receives 1/8. Remainder = 7/8. Sons receive twice daughters\' share. Let daughter\'s share = x. 2(2x) + 3x = 7/8. 7x = 7/8. x = 1/8. Each daughter gets 1/8. Each son gets 2/8 = 1/4. Check: 1/8 + 4/8 + 3/8 = 8/8. ✓'},
+  {type:'discovery',label:'Why Al-Khwarizmi invented algebra',text:'The inheritance problem isn\'t just arithmetic — the shares depend on how many of each type of heir there are, and that number varies. Al-Khwarizmi needed a general method that works for any configuration. That\'s what algebra is: a method for solving a whole class of problems, not just one problem.'},
+  {type:'question',label:'Open question',text:'Al-Khwarizmi\'s geometric proof of x² + 10x = 39 works by completing the square physically — cutting and rearranging shapes. Is this proof actually rigorous, or does it only work because the numbers were chosen carefully? Would it work for x² + 10x = 100?'},
+ ],
+ openQuestion:'Is Al-Khwarizmi\'s geometric "completing the square" proof a general method or does it only work for specific equations where the numbers come out nicely?',
+ buildOns:[
+  {id:'b8',student:'Yusuf A.',grade:'9',year:'2023',type:'buildon',text:'Answering Aisha\'s question: the geometric proof is fully general. Try x² + 10x = 100. Complete the square: x² + 10x + 25 = 125. (x+5)² = 125. x + 5 = √125 ≈ 11.18. x ≈ 6.18. The geometry works because you\'re always adding the same (5)² = 25 to complete the square, regardless of what\'s on the right side. The "completing" is about the shape, not the number.'},
+ ],
+ tags:['Al-Khwarizmi','algebra','Algebra atelier','inheritance problem','completing the square','G7'],
+ views:26,interactions:9},
+
+{id:'p8',studio:'hum',studioName:'Translation & languages studio',title:'Illuminated translation page — Hunayn ibn Ishaq\'s preface to Galen',icon:'🌐',
+ student:'Sara T.',initials:'ST',grade:'11',year:'2024',
+ summary:'A hand-lettered illuminated translation of a passage from Hunayn ibn Ishaq\'s preface to his Arabic translation of Galen — in which Hunayn explains his translation method: not word-for-word, but meaning-for-meaning, because Greek syntax and Arabic syntax are structurally different. The passage is annotated with translation notes.',
+ materials:'Watercolour paper, calligraphy pens (Arabic and Latin scripts), gold ink for illuminated border, annotation overlay in pencil.',
+ mathAnnotations:[
+  {type:'discovery',label:'The key translation decision',text:'Hunayn writes that he first translated Galen\'s On Sects into Syriac for a student, then later into Arabic for a physician. He says the Arabic version is freer than the Syriac because Arabic has more resources for expressing Greek medical concepts. This is a translator\'s technical note — he\'s writing about register and lexical density, not just language.'},
+  {type:'question',label:'Open question',text:'Hunayn translated from Greek to Syriac to Arabic — a two-step process. Does translating through an intermediate language necessarily introduce errors? Or could Syriac have been a better bridge to Arabic than direct Greek-to-Arabic translation?'},
+  {type:'discovery',label:'Annotation choice',text:'I annotated five words where Hunayn\'s Arabic has no direct Greek equivalent and he had to coin new terminology. One example: the Greek "physis" (nature, as in natural faculty) became "tab\'" in Arabic — Hunayn\'s own term, not a loanword. He was creating technical vocabulary in real time.'},
+ ],
+ openQuestion:'When Hunayn coined new Arabic medical terminology (rather than transliterating Greek), how did he decide what the new term should be? Was there a method or was it intuition?',
+ buildOns:[],
+ tags:['Hunayn ibn Ishaq','translation','Bayt al-Hikmah','Translation studio','Galen','illumination','G11'],
+ views:17,interactions:4},
+
+{id:'p9',studio:'eng',studioName:'Civil & water engineering',title:'City drainage model — storm runoff from three surface types',icon:'🌧',
+ student:'Tariq M.',initials:'TM',grade:'9',year:'2024',
+ summary:'A comparative drainage model testing runoff from three surface types: grass, gravel, and concrete. Same slope (gradient 0.03), same simulated rainfall (watering can), three parallel channels. Measured time to first runoff, peak flow rate, and total runoff volume.',
+ materials:'Wooden frame, three surface panels (fake grass, gravel layer, painted concrete), three collection trays, watering can, stopwatch, measuring cylinder.',
+ mathAnnotations:[
+  {type:'calc',label:'Runoff coefficient comparison',text:'Concrete C = 0.95 (95% of rainfall becomes runoff). Gravel C = 0.35. Grass C = 0.15. Measured ratios in my experiment: Concrete/Grass peak flow ≈ 5.8. Theoretical ratio = 0.95/0.15 = 6.3. My experiment is within 8% — reasonable given watering-can variability.'},
+  {type:'calc',label:'Time of concentration',text:'Concrete first runoff: 8 seconds. Grass first runoff: 47 seconds. Ratio ≈ 5.9. This means a city that paves over grassland increases peak runoff speed by ~6× — flooding happens 6 times faster, even before you account for volume.'},
+  {type:'question',label:'Open question',text:'The Baghdad engineers built with stone and fired brick — much closer to concrete than grass. Did medieval Islamic cities experience flash flooding? If so, how did they manage it?'},
+ ],
+ openQuestion:'Did pre-modern Islamic cities (Baghdad, Cordoba, Cairo) have drainage infrastructure comparable to Roman cities? What happened when it rained heavily?',
+ buildOns:[
+  {id:'b9',student:'Leila K.',grade:'10',year:'2024',type:'buildon',text:'From social studies research: Islamic cities had sophisticated drainage but different in design from Roman sewers. Baghdad\'s round city (762 CE) had underground drainage channels under the main streets. Cordoba had a drainage system described by Al-Maqqari. But the key difference: Islamic urban planning often incorporated cisterns and water storage as the primary flood management — capture the water, don\'t just drain it away. This is closer to modern "green infrastructure" thinking than Roman-style sewers.'},
+ ],
+ tags:['runoff coefficient','drainage','Civil Engineering studio','permeability','urban hydrology','G9'],
+ views:23,interactions:8},
+];
+
+function getAllProjects(){return[...SEED,...getProjects()]}
+
+function updateChips(){
+  const all=getAllProjects();
+  document.getElementById('chip-all').textContent=all.length;
+  document.getElementById('chip-eng').textContent=all.filter(p=>p.studio==='eng').length;
+  document.getElementById('chip-sky').textContent=all.filter(p=>p.studio==='sky').length;
+  document.getElementById('chip-med').textContent=all.filter(p=>p.studio==='med').length;
+  document.getElementById('chip-math').textContent=all.filter(p=>p.studio==='math').length;
+  document.getElementById('chip-hum').textContent=all.filter(p=>p.studio==='hum').length;
+  document.getElementById('chip-mine').textContent=getProjects().length;
+}
+
+// ── TABS ─────────────────────────────────────────────────────────
+let currentStudioFilter='all';
+let currentTab='explore';
+
+function switchTab(btn){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  currentTab=btn.dataset.tab;
+  const sidebar=document.getElementById('sidebar');
+  sidebar.style.display=['explore','mine'].includes(currentTab)?'block':'none';
+  renderTab(currentTab);
+}
+
+function renderTab(tab){
+  const mc=document.getElementById('main-content');
+  if(tab==='explore') renderExplore(mc,currentStudioFilter,null);
+  else if(tab==='document') renderDocument(mc);
+  else if(tab==='mine') renderMine(mc);
+  else if(tab==='about') renderAbout(mc);
+}
+
+function filterStudio(btn){
+  document.querySelectorAll('.sb-btn[data-filter]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentStudioFilter=btn.dataset.filter;
+  renderExplore(document.getElementById('main-content'),currentStudioFilter,null);
+}
+function filterType(btn){
+  document.querySelectorAll('.sb-btn[data-type]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const type=btn.dataset.type;
+  let projects=getAllProjects();
+  if(type==='has-buildon') projects=projects.filter(p=>p.buildOns&&p.buildOns.length>0);
+  else if(type==='has-question') projects=projects.filter(p=>p.openQuestion);
+  else if(type==='recent') projects=projects.filter(p=>p.year==='2024');
+  renderExploreList(document.getElementById('main-content'),projects);
+}
+
+// ── EXPLORE ───────────────────────────────────────────────────────
+function renderExplore(mc,filter,search){
+  let projects=getAllProjects();
+  if(filter&&filter!=='all') projects=projects.filter(p=>p.studio===filter);
+  if(search){
+    const s=search.toLowerCase();
+    projects=projects.filter(p=>p.title.toLowerCase().includes(s)||p.summary.toLowerCase().includes(s)||(p.tags||[]).some(t=>t.toLowerCase().includes(s)));
+  }
+  mc.innerHTML=`
+  <div style="margin-bottom:20px">
+    <p class="page-kicker">The studio's living record</p>
+    <h1 class="page-title">Projects & digital twins</h1>
+    <p class="page-sub">Every physical studio project documented, annotated with the mathematics behind it, and extended by future students. The maktaba of making.</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><p class="stat-n">${getAllProjects().length}</p><p class="stat-l">documented projects</p></div>
+    <div class="stat-card"><p class="stat-n">${getAllProjects().reduce((a,p)=>a+(p.buildOns||[]).length,0)}</p><p class="stat-l">build-on contributions</p></div>
+    <div class="stat-card"><p class="stat-n">${getAllProjects().filter(p=>p.openQuestion).length}</p><p class="stat-l">open questions standing</p></div>
+    <div class="stat-card"><p class="stat-n">${getAllProjects().reduce((a,p)=>a+(p.views||0),0)}</p><p class="stat-l">total project views</p></div>
+  </div>
+  <div class="search-row">
+    <input class="search-input" type="text" placeholder="Search by concept, material, scholar, studio, grade…" oninput="handleSearch(this.value)">
+  </div>
+  <div class="project-grid" id="project-grid">
+    ${projects.map(p=>projectCard(p)).join('')}
+  </div>`;
+}
+
+function renderExploreList(mc,projects){
+  document.getElementById('project-grid').innerHTML=projects.map(p=>projectCard(p)).join('');
+}
+
+let searchT;
+function handleSearch(v){
+  clearTimeout(searchT);
+  searchT=setTimeout(()=>renderExplore(document.getElementById('main-content'),currentStudioFilter,v||null),250);
+}
+
+function studioColors(disc){
+  const map={math:['#EEEDFE','#3C3489','sp-math'],sky:['#E1F5EE','#085041','sp-sky'],eng:['#FAEEDA','#633806','sp-eng'],med:['#E6F1FB','#0C447C','sp-med'],hum:['#FAECE7','#712B13','sp-hum']};
+  return map[disc]||['#F1EFE8','#444441',''];
+}
+
+function projectCard(p){
+  const [abg,afg,spc]=studioColors(p.studio);
+  const hasBuild=p.buildOns&&p.buildOns.length>0;
+  const isNew=p.id&&!p.id.startsWith('p');
+  return`<div class="p-card" onclick="openProject('${p.id}')">
+    <div class="p-card-top">
+      <div class="p-card-header">
+        <div class="p-avatar" style="background:${abg};color:${afg};font-size:22px">${p.icon||'○'}</div>
+        <div style="flex:1;min-width:0">
+          <p class="p-title">${p.title}</p>
+          <p class="p-who">${p.student} · Grade ${p.grade} · ${p.year}</p>
+          <div class="p-badges">
+            <span class="studio-pill ${spc}">${p.studioName}</span>
+            <span class="badge badge-grade">G${p.grade}</span>
+            ${hasBuild?`<span class="badge badge-built">${p.buildOns.length} built on</span>`:''}
+            ${p.openQuestion?`<span class="badge badge-open">open question</span>`:''}
+            ${isNew?`<span class="badge badge-built">new</span>`:''}
+          </div>
+        </div>
+      </div>
+      <p class="p-summary">${p.summary.slice(0,160)}…</p>
+    </div>
+    <div class="p-footer">
+      <span class="p-stat">${p.views||0} views</span>
+      <span class="p-stat">${(p.mathAnnotations||[]).length} annotations</span>
+      ${p.openQuestion?`<span class="p-stat" style="color:var(--coral)">unanswered question</span>`:''}
+      <div class="p-actions">
+        <button class="p-btn primary" onclick="event.stopPropagation();openProject('${p.id}')">Open →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── PROJECT DETAIL ────────────────────────────────────────────────
+function openProject(id){
+  const all=getAllProjects();
+  const p=all.find(x=>x.id===id);
+  if(!p) return;
+  const mc=document.getElementById('main-content');
+  const [abg,afg,spc]=studioColors(p.studio);
+
+  mc.innerHTML=`
+  <button class="back-btn" onclick="renderTab('explore')">← back to projects</button>
+
+  <div class="detail-grid">
+    <div class="detail-main">
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px">
+        <div style="width:52px;height:52px;border-radius:var(--r);background:${abg};color:${afg};display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${p.icon||'○'}</div>
+        <div>
+          <h1 style="font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;color:var(--ink);line-height:1.2;margin-bottom:4px">${p.title}</h1>
+          <p style="font-size:13px;color:var(--ink-4)">${p.student} · Grade ${p.grade} · ${p.year}</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">
+            <span class="studio-pill ${spc}">${p.studioName}</span>
+            ${(p.tags||[]).slice(0,4).map(t=>`<span class="badge badge-year">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">Project summary</span>
+        <p style="font-size:13px;color:var(--ink-2);line-height:1.75">${p.summary}</p>
+        ${p.materials?`<p style="font-size:12px;color:var(--ink-4);margin-top:10px"><strong style="color:var(--ink-3)">Materials:</strong> ${p.materials}</p>`:''}
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">The artifact</span>
+        <div class="artifact-frame">
+          <div class="artifact-toolbar">
+            <span class="artifact-label">${p.title} · physical documentation</span>
+            <button class="p-btn" style="margin-left:auto" onclick="toast('In a full deployment: student uploads photos, sketches, video, CAD files, or 3D scans here.')">+ Add photo/file</button>
+          </div>
+          <div class="artifact-body">
+            <div class="artifact-placeholder">
+              <div class="artifact-placeholder-icon">${p.icon}</div>
+              <p class="artifact-placeholder-text">In the full system, this space holds the student's photos, sketches, video walkthroughs, and CAD files of the physical project.<br><br>Click "Add photo/file" to attach documentation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">Mathematical annotations — the numbers behind the object</span>
+        <p style="font-size:12px;color:var(--ink-4);margin-bottom:12px;line-height:1.6">These annotations connect the physical project to specific curriculum concepts. Each calculation, discovery, and open question is indexed to a curriculum week and subject.</p>
+        ${(p.mathAnnotations||[]).map(a=>`
+        <div class="annotation ${a.type}">
+          <p class="annotation-label ${a.type}">${a.label}</p>
+          <p class="annotation-text">${a.text}</p>
+        </div>`).join('')}
+        <div class="btn-row">
+          <button class="btn" onclick="addAnnotation('${p.id}')">+ Add annotation</button>
+        </div>
+      </div>
+
+      ${p.openQuestion?`
+      <div class="section-card" style="border-color:var(--coral-l);border-width:1px">
+        <span class="section-label" style="color:var(--coral)">Open question — standing invitation</span>
+        <div style="background:var(--coral-l);border-left:3px solid var(--coral);padding:12px 14px;border-radius:0 var(--r) var(--r) 0;font-size:13px;color:var(--ink-2);line-height:1.7;margin-bottom:12px">"${p.openQuestion}"</div>
+        <p style="font-size:12px;color:var(--ink-4);margin-bottom:10px">This question has been standing since ${p.year}. If you can answer it — partially or fully — build on this project.</p>
+        <button class="btn coral" onclick="buildOn('${p.id}','answer')">Answer this question</button>
+      </div>`:''}
+
+      <div class="section-card">
+        <span class="section-label">Build-on chain — how this project continued</span>
+        ${buildOnChain(p)}
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn primary" onclick="buildOn('${p.id}','buildon')">Build on this project</button>
+          <button class="btn" onclick="buildOn('${p.id}','question')">Add a question</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-aside">
+      <div class="murshid-wrap">
+        <div class="m-hdr">
+          <div class="m-av">م</div>
+          <div><p class="m-name">Murshid · reading this project</p><p class="m-sub">connects to your sahifa</p></div>
+        </div>
+        <p class="m-text" id="project-murshid-text">Reading the annotations for ${p.title}…</p>
+      </div>
+      <script>projectMurshid(${JSON.stringify(p.title)},${JSON.stringify(p.openQuestion||'')})<\/script>
+
+      <div class="section-card">
+        <span class="section-label">Curriculum connections</span>
+        ${getCurriculumConnections(p).map(c=>`
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--ink-5)">
+          <span style="font-size:10px;color:var(--ink-4);white-space:nowrap;padding-top:2px;width:70px">${c.week}</span>
+          <span style="font-size:12px;color:var(--ink-2);line-height:1.5">${c.topic}</span>
+        </div>`).join('')}
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">Add to my sahifa</span>
+        <p style="font-size:12px;color:var(--ink-4);margin-bottom:10px;line-height:1.5">Save this project as a thread in your living manuscript — connecting the physical making to your written thinking.</p>
+        <button class="btn teal" onclick="toast('Added as a sahifa thread: '+${JSON.stringify(p.title)})">Add to sahifa threads</button>
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">Cite this project</span>
+        <p style="font-size:12px;color:var(--ink-4);line-height:1.6">${p.student} (Grade ${p.grade}, ${p.year}). <em>${p.title}</em>. ${p.studioName}, House of Wisdom.</p>
+        <button class="btn" style="margin-top:8px;font-size:11px" onclick="toast('Citation copied.')">Copy citation</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildOnChain(p){
+  const bons=p.buildOns||[];
+  if(!bons.length) return`<p style="font-size:13px;color:var(--ink-4)">No build-ons yet. This project's open question is waiting for you.</p>`;
+  const dotColors={buildon:'var(--teal)',question:'var(--coral)',answered:'var(--green)'};
+  const connColors={buildon:'#d0eaea',question:'var(--coral-l)',answered:'var(--green-l)'};
+  return`<div class="chain-container">
+    <div class="chain-item">
+      <div class="chain-line-wrap">
+        <div class="chain-dot origin"></div>
+        <div class="chain-connector" style="background:var(--gold-l)"></div>
+      </div>
+      <div class="chain-content">
+        <div class="chain-card" style="border-color:var(--gold-l)">
+          <p class="chain-who">${p.student} · Grade ${p.grade} · ${p.year} · original project</p>
+          <p class="chain-text">${p.summary.slice(0,100)}…</p>
+        </div>
+      </div>
+    </div>
+    ${bons.map((b,i)=>`
+    <div class="chain-item">
+      <div class="chain-line-wrap">
+        <div class="chain-dot buildon" style="border-color:${dotColors[b.type]||'var(--teal)'}"></div>
+        ${i<bons.length-1?`<div class="chain-connector" style="background:${connColors[b.type]||'var(--teal-l)'}"></div>`:''}
+      </div>
+      <div class="chain-content">
+        <div class="chain-card">
+          <p class="chain-who">${b.student} · Grade ${b.grade} · ${b.year||'2024'}</p>
+          <p class="chain-text">${b.text}</p>
+          <span class="chain-tag ${b.type}">${b.tag||b.type==='buildon'?'built on this':'new question'}</span>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function getCurriculumConnections(p){
+  // Try to read from HOW_CURR if available (when running inside platform)
+  const subjectMap={
+    eng:['math','sci'], sky:['sci','math'], med:['sci'],
+    math:['math'], hum:['ela','ss']
+  };
+  const labelMap={math:'Mathematics',sci:'Science',ela:'ELA / Reading',
+    ss:'Social Studies',writing:'Writing'};
+  const subjects=subjectMap[p.studio]||['math'];
+  const results=[];
+
+  // Try HOW_CURR (available when embedded in platform)
+  if(typeof HOW_CURR!=='undefined'){
+    const grade=parseInt(p.grade)||7;
+    const gradeData=HOW_CURR[grade]||HOW_CURR[String(grade)]||{};
+    Object.keys(gradeData).forEach(week=>{
+      const w=gradeData[week];
+      subjects.forEach(subj=>{
+        const topic=w[subj]||w[subj==='sci'?'science':subj==='ss'?'social':subj];
+        if(topic&&typeof topic==='string'&&topic.length>10){
+          results.push({
+            week:'G'+grade+' · W'+week,
+            topic:(labelMap[subj]||subj)+': '+topic.substring(0,60)+(topic.length>60?'…':''),
+            scholar:w.scholar||''
+          });
+        }
+      });
+    });
+    if(results.length) return results.slice(0,6);
+  }
+
+  // Fallback to curated list
+  const map={
+    eng:[{week:'G8 · W8',topic:'Slope & slope-intercept — gradient calculations'},{week:'G7 · W1',topic:'Proportional relationships — flow rates'},{week:'G6 · W11',topic:'Area of polygons — cross-sections'},{week:'G9 · W4',topic:'Rate of change in chemistry'}],
+    sky:[{week:'G9 · W16',topic:'Trigonometric ratios — altitude measurement'},{week:'G10 · W6',topic:'Unit circle & trig functions'},{week:'G8 · W11',topic:'Pythagorean theorem — distance'},{week:'G7 · W8',topic:'Circles — Al-Battani & astronomy'}],
+    med:[{week:'G9 · W4',topic:'Rate of change — concentration over time'},{week:'G10 · W5',topic:'Logarithms in chemistry — pH'},{week:'G9 · W6',topic:'Medical ethics — Al-Razi'},{week:'G7 · W12',topic:'Genetics probability — trait variation'}],
+    math:[{week:'G6 · W7',topic:'Write & evaluate expressions'},{week:'G7 · W5',topic:'Multi-step equations'},{week:'G9 · W23',topic:'Number theory — proof strategies'},{week:'G12 · W24',topic:'Logic & proof — induction'}],
+    hum:[{week:'G7 · W11',topic:'Hunayn ibn Ishaq — translation movement'},{week:'G7 · W8',topic:'Bayt al-Hikmah — House of Wisdom'},{week:'G11 · W7',topic:'Primary source analysis'},{week:'G12 · W28',topic:'Islamic Math Heritage capstone'}],
+  };
+  return map[p.studio]||[];
+}
+
+async function projectMurshid(title,openQ){
+  const el=document.getElementById('project-murshid-text');
+  if(!el) return;
+  const s=getSettings();
+  if(!s.apiKey){
+    setTimeout(()=>{
+      if(!el) return;
+      el.textContent=openQ
+        ?`This project leaves a precise question open: "${openQ.slice(0,80)}…" Before you read the build-on responses — what is your own instinct about the answer? Write it in your sahifa first.`
+        :'Look at the mathematical annotations. Which calculation connects most directly to something you have studied in class? That connection is worth recording in your sahifa.';
+    },600);
+    return;
+  }
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:150,
+        system:'You are the Murshid. A student is viewing a peer\'s documented studio project. Ask them one precise question that connects this project to their own curriculum work or sahifa. Be brief — two sentences maximum. Never give information — only ask.',
+        messages:[{role:'user',content:`I am looking at a studio project: "${title}". ${openQ?`It has an open question: "${openQ.slice(0,100)}"`:''}`}]})
+    });
+    const d=await resp.json();
+    if(el) el.textContent=d.content?.[0]?.text||'Which annotation here connects to something you have studied? Write that connection in your sahifa.';
+  }catch(e){
+    if(el) el.textContent='Which of the mathematical annotations connects most directly to your current curriculum week?';
+  }
+}
+
+function addAnnotation(projectId){
+  const type=prompt('Annotation type: calc / question / discovery')||'note';
+  const label=prompt('Label (e.g. "My calculation" or "What I noticed")')||'Note';
+  const text=prompt('Your annotation:')||'';
+  if(!text.trim()) return;
+  toast('Annotation added. In the full system this would be attached to a specific point on the artifact image.');
+}
+
+function buildOn(projectId,type){
+  const text=prompt(
+    type==='answer'?'Write your answer to the open question:':
+    type==='question'?'Write your new question raised by this project:':
+    'Describe how you built on, extended, or applied this project:'
+  );
+  if(!text||!text.trim()) return;
+  const s=getSettings();
+  const all=getAllProjects();
+  const stored=getProjects();
+  const isStored=stored.find(p=>p.id===projectId);
+  const seedP=SEED.find(p=>p.id===projectId);
+  const target=isStored||seedP;
+  if(!target) return;
+  const buildon={id:'b'+Date.now(),student:s.name||'You',grade:s.grade||'?',year:new Date().getFullYear().toString(),type:type==='answer'?'answered':type,text:text.trim(),tag:type==='answer'?'answered the open question':type==='question'?'new question':'built on this'};
+  if(isStored){
+    if(!isStored.buildOns) isStored.buildOns=[];
+    isStored.buildOns.push(buildon);
+    saveProjects(stored);
+  } else {
+    // Clone seed project with new build-on
+    const clone={...JSON.parse(JSON.stringify(seedP)),id:projectId,buildOns:[...(seedP.buildOns||[]),buildon]};
+    stored.push(clone);
+    // Remove original seed from display by marking
+    SEED.forEach(p=>{if(p.id===projectId) p.buildOns=[...(p.buildOns||[]),buildon]});
+    saveProjects(stored);
+  }
+  toast('Build-on recorded. It\'s now part of the project\'s chain.');
+  openProject(projectId);
+}
+
+// ── DOCUMENT A PROJECT ────────────────────────────────────────────
+let docStep=1;
+let draftProject={};
+
+function renderDocument(mc){
+  docStep=1; draftProject={};
+  mc.innerHTML=`
+  <div style="margin-bottom:20px">
+    <p class="page-kicker">Add to the maktaba</p>
+    <h1 class="page-title">Document a studio project</h1>
+    <p class="page-sub">You built something in the studio. Now document what you made, the mathematics behind it, and the question it left open. Future students will find this and build on it.</p>
+  </div>
+  <div id="doc-body"></div>`;
+  renderDocStep();
+}
+
+function renderDocStep(){
+  const body=document.getElementById('doc-body');
+  const steps=['Project','Artifact','Annotations','Open question','Publish'];
+  body.innerHTML=`
+  <div class="rec-steps">
+    ${steps.map((s,i)=>`<div class="rs ${i+1===docStep?'act':i+1<docStep?'done':''}">
+      <p class="rs-n">${i+1}</p><p class="rs-l">${s}</p></div>`).join('')}
+  </div>
+  <div id="doc-step-content"></div>`;
+  const c=document.getElementById('doc-step-content');
+  if(docStep===1) docStep1(c);
+  else if(docStep===2) docStep2(c);
+  else if(docStep===3) docStep3(c);
+  else if(docStep===4) docStep4(c);
+  else if(docStep===5) docStep5(c);
+}
+
+function docStep1(c){
+  const studios=[
+    ['eng','Civil & water engineering'],['sky','Observatory / Optics & light'],
+    ['med','Pharmacopoeia / Anatomy & surgery'],['math','Algebra atelier / Cipher lab'],
+    ['hum','Philosophy & reason / Translation'],
+  ];
+  c.innerHTML=`
+  <div class="section-card">
+    <div class="form-field">
+      <label class="form-label">Project title</label>
+      <input class="field" type="text" id="d-title" placeholder="e.g. Gravity-fed irrigation channel — scale model" value="${draftProject.title||''}">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="form-field">
+        <label class="form-label">Studio</label>
+        <select class="field" id="d-studio">
+          ${studios.map(([v,l])=>`<option value="${v}" ${draftProject.studio===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Your grade</label>
+        <select class="field" id="d-grade">
+          ${[5,6,7,8,9,10,11,12].map(g=>`<option value="${g}" ${draftProject.grade==g?'selected':''}>${g}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Icon (optional)</label>
+        <input class="field" type="text" id="d-icon" placeholder="💧 🔭 🌿 📐" maxlength="2" value="${draftProject.icon||''}">
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Project summary (3–5 sentences)</label>
+      <textarea class="field" id="d-summary" rows="5" placeholder="What did you build? What studio activity was this for? What was the purpose of the project? What did you discover?">${draftProject.summary||''}</textarea>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Materials used</label>
+      <input class="field" type="text" id="d-materials" placeholder="e.g. foam board, vinyl tubing, wooden blocks…" value="${draftProject.materials||''}">
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="saveDoc1()">Next: document the artifact →</button>
+    </div>
+  </div>`;
+}
+
+function saveDoc1(){
+  draftProject.title=document.getElementById('d-title').value.trim();
+  if(!draftProject.title){toast('Add a title.');return}
+  draftProject.studio=document.getElementById('d-studio').value;
+  draftProject.grade=document.getElementById('d-grade').value;
+  draftProject.icon=document.getElementById('d-icon').value||'○';
+  draftProject.summary=document.getElementById('d-summary').value.trim();
+  draftProject.materials=document.getElementById('d-materials').value.trim();
+  const studioNames={eng:'Civil & water engineering',sky:'Observatory / Optics',med:'Pharmacopoeia / Anatomy',math:'Algebra atelier',hum:'Philosophy / Translation'};
+  draftProject.studioName=studioNames[draftProject.studio]||draftProject.studio;
+  docStep=2; renderDocStep();
+}
+
+function docStep2(c){
+  c.innerHTML=`
+  <div class="section-card">
+    <p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:14px">Upload photos, sketches, video walkthroughs, or CAD files of your physical project. In this prototype, attach a description of what the artifact looks like.</p>
+    <div class="form-field">
+      <label class="form-label">Describe the artifact (what does it look like? what are its key features?)</label>
+      <textarea class="field" id="d-artifact" rows="6" placeholder="The model consists of… The key features visible in the photos are… The scale is… The most important detail to notice is…">${draftProject.artifactDesc||''}</textarea>
+    </div>
+    <div style="border:2px dashed var(--ink-5);border-radius:var(--r);padding:28px;text-align:center;margin-bottom:14px;background:var(--parchment-2)">
+      <p style="font-size:13px;color:var(--ink-4);margin-bottom:8px">Drop photos, sketches, or video here</p>
+      <p style="font-size:11px;color:var(--ink-5)">In the full system: photos, sketches, CAD files, video walkthroughs. Each file becomes an annotation anchor point.</p>
+      <button class="btn" style="margin-top:8px" onclick="toast('File upload activated in full deployment.')">Upload files</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="saveDoc2()">Next: add mathematical annotations →</button>
+      <button class="btn" onclick="docStep=1;renderDocStep()">← Back</button>
+    </div>
+  </div>`;
+}
+
+function saveDoc2(){
+  draftProject.artifactDesc=document.getElementById('d-artifact').value.trim();
+  draftProject.mathAnnotations=draftProject.mathAnnotations||[];
+  docStep=3; renderDocStep();
+}
+
+function docStep3(c){
+  const anns=draftProject.mathAnnotations||[];
+  c.innerHTML=`
+  <div class="section-card">
+    <div class="murshid-wrap" id="ann-murshid">
+      <div class="m-hdr">
+        <div class="m-av">م</div>
+        <div><p class="m-name">Murshid · helping you find the mathematics</p><p class="m-sub">reading your project summary</p></div>
+      </div>
+      <p class="m-text" id="ann-murshid-text">Thinking about the mathematics in "${draftProject.title}"…</p>
+    </div>
+
+    <p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:14px">Annotate your project with the mathematics behind it. Add at least one calculation, one discovery, and one open question. These are what future students will build on.</p>
+
+    <div id="ann-list" style="margin-bottom:14px">
+      ${anns.map((a,i)=>`
+      <div class="annotation ${a.type}" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <span class="annotation-label ${a.type}">${a.label}</span>
+          <button onclick="removeAnn(${i})" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:14px;color:var(--ink-5);padding:0">×</button>
+        </div>
+        <p class="annotation-text">${a.text}</p>
+      </div>`).join('')}
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn" style="background:var(--blue-l);border-color:#85B7EB;color:var(--blue)" onclick="addAnn('calc')">+ Calculation</button>
+      <button class="btn" style="background:var(--green-l);border-color:#97C459;color:var(--green)" onclick="addAnn('discovery')">+ Discovery</button>
+      <button class="btn" style="background:var(--coral-l);border-color:#F0997B;color:var(--coral)" onclick="addAnn('question')">+ Question</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn primary" onclick="saveDoc3()">Next: open question →</button>
+      <button class="btn" onclick="docStep=2;renderDocStep()">← Back</button>
+    </div>
+  </div>`;
+
+  annMurshid();
+}
+
+async function annMurshid(){
+  const el=document.getElementById('ann-murshid-text');
+  if(!el) return;
+  const s=getSettings();
+  if(!s.apiKey){
+    setTimeout(()=>{if(el) el.textContent=`For "${draftProject.title}" — what is the single most important calculation you did? Write it precisely, including units. Then: what did you discover that you didn't expect? And what question does your project leave unanswered?`;},600);
+    return;
+  }
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:120,
+        system:'You are the Murshid. A student is documenting a studio project. Ask them one precise question to help them find the mathematics they actually used — calculation, formula, or measurement. Two sentences maximum.',
+        messages:[{role:'user',content:`My project: "${draftProject.title}". Summary: ${draftProject.summary.slice(0,200)}`}]})
+    });
+    const d=await resp.json();
+    if(el) el.textContent=d.content?.[0]?.text||'What was the most important calculation in your project? Write it with units.';
+  }catch(e){if(el) el.textContent='What calculation did you perform? Write it precisely — formula, numbers, units, and result.'}
+}
+
+function addAnn(type){
+  const labels={calc:'Calculation',discovery:'Discovery',question:'Open question'};
+  const label=prompt(`Label for this ${labels[type]} (e.g. "${labels[type]}: slope calculation")`)||labels[type];
+  const text=prompt(`Write your ${type==='calc'?'calculation (include the formula, numbers, and result)':type==='discovery'?'discovery (what surprised you or what you didn\'t expect)':'open question (what you couldn\'t answer)'}`)||'';
+  if(!text.trim()) return;
+  if(!draftProject.mathAnnotations) draftProject.mathAnnotations=[];
+  draftProject.mathAnnotations.push({type,label,text:text.trim()});
+  renderDocStep();
+}
+
+function removeAnn(i){
+  draftProject.mathAnnotations.splice(i,1);
+  renderDocStep();
+}
+
+function saveDoc3(){docStep=4;renderDocStep()}
+
+function docStep4(c){
+  c.innerHTML=`
+  <div class="section-card">
+    <p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:14px">The open question is the most important thing you'll write. It is a standing invitation — the question this project raised that you couldn't answer. A future student will find it and build on your work.</p>
+    <div class="form-field">
+      <label class="form-label">Open question — the question this project couldn't answer</label>
+      <textarea class="field" id="d-openq" rows="4" placeholder="Write the precise question that your project raised but didn't resolve. Not a vague uncertainty — a specific question that a future student could investigate and answer.">${draftProject.openQuestion||''}</textarea>
+    </div>
+    <div class="form-field" style="margin-top:4px">
+      <label class="form-label">Tags</label>
+      <input class="field" type="text" id="d-tags" placeholder="e.g. slope, Civil Engineering studio, Baghdad canals, G8" value="${(draftProject.tags||[]).join(', ')}">
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="saveDoc4()">Next: review & publish →</button>
+      <button class="btn" onclick="docStep=3;renderDocStep()">← Back</button>
+    </div>
+  </div>`;
+}
+
+function saveDoc4(){
+  draftProject.openQuestion=document.getElementById('d-openq').value.trim();
+  draftProject.tags=document.getElementById('d-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  docStep=5; renderDocStep();
+}
+
+function docStep5(c){
+  const [abg,afg,spc]=studioColors(draftProject.studio);
+  c.innerHTML=`
+  <div class="section-card" style="margin-bottom:14px">
+    <span class="section-label">Review your documentation</span>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:14px">
+      <div style="width:44px;height:44px;border-radius:var(--r);background:${abg};color:${afg};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${draftProject.icon||'○'}</div>
+      <div>
+        <h3 style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:3px">${draftProject.title}</h3>
+        <p style="font-size:12px;color:var(--ink-4)">${getSettings().name||'You'} · Grade ${draftProject.grade} · ${draftProject.studioName}</p>
+        <div style="margin-top:6px"><span class="studio-pill ${spc}">${draftProject.studioName}</span></div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.7;margin-bottom:12px">${draftProject.summary}</p>
+    ${(draftProject.mathAnnotations||[]).map(a=>`<div class="annotation ${a.type}" style="margin-bottom:8px"><p class="annotation-label ${a.type}">${a.label}</p><p class="annotation-text">${a.text}</p></div>`).join('')}
+    ${draftProject.openQuestion?`<div style="background:var(--coral-l);border-left:3px solid var(--coral);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:13px;color:var(--ink-2);line-height:1.7;margin-top:12px">Open question: "${draftProject.openQuestion}"</div>`:''}
+  </div>
+  <div class="btn-row">
+    <button class="btn primary" onclick="publishProject()">Publish to the maktaba</button>
+    <button class="btn" onclick="docStep=4;renderDocStep()">← Edit</button>
+  </div>`;
+}
+
+function publishProject(){
+  const s=getSettings();
+  const projects=getProjects();
+  const entry={
+    ...draftProject,
+    id:'up'+Date.now(),
+    student:s.name||'Anonymous',
+    initials:(s.name||'AN').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase(),
+    year:new Date().getFullYear().toString(),
+    views:0,interactions:0,
+    buildOns:[],
+  };
+  projects.push(entry);
+  saveProjects(projects);
+  toast('Project published to the maktaba.');
+  switchTab(document.querySelector('[data-tab=explore]'));
+}
+
+// ── MY PROJECTS ───────────────────────────────────────────────────
+function renderMine(mc){
+  const mine=getProjects();
+  mc.innerHTML=`
+  <div style="margin-bottom:20px">
+    <p class="page-kicker">Your contributions</p>
+    <h1 class="page-title">My documented projects</h1>
+    <p class="page-sub">Every project you've documented. These are permanent additions to the maktaba — future students will find them and build on them.</p>
+  </div>
+  ${mine.length===0?`
+  <div style="text-align:center;padding:48px 24px;color:var(--ink-4)">
+    <p style="font-size:36px;color:var(--ink-5);margin-bottom:12px">○</p>
+    <p style="font-size:15px;color:var(--ink-3);margin-bottom:6px">No projects documented yet</p>
+    <p style="font-size:13px;line-height:1.6;margin-bottom:16px">The best time to document is right after finishing a studio project — the thinking is fresh and the open questions are clear.</p>
+    <button class="btn primary" onclick="switchTab(document.querySelector('[data-tab=document]'))">Document your first project →</button>
+  </div>`:`<div class="project-grid">${mine.map(p=>projectCard(p)).join('')}</div>`}`;
+}
+
+// ── ABOUT ─────────────────────────────────────────────────────────
+function renderAbout(mc){
+  mc.innerHTML=`
+  <div style="max-width:640px">
+    <div style="margin-bottom:20px">
+      <p class="page-kicker">How the digital twin works</p>
+      <h1 class="page-title">The maktaba of making</h1>
+      <p class="page-sub">The physical studio is where you build things. The digital twin is where the mathematics behind what you built lives — and where future students extend your work.</p>
+    </div>
+
+    <div style="background:var(--gold-pale);border-left:3px solid var(--gold);padding:12px 14px;border-radius:0 var(--r) var(--r) 0;font-size:14px;color:var(--ink-2);line-height:1.75;font-family:'DM Serif Display',serif;font-style:italic;margin-bottom:20px">
+      "The Bayt al-Hikmah was not just a library. It was a workshop — a maktaba — where scholars did not only read but built instruments, made observations, and recorded what they made so that the next generation could extend it."
+    </div>
+
+    ${[
+      ['What a digital twin is','Every physical project in the studio has a corresponding digital twin — a documentation record that holds photos or sketches of the artifact, mathematical annotations (the calculations behind the making, the discoveries, the surprises), an open question the project couldn\'t answer, and a build-on chain where future students extend the work. The physical object lives in the studio; the twin lives in the maktaba.'],
+      ['What students document','Three things: (1) The artifact itself — photos, sketches, video, CAD files. (2) Mathematical annotations — at least one calculation showing the math behind the making, one discovery that surprised them, one question they couldn\'t answer. (3) The open question — precise, specific, inviting. Not "I wonder about materials" but "Is the relationship between gradient and flow rate linear, quadratic, or something else?" That precision is what makes the build-on chain possible.'],
+      ['How the build-on chain works','Every project\'s open question is a standing invitation. A future student who finds the answer — or part of it — records a build-on. That build-on often raises a new question. Which raises another build-on. Over years, a single project from Grade 8 can accumulate a chain of contributions from Grade 9, 10, 11, 12. The chain is the intellectual history of an idea moving through the school across generations.'],
+      ['The open question as inheritance','The most important thing you document is what you couldn\'t answer. This is counterintuitive — most academic systems reward complete answers. The maktaba rewards honest incompleteness. An open question that is precise enough for a future student to investigate is a contribution. It extends your intellectual legacy beyond the year you built it.'],
+      ['How the murshid helps','When you document a project, the murshid asks you a question designed to help you find the mathematics you actually used — not the mathematics you studied in class, but the calculation or measurement you performed in the studio. The murshid also appears when you view a project, connecting what you\'re looking at to your own sahifa and asking: which of these annotations connects to what you\'re studying right now?'],
+      ['Finding what you need','Search by concept, studio, grade, scholar, or material. Filter by "has build-ons" to see the most extended project chains. Filter by "open questions" to find a question you might be able to answer. The build-on chain shows you not just what was made, but how an idea grew.'],
+    ].map(([title,body])=>`
+    <div class="section-card">
+      <p style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px">${title}</p>
+      <p style="font-size:13px;color:var(--ink-3);line-height:1.7">${body}</p>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function saveApiKey(){const k=document.getElementById('api-key-input').value.trim();const s=getSettings();s.apiKey=k;S.set('settings',s);closeModal();toast('Murshid connected.')}
+function openModal(){document.getElementById('api-modal').classList.add('open');document.getElementById('api-key-input').value=getSettings().apiKey||''}
+function closeModal(){document.getElementById('api-modal').classList.remove('open')}
+
+// ── INIT ──────────────────────────────────────────────────────────
+updateChips();
+renderTab('explore');
+</script>
+</body>
+</html>
