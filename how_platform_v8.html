@@ -2222,9 +2222,9 @@ function setSchedRole(role){
     b.style.color=on?'white':'var(--ink3,#5a5a78)';
     b.style.borderColor=on?'#1d6f6f':'var(--p3,#e4ddd0)';
   });
-  if(role==='child') lgSetMode('prep');
-  else if(role==='prep') lgSetMode('prep');
-  else if(role==='facilitator') lgSetMode('facilitator');
+  if(role==='child'){ setRole('student'); }
+  else if(role==='prep'){ setRole('parent'); }
+  else if(role==='facilitator'){ setRole('facilitator'); }
   updateSchedule();
 }
 
@@ -2949,7 +2949,7 @@ function drivePdfNav(dir){
 function _goToTeachIt(){
   var genBtn=document.querySelector('[data-p="generate"]');
   if(genBtn){ SP(genBtn); syncLG(); }
-  setTimeout(function(){ lgSetMode('prep'); setView('deck'); }, 100);
+  setTimeout(function(){ setRole('student'); setView('deck'); }, 100);
 }
 
 async function teachItFeedback(){
@@ -5950,7 +5950,7 @@ function openPres(){
   var _prefix=[];
   if(_vid&&_vid.url) _prefix.push({type:'video',heading:_vid.t||'Video Resource',content:l.title,url:_vid.url});
   if(_pdf&&_pdf.url) _prefix.push({type:'pdf',heading:'Worked Examples',content:l.title,url:_pdf.url});
-  if(S.mode==='teachit'||_schedRole==='student'||_schedRole==='child'){
+  if(S.mode==='teachit'||_schedRole==='student'||_schedRole==='child'||S.role==='student'){
     _prefix.push({type:'teach_it',heading:'Now Teach It',content:l.title});
   }
   _presSlides=_prefix.concat(_presSlides);
