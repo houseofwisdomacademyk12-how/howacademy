@@ -3022,6 +3022,39 @@ async function publishTeaching(){
     teacherName:studentName,teacherInitials:initials,
     year:new Date().getFullYear().toString(),views:0,helpful:0,isTeachIt:true
   };
+  // ── Supabase server save (if logged in) ──
+  var jwt         = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(jwt && householdId){
+    var studentId = null;
+    try{
+      var students = JSON.parse(localStorage.getItem('how_students')||'[]');
+      if(students.length) studentId = students[0].id;
+    }catch(e){}
+    try{
+      var sbEntry = {
+        household_id: householdId,
+        student_id:   studentId,
+        teacher_name: entry.teacherName,
+        taught_grade: parseInt(entry.taughtGrade)||S.grade,
+        subject:      S.subj,
+        title:        entry.title,
+        key_idea:     entry.keyIdea,
+        summary:      entry.summary,
+        transcript:   entry.annotatedSlides,
+        tags:         entry.tags,
+        is_published: false,
+        helpful:      0
+      };
+      var sbResult = await sb.from('teaching').insert(sbEntry).select();
+      if(sbResult.error) throw sbResult.error;
+      console.log('Supabase publishTeaching insert OK:', JSON.stringify(sbResult.data));
+    }catch(e){
+      console.error('Supabase publishTeaching failed:', e);
+    }
+  }
+
+  // ── ALWAYS write to localStorage — offline-first ──
   try{
     var teachings=[];
     try{ teachings=JSON.parse(localStorage.getItem('ptl_teachings'))||[]; }catch(e){}
@@ -5509,7 +5542,8 @@ async function generate(){
     }
     // Show peer library button if in peer mode
     var libBtn=document.getElementById('btn-to-library');
-    if(libBtn) libBtn.style.display=(S.genMode==='peer')?'':'none';
+    var _isFacOrPeer=(S.genMode==='peer'||S.mode==='facilitator'||S.userRole==='facilitator');
+    if(libBtn) libBtn.style.display=_isFacOrPeer?'':'none';
     autosave(); toast('✨ Lesson generated!'); render();
   }catch(err){
     if(prog)prog.classList.remove('show'); if(btn)btn.disabled=false;
@@ -6064,7 +6098,8 @@ function setGenMode(m){
   // Show/hide peer library button
   var libBtn=document.getElementById('btn-to-library');
   var l=lesson();
-  if(libBtn) libBtn.style.display=(isPeer&&l)?'':'none';
+  var _showLib=(isPeer||S.mode==='facilitator'||S.userRole==='facilitator');
+  if(libBtn) libBtn.style.display=(_showLib&&l)?'':'none';
   render();
 }
 
@@ -6129,9 +6164,9 @@ async function sendToLibrary(){
         is_published: false,
         helpful:      0
       };
-      var sbResult = await sb.from('teaching').insert(sbEntry);
+      var sbResult = await sb.from('teaching').insert(sbEntry).select();
       if(sbResult.error) throw sbResult.error;
-      console.log('Supabase teaching insert OK:', sbResult.data);
+      console.log('Supabase teaching insert OK:', JSON.stringify(sbResult.data));
     }catch(e){
       console.error('Supabase teaching insert failed:', e);
       if(e && e.message) console.error('Error message:', e.message);

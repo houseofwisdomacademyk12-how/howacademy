@@ -6059,7 +6059,7 @@ function setGenMode(m){
   render();
 }
 
-function sendToLibrary(){
+async function sendToLibrary(){
   var l=lesson();
   if(!l){ toast('No lesson to send — generate first'); return; }
   var juzData=JUZ[S.week-1]||{};
@@ -6096,13 +6096,46 @@ function sendToLibrary(){
     helpful:0
   };
 
-  // Write to ptl_teachings
+  // ── Supabase server save (if logged in) ──
+  var jwt         = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(jwt && householdId){
+    var studentId = null;
+    try{
+      var students = JSON.parse(localStorage.getItem('how_students')||'[]');
+      if(students.length) studentId = students[0].id;
+    }catch(e){}
+    try{
+      var sbEntry = {
+        household_id: householdId,
+        student_id:   studentId,
+        teacher_name: teacherName,
+        taught_grade: parseInt(entry.taughtGrade)||S.grade,
+        subject:      S.subj,
+        title:        entry.title,
+        key_idea:     entry.keyIdea,
+        summary:      entry.summary,
+        transcript:   entry.transcript,
+        tags:         entry.tags,
+        is_published: false,
+        helpful:      0
+      };
+      var sbResult = await sb.from('teaching').insert(sbEntry);
+      if(sbResult.error) throw sbResult.error;
+      console.log('Supabase teaching insert OK:', sbResult.data);
+    }catch(e){
+      console.error('Supabase teaching insert failed:', e);
+      if(e && e.message) console.error('Error message:', e.message);
+      if(e && e.code) console.error('Error code:', e.code);
+    }
+  }
+
+  // ── ALWAYS write to localStorage — offline-first ──
   try{
     var teachings=[];
     try{ teachings=JSON.parse(localStorage.getItem('ptl_teachings'))||[]; }catch(e){}
-    // Remove any previous entry from this same lesson key to avoid duplicates
     teachings=teachings.filter(function(t){ return t.id!==entry.id; });
-    teachings.unshift(entry); // add to front
+    teachings.unshift(entry);
     localStorage.setItem('ptl_teachings',JSON.stringify(teachings));
     toast('\u2713 Teaching sent to Peer Library — open the library to review and publish');
   }catch(e){
@@ -8057,6 +8090,7 @@ async function applyUserToProfile(user, accessToken){
   }
 
   // Hide login panel, navigate to schedule
+  toast('Ahlan wa sahlan, ' + (active ? active.name : household.name) + ' — welcome back.');
   document.getElementById('how-login-panel').style.display = 'none';
   var schedBtn = document.querySelector('.ntab[data-p="schedule"]');
   if(schedBtn) SP(schedBtn);

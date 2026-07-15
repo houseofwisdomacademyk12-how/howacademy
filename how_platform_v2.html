@@ -2369,8 +2369,55 @@ function schedLaunch(action, opts){
 }
 
 function schedHasLesson(g, w, subj, sess){
-  return !!(S.lessons && S.lessons[key(g,w,subj,sess)]);
+  // Check localStorage first
+  if(S.lessons && S.lessons[key(g,w,subj,sess)]) return true;
+  // Check synced lessons from Supabase
+  if(S.syncedLessons){
+    return S.syncedLessons.some(function(l){
+      return l.grade===g && l.week===w && l.subject===subj;
+    });
+  }
+  return false;
 }
+async function fetchSyncedLessons(){
+  // Fetch all synced lessons from Supabase for current grade/week
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt || typeof sb === 'undefined') return;
+  try{
+    var g = parseInt(document.getElementById('sch-grade')&&document.getElementById('sch-grade').value)||S.grade;
+    var w = parseInt(document.getElementById('sch-week')&&document.getElementById('sch-week').value)||S.week;
+    var result = await sb
+      .from('lesson')
+      .select('id, grade, week, subject, title, objective, slides')
+      .eq('grade', g)
+      .eq('week', w);
+    if(result.error){ console.warn('fetchSyncedLessons error:', result.error.message); return; }
+    if(!result.data || !result.data.length) return;
+
+    // Cache in S.syncedLessons
+    S.syncedLessons = result.data;
+
+    // Also load into S.lessons so schedPresent can find them
+    result.data.forEach(function(l){
+      var lessonKey = key(l.grade, l.week, l.subject, 1);
+      if(!S.lessons[lessonKey] && l.slides){
+        S.lessons[lessonKey] = {
+          title:     l.title||'',
+          objective: l.objective||'',
+          slides:    l.slides,
+          fromSync:  true
+        };
+      }
+    });
+
+    // Re-render schedule to show Open deck buttons
+    if(typeof updateSchedule === 'function') updateSchedule();
+    console.log('Synced lessons loaded:', result.data.length, 'lessons for Grade '+g+' Week '+w);
+  }catch(e){
+    console.warn('fetchSyncedLessons failed:', e);
+  }
+}
+
 function schedHasTest(g, w){
   return !!(S.tests && (S.tests[g+'_'+w+'_test'] || S.tests[g+'_'+w]));
 }
@@ -3207,6 +3254,11 @@ function syncScheduleToCurrentWeek(){
   updateSchedule();
 }
 function updateSchedule(){
+  // Fetch synced lessons from Supabase in background
+  if(localStorage.getItem('how_jwt') && typeof sb !== 'undefined'){
+    fetchSyncedLessons();
+  }
+  // Continue with normal schedule render below
   renderScheduleDay(document.querySelector('.day-tab.active').dataset.day);
   // Status indicators
   var statusEl=document.getElementById('sch-status'); if(!statusEl) return;
