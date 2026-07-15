@@ -651,6 +651,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--p);color:var(--ink);font-
 #lg-root .mode-btn{padding:.38rem .9rem;border-radius:20px;border:2px solid var(--border);background:var(--cream);font-size:.8rem;font-weight:800;color:var(--ink-soft);transition:all .15s;}
 
 #lg-root .mode-btn.active{background:var(--sc);border-color:var(--sc);color:#fff;}
+.role-tab{padding:.38rem .9rem;border-radius:var(--radius-sm,6px);border:1.5px solid var(--border,#e4ddd0);background:transparent;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--ink3,#5a5a78);transition:all .15s;}
+.role-tab.active{background:var(--navy,#1a3d8a);border-color:var(--navy,#1a3d8a);color:#fff;}
+.role-actions{display:inline-flex;gap:.4rem;flex-wrap:wrap;align-items:center;}
 #lg-root #btn-facilitator.active{background:#1a3d8a;border-color:#1a3d8a;color:#fff;}
 
 #lg-root .mode-sep{width:1px;height:22px;background:var(--border);}
@@ -1020,15 +1023,6 @@ body.lg-active #lg-root .ustadh-drawer.open { display:flex !important; }
 body.lg-active #lg-root .pres-overlay.active { display:flex !important; }
 body.lg-active #lg-root .toast.show { display:block !important; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',   /* e.g. https://abcdefgh.supabase.co */
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'       /* Project Settings → API → anon public */
-);
-/* ─────────────────────────────────────────────────── */
-</script>
 </head>
 <body>
 <nav class="nav">
@@ -1348,14 +1342,11 @@ const sb = supabase.createClient(
   </div>
   <button id="how-login-btn"
     onclick="howLogin(document.getElementById('how-email').value, document.getElementById('how-password').value)"
-    style="width:100%;background:#1a3d8a;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s"
-    onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+    style="width:100%;background:#1a3d8a;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
     Sign in
   </button>
   <p id="how-login-error" style="display:none;color:#c0522a;font-size:12px;text-align:center;margin-top:10px"></p>
-  <p style="text-align:center;margin-top:12px;font-size:11px;color:#9a9ab0">
-    No account? Contact your administrator.
-  </p>
+  <p style="text-align:center;margin-top:12px;font-size:11px;color:#9a9ab0">No account? Contact your administrator.</p>
 </div>
 <div class="entry-grid">
   <div class="entry-card" id="entry-inst" onclick="showEntry('inst')"><p class="entry-icon">🏫</p><p class="entry-title">Institutional schools</p><p class="entry-sub">New founding schools and established schools. Curriculum licensing, facilitator formation, studio para-facilitators supplied.</p></div>
@@ -1426,7 +1417,7 @@ const sb = supabase.createClient(
     <span style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);">Mode:</span>
     <button id="btn-mode-fac" class="mode-btn active" onclick="setGenMode('facilitator')">&#128203; Facilitator Prep</button>
     <button id="btn-mode-peer" class="mode-btn" onclick="setGenMode('peer')">&#129309; Peer Teaching</button>
-    <span id="peer-mode-hint" style="display:none;font-size:.75rem;color:var(--teal);font-style:italic;margin-left:.4rem;">Generate a deck you will teach to a younger student</span>
+    
   </div>
 
   <!-- Controls -->
@@ -1443,18 +1434,7 @@ const sb = supabase.createClient(
         <option value="11">Grade 11</option><option value="12">Grade 12</option>
       </select>
     </div>
-    <div class="ctrl" id="ctrl-learner-grade" style="display:none">
-      <label for="sel-learner-grade">Learner grade</label>
-      <select id="sel-learner-grade" onchange="onCtrl()">
-        <option value="0">Kindergarten</option>
-        <option value="1">Grade 1</option><option value="2">Grade 2</option>
-        <option value="3">Grade 3</option><option value="4">Grade 4</option>
-        <option value="5">Grade 5</option><option value="6">Grade 6</option>
-        <option value="7" selected>Grade 7</option><option value="8">Grade 8</option>
-        <option value="9">Grade 9</option><option value="10">Grade 10</option>
-        <option value="11">Grade 11</option><option value="12">Grade 12</option>
-      </select>
-    </div>
+    
     <div class="ctrl">
       <label for="sel-week">Week / Juz</label>
       <select id="sel-week" onchange="onCtrl()"></select>
@@ -1495,18 +1475,28 @@ const sb = supabase.createClient(
     <button class="mode-btn"        id="btn-munazara" onclick="openMunazara()" style="display:none;background:var(--sacred,#5c2080);color:white">🗣 Munazara</button>
     <button class="tb-btn" id="btn-gen-panel" onclick="showGenPanel()" style="background:var(--gold,#d4af37);color:#1a1a2e;border-color:var(--gold,#d4af37);font-weight:800">⚙ Saturday Prep</button>
     <div class="mode-sep"></div>
-    <!-- Mode -->
-    <button class="mode-btn active" id="btn-facilitator" onclick="lgSetMode('facilitator')">👨‍🏫 Facilitator</button>
-    <button class="mode-btn"        id="btn-prep"  onclick="lgSetMode('prep')">✏️ Teach It</button>
-    <button class="tb-btn" onclick="showRolePicker()" title="Return to role selection screen" style="font-size:12px;color:var(--ink3,#5a5a78);border:1.5px solid var(--cream3,#e4ddd0)">↩ Switch role</button>
+    <!-- Role tabs -->
+    <button class="role-tab active" id="rtab-fac"     onclick="setRole('facilitator')">👨‍🏫 Facilitator</button>
+    <button class="role-tab"        id="rtab-parent"  onclick="setRole('parent')">👤 Parent</button>
+    <button class="role-tab"        id="rtab-student" onclick="setRole('student')">🧒 Student</button>
     <div class="mode-sep"></div>
-    <!-- Actions -->
-    <button class="tb-btn" onclick="openPres()">🖥 Present</button>
-    <button class="tb-btn" id="btn-print" onclick="printDeck()">🖨 Print Deck</button>
-    <button class="tb-btn" id="btn-print-wb" onclick="printWB()" style="display:none">🖨 Print Workbook</button>
-    <button class="tb-btn regen-btn" onclick="regen()">↺ Regenerate</button>
-    <button class="tb-btn" id="btn-teach-feedback" onclick="teachItFeedback()" style="display:none;background:var(--teal,#1d6f6f);color:white;border-color:var(--teal)">🎓 Get feedback</button>
-    <button class="tb-btn" id="btn-publish-teaching" onclick="publishTeaching()" style="display:none;background:var(--navy,#1a3d8a);color:white;border-color:var(--navy)">📚 Publish teaching</button>
+    <!-- Facilitator actions -->
+    <span class="role-actions" id="acts-fac">
+      <button class="tb-btn" onclick="openPres()">🖥 Present</button>
+      <button class="tb-btn" onclick="printDeck()">🖨 Print Deck</button>
+      <button class="tb-btn" onclick="printWB()">🖨 Print Workbook</button>
+      <button class="tb-btn regen-btn" onclick="regen()">↺ Regenerate</button>
+      <button class="tb-btn" onclick="syncLesson()" style="background:var(--teal,#1d6f6f);color:white;border-color:var(--teal)">☁ Sync to students</button>
+    </span>
+    <!-- Parent actions -->
+    <span class="role-actions" id="acts-parent" style="display:none">
+      <button class="tb-btn" onclick="openPres()">🖥 Present</button>
+    </span>
+    <!-- Student actions -->
+    <span class="role-actions" id="acts-student" style="display:none">
+      <button class="tb-btn" onclick="teachItFeedback()" style="background:var(--teal,#1d6f6f);color:white;border-color:var(--teal)">🎓 Get feedback</button>
+      <button class="tb-btn" onclick="publishTeaching()" style="background:var(--navy,#1a3d8a);color:white;border-color:var(--navy)">📚 Publish teaching</button>
+    </span>
     <button class="tb-btn" id="btn-to-library" onclick="sendToLibrary()" style="display:none;background:var(--teal);color:white;border-color:var(--teal)">📚 Send to peer library</button>
     <button class="tb-btn" id="btn-report" onclick="generateReport()" style="display:none;background:#1a3d8a;color:white;border-color:#1a3d8a">📊 Grade Report</button>
     <button class="tb-btn" onclick="exportJSON()">⬇ Export</button>
@@ -2046,7 +2036,8 @@ function buildSatCard(week, name){
     +'<div style="text-align:center;margin-bottom:16px"><p class="sat-name-ar">'+name.ar+'</p><p class="sat-name-tr">'+name.tr+'</p><p class="sat-meaning">'+name.mn+'</p></div>'
     +duaHtml
     +'<div style="margin:16px 0">'
-    +'<button onclick="satToggle(this)" style="display:flex;align-items:center;gap:8px;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);border-radius:8px;padding:8px 14px;cursor:pointer;width:100%;font-family:inherit;color:var(--gold,#d4af37);font-size:.82rem;font-weight:700;text-align:left"><span class="sa">►</span> How to run this session — facilitator guide (~20 min)</button>'
+    +'<button onclick="satToggle(this)" style="display:flex;align-items:center;gap:8px;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);border-radius:8px;padding:8px 14px;cursor:pointer;width:100%;font-family:inherit;color:var(--gold,#d4af37);font-size:.82rem;font-weight:700;text-align:left">'
+    +'<span class="sa">►</span> How to run this session — facilitator guide (~20 min)</button>'
     +'<div style="display:none;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.2);border-radius:0 0 8px 8px;padding:14px 16px;font-size:.82rem;line-height:1.6">'
     +stepHtml
     +'<div style="background:rgba(212,175,55,.1);border-radius:6px;padding:8px 12px;font-size:.78rem;color:var(--gold,#d4af37)">⏱ Total: ~20 minutes. The gathering itself is the practice.</div>'
@@ -2090,7 +2081,36 @@ function renderWeekView(week, grade){
   <div class="subject-block" style="margin-top:10px"><div class="sb-head"><span class="sb-icon">🌍</span><span class="sb-title">Social Studies</span></div><div class="sb-body">${week.ss||''}</div></div>
 </div>
 <div class="cwv-panel" id="cwvp-saturday">
-  ${buildSatCard(week, name)}
+  <div class="sat-card">
+    <p class="sat-label">✦ Saturday after Ishaa — the family gathering card · Week ${week.w}</p>
+    <p class="sat-name-ar">${name.ar}</p>
+    <p class="sat-name-tr">${name.tr}</p>
+    <p class="sat-meaning">${name.mn}</p>
+
+    ${name.dua_ar ? `
+    <div class="sat-dua">
+      <p class="sat-dua-label">This week’s duʻa</p>
+      <p class="sat-dua-ar">${name.dua_ar}</p>
+      <p class="sat-dua-tr">${name.dua_tr}</p>
+      <p class="sat-dua-en">“${name.dua_en}”</p>
+      <p class="sat-dua-note">Repeat together as a family. Learn it by heart this week.</p>
+    </div>` : ''}
+
+    <p class="sat-q">${name.q}</p>
+    ${(JUZ[week.w-1]||{}).quranTheme ? ('<div class="sat-quran">'+'<p class="sat-quran-label">Juz '+(JUZ[week.w-1]||{}).w+' of the Quran</p>'+'<p class="sat-quran-theme">'+(JUZ[week.w-1]||{}).quranTheme+'</p>'+'<p class="sat-quran-q">✨ '+(JUZ[week.w-1]||{}).quranQuestion+'</p>'+'</div>') : ''}
+    <p class="sat-story" style="margin-top:10px">${name.story}</p>
+
+    ${name.practice ? `
+    <div class="sat-practice">
+      <p class="sat-practice-label">✨ The weekly practice — Al-Ghazālī’s sixth step</p>
+      <p class="sat-practice-text">${name.practice}</p>
+    </div>` : ''}
+
+        ${(function(){var u=howOverview(S.grade,week.w);return u&&u.url?"<a class=\"sat-vid-link\" href=\""+u.url+"\" target=\"_blank\" rel=\"noopener\">&#9654; Watch this week's overview video</a>":"";})()} 
+    <div class="seeds-grid" style="margin-top:14px">
+      ${seeds.map(s=>`<div class="seed-item" style="border-left-color:${s.col}"><p class="seed-dir" style="color:${s.col}">${s.dir}</p><p class="seed-text">${s.text}</p></div>`).join('')}
+    </div>
+  </div>
 </div>
 <div class="cwv-panel" id="cwvp-hadith">
   <div class="hadith-card">
@@ -2748,23 +2768,6 @@ function wbOvShowResult(correct, total, pct, questions, saved, p6node){
   if(prev) prev.style.display='none';
   if(next) next.style.display='none';
   if(ctr) ctr.textContent=passed?'✓ Complete':'Score: '+pct+'%';
-  if(questions&&questions.length&&saved){
-    var wrongs=[];
-    questions.forEach(function(q,qi){
-      var correctAnswer=q.a||'';
-      var correctIdx='ABCD'.indexOf(correctAnswer.toUpperCase());
-      var correctText=correctIdx>=0?(q.choices[correctIdx]||correctAnswer):correctAnswer;
-      var studentAns=saved['q'+qi]||'';
-      if(studentAns&&studentAns!==correctText&&studentAns!==q.a){
-        wrongs.push({q:q.q||q.question||'',student:studentAns,correct:correctText,topic:q.topic||q.q||''});
-      }
-    });
-    if(wrongs.length){
-      var wrongKey='how_wrong_'+S.grade+'_'+S.week+'_'+(S.subj||'');
-      try{localStorage.setItem(wrongKey,JSON.stringify({subj:S.subj,week:S.week,grade:S.grade,wrongs:wrongs,date:new Date().toLocaleDateString()}));}catch(e){}
-    }
-  }
-  // Archive workbook score to history
   if(pct!==null) saveHistory(S.grade,S.week,{wb_pct:pct,wb_correct:correct,wb_total:total,wbDate:new Date().toLocaleDateString()});
   else saveHistory(S.grade,S.week,{wb_completed:true,wbDate:new Date().toLocaleDateString()});
   var _we={};
@@ -2992,6 +2995,35 @@ function applyTeachSuggestion(suggestion){
   if(ta){ ta.value=(ta.value?ta.value+'\n\n':'')+suggestion; saveNote(idx); toast('\u2713 Suggestion added'); }
 }
 
+async function syncLesson(){
+  var l=lesson();
+  if(!l){ toast('No lesson to sync — generate first'); return; }
+  var jwt=localStorage.getItem('how_jwt');
+  var householdId=localStorage.getItem('how_household_id');
+  if(!jwt||!householdId){ toast('Sign in to sync lessons to students'); return; }
+  try{
+    var syncEntry={
+      household_id: householdId,
+      grade:        S.grade,
+      week:         S.week,
+      subject:      S.subj,
+      title:        l.title||'Week '+S.week+' '+S.subj,
+      objective:    l.objective||'',
+      slides:       l.slides||[]
+    };
+    // Upsert — replaces existing lesson for same grade/week/subject
+    var result=await sb.from('lesson')
+      .upsert(syncEntry, { onConflict:'household_id,grade,week,subject' })
+      .select();
+    if(result.error) throw result.error;
+    toast('☁ Lesson synced — students can now access it in Teach It');
+    console.log('Lesson synced:', result.data);
+  }catch(e){
+    console.error('Sync failed:',e);
+    toast('⚠ Sync failed — check connection');
+  }
+}
+
 async function publishTeaching(){
   var l=lesson(); if(!l){ toast('No lesson loaded'); return; }
   var annot=annots(); var notes=annot.notes||{}; var drawings=annot.drawings||{};
@@ -3022,39 +3054,6 @@ async function publishTeaching(){
     teacherName:studentName,teacherInitials:initials,
     year:new Date().getFullYear().toString(),views:0,helpful:0,isTeachIt:true
   };
-  // ── Supabase server save (if logged in) ──
-  var jwt         = localStorage.getItem('how_jwt');
-  var householdId = localStorage.getItem('how_household_id');
-  if(jwt && householdId){
-    var studentId = null;
-    try{
-      var students = JSON.parse(localStorage.getItem('how_students')||'[]');
-      if(students.length) studentId = students[0].id;
-    }catch(e){}
-    try{
-      var sbEntry = {
-        household_id: householdId,
-        student_id:   studentId,
-        teacher_name: entry.teacherName,
-        taught_grade: parseInt(entry.taughtGrade)||S.grade,
-        subject:      S.subj,
-        title:        entry.title,
-        key_idea:     entry.keyIdea,
-        summary:      entry.summary,
-        transcript:   entry.annotatedSlides,
-        tags:         entry.tags,
-        is_published: false,
-        helpful:      0
-      };
-      var sbResult = await sb.from('teaching').insert(sbEntry).select();
-      if(sbResult.error) throw sbResult.error;
-      console.log('Supabase publishTeaching insert OK:', JSON.stringify(sbResult.data));
-    }catch(e){
-      console.error('Supabase publishTeaching failed:', e);
-    }
-  }
-
-  // ── ALWAYS write to localStorage — offline-first ──
   try{
     var teachings=[];
     try{ teachings=JSON.parse(localStorage.getItem('ptl_teachings'))||[]; }catch(e){}
@@ -3214,7 +3213,7 @@ function renderScheduleDay(day){
       <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; murshid review</p>${btn('Open Murshid','murshid','tl-sacred')}</div></div>
       <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics &amp; Science — test review${hasWed?'<span class="tb-done">✓ Wed deck</span>':''}</p><p class="tb-sub">Go over Tuesday test results · targeted re-teaching where needed</p>${hasWed?btn('Open Wednesday review','deck','tl-teal',{subj:'review',session:4}):btn('Generate Wed review','gen','tl-gold')}</div></div>
       <div class="trow"><div class="ttime">9:00</div><div class="tblock bHAD"><p class="tb-title">✦ Hadith of the week</p><p class="tb-sub" style="font-family:'Amiri',serif;font-size:13px;direction:rtl;text-align:right;margin-bottom:3px">${hadith.ar||''}</p><p class="tb-sub"><em>"${hadith.tr||''}"</em></p><p class="tb-sub">Carrying question: ${hadith.q||''}</p><span class="tb-tag">Read 3× · one sentence in sahifa · no debrief</span>${btn('Open Sacred Layer','sacred','tl-sacred')}</div></div>
-      <div class="trow"><div class="ttime">9:20</div><div class="tblock bpeer"><p class="tb-title">Peer teaching sessions</p><span class="tb-tag">Both tracks</span>${btn('Open Peer Library','peer','tl-peer')}${(function(){var _subjs=['math','science','ela','writing','social'];var _wrongs=[];_subjs.forEach(function(s){try{var _d=JSON.parse(localStorage.getItem('how_wrong_'+grade+'_'+weekNum+'_'+s)||'null');if(_d&&_d.wrongs) _wrongs=_wrongs.concat(_d.wrongs.map(function(w){return{subj:s,topic:w.topic||w.q};}));}catch(e){}});if(!_wrongs.length) return '';var topics=_wrongs.slice(0,3).map(function(w){return '<span style="background:rgba(139,58,42,.12);border:1px solid rgba(139,58,42,.25);border-radius:10px;padding:2px 8px;font-size:.72rem;color:#8b3a2a;font-weight:600">'+w.topic.slice(0,40)+'</span>';}).join(' ');return '<div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px;border-left:3px solid #8b3a2a"><div style="font-size:.72rem;font-weight:800;color:#8b3a2a;margin-bottom:4px">From Tuesday — search for:</div><div style="display:flex;flex-wrap:wrap;gap:4px">'+topics+'</div></div>';})()} </div></div>
+      <div class="trow"><div class="ttime">9:20</div><div class="tblock bpeer"><p class="tb-title">Peer teaching sessions</p><span class="tb-tag">Both tracks</span>${btn('Open Peer Library','peer','tl-peer')}</div></div>
       <div class="trow"><div class="ttime">10:50</div><div class="tblock bhal"><p class="tb-title">المنازرة — Mid-week munazara</p><p class="tb-sub">Structured debate on the week's claim. Facilitator holds the ring.</p><span class="tb-tag">Primary assessment mode</span>${btn('Open Munazara','munazara','tl-sacred')}</div></div>
       <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:00</div><div class="tblock bcor"><p class="tb-title">ELA, Writing &amp; Social Studies — test review</p>${hasWed?btn('Open Wednesday review','deck','tl-teal',{subj:'review',session:4}):btn('Generate Wed review','gen','tl-gold')}</div></div>
@@ -3620,8 +3619,8 @@ var _cvs = {}; // idx→{ctx, drawing, color, tool, size}
   loadJuzEdits();
   loadStudioCards();
   setColour('math'); render();
-  // Mode set by login; default to facilitator if no session
-  if(!localStorage.getItem('how_jwt')) lgSetMode('facilitator');
+  var _savedRole=localStorage.getItem('how_role')||'facilitator';
+  setRole(_savedRole);
 })();
 
 var _lastRebuildGrade = null;
@@ -3751,7 +3750,67 @@ function showGenPanel(){
   var mc=document.getElementById('main-content'); if(!mc) return;
   mc.innerHTML=genPanel(); mc.className='';
 }
+function setRole(role){
+  S.role = role;
+  try{ localStorage.setItem('how_role', role); }catch(e){}
+
+  // Update role tab active states
+  var tabMap = {facilitator:'fac', parent:'parent', student:'student', child:'student'};
+  ['fac','parent','student'].forEach(function(r){
+    var btn = document.getElementById('rtab-'+r);
+    if(btn) btn.classList.toggle('active', r===(tabMap[role]||role));
+  });
+
+  // Show/hide role action groups
+  var af = document.getElementById('acts-fac');
+  var ap = document.getElementById('acts-parent');
+  var as = document.getElementById('acts-student');
+  if(af) af.style.display    = role==='facilitator'?'':'none';
+  if(ap) ap.style.display    = role==='parent'?'':'none';
+  if(as) as.style.display    = (role==='student'||role==='child')?'':'none';
+
+  // View tabs visibility
+  var wbBtn   = document.getElementById('btn-wb');
+  var testBtn = document.getElementById('btn-test');
+  var munBtn  = document.getElementById('btn-munazara');
+  var rptBtn  = document.getElementById('btn-report');
+  var toLibBtn= document.getElementById('btn-to-library');
+
+  if(wbBtn)    wbBtn.style.display    = (role==='facilitator'||role==='student'||role==='child')?'':'none';
+  if(testBtn)  testBtn.style.display  = ((role==='facilitator'||role==='student'||role==='child')&&testKeyExists())?'':'none';
+  if(munBtn)   munBtn.style.display   = (role==='facilitator'||role==='student'||role==='child')?'':'none';
+  if(toLibBtn) toLibBtn.style.display = 'none';
+
+  var _rh=getHistory(S.grade);
+  var hasData=S.scores[testKey()]||Object.keys(_rh).length>0;
+  if(rptBtn){
+    rptBtn.style.display=(hasData&&(role==='facilitator'||role==='parent'))?'':'none';
+    rptBtn.textContent=role==='facilitator'?'📊 Grade Report':'📊 View Report';
+    rptBtn.style.background=role==='facilitator'?'#1a3d8a':'#2a6099';
+  }
+
+  // Set backward-compat state
+  S.mode = (role==='student'||role==='child')?'prep':role==='parent'?'prep':'facilitator';
+  _schedRole = role==='facilitator'?'facilitator':role==='parent'?'prep':'child';
+
+  // Student in workbook → switch to deck
+  if((role==='student'||role==='child')&&S.view==='wb'){
+    S.view='deck';
+    var bd=document.getElementById('btn-deck'); if(bd) bd.classList.add('active');
+    if(wbBtn) wbBtn.classList.remove('active');
+  }
+  renderContent();
+}
+
 function lgSetMode(m){
+  // Shim — redirect to setRole
+  if(m==='facilitator') return setRole('facilitator');
+  if(m==='prep')        return setRole('parent');
+  if(m==='child')       return setRole('student');
+  setRole(m);
+}
+
+function _lgSetModeInternal(m){
   S.mode=m;
   // Three-role system: facilitator > parent prep > child
   var isFac=(m==='facilitator');
@@ -3788,13 +3847,7 @@ function lgSetMode(m){
   }
   // If switching away from facilitator while in workbook view, go to deck
   if(!isFac&&S.view==='wb'){ S.view='deck'; var _bd2=document.getElementById('btn-deck'); if(_bd2) _bd2.classList.add('active'); if(wbBtn) wbBtn.classList.remove('active'); }
-  // Prep-mode elements (annotations, drawing) visible to both fac and parent
   var mc=document.getElementById('main-content');
-  var _fbBtn=document.getElementById('btn-teach-feedback');
-  var _pbBtn=document.getElementById('btn-publish-teaching');
-  var _isStudent=(_schedRole==='student'||_schedRole==='child');
-  if(_fbBtn) _fbBtn.style.display=(m==='prep'&&_isStudent)?'':'none';
-  if(_pbBtn) _pbBtn.style.display=(m==='prep'&&_isStudent)?'':'none';
   if(mc) mc.className=isPrep?'prep-mode':'child-mode';
   renderContent();
 }
@@ -3844,13 +3897,13 @@ async function generateReport(){
 
   var _hist=getHistory(g);
   var _wk=_hist[w]||{};
-  if(_wk.wb_pct!==undefined) scoreSummary+='\n\nWorkbook score: '+_wk.wb_pct+'% ('+_wk.wb_correct+'/'+_wk.wb_total+')';
+  if(_wk.wb_pct!==undefined) scoreSummary+='\n\nWorkbook score: '+_wk.wb_pct+'%';
   if(_wk.wbEntries){
     var we=_wk.wbEntries;
-    if(we.vocab) scoreSummary+='\nVocabulary sentence: '+we.vocab.slice(0,120);
-    if(we.notes) scoreSummary+='\nLesson notes: '+we.notes.slice(0,200);
-    if(we.discussion) scoreSummary+='\nDiscussion response: '+we.discussion.slice(0,200);
-    if(we.juz) scoreSummary+='\nJuz reflection: '+we.juz.slice(0,200);
+    if(we.vocab) scoreSummary+='\nVocabulary: '+we.vocab.slice(0,120);
+    if(we.notes) scoreSummary+='\nNotes: '+we.notes.slice(0,200);
+    if(we.discussion) scoreSummary+='\nDiscussion: '+we.discussion.slice(0,200);
+    if(we.juz) scoreSummary+='\nJuz: '+we.juz.slice(0,200);
   }
 
   var sys='You are a compassionate, encouraging educational assessor for a K-12 Islamic homeschool platform.\n'+
@@ -3964,7 +4017,6 @@ function showReportModal(report, sc, meta){
     '</div>'+
   '</div>';
 
-  // Append progress table
   var _rg=meta&&meta.grade!=null?meta.grade:S.grade;
   html+=buildProgressTable(getHistory(_rg));
   html+='</div></div></div>';
@@ -4007,7 +4059,7 @@ function render(){
   var genPanelBtn=document.getElementById('btn-gen-panel');
   if(genPanelBtn) genPanelBtn.style.display=isFac?'':'none';
   var reportBtn=document.getElementById('btn-report');
-  var _rh2=getHistory(S.grade); var reportVisible=(S.scores[testKey()]||Object.keys(_rh2).length>0)&&(isFac||S.mode==='prep');
+  var reportVisible=S.scores[testKey()]&&(isFac||S.mode==='prep');
   if(reportBtn){
     reportBtn.style.display=reportVisible?'':'none';
     // Parent can view but not generate — change label
@@ -5542,8 +5594,7 @@ async function generate(){
     }
     // Show peer library button if in peer mode
     var libBtn=document.getElementById('btn-to-library');
-    var _isFacOrPeer=(S.genMode==='peer'||S.mode==='facilitator'||S.userRole==='facilitator');
-    if(libBtn) libBtn.style.display=_isFacOrPeer?'':'none';
+    if(libBtn) libBtn.style.display=(S.genMode==='peer')?'':'none';
     autosave(); toast('✨ Lesson generated!'); render();
   }catch(err){
     if(prog)prog.classList.remove('show'); if(btn)btn.disabled=false;
@@ -6098,12 +6149,11 @@ function setGenMode(m){
   // Show/hide peer library button
   var libBtn=document.getElementById('btn-to-library');
   var l=lesson();
-  var _showLib=(isPeer||S.mode==='facilitator'||S.userRole==='facilitator');
-  if(libBtn) libBtn.style.display=(_showLib&&l)?'':'none';
+  if(libBtn) libBtn.style.display=(isPeer&&l)?'':'none';
   render();
 }
 
-async function sendToLibrary(){
+function sendToLibrary(){
   var l=lesson();
   if(!l){ toast('No lesson to send — generate first'); return; }
   var juzData=JUZ[S.week-1]||{};
@@ -6140,46 +6190,13 @@ async function sendToLibrary(){
     helpful:0
   };
 
-  // ── Supabase server save (if logged in) ──
-  var jwt         = localStorage.getItem('how_jwt');
-  var householdId = localStorage.getItem('how_household_id');
-  if(jwt && householdId){
-    var studentId = null;
-    try{
-      var students = JSON.parse(localStorage.getItem('how_students')||'[]');
-      if(students.length) studentId = students[0].id;
-    }catch(e){}
-    try{
-      var sbEntry = {
-        household_id: householdId,
-        student_id:   studentId,
-        teacher_name: teacherName,
-        taught_grade: parseInt(entry.taughtGrade)||S.grade,
-        subject:      S.subj,
-        title:        entry.title,
-        key_idea:     entry.keyIdea,
-        summary:      entry.summary,
-        transcript:   entry.transcript,
-        tags:         entry.tags,
-        is_published: false,
-        helpful:      0
-      };
-      var sbResult = await sb.from('teaching').insert(sbEntry).select();
-      if(sbResult.error) throw sbResult.error;
-      console.log('Supabase teaching insert OK:', JSON.stringify(sbResult.data));
-    }catch(e){
-      console.error('Supabase teaching insert failed:', e);
-      if(e && e.message) console.error('Error message:', e.message);
-      if(e && e.code) console.error('Error code:', e.code);
-    }
-  }
-
-  // ── ALWAYS write to localStorage — offline-first ──
+  // Write to ptl_teachings
   try{
     var teachings=[];
     try{ teachings=JSON.parse(localStorage.getItem('ptl_teachings'))||[]; }catch(e){}
+    // Remove any previous entry from this same lesson key to avoid duplicates
     teachings=teachings.filter(function(t){ return t.id!==entry.id; });
-    teachings.unshift(entry);
+    teachings.unshift(entry); // add to front
     localStorage.setItem('ptl_teachings',JSON.stringify(teachings));
     toast('\u2713 Teaching sent to Peer Library — open the library to review and publish');
   }catch(e){
@@ -6207,7 +6224,6 @@ function saveHistory(grade, week, patch){
   h[week].updated=new Date().toLocaleDateString();
   try{ localStorage.setItem('how_history_'+grade, JSON.stringify(h)); }catch(e){}
 }
-
 function buildProgressTable(hist){
   var weeks=Object.keys(hist).map(Number).sort(function(a,b){return a-b;});
   if(!weeks.length) return '';
@@ -6241,41 +6257,36 @@ function buildProgressTable(hist){
     +'<th style="padding:6px 8px;text-align:center">📓</th>'
     +'<th style="padding:6px 8px">Date</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
-    +'<p style="font-size:11px;color:#9a9ab0;margin-top:8px">Test scores per subject + workbook (📓). 90%+ teal · 75%+ blue · 60%+ amber · below red.</p>'
+    +'<p style="font-size:11px;color:#9a9ab0;margin-top:8px">Test + workbook per week. 90%+ teal · 75%+ blue · 60%+ amber · below red.</p>'
     +'</div>';
 }
-
 function openProgressReport(g, w){
   g=g||S.grade; w=w||S.week;
-  var sc=S.scores[testKey(g,w)];
+  var sc=S.scores[testKey()];
   var hist=getHistory(g);
   var wkHist=hist[w]||{};
   if(!sc&&!wkHist.wb_pct&&!wkHist.wb_completed&&!Object.keys(hist).length){
-    toast('No workbook or test data yet — complete at least one workbook first'); return;
+    toast('No workbook or test data yet'); return;
   }
   if(!sc){ showWorkbookOnlyReport(g,w,wkHist,hist); return; }
   S.grade=g; S.week=w; generateReport();
 }
-
 function showWorkbookOnlyReport(g, w, wkHist, hist){
   var gl=g===0?'Kindergarten':'Grade '+g;
-  var how=(HOW_CURR[g]||HOW_CURR[String(g)]||{})[w]||(HOW_CURR[g]||HOW_CURR[String(g)]||{})[String(w)]||{};
   var wbBlock='<p style="color:#9a9ab0;font-style:italic">No workbook completed yet this week.</p>';
   if(wkHist.wb_pct!==undefined){
     var col=wkHist.wb_pct>=90?'#1d6f6f':wkHist.wb_pct>=75?'#1a3d8a':wkHist.wb_pct>=60?'#b8922a':'#c0392b';
     wbBlock='<div style="font-size:2.5rem;font-weight:900;color:'+col+'">'+wkHist.wb_pct+'%</div>'
-      +'<div style="font-size:.9rem;color:#5a5a78;margin-bottom:16px">'+wkHist.wb_correct+'/'+wkHist.wb_total+' correct · '+(wkHist.wbDate||'')+'</div>';
+      +'<div style="font-size:.9rem;color:#5a5a78;margin-bottom:16px">'+wkHist.wb_correct+'/'+wkHist.wb_total+' correct</div>';
     if(wkHist.wbEntries){
       var we=wkHist.wbEntries;
       wbBlock+='<div style="font-size:13px;text-align:left;color:#2e2e44;line-height:1.7">';
       if(we.vocab) wbBlock+='<div style="margin-bottom:8px"><strong>Vocabulary:</strong> '+we.vocab+'</div>';
       if(we.notes) wbBlock+='<div style="margin-bottom:8px"><strong>Notes:</strong> '+we.notes+'</div>';
       if(we.discussion) wbBlock+='<div style="margin-bottom:8px"><strong>Discussion:</strong> '+we.discussion+'</div>';
-      if(we.juz) wbBlock+='<div style="margin-bottom:8px"><strong>Juz reflection:</strong> '+we.juz+'</div>';
+      if(we.juz) wbBlock+='<div style="margin-bottom:8px"><strong>Juz:</strong> '+we.juz+'</div>';
       wbBlock+='</div>';
     }
-  } else if(wkHist.wb_completed){
-    wbBlock='<div style="color:#1d6f6f;font-size:1.1rem;font-weight:700">Workbook completed</div>';
   }
   var overlay=document.createElement('div');
   overlay.className='rpt-overlay';
@@ -6283,8 +6294,7 @@ function showWorkbookOnlyReport(g, w, wkHist, hist){
   overlay.innerHTML='<div class="rpt-modal">'
     +'<button class="rpt-close" onclick="this.closest(\'.rpt-overlay\').remove()">✕</button>'
     +'<div style="text-align:center;padding:20px 0 12px">'
-    +'<div style="font-family:Spectral,serif;font-size:1.4rem;font-weight:600">'+gl+' · Week '+w+'</div>'
-    +'<div style="font-size:.85rem;color:#9a9ab0;margin-top:4px">'+(how.scholar||'')+'</div></div>'
+    +'<div style="font-family:Spectral,serif;font-size:1.4rem;font-weight:600">'+gl+' · Week '+w+'</div></div>'
     +'<div style="background:#f0f8f8;border-radius:10px;padding:20px;margin-bottom:16px;text-align:center">'
     +'<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1d6f6f;margin-bottom:10px">Workbook · Week '+w+'</div>'
     +wbBlock+'</div>'
@@ -8036,8 +8046,8 @@ function recordIsnadEntry(data){
 function pickRole(role){
   var picker=document.getElementById('role-picker');
   if(picker) picker.style.display='none';
-  try{ localStorage.setItem('how_lg_role', role); }catch(e){}
-  lgSetMode(role);
+  var mapped=role==='facilitator'?'facilitator':role==='prep'?'parent':'student';
+  setRole(mapped);
   render();
 }
 
@@ -8058,123 +8068,133 @@ function initRolePicker(){
 
 
 
-<!-- Supabase moved to <head> -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ── Supabase client ────────────────────────────────────────────────────────
-// sb initialized in <head>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+);
+/* ─────────────────────────────────────────────────── */
 
-// ── On page load: check for existing session ───────────────────────────────
+// ── On page load: check for existing session ──────────────────────────────
 (async function checkSession(){
   const { data:{ session } } = await sb.auth.getSession();
-  if(session){
-    await applyUserToProfile(session.user, session.access_token);
-  }
-  // If no session, Institution tab + login panel are already showing
+  if(session) await applyUserToProfile(session.user, session.access_token);
 })();
 
-// ── Apply household + student profile to the platform ─────────────────────
 async function applyUserToProfile(user, accessToken){
-  // Fetch household linked to this auth user
   const { data: household, error } = await sb
     .from('household')
     .select('id, name, role, plan, current_week')
     .eq('auth_id', user.id)
     .single();
 
-  if(error || !household){
+  if(error||!household){
     showLoginError('Could not load your account. Please contact your administrator.');
     return;
   }
 
-  // Fetch all students in this household
   const { data: students } = await sb
     .from('student')
     .select('id, name, current_grade, current_week, grade_start')
     .eq('household_id', household.id)
     .order('name');
 
-  // Store for tool files (Sahifa, Halaqa, Murshid)
-  localStorage.setItem('how_jwt', accessToken || '');
+  localStorage.setItem('how_jwt', accessToken||'');
   localStorage.setItem('how_household_id', household.id);
-  localStorage.setItem('how_students', JSON.stringify(students || []));
+  localStorage.setItem('how_students', JSON.stringify(students||[]));
 
-  // Active student: single-child household sets automatically
-  // Multi-child: use first student for now (student switcher to be built)
-  var active = students && students.length ? students[0] : null;
+  var active = students&&students.length ? students[0] : null;
+  S.grade    = active?(active.current_grade||active.grade_start||7):7;
+  S.week     = household.current_week||1;
 
-  // Set platform state
-  S.grade    = active ? (active.current_grade || active.grade_start || 7) : 7;
-  S.week     = household.current_week || 1;
-  S.userRole = household.role || 'facilitator';
+  var role = household.role==='admin'?'facilitator':household.role||'facilitator';
+  setRole(role);
+  localStorage.setItem('how_role', role);
 
-  // Set mode from role
-  lgSetMode(household.role === 'facilitator' || household.role === 'admin'
-    ? 'facilitator' : 'prep');
+  var gradeEl=document.getElementById('sch-grade');
+  var weekEl=document.getElementById('sch-week');
+  if(gradeEl) gradeEl.value=String(S.grade);
+  if(weekEl)  weekEl.value=String(S.week);
 
-  // Sync grade + week selectors
-  var gradeEl = document.getElementById('sch-grade');
-  var weekEl  = document.getElementById('sch-week');
-  if(gradeEl) gradeEl.value = String(S.grade);
-  if(weekEl)  weekEl.value  = String(S.week);
-
-  // Pre-fill sahifa_settings so Sahifa, Halaqa and Murshid know the student
   if(active){
     try{
-      var existing = JSON.parse(localStorage.getItem('sahifa_settings') || '{}');
-      localStorage.setItem('sahifa_settings', JSON.stringify({
-        ...existing,
-        name:  active.name  || '',
-        grade: S.grade,
-        juz:   S.week,
+      var existing=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
+      localStorage.setItem('sahifa_settings',JSON.stringify({
+        ...existing, name:active.name||'', grade:S.grade, juz:S.week,
       }));
     }catch(e){}
   }
 
-  // Hide login panel, navigate to schedule
-  toast('Ahlan wa sahlan, ' + (active ? active.name : household.name) + ' — welcome back.');
-  document.getElementById('how-login-panel').style.display = 'none';
-  var schedBtn = document.querySelector('.ntab[data-p="schedule"]');
+  document.getElementById('how-login-panel').style.display='none';
+  toast('Ahlan wa sahlan, '+(active?active.name:household.name)+' — welcome back.');
+  var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
   if(schedBtn) SP(schedBtn);
-
-  // Re-render with correct grade/week
   render();
-  if(typeof updateSchedule === 'function') updateSchedule();
+  if(typeof updateSchedule==='function') updateSchedule();
 }
 
-// ── Login ──────────────────────────────────────────────────────────────────
 async function howLogin(email, password){
-  if(!email || !password){ showLoginError('Please enter your email and password.'); return; }
-  var btn = document.getElementById('how-login-btn');
-  if(btn){ btn.disabled = true; btn.textContent = 'Signing in…'; }
+  if(!email||!password){ showLoginError('Please enter your email and password.'); return; }
+  var btn=document.getElementById('how-login-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Signing in…'; }
   showLoginError('');
-
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
   if(error){
-    showLoginError('Login failed: ' + error.message);
-    if(btn){ btn.disabled = false; btn.textContent = 'Sign in'; }
+    showLoginError('Login failed: '+error.message);
+    if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
     return;
   }
-
   await applyUserToProfile(data.user, data.session.access_token);
-  if(btn){ btn.disabled = false; btn.textContent = 'Sign in'; }
+  if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
 }
 
-// ── Logout ─────────────────────────────────────────────────────────────────
 async function howLogout(){
   await sb.auth.signOut();
   localStorage.removeItem('how_jwt');
   localStorage.removeItem('how_household_id');
   localStorage.removeItem('how_students');
+  localStorage.removeItem('how_role');
   location.reload();
 }
 
-// ── Error display ──────────────────────────────────────────────────────────
 function showLoginError(msg){
-  var el = document.getElementById('how-login-error');
+  var el=document.getElementById('how-login-error');
   if(!el) return;
-  el.textContent = msg;
-  el.style.display = msg ? 'block' : 'none';
+  el.textContent=msg;
+  el.style.display=msg?'block':'none';
+}
+
+async function publishTeachingSupabase(entry){
+  var jwt=localStorage.getItem('how_jwt');
+  var householdId=localStorage.getItem('how_household_id');
+  if(!jwt||!householdId) return;
+  var studentId=null;
+  try{
+    var students=JSON.parse(localStorage.getItem('how_students')||'[]');
+    if(students.length) studentId=students[0].id;
+  }catch(e){}
+  try{
+    var result=await sb.from('teaching').insert({
+      household_id: householdId,
+      student_id:   studentId,
+      teacher_name: entry.teacherName,
+      taught_grade: parseInt(entry.taughtGrade)||S.grade,
+      subject:      S.subj,
+      title:        entry.title,
+      key_idea:     entry.keyIdea,
+      summary:      entry.summary,
+      transcript:   entry.annotatedSlides||entry.transcript,
+      tags:         entry.tags,
+      is_published: false,
+      helpful:      0
+    }).select();
+    if(result.error) throw result.error;
+    console.log('publishTeaching Supabase OK:', result.data);
+  }catch(e){
+    console.error('publishTeaching Supabase failed:',e);
+  }
 }
 </script>
 </body>
