@@ -6129,9 +6129,9 @@ async function sendToLibrary(){
         is_published: false,
         helpful:      0
       };
-      var sbResult = await sb.from('teaching').insert(sbEntry);
+      var sbResult = await sb.from('teaching').insert(sbEntry).select();
       if(sbResult.error) throw sbResult.error;
-      console.log('Supabase teaching insert OK:', sbResult.data);
+      console.log('Supabase teaching insert OK:', JSON.stringify(sbResult.data));
     }catch(e){
       console.error('Supabase teaching insert failed:', e);
       if(e && e.message) console.error('Error message:', e.message);
