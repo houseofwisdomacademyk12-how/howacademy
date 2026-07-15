@@ -2949,10 +2949,53 @@ function drivePdfNav(dir){
 }
 
 // ── Teach It ────────────────────────────────────────────────────────────────
-function _goToTeachIt(){
+async function _goToTeachIt(){
   var genBtn=document.querySelector('[data-p="generate"]');
   if(genBtn){ SP(genBtn); syncLG(); }
-  setTimeout(function(){ setRole('student'); setView('deck'); }, 100);
+
+  // ── Pull facilitator lesson from Supabase if not in localStorage ──────
+  var lessonKey = key(S.grade, S.week, S.subj, S.session||1);
+  var hasLocal = S.lessons[lessonKey] && S.lessons[lessonKey].slides;
+
+  if(!hasLocal){
+    var jwt = localStorage.getItem('how_jwt');
+    var householdId = localStorage.getItem('how_household_id');
+    if(jwt && householdId && typeof sb !== 'undefined'){
+      try{
+        toast('Loading lesson…');
+        var result = await sb
+          .from('lesson')
+          .select('*')
+          .eq('household_id', householdId)
+          .eq('grade', S.grade)
+          .eq('week', S.week)
+          .eq('subject', S.subj)
+          .single();
+
+        if(result.data && result.data.slides){
+          // Load into S.lessons so render() can find it
+          S.lessons[lessonKey] = {
+            title:     result.data.title || '',
+            objective: result.data.objective || '',
+            slides:    result.data.slides,
+            fromSync:  true
+          };
+          autosave();
+          render();
+          toast('✓ Lesson loaded from facilitator sync');
+        } else {
+          toast('No synced lesson found — ask your facilitator to sync this lesson');
+        }
+      }catch(e){
+        console.warn('Supabase lesson fetch failed:', e);
+        toast('Could not load lesson — check your connection');
+      }
+    } else if(!hasLocal){
+      toast('No lesson found — ask your facilitator to generate and sync this lesson');
+    }
+  }
+
+  setTimeout(function(){ setRole('student'); setView('deck'); }, 300);
 }
 
 async function teachItFeedback(){

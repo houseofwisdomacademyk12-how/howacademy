@@ -6122,8 +6122,11 @@ async function sendToLibrary(){
       };
       var sbResult = await sb.from('teaching').insert(sbEntry);
       if(sbResult.error) throw sbResult.error;
+      console.log('Supabase teaching insert OK:', sbResult.data);
     }catch(e){
-      console.warn('Server save failed, keeping local copy:', e);
+      console.error('Supabase teaching insert failed:', e);
+      if(e && e.message) console.error('Error message:', e.message);
+      if(e && e.code) console.error('Error code:', e.code);
     }
   }
 
