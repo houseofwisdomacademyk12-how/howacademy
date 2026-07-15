@@ -174,6 +174,15 @@ textarea.field{resize:vertical;line-height:1.65}
 .modal-sub{font-size:13px;color:var(--ink-3);margin-bottom:18px;line-height:1.6}
 .highlight{background:var(--gold-pale);border-left:3px solid var(--gold);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:13px;color:var(--ink-2);line-height:1.7;margin:12px 0}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+);
+/* ─────────────────────────────────────────────────── */
+</script>
 </head>
 <body>
 
@@ -978,6 +987,70 @@ function libSlideNav(id, dir){
   if(ctr)  ctr.textContent = 'Slide '+(state.idx+1)+' of '+state.slides.length;
 }
 
+</script>
+<script>
+// ── Fetch published teachings from Supabase and merge with local ──────────
+async function fetchSupabaseTeachings(){
+  try{
+    const { data, error } = await sb
+      .from('teaching')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false });
+
+    if(error){ console.warn('Supabase fetch failed:', error.message); return []; }
+    if(!data || !data.length) return [];
+
+    // Map Supabase row format → ptl format
+    return data.map(function(r){
+      return {
+        id:             r.id,
+        title:          r.title || '',
+        teacherGrade:   String(r.taught_grade || ''),
+        taughtGrade:    String(r.taught_grade || ''),
+        subject:        r.subject || '',
+        disc:           ({math:'math',science:'sky',social:'eng',ela:'hum',writing:'hum'})[r.subject] || 'hum',
+        juz:            '',
+        scholar:        '',
+        keyIdea:        r.key_idea || '',
+        summary:        r.summary || '',
+        transcript:     Array.isArray(r.transcript) ? r.transcript : [],
+        openQuestion:   '',
+        tags:           Array.isArray(r.tags) ? r.tags : [],
+        teacherName:    r.teacher_name || '',
+        teacherInitials:(r.teacher_name||'??').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase(),
+        year:           new Date(r.created_at).getFullYear().toString(),
+        views:          0,
+        helpful:        r.helpful || 0,
+        isTeachIt:      !!r.student_id,
+        fromSupabase:   true
+      };
+    });
+  }catch(e){
+    console.warn('fetchSupabaseTeachings error:', e);
+    return [];
+  }
+}
+
+// ── Load on startup: fetch Supabase + merge with local + re-render ────────
+(async function initLibrary(){
+  var sbTeachings = await fetchSupabaseTeachings();
+  if(!sbTeachings.length) return; // nothing to merge
+
+  // Merge: Supabase teachings first, then local (local may have unpublished)
+  var local = getTeachings();
+  var localIds = new Set(local.map(function(t){ return t.id; }));
+
+  // Add Supabase teachings not already in local
+  var merged = local.concat(
+    sbTeachings.filter(function(t){ return !localIds.has(t.id); })
+  );
+
+  saveTeachings(merged);
+
+  // Re-render current tab with merged data
+  renderTab(currentTab || 'browse');
+})();
 </script>
 </body>
 </html>

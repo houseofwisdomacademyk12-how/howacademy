@@ -288,6 +288,57 @@ const S = {
   set(k,v){localStorage.setItem('ptl_'+k,JSON.stringify(v))},
 };
 function getTeachings(){return S.get('teachings')||[]}
+
+// ── Delete a teaching (local + Supabase) ─────────────────────────────────
+async function deleteTeaching(id, evt){
+  if(evt){ evt.stopPropagation(); }
+  if(!confirm('Delete this teaching? This cannot be undone.')) return;
+
+  // Remove from localStorage
+  var teachings = getTeachings().filter(function(t){ return t.id !== id; });
+  saveTeachings(teachings);
+
+  // Remove from Supabase if it came from there
+  try{
+    var jwt = localStorage.getItem('how_jwt');
+    if(jwt && typeof sb !== 'undefined'){
+      var { error } = await sb.from('teaching').delete().eq('id', id);
+      if(error) console.warn('Supabase delete failed:', error.message);
+      else console.log('Supabase delete OK:', id);
+    }
+  }catch(e){ console.warn('deleteTeaching error:', e); }
+
+  renderTab(currentTab||'mine');
+  toast('Teaching deleted');
+}
+
+// ── Publish / unpublish a teaching ───────────────────────────────────────
+async function togglePublish(id, currentState, evt){
+  if(evt){ evt.stopPropagation(); }
+  var newState = !currentState;
+
+  // Update localStorage
+  var teachings = getTeachings().map(function(t){
+    return t.id === id ? Object.assign({}, t, {is_published: newState}) : t;
+  });
+  saveTeachings(teachings);
+
+  // Update Supabase
+  try{
+    var jwt = localStorage.getItem('how_jwt');
+    if(jwt && typeof sb !== 'undefined'){
+      var { error } = await sb
+        .from('teaching')
+        .update({ is_published: newState })
+        .eq('id', id);
+      if(error) console.warn('Supabase publish toggle failed:', error.message);
+      else console.log('Supabase publish toggle OK:', id, newState);
+    }
+  }catch(e){ console.warn('togglePublish error:', e); }
+
+  renderTab(currentTab||'mine');
+  toast(newState ? '✓ Published to shared library' : 'Unpublished — visible to you only');
+}
 function saveTeachings(t){S.set('teachings',t);updateCounts()}
 function getSettings(){return S.get('settings')||{name:'',grade:'',apiKey:''}}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
@@ -492,6 +543,45 @@ function handleSearch(val){
   searchTimeout = setTimeout(()=>{
     renderBrowse(document.getElementById('tab-content'), currentFilter, currentGradeFilter, val||null);
   }, 250);
+}
+
+function mineCard(t){
+  const discClass = 'badge-disc-'+t.disc;
+  const avatarColors = {math:['#EEEDFE','#3C3489'],sky:['#E1F5EE','#085041'],eng:['#FAEEDA','#633806'],med:['#E6F1FB','#0C447C'],hum:['#FAECE7','#712B13']};
+  const [abg,afg] = avatarColors[t.disc]||['#F1EFE8','#444441'];
+  const isPublished = !!t.is_published;
+  const isSeed = t.id && t.id.startsWith('s');
+  return `
+  <div class="t-card">
+    <div class="t-card-top" onclick="openTeaching('${t.id}')" style="cursor:pointer">
+      <div class="t-card-avatar" style="background:${abg};color:${afg}">${t.teacherInitials||'?'}</div>
+      <div class="t-card-meta">
+        <p class="t-card-title">${t.title}</p>
+        <p class="t-card-who">${t.teacherName||'Anonymous'} · Grade ${t.teacherGrade}</p>
+        <div class="t-card-badges">
+          <span class="badge badge-grade">Taught to G${t.taughtGrade}</span>
+          <span class="badge ${discClass}">${t.subject}</span>
+          ${t.isTeachIt?'<span class="badge" style="background:#e8edf8;color:#1a3d8a">✏️ Student teaching</span>':''}
+          <span class="badge" style="background:${isPublished?'#d0eaea':'#f0ebe4'};color:${isPublished?'#1d6f6f':'#9a9ab0'}">${isPublished?'● Published':'○ Private'}</span>
+        </div>
+      </div>
+    </div>
+    <p class="t-card-preview" onclick="openTeaching('${t.id}')" style="cursor:pointer">${t.summary?t.summary.slice(0,140)+'…':''}</p>
+    ${isSeed?'':`
+    <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #f0ebe4">
+      <button onclick="togglePublish('${t.id}',${isPublished},event)"
+        style="flex:1;padding:7px;border-radius:7px;border:1.5px solid ${isPublished?'#1d6f6f':'#d4af37'};
+        background:${isPublished?'#f0f8f8':'#fffbef'};color:${isPublished?'#1d6f6f':'#8a6d00'};
+        font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">
+        ${isPublished?'↩ Unpublish':'↑ Publish to library'}
+      </button>
+      <button onclick="deleteTeaching('${t.id}',event)"
+        style="padding:7px 12px;border-radius:7px;border:1.5px solid #e4ddd0;
+        background:white;color:#c0522a;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">
+        🗑 Delete
+      </button>
+    </div>`}
+  </div>`;
 }
 
 function teachingCard(t){
@@ -886,7 +976,7 @@ function renderMine(mc){
       <button class="btn primary" onclick="switchTab(document.querySelector('[data-tab=record]'))">Record your first teaching →</button>
     </div>
   </div>` : `
-  <div class="teaching-grid">${mine.map(t=>teachingCard(t)).join('')}</div>`}`;
+  <div class="teaching-grid">${mine.map(t=>mineCard(t)).join('')}</div>`}`;
 }
 
 // ── ABOUT ─────────────────────────────────────────────────────────
