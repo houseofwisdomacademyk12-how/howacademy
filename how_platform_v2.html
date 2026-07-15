@@ -7083,6 +7083,29 @@ function loadJuzEdits(){
 
 
 // ─── Role picker ─────────────────────────────────────
+// ── Auth tab toggle ───────────────────────────────────────────────────────
+function switchAuthTab(tab){
+  var signinForm = document.getElementById('auth-signin-form');
+  var signupForm = document.getElementById('auth-signup-form');
+  var signinTab  = document.getElementById('auth-tab-signin');
+  var signupTab  = document.getElementById('auth-tab-signup');
+  if(!signinForm||!signupForm) return;
+  if(tab==='signin'){
+    signinForm.style.display='block';
+    signupForm.style.display='none';
+    signinTab.style.background='#1a3d8a'; signinTab.style.color='white';
+    signupTab.style.background='white';   signupTab.style.color='#9a9ab0';
+  } else {
+    signinForm.style.display='none';
+    signupForm.style.display='block';
+    signinTab.style.background='white';   signinTab.style.color='#9a9ab0';
+    signupTab.style.background='#1d6f6f'; signupTab.style.color='white';
+  }
+  var errEl=document.getElementById('how-login-error');
+  if(errEl) errEl.style.display='none';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function showRolePicker(){
   try{ localStorage.removeItem('how_lg_role'); }catch(e){}
   var picker=document.getElementById('role-picker');
@@ -8448,27 +8471,7 @@ async function verifyStudentPin(){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Auth tab toggle ───────────────────────────────────────────────────────
-function switchAuthTab(tab){
-  var signinForm = document.getElementById('auth-signin-form');
-  var signupForm = document.getElementById('auth-signup-form');
-  var signinTab  = document.getElementById('auth-tab-signin');
-  var signupTab  = document.getElementById('auth-tab-signup');
-  if(tab==='signin'){
-    signinForm.style.display='block';
-    signupForm.style.display='none';
-    signinTab.style.background='#1a3d8a'; signinTab.style.color='white';
-    signupTab.style.background='white';   signupTab.style.color='#9a9ab0';
-  } else {
-    signinForm.style.display='none';
-    signupForm.style.display='block';
-    signinTab.style.background='white';   signinTab.style.color='#9a9ab0';
-    signupTab.style.background='#1d6f6f'; signupTab.style.color='white';
-  }
-  document.getElementById('how-login-error').style.display='none';
-}
-
-// ── Sign up ────────────────────────────────────────────────────────────────
+// ── Auth tab toggle + sign up moved to main script ──
 async function howSignUp(){
   var name      = document.getElementById('su-name').value.trim();
   var household = document.getElementById('su-household').value.trim();

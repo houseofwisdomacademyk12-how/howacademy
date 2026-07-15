@@ -1021,6 +1021,14 @@ body.lg-active #lg-root .pres-overlay.active { display:flex !important; }
 body.lg-active #lg-root .toast.show { display:block !important; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',   /* e.g. https://abcdefgh.supabase.co */
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'       /* Project Settings → API → anon public */
+);
+/* ─────────────────────────────────────────────────── */
+</script>
 </head>
 <body>
 <nav class="nav">
@@ -8016,13 +8024,9 @@ function initRolePicker(){
 
 
 <!-- Supabase moved to <head> -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ── Supabase client ────────────────────────────────────────────────────────
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-);
+// sb initialized in <head>
 
 // ── On page load: check for existing session ───────────────────────────────
 (async function checkSession(){
