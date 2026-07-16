@@ -549,6 +549,7 @@ function mineCard(t){
           <span class="badge badge-grade">Taught to G${t.taughtGrade}</span>
           <span class="badge ${discClass}">${t.subject}</span>
           ${t.isTeachIt?'<span class="badge" style="background:#e8edf8;color:#1a3d8a">✏️ Student teaching</span>':''}
+          ${t.isMunazara?'<span class="badge" style="background:#f5ede0;color:#8a4000">⚔ Munazara</span>':''}
           <span class="badge" style="background:${isPublished?'#d0eaea':'#f0ebe4'};color:${isPublished?'#1d6f6f':'#9a9ab0'}">${isPublished?'● Published':'○ Private'}</span>
         </div>
       </div>
@@ -1115,10 +1116,63 @@ async function fetchSupabaseTeachings(){
   }
 }
 
+// ── Fetch public debates from Supabase ───────────────────────────────────
+async function fetchSupabaseDebates(){
+  try{
+    const { data, error } = await sb
+      .from('debate')
+      .select('*')
+      .eq('is_public', true)
+      .eq('status', 'complete')
+      .order('updated_at', { ascending: false });
+    if(error){ console.warn('fetchSupabaseDebates error:', error.message); return []; }
+    if(!data || !data.length) return [];
+    return data.map(function(r){
+      var moves = Array.isArray(r.moves)?r.moves:[];
+      var transcript = moves.map(function(m){
+        return (m.who==='a'?(r.student_a_name||'Student A'):
+                m.who==='b'?(r.student_b_name||'Student B'):'Ustadh')
+               +': '+m.text;
+      }).join('
+
+');
+      var synth = '';
+      try{ var s=JSON.parse(r.synthesis||'{}'); synth=s.verdict||s.summary||''; }catch(e){}
+      return {
+        id:             r.id,
+        title:          r.claim,
+        teacherGrade:   String(r.grade||''),
+        taughtGrade:    String(r.grade||''),
+        subject:        'munazara',
+        disc:           'hum',
+        juz:            'Week '+r.week,
+        scholar:        '',
+        keyIdea:        r.claim,
+        summary:        synth||(moves.length?moves[0].text.slice(0,120)+'…':''),
+        transcript:     [{type:'debate',text:transcript}],
+        openQuestion:   '',
+        tags:           ['Munazara','Week '+(r.week||''), 'Grade '+(r.grade||'')],
+        teacherName:    (r.student_a_name||'')+(r.student_b_name?' vs '+r.student_b_name:''),
+        teacherInitials:'⚔',
+        year:           new Date(r.created_at||Date.now()).getFullYear().toString(),
+        views:          0,
+        helpful:        r.helpful||0,
+        isMunazara:     true,
+        fromServer:     true
+      };
+    });
+  }catch(e){
+    console.warn('fetchSupabaseDebates error:', e);
+    return [];
+  }
+}
+
 // ── Load on startup: fetch Supabase + merge with local + re-render ────────
 (async function initLibrary(){
   var sbTeachings = await fetchSupabaseTeachings();
-  if(!sbTeachings.length) return; // nothing to merge
+  var sbDebates   = await fetchSupabaseDebates();
+  var allServer   = sbTeachings.concat(sbDebates);
+  if(!allServer.length) return; // nothing to merge
 
   // Merge: Supabase teachings first, then local (local may have unpublished)
   var local = getTeachings();
@@ -1126,7 +1180,7 @@ async function fetchSupabaseTeachings(){
 
   // Add Supabase teachings not already in local
   var merged = local.concat(
-    sbTeachings.filter(function(t){ return !localIds.has(t.id); })
+    allServer.filter(function(t){ return !localIds.has(t.id); })
   );
 
   saveTeachings(merged);

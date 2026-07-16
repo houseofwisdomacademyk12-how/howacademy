@@ -180,18 +180,7 @@ textarea.field{resize:vertical;line-height:1.65}
 
 <div class="toast" id="toast"></div>
 
-<div class="modal-bg" id="api-modal">
-  <div class="modal">
-    <p class="modal-title">Connect the murshid</p>
-    <p class="modal-sub">The murshid helps you prepare your peer teaching and summarises your transcript. Enter your Anthropic API key to activate. Stored only in this browser — never sent anywhere except directly to Anthropic.</p>
-    <input class="field" type="password" id="api-key-input" placeholder="sk-ant-…" style="margin-bottom:12px">
-    <div class="btn-row">
-      <button class="btn primary" onclick="saveApiKey()">Connect</button>
-      <button class="btn" onclick="closeModal()">Continue without</button>
-    </div>
-    <p style="font-size:11px;color:var(--ink-4);margin-top:10px;line-height:1.5">Get a key at console.anthropic.com · uses claude-sonnet-4-20250514</p>
-  </div>
-</div>
+
 
 <div class="app">
   <nav class="topnav">
@@ -203,7 +192,7 @@ textarea.field{resize:vertical;line-height:1.65}
       <button class="topnav-tab" data-tab="about" onclick="switchTab(this)">How it works</button>
     </div>
     <div class="topnav-right">
-      <button class="topnav-btn" onclick="openModal()">API key</button>
+      
       <button class="topnav-btn gold" onclick="switchTab(document.querySelector('[data-tab=record]'))">Record teaching +</button>
     </div>
   </nav>
@@ -1009,9 +998,9 @@ function renderAbout(mc){
 
 // ── SETTINGS HELPERS ─────────────────────────────────────────────
 function getSettings(){return S.get('settings')||{name:'',grade:'',apiKey:''}}
-function openModal(){document.getElementById('api-modal').classList.add('open');document.getElementById('api-key-input').value=getSettings().apiKey||''}
-function closeModal(){document.getElementById('api-modal').classList.remove('open')}
-function saveApiKey(){const k=document.getElementById('api-key-input').value.trim();const s=getSettings();s.apiKey=k;S.set('settings',s);closeModal();toast('Murshid connected.')}
+
+
+
 
 // ── INIT ──────────────────────────────────────────────────────────
 updateCounts();
@@ -1078,8 +1067,8 @@ function libSlideNav(id, dir){
 <script>
 /* ── SUPABASE CREDENTIALS — replace before deploying ── */
 var sb = supabase.createClient(
-  'SUPABASE_PROJECT_URL',
-  'SUPABASE_ANON_KEY'
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
 );
 /* ─────────────────────────────────────────────────── */
 

@@ -175,14 +175,6 @@ textarea.field{resize:vertical;line-height:1.65}
 .highlight{background:var(--gold-pale);border-left:3px solid var(--gold);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:13px;color:var(--ink-2);line-height:1.7;margin:12px 0}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-);
-/* ─────────────────────────────────────────────────── */
-</script>
 </head>
 <body>
 
@@ -828,9 +820,8 @@ async function prepareMurshid(){
     return;
   }
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,
         system:'You are the Murshid. A student is about to record a peer teaching. Help them find their key insight. Ask one precise question that will help them articulate the single most important idea. Be brief — two or three sentences maximum.',
         messages:[{role:'user',content:`I am about to record a peer teaching on: "${draftTeaching.title}". I taught this to Grade ${draftTeaching.taughtGrade} students. I am in Grade ${draftTeaching.teacherGrade}.`}]})
@@ -1085,6 +1076,13 @@ function libSlideNav(id, dir){
 
 </script>
 <script>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+var sb = supabase.createClient(
+  'SUPABASE_PROJECT_URL',
+  'SUPABASE_ANON_KEY'
+);
+/* ─────────────────────────────────────────────────── */
+
 // ── Fetch published teachings from Supabase and merge with local ──────────
 async function fetchSupabaseTeachings(){
   try{
@@ -1145,7 +1143,7 @@ async function fetchSupabaseTeachings(){
   saveTeachings(merged);
 
   // Re-render current tab with merged data
-  renderTab(currentTab || 'browse');
+  if(typeof renderTab === 'function') renderTab(currentView || 'browse');
 })();
 </script>
 </body>
