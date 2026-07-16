@@ -449,32 +449,12 @@ const S = {
 };
 
 function getEntries(){ return S.get('entries') || []; }
+function countEntries(){ return getEntries().length; }
 function saveEntries(e){ S.set('entries', e); updateMeta(); }
 function getSettings(){ return S.get('settings') || { name:'Your Name', grade:'7', juz:'8', apiKey:'' }; }
 function saveSettings(s){ S.set('settings', s); }
 
-function getRevisions(){ return S.get('revisions') || [
-  { grade:'G4', week:'W13', date:'Revised in Grade 7',
-    original:'Decimals are smaller than fractions.',
-    revision:'This was confused. Decimals and fractions are two different ways of writing the same number. 0.5 and ½ are identical — one isn\'t smaller than the other. What I meant was that decimal notation makes place value visible in a way fraction notation doesn\'t. The confusion was about notation, not about the numbers themselves.' },
-  { grade:'G5', week:'W8', date:'Revised in Grade 6',
-    original:'PEMDAS tells you the order of operations.',
-    revision:'PEMDAS is a memory device, not a rule. The actual rule is that multiplication and division are shorthand for repeated addition, so they bind more tightly. The order of operations isn\'t arbitrary — it makes mathematical notation unambiguous.' },
-]; }
-
-function getOpenQuestions(){ return S.get('questions') || [
-  { id:'q1', grade:'G5 · W1', age:'2 years, 3 months', status:'active',
-    text:'If the universe is infinite, does it have a centre? And if it doesn\'t have a centre, how can we say anything is moving "away" from anything else?',
-    update:'In Grade 6 I learned that a coordinate origin is a choice, not a fact. This question is getting bigger, not smaller.' },
-  { id:'q2', grade:'G6 · W13', age:'1 year, 7 months', status:'partial',
-    text:'Why do some numbers (like 1/3) produce infinite decimals but 1/4 stops? Is it about the numbers themselves or how we write them?',
-    update:'Partial answer: it\'s about whether the denominator\'s prime factors are only 2s and 5s — the prime factors of 10, our base. In base 3, 1/3 would terminate. Still feels mysterious.' },
-]; }
-
-function countEntries(){
-  const e = getEntries();
-  return e.length + 12; // +12 for demo "past" entries
-}
+function getRevisions(){ return S.get('revisions') || []; }
 
 function updateMeta(){
   const s = getSettings();
@@ -1121,7 +1101,12 @@ function renderRevisions(mc){
 
   <p class="section-label">Recent revisions (${revisions.length})</p>
 
-  ${revisions.map(r=>`
+  ${revisions.length === 0 ? `
+  <div style="text-align:center;padding:2rem 1rem;color:var(--ink-4)">
+    <p style="font-size:1.5rem;margin-bottom:.5rem">○</p>
+    <p style="font-weight:600;color:var(--ink-2);margin-bottom:.4rem">No revisions yet</p>
+    <p style="font-size:.85rem;line-height:1.6">When you discover a belief was wrong or incomplete, come back and write what you understand now. The original is never deleted — growth is the record.</p>
+  </div>` : revisions.map(r=>`
   <div class="revision-block">
     <p class="revision-date">${r.grade} · ${r.week} · ${r.date}</p>
     <p class="struck">${r.original}</p>
@@ -1217,7 +1202,12 @@ function renderQuestions(mc){
   </div>
 
   <p class="section-label">Active open questions (${qs.length})</p>
-  ${qs.map(q=>`
+  ${qs.length === 0 ? `
+  <div style="text-align:center;padding:2rem 1rem;color:var(--ink-4)">
+    <p style="font-size:1.5rem;margin-bottom:.5rem">◇</p>
+    <p style="font-weight:600;color:var(--ink-2);margin-bottom:.4rem">No open questions yet</p>
+    <p style="font-size:.85rem;line-height:1.6">Write a question you cannot yet answer. It does not need to be answerable — it needs to be honest. Some questions stay open for years. That is not a failure; it is a project.</p>
+  </div>` : qs.map(q=>`
   <div class="question-card">
     <p class="q-age">${q.grade} · opened ${q.age} ago · <span style="color:${q.status==='partial'?'var(--gold)':'var(--teal)'}">
       ${q.status==='partial'?'partially answered':'still open'}</span></p>
@@ -1585,11 +1575,66 @@ async function pullSahifaData(){
   }
 }
 
-// ── Init: pull on load ────────────────────────────────────────────────────
+// ── First-time migration ─────────────────────────────────────────────────
+async function checkSahifaMigration(){
+  var migrated = localStorage.getItem('sahifa_migrated');
+  if(migrated) return;
+
+  var entries   = getEntries().filter(function(e){ return e.text; });
+  var revisions = (S.get('revisions')||[]).filter(function(r){ return !r._demo; });
+  var questions = (S.get('questions')||[]).filter(function(q){ return !q._demo; });
+  var total = entries.length + revisions.length + questions.length;
+
+  if(!total){
+    localStorage.setItem('sahifa_migrated','1');
+    return;
+  }
+
+  var msg = 'We found existing Sahifa data on this device: '
+    + (entries.length   ? entries.length   + ' entry/entries. ' : '')
+    + (revisions.length ? revisions.length + ' revision(s). '   : '')
+    + (questions.length ? questions.length + ' open question(s). ' : '')
+    + 'Sync to your account so it is available on all devices?';
+
+  if(!confirm(msg)){
+    localStorage.setItem('sahifa_migrated','1');
+    return;
+  }
+
+  var uploaded = 0; var errors = 0;
+
+  // Upload entries
+  for(var i=0; i<entries.length; i++){
+    try{ await pushSahifaEntry(entries[i]); uploaded++; }
+    catch(e){ errors++; console.warn('Migration entry error:', e); }
+  }
+
+  // Upload revisions
+  for(var j=0; j<revisions.length; j++){
+    try{ await pushSahifaRevision(revisions[j]); uploaded++; }
+    catch(e){ errors++; }
+  }
+
+  // Upload questions
+  for(var k=0; k<questions.length; k++){
+    try{ await pushSahifaQuestion(questions[k]); uploaded++; }
+    catch(e){ errors++; }
+  }
+
+  localStorage.setItem('sahifa_migrated','1');
+  var msg2 = '✓ Sahifa migration complete: ' + uploaded + ' item(s) synced.';
+  if(errors) msg2 += ' (' + errors + ' error(s))';
+  if(typeof toast === 'function') toast(msg2);
+  console.log('Sahifa migration:', uploaded, 'uploaded,', errors, 'errors');
+}
+
+// ── Init: pull on load + check migration ─────────────────────────────────
 (function initSahifa(){
   var jwt = localStorage.getItem('how_jwt');
   if(jwt && typeof sb !== 'undefined'){
-    pullSahifaData();
+    pullSahifaData().then(function(){
+      checkSahifaMigration();
+    });
   }
 })();
 
@@ -1597,4 +1642,5 @@ async function pullSahifaData(){
 
 </script>
 </body>
-</html>
+</html>function getOpenQuestions(){ return S.get('questions') || []; }
+
