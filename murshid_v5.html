@@ -129,7 +129,7 @@ input.field:focus{outline:none;border-color:var(--gold);background:white}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+const sb = supabase.createClient('SUPABASE_PROJECT_URL','SUPABASE_ANON_KEY');
 /* ─────────────────────────────────────────────────── */
 </script>
 </head>
@@ -280,7 +280,8 @@ function renderConvo(){
       ${!getSettings().apiKey?`
       <div style="background:var(--p2);border:1px solid var(--ink-5);border-radius:var(--rl);padding:16px;margin-top:16px;text-align:left">
         <p style="font-size:12px;font-weight:500;color:var(--ink-3);margin-bottom:8px">Connect to activate live responses</p>
-        Connect murshid</button>
+        <input class="field" type="password" id="inline-api-key" placeholder="sk-ant-…" style="margin-bottom:8px">
+        <button class="btn primary" onclick="saveInlineKey()" style="width:100%">Connect murshid</button>
         <p style="font-size:11px;color:var(--ink-4);margin-top:8px;line-height:1.5">Without a key, the murshid responds in demo mode. Get a key at console.anthropic.com.</p>
       </div>`:''}
     </div>`;
@@ -594,9 +595,28 @@ function isRecent(dateStr){
   return dateStr.toLowerCase().includes('this week')||dateStr.toLowerCase().includes('today')||dateStr.toLowerCase().includes('monday')||dateStr.toLowerCase().includes('tuesday')||dateStr.toLowerCase().includes('wednesday')||dateStr.toLowerCase().includes('thursday')||dateStr.toLowerCase().includes('friday');
 }
 
+function saveCtxKey(){
+  const k=document.getElementById('ctx-api-key')?.value?.trim();
+  const s=getSettings();
+  s.apiKey=k;
+  S.set('sahifa_settings',s);
+  S.set('ptl_settings',s);
+  S.set('sdt_settings',s);
+  toast(k?'Murshid connected — live responses active.':'API key cleared.');
+}
 
-
-
+function saveInlineKey(){
+  const k=document.getElementById('inline-api-key')?.value?.trim();
+  if(!k){toast('Enter an API key.');return}
+  const s=getSettings();
+  s.apiKey=k;
+  S.set('sahifa_settings',s);
+  S.set('ptl_settings',s);
+  S.set('sdt_settings',s);
+  toast('Murshid connected.');
+  renderConvo();
+  renderSahifaCtx();
+}
 
 // ── CLEAR HISTORY ────────────────────────────────────────────────
 function clearHistory(){

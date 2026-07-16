@@ -399,114 +399,6 @@ function selRole(btn){
   if(facFields) facFields.style.display = 'none'; // shown by setFacMode
 }
 
-function setStudentMode(mode){
-  _studentMode = mode;
-  var liveEntry = document.getElementById('live-code-entry');
-  var btnSolo   = document.getElementById('btn-solo-mode');
-  var btnLive   = document.getElementById('btn-live-mode');
-  if(liveEntry) liveEntry.style.display = mode==='live' ? 'block' : 'none';
-  if(btnSolo){
-    btnSolo.style.borderColor = mode==='solo'?'#1d6f6f':'rgba(255,255,255,.2)';
-    btnSolo.style.background  = mode==='solo'?'#0d2a2a':'rgba(255,255,255,.05)';
-    btnSolo.style.color       = mode==='solo'?'#1d6f6f':'rgba(255,255,255,.7)';
-  }
-  if(btnLive){
-    btnLive.style.borderColor = mode==='live'?'#d4af37':'rgba(255,255,255,.2)';
-    btnLive.style.background  = mode==='live'?'rgba(212,175,55,.1)':'rgba(255,255,255,.05)';
-    btnLive.style.color       = mode==='live'?'#d4af37':'rgba(255,255,255,.7)';
-  }
-}
-
-function setFacMode(mode){
-  _facMode = mode;
-  var facFields = document.getElementById('fac-fields');
-  var codeDisp  = document.getElementById('fac-code-display');
-  var btnCreate = document.getElementById('btn-fac-create');
-  var btnSolo   = document.getElementById('btn-fac-solo');
-  if(facFields) facFields.style.display = 'block';
-  if(codeDisp)  codeDisp.style.display  = mode==='create' ? 'block' : 'none';
-  if(btnCreate){
-    btnCreate.style.borderColor = mode==='create'?'#d4af37':'rgba(255,255,255,.2)';
-    btnCreate.style.background  = mode==='create'?'rgba(212,175,55,.15)':'rgba(255,255,255,.05)';
-  }
-  if(btnSolo){
-    btnSolo.style.borderColor = mode==='solo'?'#1d6f6f':'rgba(255,255,255,.2)';
-    btnSolo.style.background  = mode==='solo'?'rgba(13,42,42,.5)':'rgba(255,255,255,.05)';
-  }
-  if(mode==='create') generateSessionCode();
-}
-
-function generateSessionCode(){
-  var words=['TEAL','GOLD','SABR','NOOR','HIKM','ILMU','BAYT','WAQT',
-             'HAQQ','ADAB','FALA','UMMA','ZEAL','DAWN','AYAH','DEEN','RABB','NAFS'];
-  var code=words[Math.floor(Math.random()*words.length)];
-  code=code.slice(0,3)+Math.floor(Math.random()*9+1);
-  _sessionCode=code;
-  var codeEl=document.getElementById('fac-code-text');
-  if(codeEl) codeEl.textContent=code;
-  return code;
-}
-
-function joinSession(){
-  var name=document.getElementById('lb-name').value.trim();
-  if(!name){toast('Enter your name.');return;}
-  G.name=name;
-  G.role=selRoleVal==='facilitator'?'facilitator':'student';
-  G.apiKey=document.getElementById('lb-key')?document.getElementById('lb-key').value.trim():'';
-  G.grade=parseInt((document.getElementById('lb-grade')||{}).value||'7')||7;
-  G.band=G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
-
-  _liveMode = (selRoleVal==='facilitator'&&_facMode==='create') ||
-              (selRoleVal==='student'&&_studentMode==='live');
-  _isLiveFac = selRoleVal==='facilitator' && _facMode==='create';
-
-  if(selRoleVal==='facilitator'){
-    var q=document.getElementById('lb-q')?document.getElementById('lb-q').value.trim():'';
-    if(_facMode!=='create'&&!q){toast('Enter an opening question.');return;}
-    G.question=q;
-    G.theme=(document.getElementById('lb-theme')||{}).value||'';
-    G.sahifaCtx=(document.getElementById('lb-sahifa')||{}).value||'';
-    S.s('hq_session',{q:G.question,theme:G.theme,ctx:G.sahifaCtx,ts:Date.now()});
-  } else {
-    var sv=S.g('hq_session');
-    if(sv&&Date.now()-sv.ts<7200000){
-      G.question=sv.q||'';G.theme=sv.theme||'';G.sahifaCtx=sv.ctx||'';
-    } else {
-      try{
-        var _sS=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
-        G.question=_sS.openingQ||'';G.theme=_sS.weekTitle||'';G.sahifaCtx='';
-      }catch(e){G.question='';G.theme='';G.sahifaCtx='';}
-    }
-  }
-
-  // Pre-fill from sahifa_settings
-  try{
-    var _ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
-    var _lbq=document.getElementById('lb-q'); if(_lbq&&_ss.openingQ&&!_lbq.value) _lbq.value=_ss.openingQ;
-    var _lbt=document.getElementById('lb-theme'); if(_lbt&&_ss.weekTitle&&!_lbt.value) _lbt.value=_ss.weekTitle;
-    var _lbg=document.getElementById('lb-grade'); if(_lbg&&_ss.grade!==undefined) _lbg.value=String(_ss.grade);
-  }catch(e){}
-
-  var sfe=S.g('sahifa_entries')||[];
-  if(sfe.length&&!G.sahifaCtx){
-    G.sahifaCtx=sfe.map(function(e){
-      return '['+G.name+' · '+(e.type||'entry')+' · '+(e.date||'recent')+']: '+e.text;
-    }).join('\n\n');
-  }
-
-  if(_liveMode){
-    if(_isLiveFac){
-      createLiveSession().then(function(){ showScreen('pre'); setupPre(); });
-    } else {
-      joinLiveSession().then(function(ok){
-        if(ok){ showScreen('pre'); setupPre(); }
-      });
-    }
-  } else {
-    showScreen('pre'); setupPre();
-  }
-}
-
 function setupPre(){
   document.getElementById('pre-q').textContent='"'+G.question+'"';
   document.getElementById('pre-wk').textContent=G.theme;
@@ -1189,80 +1081,21 @@ async function endHalaqaSession(){
   setTimeout(function(){showScreen('lobby');},3000);
 }
 
-async function showPastSessions(){
+function showPastSessions(){
   var overlay=document.getElementById('past-sessions-overlay');
   var list=document.getElementById('past-sessions-list');
   if(!overlay||!list) return;
-  overlay.style.display='block';
-
-  // Show loading state
-  list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.4);padding:40px 20px">Loading sessions…</div>';
-
-  // Local transcripts
   var transcripts=S_hq.g('transcripts')||[];
-
-  // Fetch from Supabase if logged in
-  var jwt = localStorage.getItem('how_jwt');
-  var hid = localStorage.getItem('how_household_id');
-  if(jwt && hid && typeof sb !== 'undefined'){
-    try{
-      var result = await sb
-        .from('halaqa_transcript')
-        .select('id, summary, messages, turns, duration_min, saved_at, session_id')
-        .eq('household_id', hid)
-        .order('saved_at', {ascending: false})
-        .limit(20);
-
-      if(!result.error && result.data && result.data.length){
-        // Map Supabase rows to local transcript format
-        var serverTranscripts = result.data.map(function(r){
-          var d = new Date(r.saved_at);
-          return {
-            id:            r.id,
-            date:          d.toLocaleDateString(),
-            time:          d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),
-            summary:       r.summary||'',
-            messages:      Array.isArray(r.messages)?r.messages:[],
-            turns:         r.turns||0,
-            duration:      r.duration_min||0,
-            grade:         '',
-            question:      r.summary?r.summary.slice(0,80):'Live session',
-            theme:         'Saved from live session',
-            contributions: [],
-            fromServer:    true
-          };
-        });
-
-        // Merge: local entries first, then server entries not already in local
-        var localIds = new Set(transcripts.map(function(t){ return t.id; }));
-        serverTranscripts.forEach(function(st){
-          if(!localIds.has(st.id)) transcripts.push(st);
-        });
-
-        // Sort by date descending
-        transcripts.sort(function(a,b){
-          return new Date(b.date+' '+b.time) - new Date(a.date+' '+a.time);
-        });
-      }
-    }catch(e){
-      console.warn('fetchTranscripts failed:', e);
-    }
-  }
-
   if(!transcripts.length){
     list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.4);padding:40px 20px">No saved sessions yet.<br><span style="font-size:.8rem">End a session using the ✓ End & save button to save it here.</span></div>';
-    return;
-  }
-
-  // Render all transcripts
-  {
+  } else {
     list.innerHTML=transcripts.map(function(t){
       var summaryHtml=t.summary?'<div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:10px 12px;font-size:.8rem;color:rgba(255,255,255,.75);line-height:1.6;margin:8px 0">'+t.summary+'</div>':'';
       var contribHtml=t.contributions&&t.contributions.length?'<div style="font-size:.7rem;color:rgba(255,255,255,.4);margin:4px 0 8px">Your contributions: '+(t.contributions.length)+' · "'+(t.contributions[0]||'').slice(0,60)+'…"</div>':'';
       return '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:16px;margin-bottom:12px">'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">'
         +'<div>'
-        +'<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:3px">'+t.date+' · '+t.time+(t.grade?' · Grade '+t.grade:'')+' · '+t.duration+' min'+(t.fromServer?' · ☁ synced':'')+' </div>'
+        +'<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:3px">'+t.date+' · '+t.time+' · Grade '+(t.grade||'?')+' · '+t.duration+' min</div>'
         +'<div style="font-size:.9rem;font-weight:700;color:white;line-height:1.4">'+t.question+'</div>'
         +'<div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px">'+t.theme+'</div>'
         +'</div>'
@@ -1277,6 +1110,7 @@ async function showPastSessions(){
         +'</div>';
     }).join('');
   }
+  overlay.style.display='block';
 }
 
 function toggleTranscript(id){

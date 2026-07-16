@@ -256,8 +256,6 @@ const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_
       </div>
     </div>
     <div class="lob-divider"></div>
-    <span class="lob-label">Anthropic API key (leave blank for demo mode)</span>
-    <input class="lob-input" type="password" id="lb-key" placeholder="sk-ant-…">
   </div>
   <button class="lob-btn primary" onclick="joinSession()">Enter the halaqa</button>
   <button onclick="clearHalaqaSession()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;margin-top:4px;text-decoration:underline">Clear saved session &amp; start fresh</button>
@@ -452,7 +450,7 @@ function joinSession(){
   if(!name){toast('Enter your name.');return;}
   G.name=name;
   G.role=selRoleVal==='facilitator'?'facilitator':'student';
-  G.apiKey=document.getElementById('lb-key')?document.getElementById('lb-key').value.trim():'';
+  G.apiKey=''; // Using Railway proxy — no API key needed
   G.grade=parseInt((document.getElementById('lb-grade')||{}).value||'7')||7;
   G.band=G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
 
@@ -692,8 +690,8 @@ async function aiRespond(who,text){
 async function callAI(msgs,sys){
   if(!G.apiKey){await delay(800+Math.random()*600);return DEMO[G.demoIdx++%DEMO.length];}
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':G.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    const r=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:280,system:sys,messages:msgs.slice(-10)})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     return d.content?.[0]?.text||'…';
