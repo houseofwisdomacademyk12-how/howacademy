@@ -455,6 +455,7 @@ function getSettings(){ return S.get('settings') || { name:'Your Name', grade:'7
 function saveSettings(s){ S.set('settings', s); }
 
 function getRevisions(){ return S.get('revisions') || []; }
+function getOpenQuestions(){ return S.get('questions') || []; }
 
 function updateMeta(){
   const s = getSettings();
@@ -1046,38 +1047,33 @@ async function generateChallenge(){
 
 // ── THREADS ─────────────────────────────────────────────────────────
 function renderThreads(mc){
-  const threadData = [
-    { grade:'Grade 3 · W15', topic:'Symmetry in nature', text:'You wrote: "Flowers have petals that are the same all the way around. I wonder if there\'s a shape that is perfectly the same all the way around." <span class="thread-highlight">That shape is the circle.</span> You asked this question four years before studying it formally.' },
-    { grade:'Grade 5 · W7', topic:'Al-Idrisi cartography', text:'You wrote about Al-Idrisi drawing the known world in a circle. Now that you know circumference = π × diameter, you can calculate the implied scale of any circular map from its border alone.' },
-    { grade:'Grade 6 · W17', topic:'Coordinate plane', text:'You graphed points in all four quadrants. A circle centred at the origin passes through all four. Next year you will write its equation using the Pythagorean theorem — connecting geometry, algebra, and circles.' },
-    { grade:'Grade 7 · W3', topic:'Unit rates', text:'You wrote that a unit rate is what you get when dividing two quantities. Circumference ÷ diameter = π is a unit rate — <span class="thread-highlight">the amount of circumference per unit of diameter.</span> You already understood this structure.' },
-  ];
-
+  const threads = S.get('threads') || [];
   mc.innerHTML = `
   <div class="page-header">
-    <p class="page-kicker">Connections across years</p>
+    <p class="page-kicker">Connections across time</p>
     <h1 class="page-title serif">Threads</h1>
-    <p class="page-sub">Ideas from earlier in your sahifa that connect to this week's learning — found by the murshid across all your entries.</p>
+    <p class="page-sub">Ideas from earlier in your education that connect to what you are studying now. The Murshid finds these connections — you record them here.</p>
   </div>
 
-  <p class="section-label">Found in your manuscript</p>
-
-  ${threadData.map(t=>`
-  <div class="thread-card">
-    <div class="thread-hdr">
-      <span class="thread-grade">${t.grade}</span>
-      <span class="thread-topic">${t.topic}</span>
-    </div>
+  ${threads.length === 0 ? `
+  <div style="text-align:center;padding:2rem 1rem;color:var(--ink-4)">
+    <p style="font-size:1.5rem;margin-bottom:.5rem">⟡</p>
+    <p style="font-weight:600;color:var(--ink-2);margin-bottom:.4rem">No threads yet</p>
+    <p style="font-size:.85rem;line-height:1.6">When something you study this week connects to something you learned before, record it here. The Murshid will help you find these connections.</p>
+  </div>` : threads.map(t=>`
+  <div class="thread-block">
+    <p class="thread-grade">${t.grade}</p>
+    <p class="thread-topic">${t.topic}</p>
     <p class="thread-text">${t.text}</p>
   </div>`).join('')}
 
   <hr class="divider">
-  <p class="section-label">Add your own thread</p>
+  <p class="section-label">Record a thread</p>
   <div class="entry-card">
     <div class="entry-card-body">
-      <p class="entry-prompt">Did something from a previous year come to mind this week? Record the connection — including what grade and week it's from.</p>
-      <textarea id="thread-text" rows="3" placeholder="In Grade 4 we talked about wheels rolling — one full turn = one circumference. That's the same idea as…"></textarea>
-      <div class="btn-row"><button class="btn primary" onclick="saveThread()">Save thread</button></div>
+      <p class="entry-prompt">What does this week's learning connect to from an earlier grade or week? Name both ends of the thread.</p>
+      <textarea id="thread-text" rows="3" placeholder="This connects to Grade _ · Week _ when I learned…"></textarea>
+      <div class="btn-row"><button class="btn primary" onclick="saveThread()">Add thread</button></div>
     </div>
   </div>`;
 }
@@ -1148,30 +1144,28 @@ function renderIsnad(mc){
 
   <p class="section-label">Scholarly lineage — the ideas reaching you this week</p>
   <div class="isnad-chain">
-    <div class="isnad-node">Archimedes · ~250 BCE<small>bounded π with polygons</small></div>
-    <span class="isnad-arrow">→</span>
-    <div class="isnad-node">Al-Battani · 858–929 CE<small>refined π; measured Earth</small></div>
-    <span class="isnad-arrow">→</span>
-    <div class="isnad-node">Hunayn ibn Ishaq<small>transmitted Greek geometry</small></div>
-    <span class="isnad-arrow">→</span>
-    <div class="isnad-node you">${s.name || 'You'} · Grade ${s.grade || 7}</div>
-  </div>
-
-  <hr class="divider">
-  <p class="section-label">Peer teaching — received</p>
-  <div class="isnad-chain">
-    <div class="isnad-node">A Grade 10 peer<small>taught you multi-step equations · Grade 6</small></div>
-    <span class="isnad-arrow">→</span>
-    <div class="isnad-node you">${s.name || 'You'}</div>
+    ${(()=>{
+      const cfg = (() => { try{ return JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); }catch(e){ return {}; } })();
+      const scholar = cfg.scholar || s.scholar || null;
+      if(!scholar) return `<p style="color:var(--ink-4);font-size:.85rem;font-style:italic">Scholarly lineage will appear once the week's scholar is set in the platform.</p>`;
+      return `<div class="isnad-node">${scholar}<small>this week's scholar</small></div>
+      <span class="isnad-arrow">→</span>
+      <div class="isnad-node you">${s.name||'You'} · Grade ${s.grade||7}</div>`;
+    })()} 
   </div>
 
   <hr class="divider">
   <p class="section-label">Peer teaching — given</p>
-  <div class="isnad-chain">
-    <div class="isnad-node you">${s.name || 'You'}</div>
-    <span class="isnad-arrow">→</span>
-    <div class="isnad-node">A younger student<small>you taught fractions</small></div>
-  </div>
+  ${(()=>{
+    const teachings = (() => { try{ return JSON.parse(localStorage.getItem('ptl_teachings')||'[]'); }catch(e){ return []; } })();
+    if(!teachings.length) return `<p style="color:var(--ink-4);font-size:.85rem;font-style:italic">No teachings recorded yet — complete a Teach It session to build your isnad.</p>`;
+    return teachings.slice(0,3).map(t=>`
+    <div class="isnad-chain">
+      <div class="isnad-node you">${s.name||'You'}</div>
+      <span class="isnad-arrow">→</span>
+      <div class="isnad-node"><small>${t.title||t.subject} · ${t.juz||''}</small></div>
+    </div>`).join('');
+  })()} 
 
   <hr class="divider">
   <p class="section-label">Record a transmission</p>
@@ -1224,6 +1218,24 @@ function renderQuestions(mc){
       <div class="btn-row"><button class="btn primary" onclick="saveQuestion()">Add to open questions</button></div>
     </div>
   </div>`;
+}
+
+function saveThread(){
+  const el = document.getElementById('thread-text');
+  if(!el||!el.value.trim()){ toast('Write something first.'); return; }
+  const threads = S.get('threads')||[];
+  const s = getSettings();
+  const thread = {
+    grade: 'Grade '+s.grade+' · W'+s.juz,
+    topic: 'Week '+s.juz+' thread',
+    text:  el.value.trim(),
+    date:  new Date().toLocaleDateString()
+  };
+  threads.unshift(thread);
+  S.set('threads', threads);
+  el.value = '';
+  toast('Thread recorded ✓');
+  renderSection('threads');
 }
 
 function saveQuestion(){
@@ -1642,5 +1654,4 @@ async function checkSahifaMigration(){
 
 </script>
 </body>
-</html>function getOpenQuestions(){ return S.get('questions') || []; }
-
+</html>
