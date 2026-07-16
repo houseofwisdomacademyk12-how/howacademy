@@ -29,7 +29,7 @@
 body{font-family:'DM Sans',sans-serif;background:var(--p);color:var(--ink);font-size:13px;line-height:1.5;overflow-x:hidden}
 
 /* NAV */
-.nav{background:var(--ink);position:sticky;top:0;z-index:200;height:46px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);overflow:visible}
+.nav{background:var(--ink);position:sticky;top:0;z-index:200;height:46px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.06)}
 .nav-in{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;align-items:center;width:100%;height:100%;gap:0}
 .notif-item{padding:12px 16px;border-bottom:1px solid #f0ebe4;cursor:pointer;transition:background .12s}
 .notif-item:hover{background:#f8f6f2}
@@ -38,27 +38,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--p);color:var(--ink);font-
 .notif-title{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:2px}
 .notif-body{font-size:11px;color:#5a5a78;line-height:1.4}
 .notif-time{font-size:10px;color:#9a9ab0;margin-top:3px}
-.nav-dropdown{position:relative;display:inline-block}
-.nav-dropdown-btn{position:relative}
-.nav-dropdown-menu{
-  position:fixed;top:46px;
-  background:#1a1a2e;border:1px solid rgba(255,255,255,.15);
-  border-radius:8px;padding:6px 0;min-width:170px;
-  box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:99999;
-}
-.nav-dropdown-menu button{
-  display:block;width:100%;padding:9px 16px;
-  background:none;border:none;color:rgba(255,255,255,.85);
-  font-family:inherit;font-size:12px;font-weight:500;
-  text-align:left;cursor:pointer;white-space:nowrap;
-  transition:background .12s;
-}
-.nav-dropdown-menu button:hover{background:rgba(255,255,255,.1)}
-.nav-dropdown-menu button.active-page{
-  color:#d4af37;font-weight:700;
-}
 .nav-logo{font-family:'Amiri',serif;font-size:15px;color:var(--gl);margin-right:16px;flex-shrink:0;white-space:nowrap}
-.nav-tabs{display:flex;height:100%;overflow:visible;scrollbar-width:none}
+.nav-tabs{display:flex;height:100%;overflow-x:auto;scrollbar-width:none}
 .nav-tabs::-webkit-scrollbar{display:none}
 .ntab{font-size:11px;padding:0 11px;color:rgba(255,255,255,.38);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;height:100%;display:flex;align-items:center;flex-shrink:0}
 .ntab:hover{color:rgba(255,255,255,.7)}
@@ -1055,40 +1036,20 @@ body.lg-active #lg-root .toast.show { display:block !important; }
   <div class="nav-in">
     <span class="nav-logo">م بَيْتُ الْحِكْمَة</span>
     <div class="nav-tabs">
-      <!-- Primary tabs — always visible -->
-      <button class="ntab active" data-p="institution" onclick="SP(this)">Home</button>
-      <button class="ntab" data-p="schedule" onclick="SP(this)">📅 Schedule</button>
+      <button class="ntab" data-p="overview" onclick="SP(this)">Overview</button>
+      <button class="ntab" data-p="curriculum" onclick="SP(this)">Curriculum</button>
+      <button class="ntab" data-p="pedagogy" onclick="SP(this)">Pedagogy</button>
+      <button class="ntab" data-p="schedule" onclick="SP(this)">Schedule</button>
+      <button class="ntab stab" data-p="sacred" onclick="SP(this)">Sacred layer</button>
+      <button class="ntab" data-p="assessment" onclick="SP(this)">Assessment</button>
+      <button class="ntab" data-p="murshid" onclick="SP(this)">م Murshid</button>
+      <button class="ntab active" data-p="institution" onclick="SP(this)">Institution</button>
       <button class="ntab" data-p="generate" onclick="SP(this);syncLG()">⚡ Generate</button>
-
-      <!-- Tools dropdown -->
-      <div class="nav-dropdown" id="nav-tools-dropdown">
-        <button class="ntab nav-dropdown-btn" onclick="toggleNavDropdown('tools',event)">
-          🛠 Tools <span style="font-size:9px;opacity:.7">▾</span>
-        </button>
-        <div class="nav-dropdown-menu" id="nav-dropdown-tools" style="display:none">
-          <button onclick="event.stopPropagation();window.open('peer_teaching_library.html','_blank');closeNavDropdowns()">📚 Peer Library</button>
-          <button onclick="event.stopPropagation();window.open('sahifa_prototype_v3.html','_blank');closeNavDropdowns()">📜 Sahifa</button>
-          <button onclick="event.stopPropagation();window.open('halaqa_v6.html','_blank');closeNavDropdowns()">🔵 Halaqa</button>
-          <button onclick="event.stopPropagation();window.open('how_munazara_v4.html','_blank');closeNavDropdowns()">⚔ Munazara</button>
-          <button onclick="event.stopPropagation();window.open('murshid_v4.html','_blank');closeNavDropdowns()">م Murshid</button>
-          <button onclick="event.stopPropagation();window.open('how_isnad.html','_blank');closeNavDropdowns()">🔗 Isnad</button>
-          <button onclick="event.stopPropagation();window.open('studio_digital_twin_v4.html','_blank');closeNavDropdowns()">🏗 Studio</button>
-        </div>
-      </div>
-
-      <!-- Learn dropdown -->
-      <div class="nav-dropdown" id="nav-learn-dropdown">
-        <button class="ntab nav-dropdown-btn" onclick="toggleNavDropdown('learn',event)">
-          📖 Learn <span style="font-size:9px;opacity:.7">▾</span>
-        </button>
-        <div class="nav-dropdown-menu" id="nav-dropdown-learn" style="display:none">
-          <button data-p="curriculum" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Curriculum</button>
-          <button data-p="pedagogy" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Pedagogy</button>
-          <button data-p="sacred" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Sacred layer</button>
-          <button data-p="assessment" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Assessment</button>
-          <button data-p="overview" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Overview</button>
-        </div>
-      </div>
+      <button class="ntab" onclick="window.open('peer_teaching_library.html','_blank')" title="Open peer teaching library">📚 Peer Library</button>
+      <button class="ntab" onclick="window.open('sahifa_prototype_v3.html','_blank')" title="Open the Sahifa">📜 Sahifa</button>
+      <button class="ntab" onclick="window.open('studio_digital_twin_v4.html','_blank')" title="Studio Digital Twin">🏗 Studio</button>
+      <button class="ntab" onclick="window.open('halaqa_v6.html','_blank')" title="The Halaqa">🔵 Halaqa</button>
+      <button class="ntab" onclick="window.open('Knowledge_Transmission_Chain_v3.html','_blank')" title="Isnad">🔗 Isnad</button>
     </div>
     <!-- User indicator + notifications + sign out -->
     <div id="nav-user" style="display:none;align-items:center;gap:8px;padding:0 12px;flex-shrink:0">
@@ -1683,14 +1644,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 </div>
 <div class="foot"><p class="ft">بَيْتُ الْحِكْمَة — House of Wisdom</p><p class="fs">K–12 Platform · Browse the curriculum · Explore the sacred layer · Use the murshid</p></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ── SUPABASE CREDENTIALS — replace before deploying ── */
-var sb = (typeof supabase !== 'undefined')
-  ? supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9')
-  : null;
-/* ─────────────────────────────────────────────────── */
-
 // ═══ NAVIGATION ═══════════════════════════════════════
 function SP(btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -8722,206 +8676,7 @@ async function openStudentManager(){
   var modal = document.getElementById('student-manager-modal');
   if(!modal) return;
   modal.style.display='flex';
-  switchSmTab('students');
-  // Show household code
-  var hid = localStorage.getItem('how_household_id')||'';
-  var hidEl = document.getElementById('sm-hid-display');
-  if(hidEl) hidEl.textContent = hid ? hid.slice(0,8).toUpperCase()+'…' : 'Not signed in';
   await renderStudentList();
-}
-
-function copyHouseholdCode(){
-  var hid = localStorage.getItem('how_household_id')||'';
-  if(!hid){ toast('No household ID found'); return; }
-  navigator.clipboard.writeText(hid).then(function(){
-    toast('✓ Household code copied');
-  }).catch(function(){
-    // Fallback
-    var el = document.createElement('textarea');
-    el.value = hid;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    toast('✓ Household code copied');
-  });
-}
-
-function switchSmTab(tab){
-  var panels = ['students','matchmaking'];
-  var tabs   = ['sm-tab-students','sm-tab-matchmaking'];
-  panels.forEach(function(p){
-    var el = document.getElementById('sm-panel-'+p);
-    if(el) el.style.display = p===tab?'block':'none';
-  });
-  tabs.forEach(function(t){
-    var el = document.getElementById(t);
-    if(!el) return;
-    var isActive = t === 'sm-tab-'+tab;
-    el.style.color       = isActive?'#1a3d8a':'#9a9ab0';
-    el.style.fontWeight  = isActive?'700':'600';
-    el.style.borderBottom= isActive?'2px solid #1a3d8a':'2px solid transparent';
-  });
-  // Populate my student dropdown when switching to matchmaking
-  if(tab==='matchmaking') populateMyStudentDropdown();
-}
-
-function populateMyStudentDropdown(){
-  var sel = document.getElementById('mm-my-student');
-  if(!sel) return;
-  var students = [];
-  try{ students = JSON.parse(localStorage.getItem('how_students')||'[]'); }catch(e){}
-  sel.innerHTML = '<option value="">— select —</option>';
-  students.forEach(function(s){
-    var opt = document.createElement('option');
-    opt.value = JSON.stringify({id:s.id, name:s.name, grade:s.current_grade||s.grade_start||7});
-    opt.textContent = s.name + ' (Grade '+(s.current_grade||s.grade_start||'?')+')';
-    sel.appendChild(opt);
-  });
-}
-
-async function lookupOpponentHousehold(){
-  var code = (document.getElementById('mm-opp-code')||{}).value.trim();
-  if(!code){ showMmError('Enter a household code'); return; }
-  var jwt = localStorage.getItem('how_jwt');
-  if(!jwt){ showMmError('Sign in to look up households'); return; }
-  showMmError('');
-
-  try{
-    // Look up household by id (short first 8 chars) or full uuid
-    var query = sb.from('student')
-      .select('id, name, current_grade, grade_start, household_id')
-      .order('name');
-
-    // If it looks like a UUID fragment, search by household_id
-    if(code.length >= 8){
-      query = query.ilike('household_id::text', code+'%');
-    }
-    var result = await query;
-    if(result.error) throw result.error;
-
-    if(!result.data||!result.data.length){
-      showMmError('No students found for that household code');
-      return;
-    }
-
-    // Populate opponent student dropdown
-    var sel = document.getElementById('mm-opp-student');
-    if(!sel) return;
-    sel.innerHTML = '<option value="">— select —</option>';
-    result.data.forEach(function(s){
-      var opt = document.createElement('option');
-      opt.value = JSON.stringify({
-        id:          s.id,
-        name:        s.name,
-        grade:       s.current_grade||s.grade_start||7,
-        household_id: s.household_id
-      });
-      opt.textContent = s.name + ' (Grade '+(s.current_grade||s.grade_start||'?')+')';
-      sel.appendChild(opt);
-    });
-
-    document.getElementById('mm-opp-panel').style.display  = 'block';
-    document.getElementById('mm-claim-panel').style.display = 'block';
-    document.getElementById('mm-create-btn').style.display  = 'block';
-
-    // Pre-fill grade from my student selection
-    var mySelVal = (document.getElementById('mm-my-student')||{}).value;
-    if(mySelVal){
-      try{
-        var myS = JSON.parse(mySelVal);
-        var grSel = document.getElementById('mm-grade');
-        if(grSel) grSel.value = String(myS.grade||7);
-      }catch(e){}
-    }
-
-  }catch(e){
-    showMmError('Lookup failed: '+e.message);
-  }
-}
-
-async function createMatchmakeDebate(){
-  var mySelVal  = (document.getElementById('mm-my-student')||{}).value;
-  var oppSelVal = (document.getElementById('mm-opp-student')||{}).value;
-  var claim     = (document.getElementById('mm-claim')||{}).value.trim();
-  var myPos     = (document.getElementById('mm-my-pos')||{}).value||'for';
-  var grade     = parseInt((document.getElementById('mm-grade')||{}).value)||7;
-  var errEl     = document.getElementById('mm-error');
-  var succEl    = document.getElementById('mm-success');
-
-  if(errEl)  errEl.style.display  = 'none';
-  if(succEl) succEl.style.display = 'none';
-
-  if(!mySelVal)  { showMmError('Select your student');    return; }
-  if(!oppSelVal) { showMmError('Select opponent student'); return; }
-  if(!claim)     { showMmError('Enter a debate claim');   return; }
-
-  var myS  = JSON.parse(mySelVal);
-  var oppS = JSON.parse(oppSelVal);
-  var hid  = localStorage.getItem('how_household_id');
-  var jwt  = localStorage.getItem('how_jwt');
-  if(!hid||!jwt){ showMmError('Sign in to create a debate'); return; }
-
-  // Generate debate code
-  var words=['HAQQ','ADAB','SABR','NOOR','HIKM','ILMU','BAYT','WAQT','DEEN','NAFS'];
-  var code = words[Math.floor(Math.random()*words.length)].slice(0,3)
-           + Math.floor(Math.random()*9+1);
-
-  try{
-    var result = await sb.from('debate').insert({
-      household_a:    hid,
-      household_b:    oppS.household_id,
-      student_a_name: myS.name,
-      student_b_name: oppS.name,
-      student_a_pos:  myPos,
-      student_b_pos:  myPos==='for'?'against':'for',
-      claim:          claim,
-      grade:          grade,
-      week:           S.week||1,
-      moves:          [],
-      current_turn:   'a',
-      status:         'active',
-      mode:           'challenge',
-      code:           code
-    }).select().single();
-
-    if(result.error) throw result.error;
-
-    // Notify both students' households
-    await sb.from('notification').insert([
-      {
-        household_id: hid,
-        type:         'debate_move',
-        title:        'Debate created',
-        body:         '"'+claim.slice(0,60)+'" — share code '+code+' with '+myS.name,
-        link_id:      result.data.id
-      },
-      {
-        household_id: oppS.household_id,
-        type:         'debate_move',
-        title:        myS.name+' has challenged '+oppS.name,
-        body:         '"'+claim.slice(0,60)+'" — use code '+code+' in Munazara to accept',
-        link_id:      result.data.id
-      }
-    ]);
-
-    if(succEl){
-      succEl.innerHTML = '✓ Debate created! Code: <strong style="letter-spacing:.1em">'+code+'</strong><br>'
-        +'<span style="font-size:11px">Share this code with the opposing household</span>';
-      succEl.style.display = 'block';
-    }
-    console.log('Matchmade debate created:', result.data.id, 'code:', code);
-
-  }catch(e){
-    showMmError('Could not create debate: '+e.message);
-  }
-}
-
-function showMmError(msg){
-  var el = document.getElementById('mm-error');
-  if(!el) return;
-  el.textContent = msg;
-  el.style.display = msg?'block':'none';
 }
 
 function closeStudentManager(){
@@ -9265,33 +9020,6 @@ function subscribeToNotifications(){
 }
 // ─────────────────────────────────────────────────────────────────────────
 
-
-// ── Nav dropdown ─────────────────────────────────────────────────────────
-function toggleNavDropdown(name, evt){
-  if(evt) evt.stopPropagation();
-  var menu = document.getElementById('nav-dropdown-'+name);
-  if(!menu) return;
-  var isOpen = menu.style.display !== 'none';
-  closeNavDropdowns();
-  if(!isOpen){
-    menu.style.display = 'block';
-    // Position menu under the button using fixed coords
-    var btn = evt && evt.currentTarget;
-    if(!btn) btn = document.querySelector('#nav-'+name+'-dropdown .nav-dropdown-btn');
-    if(btn){
-      var rect = btn.getBoundingClientRect();
-      menu.style.left = rect.left + 'px';
-    }
-  }
-}
-function closeNavDropdowns(){
-  ['tools','learn'].forEach(function(name){
-    var el = document.getElementById('nav-dropdown-'+name);
-    if(el) el.style.display = 'none';
-  });
-}
-// ─────────────────────────────────────────────────────────────────────────
-
 function showLoginError(msg){
   var el=document.getElementById('how-login-error');
   if(!el) return;
@@ -9334,30 +9062,24 @@ async function publishTeachingSupabase(entry){
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
 
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+);
+/* ─────────────────────────────────────────────────── */
+</script>
 <!-- Student Manager Modal -->
 <div id="student-manager-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;overflow-y:auto;padding:20px">
   <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(0,0,0,.2)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <h2 style="font-family:'Spectral',serif;font-size:1.2rem;font-weight:600;color:#1a1a2e">👥 Manage students</h2>
       <button onclick="closeStudentManager()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9a9ab0">✕</button>
     </div>
-    <!-- Household code display -->
-    <div id="sm-household-code" style="background:#f0f8f8;border:1px solid #b0d8d8;border-radius:8px;padding:8px 12px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1d6f6f;display:block">Your household code</span>
-        <span id="sm-hid-display" style="font-size:12px;font-weight:700;color:#1a1a2e;letter-spacing:.05em;font-family:monospace"></span>
-      </div>
-      <button onclick="copyHouseholdCode()" style="padding:5px 10px;border-radius:6px;border:1px solid #1d6f6f;background:white;color:#1d6f6f;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Copy</button>
-    </div>
-    <!-- Tabs -->
-    <div style="display:flex;border-bottom:2px solid #e4ddd0;margin-bottom:20px">
-      <button id="sm-tab-students" onclick="switchSmTab('students')" style="padding:8px 16px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#1a3d8a;border-bottom:2px solid #1a3d8a;margin-bottom:-2px">Students</button>
-      <button id="sm-tab-matchmaking" onclick="switchSmTab('matchmaking')" style="padding:8px 16px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:#9a9ab0;border-bottom:2px solid transparent;margin-bottom:-2px">⚔ Matchmaking</button>
-    </div>
 
-    <!-- Students tab -->
-    <div id="sm-panel-students">
     <!-- Existing students list -->
     <div id="student-list" style="margin-bottom:24px"></div>
 
@@ -9396,76 +9118,6 @@ async function publishTeachingSupabase(entry){
         <p id="sm-success" style="display:none;color:#1d6f6f;font-size:12px;text-align:center"></p>
       </div>
     </div>
-    </div><!-- end sm-panel-students -->
-
-    <!-- Matchmaking tab -->
-    <div id="sm-panel-matchmaking" style="display:none">
-      <p style="font-size:12px;color:#5a5a78;line-height:1.6;margin-bottom:16px">Pair one of your students with a student from another household for a real Munazara debate.</p>
-
-      <!-- Step 1: Select your student -->
-      <div style="margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Your student</label>
-        <select id="mm-my-student" style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-          <option value="">— select —</option>
-        </select>
-      </div>
-
-      <!-- Step 2: Enter opponent household code -->
-      <div style="margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Opponent household code</label>
-        <div style="display:flex;gap:8px">
-          <input id="mm-opp-code" type="text" placeholder="Enter household code"
-            style="flex:1;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none"
-            onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
-          <button onclick="lookupOpponentHousehold()"
-            style="padding:10px 16px;background:#1a3d8a;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">
-            Find
-          </button>
-        </div>
-        <p style="font-size:11px;color:#9a9ab0;margin-top:4px">Ask the other household for their 8-character household ID</p>
-      </div>
-
-      <!-- Step 3: Select opponent student -->
-      <div id="mm-opp-panel" style="display:none;margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Opponent student</label>
-        <select id="mm-opp-student" style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-          <option value="">— select —</option>
-        </select>
-      </div>
-
-      <!-- Step 4: Debate claim -->
-      <div id="mm-claim-panel" style="display:none;margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Debate claim</label>
-        <input id="mm-claim" type="text" placeholder="e.g. Knowledge without action is worse than ignorance"
-          style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none"
-          onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <div style="flex:1">
-            <label style="font-size:11px;font-weight:600;color:#9a9ab0;display:block;margin-bottom:4px">Your student position</label>
-            <select id="mm-my-pos" style="width:100%;padding:9px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-              <option value="for">For</option>
-              <option value="against">Against</option>
-            </select>
-          </div>
-          <div style="flex:1">
-            <label style="font-size:11px;font-weight:600;color:#9a9ab0;display:block;margin-bottom:4px">Grade</label>
-            <select id="mm-grade" style="width:100%;padding:9px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-              <option value="7" selected>Grade 7</option>
-              <option value="6">Grade 6</option><option value="8">Grade 8</option>
-              <option value="9">Grade 9</option><option value="10">Grade 10</option>
-              <option value="11">Grade 11</option><option value="12">Grade 12</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <button id="mm-create-btn" onclick="createMatchmakeDebate()" style="display:none;width:100%;background:#1d6f6f;color:white;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-        ⚔ Create debate pairing
-      </button>
-      <p id="mm-error" style="display:none;color:#c0522a;font-size:12px;text-align:center;margin-top:8px"></p>
-      <p id="mm-success" style="display:none;color:#1d6f6f;font-size:12px;text-align:center;margin-top:8px"></p>
-    </div><!-- end sm-panel-matchmaking -->
-
   </div>
 </div>
 
@@ -9479,12 +9131,6 @@ document.addEventListener("click", function(e){
       panel.style.display = "none";
     }
   }
-});
-</script>
-<script>
-// Close nav dropdowns when clicking outside
-document.addEventListener("click", function(e){
-  if(!e.target.closest(".nav-dropdown")) closeNavDropdowns();
 });
 </script>
 </body>
