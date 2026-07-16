@@ -31,6 +31,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--p);color:var(--ink);font-
 /* NAV */
 .nav{background:var(--ink);position:sticky;top:0;z-index:200;height:46px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.06)}
 .nav-in{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;align-items:center;width:100%;height:100%;gap:0}
+.notif-item{padding:12px 16px;border-bottom:1px solid #f0ebe4;cursor:pointer;transition:background .12s}
+.notif-item:hover{background:#f8f6f2}
+.notif-item.unread{background:#f0f8f8;border-left:3px solid #1d6f6f}
+.notif-item.unread:hover{background:#e8f4f4}
+.notif-title{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:2px}
+.notif-body{font-size:11px;color:#5a5a78;line-height:1.4}
+.notif-time{font-size:10px;color:#9a9ab0;margin-top:3px}
 .nav-logo{font-family:'Amiri',serif;font-size:15px;color:var(--gl);margin-right:16px;flex-shrink:0;white-space:nowrap}
 .nav-tabs{display:flex;height:100%;overflow-x:auto;scrollbar-width:none}
 .nav-tabs::-webkit-scrollbar{display:none}
@@ -1044,10 +1051,23 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       <button class="ntab" onclick="window.open('halaqa_v6.html','_blank')" title="The Halaqa">🔵 Halaqa</button>
       <button class="ntab" onclick="window.open('Knowledge_Transmission_Chain_v3.html','_blank')" title="Isnad">🔗 Isnad</button>
     </div>
-    <!-- User indicator + sign out -->
+    <!-- User indicator + notifications + sign out -->
     <div id="nav-user" style="display:none;align-items:center;gap:8px;padding:0 12px;flex-shrink:0">
       <span id="nav-user-name" style="font-size:12px;font-weight:600;color:rgba(255,255,255,.7)"></span>
+      <!-- Notification bell -->
+      <div style="position:relative">
+        <button id="notif-bell" onclick="toggleNotifPanel()" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:16px;cursor:pointer;padding:4px;position:relative" title="Notifications">🔔</button>
+        <span id="notif-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:#e05050;color:white;font-size:9px;font-weight:800;min-width:14px;height:14px;border-radius:7px;display:none;align-items:center;justify-content:center;padding:0 3px">0</span>
+      </div>
       <button onclick="howLogout()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;font-weight:600">Sign out</button>
+    </div>
+    <!-- Notification panel -->
+    <div id="notif-panel" style="display:none;position:fixed;top:48px;right:12px;width:320px;max-height:400px;overflow-y:auto;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9998;border:1px solid #e4ddd0">
+      <div style="padding:12px 16px;border-bottom:1px solid #f0ebe4;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;font-size:13px;color:#1a1a2e">Notifications</span>
+        <button onclick="markAllNotifsRead()" style="font-size:11px;color:#1d6f6f;background:none;border:none;cursor:pointer;font-weight:600">Mark all read</button>
+      </div>
+      <div id="notif-list" style="padding:8px 0"><p style="text-align:center;color:#9a9ab0;font-size:12px;padding:20px">No notifications</p></div>
     </div>
   </div>
 </nav>
@@ -2380,39 +2400,51 @@ function schedHasLesson(g, w, subj, sess){
   return false;
 }
 async function fetchSyncedLessons(){
-  // Fetch all synced lessons from Supabase for current grade/week
   var jwt = localStorage.getItem('how_jwt');
   if(!jwt || typeof sb === 'undefined') return;
   try{
-    var g = parseInt(document.getElementById('sch-grade')&&document.getElementById('sch-grade').value)||S.grade;
-    var w = parseInt(document.getElementById('sch-week')&&document.getElementById('sch-week').value)||S.week;
-    var result = await sb
+    var g = parseInt((document.getElementById('sch-grade')||{}).value)||S.grade;
+    var w = parseInt((document.getElementById('sch-week')||{}).value)||S.week;
+    // Delta sync — only fetch lessons newer than last sync
+    var since = localStorage.getItem('how_last_sync')||'1970-01-01';
+    var query = sb
       .from('lesson')
-      .select('id, grade, week, subject, title, objective, slides')
+      .select('id, grade, week, subject, session, title, objective, slides, updated_at')
       .eq('grade', g)
       .eq('week', w);
+    // Only apply delta if we have a real sync timestamp
+    if(since !== '1970-01-01') query = query.gt('updated_at', since);
+    var result = await query;
     if(result.error){ console.warn('fetchSyncedLessons error:', result.error.message); return; }
     if(!result.data || !result.data.length) return;
 
     // Cache in S.syncedLessons
-    S.syncedLessons = result.data;
+    S.syncedLessons = (S.syncedLessons||[]).concat(result.data);
 
-    // Also load into S.lessons so schedPresent can find them
+    // Load into S.lessons — last-write-wins on updated_at
     result.data.forEach(function(l){
-      var lessonKey = key(l.grade, l.week, l.subject, 1);
-      if(!S.lessons[lessonKey] && l.slides){
-        S.lessons[lessonKey] = {
-          title:     l.title||'',
-          objective: l.objective||'',
-          slides:    l.slides,
-          fromSync:  true
-        };
+      var ses = l.session||1;
+      var lessonKey = key(l.grade, l.week, l.subject, ses);
+      var existing = S.lessons[lessonKey];
+      // Only overwrite if server version is newer or no local version
+      if(!existing || existing.fromSync || l.updated_at > (existing.updated_at||'')){
+        if(l.slides){
+          S.lessons[lessonKey] = {
+            title:      l.title||'',
+            objective:  l.objective||'',
+            slides:     l.slides,
+            updated_at: l.updated_at,
+            fromSync:   true
+          };
+        }
       }
     });
 
-    // Re-render schedule to show Open deck buttons
-    if(typeof updateSchedule === 'function') updateSchedule();
-    console.log('Synced lessons loaded:', result.data.length, 'lessons for Grade '+g+' Week '+w);
+    // Update last sync timestamp
+    localStorage.setItem('how_last_sync', new Date().toISOString());
+    // Re-render schedule
+    renderScheduleDay(document.querySelector('.day-tab.active')&&document.querySelector('.day-tab.active').dataset.day||'sun');
+    console.log('Delta sync: '+result.data.length+' lessons for Grade '+g+' Week '+w+' (since '+since+')');
   }catch(e){
     console.warn('fetchSyncedLessons failed:', e);
   }
@@ -3097,7 +3129,8 @@ async function _goToTeachIt(){
           .eq('grade', S.grade)
           .eq('week', S.week)
           .eq('subject', S.subj)
-          .order('created_at', {ascending: false})
+          .eq('session', S.session||1)
+          .order('updated_at', {ascending: false})
           .limit(1)
           .single();
 
@@ -3170,6 +3203,67 @@ function applyTeachSuggestion(suggestion){
   if(ta){ ta.value=(ta.value?ta.value+'\n\n':'')+suggestion; saveNote(idx); toast('\u2713 Suggestion added'); }
 }
 
+async function pushScore(grade, week, scoreObj){
+  var jwt = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(!jwt||!householdId||typeof sb==='undefined') return;
+  var studentId = null;
+  try{
+    var active = JSON.parse(localStorage.getItem('how_active_student')||'null');
+    if(active) studentId = active.id;
+  }catch(e){}
+  try{
+    var result = await sb.from('score')
+      .upsert({
+        household_id: householdId,
+        student_id:   studentId,
+        grade:        grade,
+        week:         week,
+        subjects:     scoreObj,
+        updated_at:   new Date().toISOString()
+      }, { onConflict:'household_id,grade,week' })
+      .select();
+    if(result.error) throw result.error;
+    console.log('Score pushed to Supabase:', grade, week);
+  }catch(e){
+    console.warn('pushScore failed:', e);
+  }
+}
+
+async function pullScores(){
+  var jwt = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(!jwt||!householdId||typeof sb==='undefined') return;
+  try{
+    var result = await sb
+      .from('score')
+      .select('grade, week, subjects, updated_at')
+      .eq('household_id', householdId);
+    if(result.error){ console.warn('pullScores error:', result.error.message); return; }
+    if(!result.data||!result.data.length) return;
+    // Server is authoritative — overwrite local scores
+    result.data.forEach(function(row){
+      var k = row.grade+'_'+row.week;
+      S.scores[k] = row.subjects;
+      // Also update history
+      if(row.subjects){
+        var patch = {};
+        Object.keys(row.subjects).forEach(function(subj){
+          var sd = row.subjects[subj]||{};
+          var earned = sd.details?sd.details.reduce(function(a,d){return a+(d.awarded>=0?d.awarded:0);},0):0;
+          var total  = sd.details?sd.details.reduce(function(a,d){return a+d.marks;},0):0;
+          patch['test_'+subj]={earned:earned,total:total,pct:total?Math.round(earned/total*100):null};
+        });
+        saveHistory(row.grade, row.week, patch);
+      }
+    });
+    autosave();
+    console.log('Scores pulled from Supabase:', result.data.length, 'weeks');
+  }catch(e){
+    console.warn('pullScores failed:', e);
+  }
+}
+
 async function syncLesson(){
   var l=lesson();
   if(!l){ toast('No lesson to sync — generate first'); return; }
@@ -3178,21 +3272,25 @@ async function syncLesson(){
   if(!jwt||!householdId){ toast('Sign in to sync lessons to students'); return; }
   try{
     var profileId = localStorage.getItem('how_profile_id');
+    var ses = S.session||1;
     var syncEntry={
       household_id: householdId,
       created_by:   profileId||null,
       grade:        S.grade,
       week:         S.week,
       subject:      S.subj,
+      session:      ses,
       title:        l.title||'Week '+S.week+' '+S.subj,
       objective:    l.objective||'',
-      slides:       l.slides||[]
+      slides:       l.slides||[],
+      updated_at:   new Date().toISOString()
     };
-    // Upsert — replaces existing lesson for same grade/week/subject
     var result=await sb.from('lesson')
-      .upsert(syncEntry, { onConflict:'household_id,grade,week,subject' })
+      .upsert(syncEntry, { onConflict:'household_id,grade,week,subject,session' })
       .select();
     if(result.error) throw result.error;
+    // Update last sync timestamp
+    localStorage.setItem('how_last_sync', new Date().toISOString());
     toast('☁ Lesson synced — students can now access it in Teach It');
     console.log('Lesson synced:', result.data);
   }catch(e){
@@ -5118,6 +5216,8 @@ function finishTest(){
   });
   S.scores[testKey()]=scoreObj;
   autosave();
+  // Push to Supabase — server is authoritative for scores
+  pushScore(S.grade, S.week, scoreObj.subjects||scoreObj);
   var _hp={};
   SUBJ_ORDER.forEach(function(subj){
     var sd=scoreObj.subjects[subj]||{};
@@ -8375,6 +8475,11 @@ async function applyUserToProfile(user, accessToken){
   if(navUser) navUser.style.display='flex';
   if(navName) navName.textContent = welcomeName + ' (' + role + ')';
   toast('Ahlan wa sahlan, '+welcomeName+' — welcome back.');
+  // Load notifications + subscribe to live updates
+  loadNotifications();
+  subscribeToNotifications();
+  // First-time migration: offer to upload existing local data
+  checkFirstTimeMigration();
   var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
   if(schedBtn) SP(schedBtn);
   render();
@@ -8711,6 +8816,210 @@ async function removeStudent(studentId, studentName){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+async function checkFirstTimeMigration(){
+  // Only offer migration if this is the first login on this device
+  var migrated = localStorage.getItem('how_migrated');
+  if(migrated) return;
+
+  // Check if there are local lessons or scores worth migrating
+  var localLessons = Object.keys(S.lessons||{}).length;
+  var localScores  = Object.keys(S.scores||{}).length;
+  if(!localLessons && !localScores){ 
+    localStorage.setItem('how_migrated','1'); 
+    return; 
+  }
+
+  // Show migration prompt
+  var msg = 'We found existing data on this device. '+(localLessons?localLessons+' lesson(s). ':'')+(localScores?localScores+' score record(s). ':'')+'Sync to your account?';
+  if(!confirm(msg)){
+    localStorage.setItem('how_migrated','1');
+    return;
+  }
+
+  // Upload lessons
+  var householdId = localStorage.getItem('how_household_id');
+  var profileId   = localStorage.getItem('how_profile_id');
+  var uploaded = 0;
+  var errors   = 0;
+
+  if(localLessons && householdId){
+    var lessonEntries = Object.keys(S.lessons).map(function(k){
+      var parts = k.split('_'); // grade_week_subj_sSes
+      var l = S.lessons[k];
+      if(!l||!l.slides) return null;
+      return {
+        household_id: householdId,
+        created_by:   profileId||null,
+        grade:        parseInt(parts[0])||S.grade,
+        week:         parseInt(parts[1])||S.week,
+        subject:      parts[2]||S.subj,
+        session:      parseInt((parts[3]||'s1').replace('s',''))||1,
+        title:        l.title||'',
+        objective:    l.objective||'',
+        slides:       l.slides||[],
+        updated_at:   new Date().toISOString()
+      };
+    }).filter(Boolean);
+
+    for(var i=0; i<lessonEntries.length; i++){
+      try{
+        var r = await sb.from('lesson')
+          .upsert(lessonEntries[i], {onConflict:'household_id,grade,week,subject,session'});
+        if(r.error) throw r.error;
+        uploaded++;
+      }catch(e){ errors++; console.warn('Migration lesson error:', e); }
+    }
+  }
+
+  // Upload scores
+  if(localScores && householdId){
+    var scoreKeys = Object.keys(S.scores);
+    for(var j=0; j<scoreKeys.length; j++){
+      var sk = scoreKeys[j];
+      var parts2 = sk.split('_');
+      var scoreObj = S.scores[sk];
+      if(!scoreObj) continue;
+      try{
+        var sr = await sb.from('score')
+          .upsert({
+            household_id: householdId,
+            grade:        parseInt(parts2[0])||S.grade,
+            week:         parseInt(parts2[1])||S.week,
+            subjects:     scoreObj.subjects||scoreObj,
+            updated_at:   new Date().toISOString()
+          }, {onConflict:'household_id,grade,week'});
+        if(sr.error) throw sr.error;
+        uploaded++;
+      }catch(e){ errors++; console.warn('Migration score error:', e); }
+    }
+  }
+
+  localStorage.setItem('how_migrated','1');
+  var resultMsg = '✓ Migration complete: '+uploaded+' item(s) synced.';
+  if(errors) resultMsg += ' ('+errors+' error(s) — check console)';
+  toast(resultMsg);
+  console.log('First-time migration complete:', uploaded, 'uploaded,', errors, 'errors');
+}
+
+// ── Notifications ────────────────────────────────────────────────────────
+var _notifChannel = null;
+
+async function loadNotifications(){
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  if(!jwt||!hid||typeof sb==='undefined') return;
+  try{
+    var result = await sb
+      .from('notification')
+      .select('*')
+      .eq('household_id', hid)
+      .order('created_at', {ascending: false})
+      .limit(20);
+    if(result.error){ console.warn('loadNotifications error:', result.error.message); return; }
+    renderNotifications(result.data||[]);
+  }catch(e){ console.warn('loadNotifications failed:', e); }
+}
+
+function renderNotifications(notifs){
+  var list  = document.getElementById('notif-list');
+  var badge = document.getElementById('notif-badge');
+  if(!list) return;
+
+  var unread = notifs.filter(function(n){ return !n.is_read; }).length;
+
+  // Update badge
+  if(badge){
+    badge.textContent = unread > 9 ? '9+' : String(unread);
+    badge.style.display = unread > 0 ? 'flex' : 'none';
+  }
+
+  if(!notifs.length){
+    list.innerHTML = '<p style="text-align:center;color:#9a9ab0;font-size:12px;padding:20px">No notifications</p>';
+    return;
+  }
+
+  list.innerHTML = notifs.map(function(n){
+    var icon = n.type==='debate_move'?'⚔':
+               n.type==='debate_complete'?'🏆':
+               n.type==='halaqa_saved'?'🕌':
+               n.type==='lesson_synced'?'☁':'🔔';
+    var time = '';
+    try{
+      var d = new Date(n.created_at);
+      var diff = Math.floor((Date.now()-d.getTime())/60000);
+      time = diff<1?'just now':diff<60?diff+'m ago':
+             diff<1440?Math.floor(diff/60)+'h ago':
+             Math.floor(diff/1440)+'d ago';
+    }catch(e){}
+    return '<div class="notif-item'+(n.is_read?'':' unread')+'" '
+      +'data-nid="'+n.id+'" data-ntype="'+n.type+'" data-nlid="'+(n.link_id||'')+'" onclick="handleNotifClick(this)">'  
+      +'<div class="notif-title">'+icon+' '+n.title+'</div>'
+      +'<div class="notif-body">'+n.body+'</div>'
+      +'<div class="notif-time">'+time+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function toggleNotifPanel(){
+  var panel = document.getElementById('notif-panel');
+  if(!panel) return;
+  var isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) loadNotifications();
+}
+
+async function handleNotifClick(el){
+  var notifId = el.getAttribute('data-nid');
+  var type    = el.getAttribute('data-ntype');
+  var linkId  = el.getAttribute('data-nlid');
+  // Mark as read
+  var hid = localStorage.getItem('how_household_id');
+  if(hid && typeof sb !== 'undefined'){
+    try{
+      await sb.from('notification').update({is_read:true}).eq('id', notifId);
+    }catch(e){}
+  }
+  // Navigate based on type
+  if(type==='debate_move'||type==='debate_complete'){
+    toast('Open the Munazara to view your debate');
+  }
+  // Close panel and reload
+  document.getElementById('notif-panel').style.display='none';
+  loadNotifications();
+}
+
+async function markAllNotifsRead(){
+  var hid = localStorage.getItem('how_household_id');
+  if(!hid||typeof sb==='undefined') return;
+  try{
+    await sb.from('notification')
+      .update({is_read:true})
+      .eq('household_id', hid)
+      .eq('is_read', false);
+    loadNotifications();
+  }catch(e){}
+}
+
+function subscribeToNotifications(){
+  var hid = localStorage.getItem('how_household_id');
+  if(!hid||typeof sb==='undefined') return;
+  _notifChannel = sb.channel('notif-'+hid)
+    .on('postgres_changes',
+      { event:'INSERT', schema:'public', table:'notification',
+        filter:'household_id=eq.'+hid },
+      function(payload){
+        // New notification — reload and show badge
+        loadNotifications();
+        // Brief toast
+        if(payload.new && payload.new.title){
+          toast('🔔 '+payload.new.title);
+        }
+      })
+    .subscribe();
+  console.log('Subscribed to notifications for household:', hid);
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 function showLoginError(msg){
   var el=document.getElementById('how-login-error');
   if(!el) return;
@@ -8812,6 +9121,18 @@ const sb = supabase.createClient(
   </div>
 </div>
 
+<script>
+// Close notification panel when clicking outside
+document.addEventListener("click", function(e){
+  var panel = document.getElementById("notif-panel");
+  var bell  = document.getElementById("notif-bell");
+  if(panel && panel.style.display !== "none"){
+    if(!panel.contains(e.target) && e.target !== bell){
+      panel.style.display = "none";
+    }
+  }
+});
+</script>
 </body>
 </html>
 

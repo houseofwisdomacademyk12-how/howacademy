@@ -2949,10 +2949,53 @@ function drivePdfNav(dir){
 }
 
 // ── Teach It ────────────────────────────────────────────────────────────────
-function _goToTeachIt(){
+async function _goToTeachIt(){
   var genBtn=document.querySelector('[data-p="generate"]');
   if(genBtn){ SP(genBtn); syncLG(); }
-  setTimeout(function(){ setRole('student'); setView('deck'); }, 100);
+
+  // ── Pull facilitator lesson from Supabase if not in localStorage ──────
+  var lessonKey = key(S.grade, S.week, S.subj, S.session||1);
+  var hasLocal = S.lessons[lessonKey] && S.lessons[lessonKey].slides;
+
+  if(!hasLocal){
+    var jwt = localStorage.getItem('how_jwt');
+    var householdId = localStorage.getItem('how_household_id');
+    if(jwt && householdId && typeof sb !== 'undefined'){
+      try{
+        toast('Loading lesson…');
+        var result = await sb
+          .from('lesson')
+          .select('*')
+          .eq('household_id', householdId)
+          .eq('grade', S.grade)
+          .eq('week', S.week)
+          .eq('subject', S.subj)
+          .single();
+
+        if(result.data && result.data.slides){
+          // Load into S.lessons so render() can find it
+          S.lessons[lessonKey] = {
+            title:     result.data.title || '',
+            objective: result.data.objective || '',
+            slides:    result.data.slides,
+            fromSync:  true
+          };
+          autosave();
+          render();
+          toast('✓ Lesson loaded from facilitator sync');
+        } else {
+          toast('No synced lesson found — ask your facilitator to sync this lesson');
+        }
+      }catch(e){
+        console.warn('Supabase lesson fetch failed:', e);
+        toast('Could not load lesson — check your connection');
+      }
+    } else if(!hasLocal){
+      toast('No lesson found — ask your facilitator to generate and sync this lesson');
+    }
+  }
+
+  setTimeout(function(){ setRole('student'); setView('deck'); }, 300);
 }
 
 async function teachItFeedback(){
@@ -8087,51 +8130,77 @@ const sb = supabase.createClient(
 })();
 
 async function applyUserToProfile(user, accessToken){
-  const { data: household, error } = await sb
-    .from('household')
-    .select('id, name, role, plan, current_week')
-    .eq('auth_id', user.id)
+  // ── 1. Read profile (role comes from here now, not household) ──────────
+  const { data: profile, error: profileError } = await sb
+    .from('profiles')
+    .select('id, name, role, household_id')
+    .eq('id', user.id)
     .single();
 
-  if(error||!household){
+  if(profileError || !profile){
     showLoginError('Could not load your account. Please contact your administrator.');
     return;
   }
 
+  // ── 2. Read household (week, name) ────────────────────────────────────
+  const { data: household } = await sb
+    .from('household')
+    .select('id, name, plan, current_week')
+    .eq('id', profile.household_id)
+    .single();
+
+  // ── 3. Read students in this household ────────────────────────────────
   const { data: students } = await sb
     .from('student')
     .select('id, name, current_grade, current_week, grade_start')
-    .eq('household_id', household.id)
+    .eq('household_id', profile.household_id)
     .order('name');
 
+  // ── 4. Store in localStorage for tools (Sahifa, Halaqa, Murshid) ─────
   localStorage.setItem('how_jwt', accessToken||'');
-  localStorage.setItem('how_household_id', household.id);
+  localStorage.setItem('how_household_id', profile.household_id||'');
   localStorage.setItem('how_students', JSON.stringify(students||[]));
+  localStorage.setItem('how_profile_id', profile.id);
+  localStorage.setItem('how_profile_role', profile.role);
 
-  var active = students&&students.length ? students[0] : null;
-  S.grade    = active?(active.current_grade||active.grade_start||7):7;
-  S.week     = household.current_week||1;
+  // ── 5. Set platform state from profile ───────────────────────────────
+  // For facilitators: use household week, no student active
+  // For parents: same as facilitator view
+  // Student selection happens separately via PIN panel
+  var role = profile.role==='admin'?'facilitator':profile.role||'facilitator';
+  S.week = household ? (household.current_week||1) : 1;
 
-  var role = household.role==='admin'?'facilitator':household.role||'facilitator';
+  // If facilitator/parent — set grade from first student if available
+  var firstStudent = students&&students.length ? students[0] : null;
+  S.grade = firstStudent?(firstStudent.current_grade||firstStudent.grade_start||7):7;
+
+  // ── 6. Apply role to UI ───────────────────────────────────────────────
   setRole(role);
   localStorage.setItem('how_role', role);
 
+  // ── 7. Sync grade + week selectors ───────────────────────────────────
   var gradeEl=document.getElementById('sch-grade');
   var weekEl=document.getElementById('sch-week');
   if(gradeEl) gradeEl.value=String(S.grade);
   if(weekEl)  weekEl.value=String(S.week);
 
-  if(active){
+  // ── 8. Pre-fill sahifa_settings ───────────────────────────────────────
+  if(firstStudent){
     try{
       var existing=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
       localStorage.setItem('sahifa_settings',JSON.stringify({
-        ...existing, name:active.name||'', grade:S.grade, juz:S.week,
+        ...existing,
+        name:  firstStudent.name||'',
+        grade: S.grade,
+        juz:   S.week,
       }));
     }catch(e){}
   }
 
+  // ── 9. Hide login, navigate, welcome ─────────────────────────────────
   document.getElementById('how-login-panel').style.display='none';
-  toast('Ahlan wa sahlan, '+(active?active.name:household.name)+' — welcome back.');
+  var welcomeName = profile.name || (household?household.name:'');
+  toast('Ahlan wa sahlan, '+welcomeName+' — welcome back.');
   var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
   if(schedBtn) SP(schedBtn);
   render();

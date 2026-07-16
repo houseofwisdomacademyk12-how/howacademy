@@ -177,6 +177,18 @@ var sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_pu
           ⚔ Challenge a household<br><span style="font-weight:400;font-size:11px;opacity:.8">Async — real opponent</span>
         </button>
       </div>
+      <!-- Spectator option -->
+      <div style="margin-top:10px">
+        <button id="btn-spectator-mun" onclick="setMunMode('spectator')" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cream3);background:var(--cream2);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink3);text-align:left">
+          👁 Watch a debate — enter a debate code to observe read-only
+        </button>
+      </div>
+      <!-- Spectator code entry -->
+      <div id="spectator-opts" style="display:none;margin-top:12px">
+        <input class="setup-input" type="text" id="spectator-code-input" maxlength="4" placeholder="Enter debate code" style="text-transform:uppercase;letter-spacing:.2em;text-align:center;font-size:1.1rem" oninput="this.value=this.value.toUpperCase()">
+        <p style="font-size:11px;color:var(--ink3);margin-top:6px">You will see all moves but cannot post. Your reflections go to your Sahifa.</p>
+      </div>
+      </div>
       <!-- Challenge sub-options -->
       <div id="challenge-opts" style="display:none;margin-top:14px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
@@ -295,6 +307,7 @@ var _munRole = 'a';          // 'a'=challenger, 'b'=opponent
 var _debateId = null;        // Supabase debate row id
 var _debateCode = null;      // 4-char join code
 var _realtimeDebate = null;  // Supabase Realtime channel
+var _spectatorMode = false;  // true = read-only spectator
 
 
 function isK2(){
@@ -383,22 +396,29 @@ function loadDebate(){
 // ── Challenge mode setters ────────────────────────────────────────────────
 function setMunMode(mode){
   _munMode = mode;
-  var btnSolo = document.getElementById('btn-solo-mun');
-  var btnChal = document.getElementById('btn-challenge-mun');
+  var btnSolo  = document.getElementById('btn-solo-mun');
+  var btnChal  = document.getElementById('btn-challenge-mun');
+  var btnSpec  = document.getElementById('btn-spectator-mun');
   var chalOpts = document.getElementById('challenge-opts');
+  var specOpts = document.getElementById('spectator-opts');
   var beginBtn = document.getElementById('btn-begin-debate');
-  if(btnSolo){
-    btnSolo.style.borderColor = mode==='solo'?'var(--sacred)':'var(--cream3)';
-    btnSolo.style.background  = mode==='solo'?'var(--sacred-pale)':'var(--cream2)';
-    btnSolo.style.color       = mode==='solo'?'var(--sacred)':'var(--ink3)';
-  }
-  if(btnChal){
-    btnChal.style.borderColor = mode==='challenge'?'var(--sacred)':'var(--cream3)';
-    btnChal.style.background  = mode==='challenge'?'var(--sacred-pale)':'var(--cream2)';
-    btnChal.style.color       = mode==='challenge'?'var(--sacred)':'var(--ink3)';
-  }
+
+  // Reset all buttons
+  [btnSolo, btnChal, btnSpec].forEach(function(b){
+    if(b){ b.style.borderColor='var(--cream3)'; b.style.background='var(--cream2)'; b.style.color='var(--ink3)'; }
+  });
+
+  // Highlight active
+  var active = mode==='solo'?btnSolo:mode==='challenge'?btnChal:btnSpec;
+  if(active){ active.style.borderColor='var(--sacred)'; active.style.background='var(--sacred-pale)'; active.style.color='var(--sacred)'; }
+
   if(chalOpts) chalOpts.style.display = mode==='challenge'?'block':'none';
-  if(beginBtn) beginBtn.textContent = mode==='challenge'?'Start challenge →':'Begin the munazara →';
+  if(specOpts) specOpts.style.display = mode==='spectator'?'block':'none';
+
+  if(beginBtn){
+    beginBtn.textContent = mode==='challenge'?'Start challenge →':
+                           mode==='spectator'?'Watch debate →':'Begin the munazara →';
+  }
 }
 
 function setChallengeRole(role){
@@ -532,6 +552,43 @@ async function saveDebateToSupabase(){
     console.log('Debate saved to Supabase');
   }catch(e){
     console.warn('saveDebateToSupabase failed:', e.message);
+  }
+}
+
+async function loadSpectatorDebate(){
+  var code = (document.getElementById('spectator-code-input')||{}).value;
+  if(!code||code.length<3){ toast('Enter a valid debate code'); return false; }
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt){ toast('Sign in to watch a debate'); return false; }
+  try{
+    // Look up by code — reads public or household debates
+    var result = await sb.from('debate')
+      .select('*').eq('code', code.toUpperCase()).single();
+    if(result.error||!result.data){ toast('Debate not found — check the code'); return false; }
+    var debate = result.data;
+
+    // Load debate state into D (read-only)
+    _debateId          = debate.id;
+    _debateCode        = debate.code;
+    _spectatorMode     = true;
+    D.claim            = debate.claim;
+    D.grade            = String(debate.grade||7);
+    D.studentName      = 'Spectator';
+    D.studentPosition  = debate.student_a_pos||'for';
+    D.moves            = Array.isArray(debate.moves)?debate.moves:[];
+    D.complete         = debate.status==='complete';
+    D.synthesis        = debate.synthesis?JSON.parse(debate.synthesis||'{}'):null;
+
+    // Label names from debate row
+    D._studentAName = debate.student_a_name||'Student A';
+    D._studentBName = debate.student_b_name||'Student B';
+
+    console.log('Spectator loaded debate:', _debateCode, 'moves:', D.moves.length);
+    return true;
+  }catch(e){
+    console.warn('loadSpectatorDebate failed:', e.message);
+    toast('Could not load debate: '+e.message);
+    return false;
   }
 }
 
@@ -848,6 +905,37 @@ function buildTranscript(upToIdx){
 // ═══════════════════════════════════════════════════
 //  WEDNESDAY SYNTHESIS
 // ═══════════════════════════════════════════════════
+async function addSpectatorReflection(){
+  var text = 'I watched the debate on: "' + D.claim + '"\n\n';
+  var summary = '';
+  if(D.moves && D.moves.length){
+    summary = 'Arguments I found most compelling:\n';
+    D.moves.forEach(function(m, i){
+      var who = m.who==='student'?(D._studentAName||'Student A'):(D._studentBName||'Student B');
+      if(i < 3) summary += '- ' + who + ' (' + (m.type||'move') + '): ' + (m.text||'').slice(0,80) + '…\n';
+    });
+  }
+  text += summary;
+  text += '\nMy reflection: ';
+
+  // Save to Sahifa localStorage as a thread entry
+  try{
+    var threads = JSON.parse(localStorage.getItem('sahifa_threads')||'[]');
+    var settings = JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
+    threads.unshift({
+      grade:  'Grade '+(settings.grade||'?'),
+      topic:  'Munazara debate',
+      text:   text,
+      date:   new Date().toLocaleDateString(),
+      _fromDebate: _debateId
+    });
+    localStorage.setItem('sahifa_threads', JSON.stringify(threads));
+    toast('✓ Added to your Sahifa threads — open Sahifa to complete your reflection');
+  }catch(e){
+    toast('Could not save to Sahifa: '+e.message);
+  }
+}
+
 async function generateSynthesis(){
   showScreen('synthesis');
   document.getElementById('synth-claim').textContent=D.claim;

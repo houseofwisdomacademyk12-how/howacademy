@@ -1044,6 +1044,11 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       <button class="ntab" onclick="window.open('halaqa_v6.html','_blank')" title="The Halaqa">🔵 Halaqa</button>
       <button class="ntab" onclick="window.open('Knowledge_Transmission_Chain_v3.html','_blank')" title="Isnad">🔗 Isnad</button>
     </div>
+    <!-- User indicator + sign out -->
+    <div id="nav-user" style="display:none;align-items:center;gap:8px;padding:0 12px;flex-shrink:0">
+      <span id="nav-user-name" style="font-size:12px;font-weight:600;color:rgba(255,255,255,.7)"></span>
+      <button onclick="howLogout()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;font-weight:600">Sign out</button>
+    </div>
   </div>
 </nav>
 
@@ -1242,6 +1247,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
   </select>
   <button class="tb-btn" onclick="syncScheduleToCurrentWeek()" style="margin-left:8px;font-size:11px" title="Jump to current grade and week">↺ Current week</button>
   <button id="btn-sch-report" onclick="openProgressReport()" style="display:none;background:#1a3d8a;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📊 Progress Report</button>
+  <button onclick="openStudentManager()" style="background:#1d6f6f;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">👥 Manage students</button>
 </div>
 <div id="sch-status" style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px;font-size:11px"></div>
 <div class="day-tabs">
@@ -1326,28 +1332,104 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 <!-- ═══ INSTITUTION ════════════════════════════════════ -->
 <div class="page active" id="p-institution">
 <div id="how-login-panel" style="max-width:380px;margin:0 auto 2rem;background:white;border-radius:14px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.1);border:1px solid #e4ddd0">
+  <!-- Header -->
   <div style="text-align:center;margin-bottom:20px">
     <div style="font-family:'Amiri',serif;font-size:1.6rem;color:#d4af37;margin-bottom:4px">بَيْتُ الْحِكْمَة</div>
     <div style="font-family:'Spectral',serif;font-size:1rem;font-weight:600;color:#1a1a2e;margin-bottom:4px">House of Wisdom</div>
-    <div style="font-size:.78rem;color:#9a9ab0">Sign in to your household account</div>
   </div>
-  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-    <input id="how-email" type="email" placeholder="Email address"
-      style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
-      onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
-    <input id="how-password" type="password" placeholder="Password"
-      style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
-      onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'"
-      onkeydown="if(event.key==='Enter') howLogin(document.getElementById('how-email').value, this.value)">
+  <!-- Tab toggle -->
+  <div style="display:flex;border:1.5px solid #e4ddd0;border-radius:8px;overflow:hidden;margin-bottom:20px">
+    <button id="auth-tab-signin" onclick="switchAuthTab('signin')"
+      style="flex:1;padding:9px;border:none;background:#1a3d8a;color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">
+      Sign in
+    </button>
+    <button id="auth-tab-signup" onclick="switchAuthTab('signup')"
+      style="flex:1;padding:9px;border:none;background:white;color:#9a9ab0;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+      Create account
+    </button>
   </div>
-  <button id="how-login-btn"
-    onclick="howLogin(document.getElementById('how-email').value, document.getElementById('how-password').value)"
-    style="width:100%;background:#1a3d8a;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-    Sign in
-  </button>
+
+  <!-- Sign in form -->
+  <div id="auth-signin-form">
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <input id="how-email" type="email" placeholder="Email address"
+        style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
+        onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
+      <input id="how-password" type="password" placeholder="Password"
+        style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
+        onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'"
+        onkeydown="if(event.key==='Enter') howLogin(document.getElementById('how-email').value, this.value)">
+    </div>
+    <button id="how-login-btn"
+      onclick="howLogin(document.getElementById('how-email').value, document.getElementById('how-password').value)"
+      style="width:100%;background:#1a3d8a;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+      Sign in
+    </button>
+  </div>
+
+  <!-- Sign up form -->
+  <div id="auth-signup-form" style="display:none">
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <input id="su-name" type="text" placeholder="Your name"
+        style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
+        onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
+      <input id="su-household" type="text" placeholder="Household / school name"
+        style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
+        onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
+      <input id="su-email" type="email" placeholder="Email address"
+        style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
+        onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
+      <input id="su-password" type="password" placeholder="Password (min 8 characters)"
+        style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none"
+        onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'"
+        onkeydown="if(event.key==='Enter') howSignUp()">
+      <div style="display:flex;gap:8px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex:1;padding:10px;border:1.5px solid #e4ddd0;border-radius:8px;font-size:13px">
+          <input type="radio" name="su-role" value="facilitator" checked style="accent-color:#1a3d8a"> Facilitator
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex:1;padding:10px;border:1.5px solid #e4ddd0;border-radius:8px;font-size:13px">
+          <input type="radio" name="su-role" value="parent" style="accent-color:#1a3d8a"> Parent
+        </label>
+      </div>
+    </div>
+    <button id="how-signup-btn" onclick="howSignUp()"
+      style="width:100%;background:#1d6f6f;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+      Create account
+    </button>
+    <p style="font-size:11px;color:#9a9ab0;text-align:center;margin-top:10px;line-height:1.5">
+      By creating an account you agree to use this platform for educational purposes.
+    </p>
+  </div>
+
   <p id="how-login-error" style="display:none;color:#c0522a;font-size:12px;text-align:center;margin-top:10px"></p>
-  <p style="text-align:center;margin-top:12px;font-size:11px;color:#9a9ab0">No account? Contact your administrator.</p>
 </div>
+<!-- Student PIN selector — shown when Student tab is clicked -->
+<div id="student-pin-panel" style="display:none;max-width:380px;margin:0 auto 2rem;background:white;border-radius:14px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.1);border:1px solid #e4ddd0">
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="font-size:2rem;margin-bottom:8px">🧒</div>
+    <div style="font-family:'Spectral',serif;font-size:1.1rem;font-weight:600;color:#1a1a2e;margin-bottom:4px">Who is learning today?</div>
+  </div>
+  <div style="margin-bottom:12px">
+    <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Select student</label>
+    <select id="pin-student-select" style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;outline:none;background:white">
+      <option value="">— choose —</option>
+    </select>
+  </div>
+  <div style="margin-bottom:16px">
+    <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">PIN</label>
+    <input id="pin-input" type="password" maxlength="4" placeholder="• • • •" inputmode="numeric"
+      style="width:100%;padding:11px 13px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:20px;color:#1a1a2e;outline:none;text-align:center;letter-spacing:.3em"
+      onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'"
+      onkeydown="if(event.key==='Enter') verifyStudentPin()">
+  </div>
+  <button onclick="verifyStudentPin()"
+    style="width:100%;background:#1d6f6f;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+    Start learning
+  </button>
+  <p id="pin-error" style="display:none;color:#c0522a;font-size:12px;text-align:center;margin-top:10px"></p>
+  <button onclick="showStudentPinPanel(false)" style="display:block;margin:12px auto 0;background:none;border:none;font-size:12px;color:#9a9ab0;cursor:pointer">← Back</button>
+</div>
+
 <div class="entry-grid">
   <div class="entry-card" id="entry-inst" onclick="showEntry('inst')"><p class="entry-icon">🏫</p><p class="entry-title">Institutional schools</p><p class="entry-sub">New founding schools and established schools. Curriculum licensing, facilitator formation, studio para-facilitators supplied.</p></div>
   <div class="entry-card" id="entry-home" onclick="showEntry('home')"><p class="entry-icon">🏡</p><p class="entry-title">Homeschool & microschools</p><p class="entry-sub">Families and networks of 5–15 students. Online platform, parent-facilitator formation, regional studio hub access.</p></div>
@@ -1478,7 +1560,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <!-- Role tabs -->
     <button class="role-tab active" id="rtab-fac"     onclick="setRole('facilitator')">👨‍🏫 Facilitator</button>
     <button class="role-tab"        id="rtab-parent"  onclick="setRole('parent')">👤 Parent</button>
-    <button class="role-tab"        id="rtab-student" onclick="setRole('student')">🧒 Student</button>
+    <button class="role-tab"        id="rtab-student" onclick="onStudentTabClick()">🧒 Student</button>
     <div class="mode-sep"></div>
     <!-- Facilitator actions -->
     <span class="role-actions" id="acts-fac">
@@ -2959,17 +3041,17 @@ async function _goToTeachIt(){
 
   if(!hasLocal){
     var jwt = localStorage.getItem('how_jwt');
-    var householdId = localStorage.getItem('how_household_id');
-    if(jwt && householdId && typeof sb !== 'undefined'){
+    if(jwt && typeof sb !== 'undefined'){
       try{
         toast('Loading lesson…');
         var result = await sb
           .from('lesson')
           .select('*')
-          .eq('household_id', householdId)
           .eq('grade', S.grade)
           .eq('week', S.week)
           .eq('subject', S.subj)
+          .order('created_at', {ascending: false})
+          .limit(1)
           .single();
 
         if(result.data && result.data.slides){
@@ -3048,8 +3130,10 @@ async function syncLesson(){
   var householdId=localStorage.getItem('how_household_id');
   if(!jwt||!householdId){ toast('Sign in to sync lessons to students'); return; }
   try{
+    var profileId = localStorage.getItem('how_profile_id');
     var syncEntry={
       household_id: householdId,
+      created_by:   profileId||null,
       grade:        S.grade,
       week:         S.week,
       subject:      S.subj,
@@ -3796,6 +3880,26 @@ function showGenPanel(){
   var mc=document.getElementById('main-content'); if(!mc) return;
   mc.innerHTML=genPanel(); mc.className='';
 }
+function onStudentTabClick(){
+  // If students exist in localStorage show PIN panel
+  // If not logged in show login panel
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt){
+    toast('Please sign in first');
+    return;
+  }
+  var students=[];
+  try{ students=JSON.parse(localStorage.getItem('how_students')||'[]'); }catch(e){}
+  if(!students.length){
+    toast('No students found — add students to your household first');
+    return;
+  }
+  // Navigate to Institution tab and show PIN panel
+  var instBtn=document.querySelector('.ntab[data-p="institution"]');
+  if(instBtn) SP(instBtn);
+  showStudentPinPanel(true);
+}
+
 function setRole(role){
   S.role = role;
   try{ localStorage.setItem('how_role', role); }catch(e){}
@@ -6979,6 +7083,29 @@ function loadJuzEdits(){
 
 
 // ─── Role picker ─────────────────────────────────────
+// ── Auth tab toggle ───────────────────────────────────────────────────────
+function switchAuthTab(tab){
+  var signinForm = document.getElementById('auth-signin-form');
+  var signupForm = document.getElementById('auth-signup-form');
+  var signinTab  = document.getElementById('auth-tab-signin');
+  var signupTab  = document.getElementById('auth-tab-signup');
+  if(!signinForm||!signupForm) return;
+  if(tab==='signin'){
+    signinForm.style.display='block';
+    signupForm.style.display='none';
+    signinTab.style.background='#1a3d8a'; signinTab.style.color='white';
+    signupTab.style.background='white';   signupTab.style.color='#9a9ab0';
+  } else {
+    signinForm.style.display='none';
+    signupForm.style.display='block';
+    signinTab.style.background='white';   signinTab.style.color='#9a9ab0';
+    signupTab.style.background='#1d6f6f'; signupTab.style.color='white';
+  }
+  var errEl=document.getElementById('how-login-error');
+  if(errEl) errEl.style.display='none';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function showRolePicker(){
   try{ localStorage.removeItem('how_lg_role'); }catch(e){}
   var picker=document.getElementById('role-picker');
@@ -8200,6 +8327,11 @@ async function applyUserToProfile(user, accessToken){
   // ── 9. Hide login, navigate, welcome ─────────────────────────────────
   document.getElementById('how-login-panel').style.display='none';
   var welcomeName = profile.name || (household?household.name:'');
+  // Show user indicator in nav
+  var navUser = document.getElementById('nav-user');
+  var navName = document.getElementById('nav-user-name');
+  if(navUser) navUser.style.display='flex';
+  if(navName) navName.textContent = welcomeName + ' (' + role + ')';
   toast('Ahlan wa sahlan, '+welcomeName+' — welcome back.');
   var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
   if(schedBtn) SP(schedBtn);
@@ -8228,8 +8360,316 @@ async function howLogout(){
   localStorage.removeItem('how_household_id');
   localStorage.removeItem('how_students');
   localStorage.removeItem('how_role');
+  localStorage.removeItem('how_profile_id');
+  localStorage.removeItem('how_profile_role');
+  localStorage.removeItem('how_active_student');
   location.reload();
 }
+
+// ── Student PIN selector ─────────────────────────────────────────────────
+function showStudentPinPanel(show){
+  var pinPanel  = document.getElementById('student-pin-panel');
+  var loginPanel= document.getElementById('how-login-panel');
+  if(!pinPanel) return;
+
+  if(show){
+    // Populate student dropdown from localStorage
+    var students = [];
+    try{ students = JSON.parse(localStorage.getItem('how_students')||'[]'); }catch(e){}
+    var sel = document.getElementById('pin-student-select');
+    sel.innerHTML = '<option value="">— choose —</option>';
+    students.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name + ' (Grade ' + (s.current_grade||s.grade_start||'?') + ')';
+      sel.appendChild(opt);
+    });
+    pinPanel.style.display  = 'block';
+    if(loginPanel) loginPanel.style.display = 'none';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-error').style.display = 'none';
+  } else {
+    pinPanel.style.display  = 'none';
+    if(loginPanel) loginPanel.style.display = 'block';
+  }
+}
+
+async function verifyStudentPin(){
+  var studentId = document.getElementById('pin-student-select').value;
+  var pin       = document.getElementById('pin-input').value.trim();
+  var errEl     = document.getElementById('pin-error');
+
+  if(!studentId){ errEl.textContent='Please select a student.'; errEl.style.display='block'; return; }
+  if(!pin||pin.length<4){ errEl.textContent='Please enter your 4-digit PIN.'; errEl.style.display='block'; return; }
+
+  errEl.style.display='none';
+
+  try{
+    // Verify PIN via Supabase RPC
+    var result = await sb.rpc('verify_student_pin', {
+      p_student_id: studentId,
+      p_pin:        pin
+    });
+
+    if(result.error) throw result.error;
+    if(!result.data){
+      errEl.textContent = 'Incorrect PIN. Please try again.';
+      errEl.style.display = 'block';
+      document.getElementById('pin-input').value = '';
+      return;
+    }
+
+    // PIN correct — load student profile
+    var students = [];
+    try{ students = JSON.parse(localStorage.getItem('how_students')||'[]'); }catch(e){}
+    var student = students.find(function(s){ return s.id === studentId; });
+    if(!student) return;
+
+    // Set active student in localStorage
+    localStorage.setItem('how_active_student', JSON.stringify(student));
+
+    // Apply student state to platform
+    S.grade = student.current_grade||student.grade_start||7;
+    S.week  = student.current_week||1;
+
+    // Update selectors
+    var gradeEl=document.getElementById('sch-grade');
+    var weekEl=document.getElementById('sch-week');
+    if(gradeEl) gradeEl.value=String(S.grade);
+    if(weekEl)  weekEl.value=String(S.week);
+
+    // Update sahifa_settings
+    try{
+      var existing=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
+      localStorage.setItem('sahifa_settings',JSON.stringify({
+        ...existing, name:student.name||'', grade:S.grade, juz:S.week,
+      }));
+    }catch(e){}
+
+    // Show student in nav
+    var navName=document.getElementById('nav-user-name');
+    if(navName) navName.textContent=student.name+' (student)';
+
+    // Switch to student role and close panel
+    setRole('student');
+    localStorage.setItem('how_role','student');
+    document.getElementById('student-pin-panel').style.display='none';
+
+    toast('Ahlan, '+student.name+' — let\'s learn!');
+
+    // Go to schedule
+    var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
+    if(schedBtn) SP(schedBtn);
+    render();
+    if(typeof updateSchedule==='function') updateSchedule();
+
+  }catch(e){
+    console.error('PIN verify error:', e);
+    errEl.textContent='Something went wrong. Please try again.';
+    errEl.style.display='block';
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Auth tab toggle + sign up moved to main script ──
+async function howSignUp(){
+  var name      = document.getElementById('su-name').value.trim();
+  var household = document.getElementById('su-household').value.trim();
+  var email     = document.getElementById('su-email').value.trim();
+  var password  = document.getElementById('su-password').value;
+  var roleEl    = document.querySelector('input[name="su-role"]:checked');
+  var role      = roleEl ? roleEl.value : 'facilitator';
+
+  if(!name)     { showLoginError('Please enter your name.'); return; }
+  if(!household){ showLoginError('Please enter your household or school name.'); return; }
+  if(!email)    { showLoginError('Please enter your email address.'); return; }
+  if(password.length < 8){ showLoginError('Password must be at least 8 characters.'); return; }
+
+  var btn = document.getElementById('how-signup-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Creating account…'; }
+  showLoginError('');
+
+  try{
+    const { data, error } = await sb.auth.signUp({
+      email:    email,
+      password: password,
+      options: {
+        data: {
+          name:           name,
+          household_name: household,
+          role:           role
+        }
+      }
+    });
+
+    if(error) throw error;
+
+    // Sign up successful
+    if(data.session){
+      // Auto-confirmed — log in immediately
+      await applyUserToProfile(data.user, data.session.access_token);
+    } else {
+      // Email confirmation required
+      showLoginError('');
+      var errEl = document.getElementById('how-login-error');
+      errEl.style.color='#1d6f6f';
+      errEl.textContent='✓ Account created! Check your email to confirm your account, then sign in.';
+      errEl.style.display='block';
+      switchAuthTab('signin');
+    }
+  }catch(e){
+    showLoginError('Sign up failed: '+e.message);
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='Create account'; }
+  }
+}
+
+// ── Student manager ────────────────────────────────────────────────────────
+async function openStudentManager(){
+  var modal = document.getElementById('student-manager-modal');
+  if(!modal) return;
+  modal.style.display='flex';
+  await renderStudentList();
+}
+
+function closeStudentManager(){
+  var modal = document.getElementById('student-manager-modal');
+  if(modal) modal.style.display='none';
+}
+
+async function renderStudentList(){
+  var listEl = document.getElementById('student-list');
+  if(!listEl) return;
+
+  var householdId = localStorage.getItem('how_household_id');
+  if(!householdId){ listEl.innerHTML='<p style="color:#9a9ab0;font-size:13px">No household found.</p>'; return; }
+
+  try{
+    var { data: students, error } = await sb
+      .from('student')
+      .select('id, name, current_grade, grade_start, current_week')
+      .eq('household_id', householdId)
+      .order('name');
+
+    if(error) throw error;
+
+    if(!students||!students.length){
+      listEl.innerHTML='<p style="color:#9a9ab0;font-size:13px;text-align:center;padding:12px">No students yet — add your first student below.</p>';
+      return;
+    }
+
+    listEl.innerHTML = students.map(function(s){
+      var grade = s.current_grade||s.grade_start||'?';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0ebe4">'
+        +'<div>'
+        +'<div style="font-weight:600;font-size:13px;color:#1a1a2e">'+s.name+'</div>'
+        +'<div style="font-size:11px;color:#9a9ab0">Grade '+grade+' · Week '+(s.current_week||1)+'</div>'
+        +'</div>'
+        +'<div style="display:flex;gap:6px">'
+        +'<button onclick="resetStudentPin(''+s.id+'',''+s.name+'')" '
+        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e4ddd0;background:white;cursor:pointer;color:#5a5a78">Reset PIN</button>'
+        +'<button onclick="removeStudent(''+s.id+'',''+s.name+'')" '
+        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #fde8e0;background:#fde8e0;cursor:pointer;color:#c0522a">Remove</button>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+
+    // Update localStorage
+    localStorage.setItem('how_students', JSON.stringify(students));
+
+  }catch(e){
+    console.error('renderStudentList error:', e);
+    listEl.innerHTML='<p style="color:#c0522a;font-size:13px">Could not load students.</p>';
+  }
+}
+
+async function addStudent(){
+  var name      = document.getElementById('sm-name').value.trim();
+  var grade     = parseInt(document.getElementById('sm-grade').value)||7;
+  var pin       = document.getElementById('sm-pin').value.trim();
+  var errEl     = document.getElementById('sm-error');
+  var succEl    = document.getElementById('sm-success');
+  var householdId = localStorage.getItem('how_household_id');
+
+  errEl.style.display='none';
+  succEl.style.display='none';
+
+  if(!name)      { errEl.textContent='Please enter a name.'; errEl.style.display='block'; return; }
+  if(!pin||pin.length!==4||isNaN(pin)){ errEl.textContent='PIN must be exactly 4 digits.'; errEl.style.display='block'; return; }
+  if(!householdId){ errEl.textContent='No household found — please sign in first.'; errEl.style.display='block'; return; }
+
+  try{
+    // Insert student row
+    var { data: newStudent, error: insertError } = await sb
+      .from('student')
+      .insert({
+        household_id:  householdId,
+        name:          name,
+        grade_start:   grade,
+        current_grade: grade,
+        current_week:  S.week||1
+      })
+      .select()
+      .single();
+
+    if(insertError) throw insertError;
+
+    // Set PIN via RPC
+    var { error: pinError } = await sb.rpc('set_student_pin', {
+      p_student_id: newStudent.id,
+      p_pin:        pin
+    });
+
+    if(pinError) throw pinError;
+
+    // Clear form
+    document.getElementById('sm-name').value='';
+    document.getElementById('sm-pin').value='';
+    document.getElementById('sm-grade').value='7';
+
+    succEl.textContent='✓ '+name+' added successfully.';
+    succEl.style.display='block';
+
+    // Refresh list
+    await renderStudentList();
+
+  }catch(e){
+    console.error('addStudent error:', e);
+    errEl.textContent='Could not add student: '+e.message;
+    errEl.style.display='block';
+  }
+}
+
+async function resetStudentPin(studentId, studentName){
+  var newPin = prompt('Enter new 4-digit PIN for '+studentName+':');
+  if(!newPin||newPin.length!==4||isNaN(newPin)){
+    toast('PIN must be exactly 4 digits');
+    return;
+  }
+  try{
+    var { error } = await sb.rpc('set_student_pin', {
+      p_student_id: studentId,
+      p_pin:        newPin
+    });
+    if(error) throw error;
+    toast('✓ PIN updated for '+studentName);
+  }catch(e){
+    toast('⚠ Could not update PIN: '+e.message);
+  }
+}
+
+async function removeStudent(studentId, studentName){
+  if(!confirm('Remove '+studentName+'? This cannot be undone.')) return;
+  try{
+    var { error } = await sb.from('student').delete().eq('id', studentId);
+    if(error) throw error;
+    toast('✓ '+studentName+' removed');
+    await renderStudentList();
+  }catch(e){
+    toast('⚠ Could not remove student: '+e.message);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function showLoginError(msg){
   var el=document.getElementById('how-login-error');
@@ -8269,6 +8709,55 @@ async function publishTeachingSupabase(entry){
   }
 }
 </script>
+<!-- Student Manager Modal -->
+<div id="student-manager-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;overflow-y:auto;padding:20px">
+  <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h2 style="font-family:'Spectral',serif;font-size:1.2rem;font-weight:600;color:#1a1a2e">👥 Manage students</h2>
+      <button onclick="closeStudentManager()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9a9ab0">✕</button>
+    </div>
+
+    <!-- Existing students list -->
+    <div id="student-list" style="margin-bottom:24px"></div>
+
+    <!-- Add student form -->
+    <div style="border-top:1px solid #e4ddd0;padding-top:20px">
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;margin-bottom:12px">Add student</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="sm-name" type="text" placeholder="Student name"
+          style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none"
+          onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
+        <div style="display:flex;gap:8px">
+          <div style="flex:1">
+            <label style="font-size:11px;font-weight:600;color:#9a9ab0;display:block;margin-bottom:4px">Grade</label>
+            <select id="sm-grade" style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
+              <option value="0">Kindergarten</option>
+              <option value="1">Grade 1</option><option value="2">Grade 2</option>
+              <option value="3">Grade 3</option><option value="4">Grade 4</option>
+              <option value="5">Grade 5</option><option value="6">Grade 6</option>
+              <option value="7" selected>Grade 7</option><option value="8">Grade 8</option>
+              <option value="9">Grade 9</option><option value="10">Grade 10</option>
+              <option value="11">Grade 11</option><option value="12">Grade 12</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label style="font-size:11px;font-weight:600;color:#9a9ab0;display:block;margin-bottom:4px">PIN (4 digits)</label>
+            <input id="sm-pin" type="password" maxlength="4" placeholder="e.g. 1234" inputmode="numeric"
+              style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;letter-spacing:.2em"
+              onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
+          </div>
+        </div>
+        <button onclick="addStudent()"
+          style="width:100%;background:#1a3d8a;color:white;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          Add student
+        </button>
+        <p id="sm-error" style="display:none;color:#c0522a;font-size:12px;text-align:center"></p>
+        <p id="sm-success" style="display:none;color:#1d6f6f;font-size:12px;text-align:center"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 
