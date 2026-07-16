@@ -139,6 +139,12 @@ textarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}
 .k2-listen-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:4px 10px;background:var(--cream2);border:1px solid var(--cream3);border-radius:12px;font-size:11px;cursor:pointer;font-family:inherit}
 .k2-listen-btn:hover{background:var(--teal-pale)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+var sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+/* ─────────────────────────────────────────────────── */
+</script>
 </head>
 <body>
 <div class="app">
@@ -167,6 +173,39 @@ textarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}
       <div class="claim-meta" id="claim-meta"></div>
     </div>
 
+    <!-- Mode selector -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-label">Mode</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+        <button id="btn-solo-mun" onclick="setMunMode('solo')" style="padding:14px 10px;border-radius:8px;border:2px solid var(--sacred);background:var(--sacred-pale);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--sacred)">
+          🤖 Debate the Ustadh<br><span style="font-weight:400;font-size:11px;opacity:.8">Solo — AI responds immediately</span>
+        </button>
+        <button id="btn-challenge-mun" onclick="setMunMode('challenge')" style="padding:14px 10px;border-radius:8px;border:2px solid var(--cream3);background:var(--cream2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink3)">
+          ⚔ Challenge a household<br><span style="font-weight:400;font-size:11px;opacity:.8">Async — real opponent</span>
+        </button>
+      </div>
+      <!-- Challenge sub-options -->
+      <div id="challenge-opts" style="display:none;margin-top:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <button id="btn-create-challenge" onclick="setChallengeRole('create')" style="padding:10px 8px;border-radius:8px;border:2px solid var(--cream3);background:var(--cream2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink3)">
+            ✦ Create challenge<br><span style="font-weight:400;font-size:10px">generate a code</span>
+          </button>
+          <button id="btn-accept-challenge" onclick="setChallengeRole('accept')" style="padding:10px 8px;border-radius:8px;border:2px solid var(--cream3);background:var(--cream2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink3)">
+            ↩ Accept challenge<br><span style="font-weight:400;font-size:10px">enter a code</span>
+          </button>
+        </div>
+        <!-- Create: show generated code -->
+        <div id="challenge-code-display" style="display:none;text-align:center;padding:12px;background:var(--sacred-pale);border:1.5px solid var(--sacred);border-radius:8px;margin-bottom:10px">
+          <p style="font-size:11px;font-weight:700;color:var(--sacred);margin-bottom:4px">Share this code with your opponent</p>
+          <p id="challenge-code-text" style="font-size:2rem;font-weight:900;color:var(--sacred);letter-spacing:.3em"></p>
+        </div>
+        <!-- Accept: enter code -->
+        <div id="challenge-code-entry" style="display:none">
+          <input class="setup-input" type="text" id="challenge-code-input" maxlength="4" placeholder="Enter 4-letter code" style="text-transform:uppercase;letter-spacing:.2em;text-align:center;font-size:1.1rem" oninput="this.value=this.value.toUpperCase()">
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-label">Customize claim (optional)</div>
       <div class="setup-section">
@@ -189,7 +228,7 @@ textarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}
           <button class="pos-btn against" id="pos-against" onclick="setPosition('against')">✗ Against — I will argue AGAINST</button>
         </div>
       </div>
-      <button class="btn-primary" onclick="startDebate()">Begin the munazara →</button>
+      <button class="btn-primary" id="btn-begin-debate" onclick="startDebate()">Begin the munazara →</button>
     </div>
   </div>
 
@@ -258,6 +297,12 @@ textarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}
 //  STATE
 // ═══════════════════════════════════════════════════
 var STORE_KEY = 'how_munazara_v1';
+var _munMode = 'solo';       // 'solo'|'challenge'
+var _munRole = 'a';          // 'a'=challenger, 'b'=opponent
+var _debateId = null;        // Supabase debate row id
+var _debateCode = null;      // 4-char join code
+var _realtimeDebate = null;  // Supabase Realtime channel
+
 
 function isK2(){
   var g=parseInt(D.grade)||parseInt(document.getElementById('student-grade').value)||99;
@@ -346,6 +391,185 @@ function loadDebate(){
   showScreen('setup');
 }
 
+// ── Challenge mode setters ────────────────────────────────────────────────
+function setMunMode(mode){
+  _munMode = mode;
+  var btnSolo = document.getElementById('btn-solo-mun');
+  var btnChal = document.getElementById('btn-challenge-mun');
+  var chalOpts = document.getElementById('challenge-opts');
+  var beginBtn = document.getElementById('btn-begin-debate');
+  if(btnSolo){
+    btnSolo.style.borderColor = mode==='solo'?'var(--sacred)':'var(--cream3)';
+    btnSolo.style.background  = mode==='solo'?'var(--sacred-pale)':'var(--cream2)';
+    btnSolo.style.color       = mode==='solo'?'var(--sacred)':'var(--ink3)';
+  }
+  if(btnChal){
+    btnChal.style.borderColor = mode==='challenge'?'var(--sacred)':'var(--cream3)';
+    btnChal.style.background  = mode==='challenge'?'var(--sacred-pale)':'var(--cream2)';
+    btnChal.style.color       = mode==='challenge'?'var(--sacred)':'var(--ink3)';
+  }
+  if(chalOpts) chalOpts.style.display = mode==='challenge'?'block':'none';
+  if(beginBtn) beginBtn.textContent = mode==='challenge'?'Start challenge →':'Begin the munazara →';
+}
+
+function setChallengeRole(role){
+  var btnCreate = document.getElementById('btn-create-challenge');
+  var btnAccept = document.getElementById('btn-accept-challenge');
+  var codeDisp  = document.getElementById('challenge-code-display');
+  var codeEntry = document.getElementById('challenge-code-entry');
+  if(btnCreate){
+    btnCreate.style.borderColor = role==='create'?'var(--sacred)':'var(--cream3)';
+    btnCreate.style.background  = role==='create'?'var(--sacred-pale)':'var(--cream2)';
+    btnCreate.style.color       = role==='create'?'var(--sacred)':'var(--ink3)';
+  }
+  if(btnAccept){
+    btnAccept.style.borderColor = role==='accept'?'var(--sacred)':'var(--cream3)';
+    btnAccept.style.background  = role==='accept'?'var(--sacred-pale)':'var(--cream2)';
+    btnAccept.style.color       = role==='accept'?'var(--sacred)':'var(--ink3)';
+  }
+  if(codeDisp)  codeDisp.style.display  = role==='create'?'block':'none';
+  if(codeEntry) codeEntry.style.display = role==='accept'?'block':'none';
+  if(role==='create') generateDebateCode();
+  _munRole = role==='create'?'a':'b';
+}
+
+function generateDebateCode(){
+  var words=['HAQQ','ADAB','SABR','NOOR','HIKMAH'.slice(0,4),
+             'ILMU'.slice(0,4),'BAYT','WAQT','DEEN','NAFS'];
+  var code = words[Math.floor(Math.random()*words.length)];
+  code = code.slice(0,3) + Math.floor(Math.random()*9+1);
+  _debateCode = code;
+  var el = document.getElementById('challenge-code-text');
+  if(el) el.textContent = code;
+}
+
+// ── Supabase debate persistence ───────────────────────────────────────────
+async function createDebateRow(){
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  if(!jwt||!hid||typeof sb==='undefined') return null;
+  try{
+    var result = await sb.from('debate').insert({
+      household_a:    hid,
+      student_a_name: D.studentName,
+      student_a_pos:  D.studentPosition,
+      student_b_pos:  D.studentPosition==='for'?'against':'for',
+      claim:          D.claim,
+      grade:          parseInt(D.grade)||7,
+      week:           parseInt(localStorage.getItem('how_week')||'1')||1,
+      moves:          [],
+      current_turn:   'a',
+      status:         'active',
+      mode:           _munMode,
+      code:           _munMode==='challenge'?_debateCode:null
+    }).select().single();
+    if(result.error) throw result.error;
+    _debateId = result.data.id;
+    console.log('Debate created:', _debateId);
+    return _debateId;
+  }catch(e){
+    console.warn('createDebateRow failed:', e.message);
+    return null;
+  }
+}
+
+async function acceptDebateChallenge(){
+  var code = (document.getElementById('challenge-code-input')||{}).value;
+  if(!code||code.length<3){ toast('Enter a valid challenge code'); return false; }
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  if(!jwt||!hid){ toast('Sign in to accept a challenge'); return false; }
+  try{
+    // Look up debate by code
+    var result = await sb.from('debate')
+      .select('*').eq('code', code.toUpperCase()).single();
+    if(result.error||!result.data){ toast('Challenge not found — check the code'); return false; }
+    var debate = result.data;
+    if(debate.status==='complete'){ toast('This debate is already complete'); return false; }
+    // Join as household_b
+    var upd = await sb.from('debate').update({
+      household_b:    hid,
+      student_b_name: D.studentName,
+      status:         'active'
+    }).eq('id', debate.id).select().single();
+    if(upd.error) throw upd.error;
+    _debateId    = debate.id;
+    _debateCode  = debate.code;
+    D.claim      = debate.claim;
+    D.grade      = String(debate.grade||7);
+    D.studentPosition = debate.student_b_pos||'against';
+    // Load existing moves
+    D.moves = Array.isArray(debate.moves)?debate.moves:[];
+    console.log('Joined debate:', _debateId, 'moves so far:', D.moves.length);
+    return true;
+  }catch(e){
+    console.warn('acceptDebateChallenge failed:', e.message);
+    toast('Could not join challenge: '+e.message);
+    return false;
+  }
+}
+
+async function pushMoveToSupabase(moveText, moveType){
+  if(!_debateId||typeof sb==='undefined') return;
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt) return;
+  try{
+    var result = await sb.rpc('append_debate_move', {
+      p_debate_id: _debateId,
+      p_move_text: moveText,
+      p_move_type: moveType,
+      p_who:       _munRole
+    });
+    if(result.error) throw result.error;
+    console.log('Move pushed to Supabase');
+  }catch(e){
+    console.warn('pushMoveToSupabase failed:', e.message);
+    toast('Could not save move to server: '+e.message);
+  }
+}
+
+async function saveDebateToSupabase(){
+  // Save completed solo debate or challenge synthesis
+  if(!_debateId||typeof sb==='undefined') return;
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt) return;
+  try{
+    await sb.from('debate').update({
+      synthesis:  D.synthesis?JSON.stringify(D.synthesis):null,
+      status:     'complete',
+      is_public:  false,  // facilitator publishes manually
+      updated_at: new Date().toISOString()
+    }).eq('id', _debateId);
+    console.log('Debate saved to Supabase');
+  }catch(e){
+    console.warn('saveDebateToSupabase failed:', e.message);
+  }
+}
+
+function subscribeToDebate(){
+  if(!_debateId||typeof sb==='undefined') return;
+  _realtimeDebate = sb.channel('debate-'+_debateId)
+    .on('postgres_changes',
+      { event:'UPDATE', schema:'public', table:'debate',
+        filter:'id=eq.'+_debateId },
+      function(payload){
+        var d = payload.new;
+        // Reload moves from server
+        if(Array.isArray(d.moves) && d.moves.length > D.moves.length){
+          D.moves = d.moves;
+          saveDebate();
+          renderDebate();
+          // Auto-generate AI response if it's AI's turn in challenge mode
+          if(d.status==='complete'){
+            generateSynthesis();
+          }
+        }
+      })
+    .subscribe();
+  console.log('Subscribed to debate:', _debateId);
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 function saveDebate(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(D)); }catch(e){}
 }
@@ -359,41 +583,74 @@ function setPosition(p){
   document.getElementById('pos-against').classList.toggle('active', p==='against');
 }
 
-function startDebate(){
+async function startDebate(){
   var name=document.getElementById('student-name').value.trim();
   var grade=document.getElementById('student-grade').value.trim();
   var customClaim=document.getElementById('custom-claim').value.trim();
 
-  // Get claim
+  if(!name){ toast('Please enter the student name'); return; }
+  if(!D.studentPosition && _munMode==='solo'){ toast('Please choose a position'); return; }
+
+  D.studentName=name;
+  D.grade=grade||'7';
+
+  // ── Challenge mode: accept existing debate ──
+  if(_munMode==='challenge' && _munRole==='b'){
+    var ok = await acceptDebateChallenge();
+    if(!ok) return;
+    saveDebate();
+    showScreen('debate');
+    renderDebate();
+    subscribeToDebate();
+    return;
+  }
+
+  // ── Solo or create challenge: need a claim ──
   var platformClaim='';
   try{
     var stored=localStorage.getItem(PLATFORM_CLAIM_KEY);
     if(stored) platformClaim=JSON.parse(stored).claim||'';
   }catch(e){}
-
   var claim=customClaim||platformClaim;
   if(!claim){ toast('Please enter a claim or generate a Session 2 lesson first'); return; }
-  if(!name){ toast('Please enter the student name'); return; }
-  if(!D.studentPosition){ toast('Please choose a position'); return; }
 
   D.claim=claim;
-  D.studentName=name;
-  D.grade=grade||'7';
   D.moves=[];
   D.started=Date.now();
   D.complete=false;
   D.synthesis=null;
 
+  // Create Supabase row
+  await createDebateRow();
+
   saveDebate();
   showScreen('debate');
 
-  // For K-2, generate choice sets before rendering
+  if(_munMode==='challenge'){
+    // Challenge creator waits for opponent — show waiting state
+    addChallengeWaitingBanner();
+    subscribeToDebate();
+    return;
+  }
+
+  // Solo: start immediately
   if(isK2() && !D.k2Choices){
-    renderDebate(); // show loading state
+    renderDebate();
     generateK2Choices();
   } else {
     renderDebate();
   }
+}
+
+function addChallengeWaitingBanner(){
+  var mc = document.getElementById('screen-debate');
+  if(!mc) return;
+  var banner = document.createElement('div');
+  banner.id = 'challenge-waiting-banner';
+  banner.style.cssText = 'background:var(--sacred-pale);border:1.5px solid var(--sacred);border-radius:10px;padding:16px;margin-bottom:16px;text-align:center';
+  banner.innerHTML = '<p style="font-weight:700;color:var(--sacred);margin-bottom:4px">Waiting for opponent…</p>'
+    + '<p style="font-size:12px;color:var(--ink3)">Share code <strong style="letter-spacing:.1em">'+(_debateCode||'')+'</strong> with your opponent. The debate begins when they join.</p>';
+  mc.insertBefore(banner, mc.firstChild);
 }
 
 // ═══════════════════════════════════════════════════
@@ -515,8 +772,11 @@ function submitMove(){
   var text=document.getElementById('write-textarea').value.trim();
   if(text.length<20){ toast('Write at least a few sentences before submitting'); return; }
   var currentIdx=D.moves.length;
-  D.moves.push({who:'student',type:MOVE_SEQUENCE[currentIdx].type,text:text,ts:Date.now()});
+  var moveType = MOVE_SEQUENCE[currentIdx].type;
+  D.moves.push({who:'student',type:moveType,text:text,ts:Date.now()});
   saveDebate();
+  // Push to Supabase
+  pushMoveToSupabase(text, moveType);
   renderDebate();
   setTimeout(function(){
     var el=document.getElementById('move-'+D.moves.length);
@@ -1044,14 +1304,11 @@ async function callAPI(sys, usr, maxTokens){
   var k=''; try{ k=localStorage.getItem('how_api_key')||''; }catch(e){}
   if(!k) throw new Error('No API key saved');
 
-  var resp=await fetch('https://api.anthropic.com/v1/messages',{
+  var resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':k,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
+    headers:{'Content-Type':'application/json'},
+    // Railway proxy — no API key needed
+   
     body:JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens:maxTokens||800,

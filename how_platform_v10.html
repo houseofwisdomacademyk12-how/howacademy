@@ -2497,7 +2497,10 @@ function schedPresent(grade, week, subj, sess){
   _schedReturnState={grade:_gEl?_gEl.value:'7',week:_wEl?_wEl.value:'8',day:_aDay?_aDay.dataset.day:'sun'};
   _schedPresActive=true;
   S.grade=g; S.week=w; S.subj=s; S.session=ses;
-  if(_schedRole==='student'||_schedRole==='child') lgSetMode('prep');
+  // Set correct role before opening presentation
+  if(_schedRole==='student'||_schedRole==='child') setRole('student');
+  else if(_schedRole==='prep') setRole('parent');
+  else setRole('facilitator');
   openPres();
 }
 
