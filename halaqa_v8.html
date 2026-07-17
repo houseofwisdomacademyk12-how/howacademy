@@ -537,17 +537,78 @@ function submitPre(){
 function openHalaqa(){
   showScreen('halaqa');G.phase='opening';G.sessionStart=Date.now();G.messages=[];
   _resetPeerCounts();
-  const pn=['Khalid','Fatima','Omar','Nadia','Tariq','Aisha','Sara','Leila'].filter(n=>n!==G.name).sort(()=>Math.random()-.5);
-  const cnt=Math.min(4,pn.length);
-  G.participants=[
-    {n:'الحلقة',role:'ai',bg:'var(--gold)',fc:'var(--gp)',st:'on'},
-    {n:G.name,role:'self',bg:'var(--bl)',fc:'var(--blue)',st:'on'},
-    ...pn.slice(0,cnt).map(n=>({n,role:'peer',bg:'var(--tl)',fc:'var(--teal)',st:'on'})),
-  ];
+
+  // ── Live session: build participants from real humans ──────────────────
+  if(_liveMode && _liveParticipants.length > 0){
+    var realHumans = _liveParticipants.filter(function(p){
+      return p.name && p.name !== G.name;
+    });
+    var realCount = realHumans.length + 1; // +1 for self
+
+    // AI peer names to fill remaining seats (max circle = 6)
+    var aiPeerNames = ['Khalid','Fatima','Omar','Nadia','Tariq','Aisha','Sara','Leila']
+      .filter(function(n){return n!==G.name && !realHumans.some(function(h){return h.name===n;});})
+      .sort(function(){return Math.random()-.5;});
+
+    // Scale AI peers based on real humans
+    var aiPeerCount = realCount>=6?0:realCount>=5?0:realCount>=3?Math.max(0,5-realCount):Math.max(0,5-realCount);
+
+    // Build participants array
+    G.participants = [];
+
+    // AI facilitator only if no human facilitator
+    var hasFacilitator = _liveParticipants.some(function(p){ return p.role==='facilitator'; });
+    if(!hasFacilitator || _isLiveFac){
+      // This user IS the facilitator — they lead, no AI facilitator
+      G.participants.push({n:G.name,role:'self',bg:'var(--gold)',fc:'var(--gp)',st:'on'});
+    } else {
+      // Human facilitator exists on another device — they lead
+      var facName = _liveParticipants.find(function(p){return p.role==='facilitator';});
+      G.participants.push({n:facName?facName.name:'Facilitator',role:'facilitator',bg:'var(--gold)',fc:'var(--gp)',st:'on'});
+      G.participants.push({n:G.name,role:'self',bg:'var(--bl)',fc:'var(--blue)',st:'on'});
+    }
+
+    // Add real human students (excluding self and facilitator)
+    realHumans.filter(function(h){return h.role!=='facilitator';}).forEach(function(h){
+      G.participants.push({n:h.name,role:'peer',bg:'var(--tl)',fc:'var(--teal)',st:'on'});
+    });
+
+    // Fill remaining seats with AI peers
+    aiPeerNames.slice(0,aiPeerCount).forEach(function(n){
+      G.participants.push({n,role:'peer',bg:'var(--tl)',fc:'var(--teal)',st:'on'});
+    });
+
+    // Add AI facilitator only if no human facilitator present
+    if(!hasFacilitator && !_isLiveFac){
+      G.participants.unshift({n:'الحلقة',role:'ai',bg:'var(--gold)',fc:'var(--gp)',st:'on'});
+    }
+
+  } else {
+    // ── Solo mode: original behaviour ─────────────────────────────────────
+    var pn=['Khalid','Fatima','Omar','Nadia','Tariq','Aisha','Sara','Leila'].filter(function(n){return n!==G.name;}).sort(function(){return Math.random()-.5;});
+    var cnt=Math.min(4,pn.length);
+    G.participants=[
+      {n:'الحلقة',role:'ai',bg:'var(--gold)',fc:'var(--gp)',st:'on'},
+      {n:G.name,role:'self',bg:'var(--bl)',fc:'var(--blue)',st:'on'},
+      ...pn.slice(0,cnt).map(function(n){return {n,role:'peer',bg:'var(--tl)',fc:'var(--teal)',st:'on'};})
+    ];
+  }
+
   renderSeats();renderSahifa();startTimer();
   addSys('The circle opens. No video. No rows. Everyone is equal here.');
-  setTimeout(()=>aiOpen(),1400);
-  setTimeout(()=>{ if(Math.random()<0.6) simPeer(); },7000+Math.random()*4000);
+
+  // AI facilitator opens only in solo mode or when no human facilitator
+  var hasHumanFac = _isLiveFac || _liveParticipants.some(function(p){return p.role==='facilitator';});
+  if(!_liveMode || !hasHumanFac){
+    setTimeout(function(){aiOpen();},1400);
+  } else if(_isLiveFac){
+    // Human facilitator: prompt them to open
+    setTimeout(function(){
+      addSys('You are the facilitator. Open the circle with your question or invite a student to share their pre-answer.');
+    },1000);
+  }
+
+  if(!_liveMode) setTimeout(function(){if(Math.random()<0.6) simPeer();},7000+Math.random()*4000);
 }
 
 function renderSeats(){
