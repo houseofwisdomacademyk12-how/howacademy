@@ -808,14 +808,16 @@ async function aiRespond(who,text){
 }
 
 async function callAI(msgs,sys){
-  if(!G.apiKey){await delay(800+Math.random()*600);return DEMO[G.demoIdx++%DEMO.length];}
   try{
     const r=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:280,system:sys,messages:msgs.slice(-10)})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     return d.content?.[0]?.text||'…';
-  }catch(e){return`(Facilitator paused — ${e.message.slice(0,50)})`;}
+  }catch(e){
+    console.warn('callAI failed:',e.message);
+    return DEMO[G.demoIdx++%DEMO.length]; // fallback only on error
+  }
 }
 
 const PEER_RESP=['I think it might be because all circles are the same shape — just different sizes, so the ratio has to stay the same.','But does similarity actually force the ratio to be constant? It feels like that needs more justification.','What surprises me is that it\'s irrational. I\'d expect a fundamental ratio to be something clean like 3 or 22/7.','In my sahifa I wrote about Al-Idrisi\'s circular map. I\'m wondering if he had to calculate π to draw it accurately.','I think measurement and proof are actually different things. Al-Battani measured it. Archimedes proved it. Which one counts?','Could there be a geometry where circles have a different ratio? Like on a sphere or a curved surface?'];
