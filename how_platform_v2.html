@@ -1056,7 +1056,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <span class="nav-logo">م بَيْتُ الْحِكْمَة</span>
     <div class="nav-tabs">
       <!-- Primary tabs — always visible -->
-      <button class="ntab active" data-p="institution" onclick="SP(this)">Home</button>
+      <button class="ntab" data-p="institution" onclick="SP(this)">Home</button>
       <button class="ntab" data-p="schedule" onclick="SP(this)">📅 Schedule</button>
       <button class="ntab" data-p="generate" onclick="SP(this);syncLG()">⚡ Generate</button>
 
@@ -1090,6 +1090,8 @@ body.lg-active #lg-root .toast.show { display:block !important; }
         </div>
       </div>
     </div>
+    <!-- Sign in button (shown when logged out) -->
+    <button id="nav-signin-btn" onclick="goToSignIn()" style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.85);cursor:pointer;font-family:inherit;font-weight:600;margin-right:8px">Sign in / Sign up</button>
     <!-- User indicator + notifications + sign out -->
     <div id="nav-user" style="display:none;align-items:center;gap:8px;padding:0 12px;flex-shrink:0">
       <span id="nav-user-name" style="font-size:12px;font-weight:600;color:rgba(255,255,255,.7)"></span>
@@ -1112,7 +1114,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 </nav>
 
 <!-- ═══ OVERVIEW ═══════════════════════════════════════ -->
-<div class="page" id="p-overview">
+<div class="page active" id="p-overview">
 <div class="mh">
   <p class="mh-seal">م</p>
   <p class="mh-ar">بَيْتُ الْحِكْمَة — House of Wisdom</p>
@@ -1146,7 +1148,28 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 <div class="g2">
   <div class="card"><div class="ch"><span style="font-size:14px">📜</span><div style="margin-left:7px"><p class="ct">Layer 1 — Curriculum</p><p class="cs">390 weeks · 5 subjects · audited against CCSS & NGSS</p></div></div><div class="cb"><p class="ct2">390 weeks of curriculum across 13 grades and 5 subjects — Mathematics, ELA, Writing, Science, and Social Studies — with Islamic scholars woven throughout as the actual history of each discipline. Every week connects to a Quranic Juz, a scholar, and an opening question that drives the week's inquiry. The curriculum meets CCSS and NGSS standards while restoring what those standards omit: the Islamic roots of algebra, astronomy, medicine, optics, and geography. Browse the full scope and sequence in the Curriculum tab.</p></div></div>
   <div class="card"><div class="ch"><span style="font-size:14px">🏛</span><div style="margin-left:7px"><p class="ct">Layer 2 — Studios</p><p class="cs">10 enrichment studios · backward-planned</p></div></div><div class="cb"><p class="ct2">Each studio has a peak task, a prerequisite map, and a direct connection to specific curriculum weeks. Tuesday open studio — all ages, all studios simultaneously — is the irreplaceable physical moment the platform is designed around.</p><div class="badge-row"><span class="badge ppurp">Math</span><span class="badge pteal">Astronomy</span><span class="badge pamber">Engineering</span><span class="badge pblue">Medicine</span><span class="badge pcoral">Humanities</span></div></div></div>
-  <div class="card"><div class="ch"><span style="font-size:14px">م</span><div style="margin-left:7px"><p class="ct">Layer 3 — Pedagogy</p><p class="cs">7 approaches from the House of Wisdom tradition</p></div></div><div class="cb"><p class="ct2">Sahifa, halaqa, translation chain, munazara, maktaba, murshid, isnad — each drawn from actual Islamic scholarly practice. The Murshid tab gives you live access to the AI murshid. Provide your API key and use it now.</p></div></div>
+  <div class="card"><div class="ch"><span style="font-size:14px">م</span><div style="margin-left:7px"><p class="ct">Layer 3 — Pedagogy</p><p class="cs">7 approaches from the House of Wisdom tradition</p></div></div><div class="cb">
+<p class="ct2" style="margin-bottom:12px">One week · one inquiry · seven dimensions</p>
+<div style="background:rgba(255,255,255,.06);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.8">
+  <div style="font-weight:700;color:#d4af37;margin-bottom:6px">Week anchor · Al-Battani · Circles · Al-Khaliq</div>
+  <div><span style="color:#4cd3a0;font-weight:700">MATHEMATICS</span> · Circumference, π, Al-Battani's tables</div>
+  <div><span style="color:#5fd0e6;font-weight:700">SCIENCE</span> · Measuring the sky — arc, radius, orbit</div>
+  <div><span style="color:#ff9d6b;font-weight:700">SOCIAL STUDIES</span> · Baghdad's House of Wisdom, Islamic astronomy</div>
+  <div><span style="color:#a0c4ff;font-weight:700">ELA / WRITING</span> · Argue why π is irrational — evidence, precision</div>
+  <div><span style="color:#c9a0ff;font-weight:700">STUDIO</span> · Build a dome — geometry becomes architecture</div>
+  <div><span style="color:#d4af37;font-weight:700">SACRED LAYER</span> · Al-Khaliq — creation has measurable, beautiful order</div>
+</div>
+<p class="ct2" style="font-weight:700;margin-bottom:8px">Seven approaches from the House of Wisdom</p>
+<div style="font-size:12px;line-height:2">
+  <div>📜 <strong>Sahifa</strong> — 13-year personal manuscript</div>
+  <div>🔵 <strong>Halaqa</strong> — circle of named inquiry</div>
+  <div>⚔ <strong>Munazara</strong> — claim defended under pressure</div>
+  <div>🏗 <strong>Maktaba</strong> — studio's library of making</div>
+  <div>م <strong>Murshid</strong> — guide who asks before answering</div>
+  <div>🔗 <strong>Isnad</strong> — chain of transmission</div>
+  <div>↔ <strong>Translation Chain</strong> — knowledge moves across disciplines and generations, as it did from Greek to Arabic to the world. You are next.</div>
+</div>
+</div></div>
   <div class="card"><div class="ch"><span style="font-size:14px">✦</span><div style="margin-left:7px"><p class="ct">Layer 4 — Sacred layer</p><p class="cs">Name · Hadith · Muhasaba · Mathnawi · Istajibullah</p></div></div><div class="cb"><p class="ct2">Not a separate subject. The Name sets the lens (Saturday evening). The hadith holds the mirror (Wednesday). The muhasaba asks who you are becoming (Thursday). Browse all 30 Names mapped to all 30 Juz in the Sacred Layer tab.</p></div>  <div class="card"><div class="ch"><span style="font-size:14px">🖥</span><div style="margin-left:7px"><p class="ct">Layer 5 — Digital tools</p><p class="cs">5 standalone tools · all downloadable · offline-capable</p></div></div><div class="cb"><p class="ct2">Sahifa (living manuscript), Murshid (AI scholarly guide), Halaqa (learning circle), Peer Teaching Library (knowledge commons), and Studio Digital Twin (maktaba of making). Each tool functions independently and connects to the others through the student's own record of learning.</p></div></div>
 
 <div class="sh"><div class="shb" style="height:18px;background:var(--purple)"></div><div><p class="sht">Digital tools — all downloadable</p></div></div>
@@ -1389,7 +1412,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 </div>
 
 <!-- ═══ INSTITUTION ════════════════════════════════════ -->
-<div class="page active" id="p-institution">
+<div class="page" id="p-institution">
 <div id="how-login-panel" style="max-width:380px;margin:0 auto 2rem;background:white;border-radius:14px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.1);border:1px solid #e4ddd0">
   <!-- Header -->
   <div style="text-align:center;margin-bottom:20px">
@@ -2370,8 +2393,16 @@ function setSchedRole(role){
     b.style.color=on?'white':'var(--ink3,#5a5a78)';
     b.style.borderColor=on?'#1d6f6f':'var(--p3,#e4ddd0)';
   });
-  if(role==='child'){ setRole('student'); }
-  else if(role==='prep'){ setRole('parent'); }
+  if(role==='child'||role==='student'){
+    var jwt=localStorage.getItem('how_jwt');
+    var students=[];
+    try{students=JSON.parse(localStorage.getItem('how_students')||'[]');}catch(e){}
+    if(jwt&&students.length){
+      var instBtn=document.querySelector('.ntab[data-p="institution"]');
+      if(instBtn) SP(instBtn);
+      showStudentPinPanel(true);
+    } else { setRole('student'); }
+  } else if(role==='prep'){ setRole('parent'); }
   else if(role==='facilitator'){ setRole('facilitator'); }
   updateSchedule();
 }
@@ -3947,6 +3978,7 @@ var _cvs = {}; // idx→{ctx, drawing, color, tool, size}
   setColour('math'); render();
   var _savedRole=localStorage.getItem('how_role')||'facilitator';
   setRole(_savedRole);
+  updateNavAuthState();
 })();
 
 var _lastRebuildGrade = null;
@@ -7313,154 +7345,9 @@ function showRolePicker(){
 
 // ─── Munazara Panel ───────────────────────────────────
 function openMunazara(){
-  var p=document.getElementById('mun-panel');
-  if(!p){
-    if(!document.getElementById('mun-css')){
-      var s=document.createElement('style'); s.id='mun-css';
-      s.textContent="*{box-sizing:border-box;margin:0;padding:0}\n:root{\n  --ink:#1a1a2e;--ink2:#2e2e44;--ink3:#5a5a78;--ink4:#9a9ab0;\n  --cream:#faf8f4;--cream2:#f5ede0;--cream3:#e8ddd0;\n  --teal:#1d6f6f;--teal-pale:#d0eaea;\n  --gold:#d4af37;--gold-pale:#fdf5d0;\n  --sacred:#5c2080;--sacred-pale:#ede0f8;\n  --navy:#1a3d8a;--red:#c0392b;\n  --radius:10px;--radius-sm:6px;\n  --shadow:0 4px 20px rgba(0,0,0,.08);\n}\nbody{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}\nh1,h2,h3{font-family:'Spectral',serif;font-weight:600}\n\n/* ── Layout ── */\n.app{max-width:740px;margin:0 auto;padding:24px 16px 60px}\n.app-header{text-align:center;padding:24px 0 32px}\n.app-ar{font-family:'Amiri',serif;font-size:22px;color:var(--gold);margin-bottom:4px}\n.app-title{font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px}\n.app-sub{font-size:13px;color:var(--ink3)}\n\n/* ── Cards ── */\n.card{background:white;border:1px solid var(--cream3);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}\n.card-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ink4);margin-bottom:8px}\n.card-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px}\n\n/* ── Claim box ── */\n.claim-box{background:var(--sacred-pale);border:2px solid var(--sacred);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px}\n.claim-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--sacred);margin-bottom:8px}\n.claim-text{font-family:'Spectral',serif;font-size:17px;font-style:italic;color:var(--ink);line-height:1.6}\n.claim-meta{font-size:12px;color:var(--ink3);margin-top:8px}\n\n/* ── Setup screen ── */\n.setup-section{margin-bottom:20px}\n.setup-label{font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px;display:block}\n.setup-input{width:100%;padding:10px 12px;border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--ink)}\n.setup-input:focus{outline:none;border-color:var(--teal)}\ntextarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}\n.position-row{display:flex;gap:10px;margin-top:4px}\n.pos-btn{flex:1;padding:12px;border:2px solid var(--cream3);border-radius:var(--radius-sm);background:white;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}\n.pos-btn.for.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal)}\n.pos-btn.against.active{border-color:var(--red);background:#fef5f5;color:var(--red)}\n.pos-btn:hover{border-color:var(--ink3)}\n\n/* ── Primary button ── */\n.btn-primary{display:block;width:100%;padding:14px;background:var(--navy);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-top:8px}\n.btn-primary:hover{opacity:.88}\n.btn-primary:disabled{opacity:.4;cursor:not-allowed}\n.btn-secondary{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:white;color:var(--ink);border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}\n.btn-secondary:hover{border-color:var(--teal);color:var(--teal)}\n\n/* ── Debate timeline ── */\n.timeline{display:flex;flex-direction:column;gap:16px;margin-bottom:24px}\n.move{border-radius:var(--radius);overflow:hidden;border:1px solid var(--cream3)}\n.move-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--cream3)}\n.move-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}\n.move-num.student{background:var(--navy);color:white}\n.move-num.ustadh{background:var(--teal);color:white}\n.move-num.pending{background:var(--cream2);color:var(--ink4)}\n.move-who{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}\n.move-type{font-size:13px;font-weight:700;color:var(--ink)}\n.move-timer{margin-left:auto;font-size:11px;color:var(--ink4)}\n.move-body{padding:14px 16px}\n.move-text{font-family:'Spectral',serif;font-size:15px;line-height:1.75;color:var(--ink2)}\n.move-placeholder{font-size:13px;color:var(--ink4);font-style:italic}\n.move-active{border:2px solid var(--navy)}\n.move-active .move-header{background:var(--navy);border-bottom-color:rgba(255,255,255,.15)}\n.move-active .move-type{color:white}\n.move-active .move-who{color:rgba(255,255,255,.6)}\n.move-active .move-timer{color:rgba(255,255,255,.5)}\n.move-ustadh-active{border:2px solid var(--teal)}\n.move-ustadh-active .move-header{background:var(--teal)}\n.move-ustadh-active .move-type{color:white}\n.move-ustadh-active .move-who{color:rgba(255,255,255,.6)}\n.move-done-student .move-header{background:var(--cream2)}\n.move-done-ustadh .move-header{background:var(--teal-pale)}\n\n/* ── Write area ── */\n.write-area{padding:16px}\n.write-context{background:var(--cream2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-family:'Spectral',serif;font-size:14px;line-height:1.7;color:var(--ink2);border-left:3px solid var(--teal)}\n.write-context-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:6px}\n.write-textarea{width:100%;min-height:140px;padding:12px;border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:14px;font-family:'Spectral',serif;line-height:1.75;color:var(--ink);resize:vertical}\n.write-textarea:focus{outline:none;border-color:var(--navy)}\n.write-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}\n.write-hint{font-size:12px;color:var(--ink4)}\n.btn-submit{padding:10px 24px;background:var(--navy);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}\n.btn-submit:disabled{opacity:.4;cursor:not-allowed}\n\n/* ── Ustadh generating ── */\n.ustadh-gen{padding:16px;display:flex;align-items:center;gap:12px;color:var(--teal)}\n.spinner{width:20px;height:20px;border:2.5px solid var(--teal-pale);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}\n@keyframes spin{to{transform:rotate(360deg)}}\n\n/* ── Synthesis screen ── */\n.synthesis-section{margin-bottom:20px}\n.synthesis-section h3{font-size:16px;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--cream3)}\n.synthesis-block{background:var(--cream2);border-radius:var(--radius-sm);padding:14px;font-size:14px;line-height:1.7;color:var(--ink2);margin-bottom:12px}\n.synthesis-block.gold{background:var(--gold-pale);border-left:3px solid var(--gold)}\n.synthesis-block.teal{background:var(--teal-pale);border-left:3px solid var(--teal)}\n.synthesis-block.red{background:#fef5f5;border-left:3px solid var(--red)}\n.synthesis-block.sacred{background:var(--sacred-pale);border-left:3px solid var(--sacred)}\n.facilitator-prompt{background:var(--navy);color:white;border-radius:var(--radius);padding:18px 20px;margin-top:20px}\n.fp-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.5);margin-bottom:8px}\n.fp-text{font-family:'Spectral',serif;font-size:16px;font-style:italic;line-height:1.6}\n\n/* ── Status bar ── */\n.status-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--cream2);border-radius:var(--radius-sm);margin-bottom:20px;font-size:13px}\n.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}\n.status-dot.active{background:var(--teal)}\n.status-dot.complete{background:var(--gold)}\n.status-dot.pending{background:var(--cream3)}\n\n/* ── Utility ── */\n.text-center{text-align:center}\n.mt-8{margin-top:8px}\n.mt-16{margin-top:16px}\n.hidden{display:none}\n.api-row{display:flex;gap:8px;margin-bottom:16px}\n.api-input{flex:1;padding:9px 12px;border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:13px;font-family:inherit}\n.api-input:focus{outline:none;border-color:var(--teal)}\n.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}\n.toast.show{opacity:1}\n@media print{.no-print{display:none!important}}\n\n/* ── K-2 choice buttons ── */\n.k2-choice-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;background:white;border:2px solid var(--cream3);border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;width:100%;transition:all .15s;position:relative}\n.k2-choice-btn:hover{border-color:var(--teal);background:var(--teal-pale)}\n.k2-choice-btn.k2-selected{border-color:var(--navy);background:#e8edf8;font-weight:700}\n.k2-icon{font-size:24px;flex-shrink:0;width:36px;text-align:center}\n.k2-listen-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:4px 10px;background:var(--cream2);border:1px solid var(--cream3);border-radius:12px;font-size:11px;cursor:pointer;font-family:inherit}\n.k2-listen-btn:hover{background:var(--teal-pale)}";
-      document.head.appendChild(s);
-    }
-    var wrap=document.createElement('div'); wrap.id='mun-panel';
-    wrap.style.cssText='display:none;position:fixed;inset:0;background:#faf8f4;z-index:8000;overflow-y:auto';
-    var bar=document.createElement('div');
-    bar.style.cssText='position:sticky;top:0;background:#faf8f4;border-bottom:1px solid #e4ddd0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;z-index:1';
-    bar.innerHTML='<div style="font-size:14px;font-weight:800">المُنَاظَرَة · Munazara</div>'
-      +'<button onclick="closeMunazara()" style="padding:6px 14px;background:none;border:1.5px solid #e4ddd0;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✕ Close</button>';
-    var inner=document.createElement('div');
-    inner.style.cssText='max-width:740px;margin:0 auto;padding:20px 16px 60px';
-    inner.innerHTML=`<div class="app">
-
-  <div class="app-header">
-    <div class="app-ar">المُنَاظَرَة</div>
-    <h1 class="app-title">Munazara — Week-Long Debate</h1>
-    <p class="app-sub">Bayt al-Hikmah · بَيْتُ الْحِكْمَة</p>
-  </div>
-
-  <!-- API Key row -->
-  <div class="card no-print" id="api-card">
-    <div class="card-label">Anthropic API Key</div>
-    <div class="api-row">
-      <input class="api-input" id="api-key" type="password" placeholder="sk-ant-..." />
-      <button class="btn-secondary" onclick="saveKey()">Save</button>
-    </div>
-    <p style="font-size:12px;color:var(--ink4);margin-top:4px">Stored in your browser only. Required for the Ustadh to generate responses.</p>
-  </div>
-
-  <!-- Setup screen -->
-  <div id="screen-setup">
-    <div class="claim-box" id="claim-display">
-      <div class="claim-label">This week's munazara claim</div>
-      <div class="claim-text" id="claim-text-display">Loading from platform…</div>
-      <div class="claim-meta" id="claim-meta"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-label">Customize claim (optional)</div>
-      <div class="setup-section">
-        <label class="setup-label">Claim — the proposition to debate</label>
-        <textarea class="setup-input" id="custom-claim" rows="3" placeholder="Enter a custom claim, or leave blank to use the platform claim…"></textarea>
-      </div>
-      <div class="setup-section">
-        <label class="setup-label">Student name</label>
-        <input class="setup-input" id="student-name" placeholder="e.g. Yusuf" />
-      </div>
-      <div class="setup-section">
-        <label class="setup-label">Grade</label>
-        <select class="setup-input" id="student-grade" style="width:200px" onchange="loadPlatformClaim(this.value)">
-          <option value="0">Kindergarten</option>
-          <option value="1">Grade 1</option>
-          <option value="2">Grade 2</option>
-          <option value="3">Grade 3</option>
-          <option value="4">Grade 4</option>
-          <option value="5">Grade 5</option>
-          <option value="6">Grade 6</option>
-          <option value="7" selected>Grade 7</option>
-          <option value="8">Grade 8</option>
-          <option value="9">Grade 9</option>
-          <option value="10">Grade 10</option>
-          <option value="11">Grade 11</option>
-          <option value="12">Grade 12</option>
-        </select>
-        <div style="font-size:11px;color:var(--ink4);margin-top:4px">Auto-filled from platform — change as needed</div>
-      </div>
-      <div class="setup-section">
-        <label class="setup-label">Your position</label>
-        <div class="position-row">
-          <button class="pos-btn for" id="pos-for" onclick="setPosition('for')">✓ For — I will argue IN FAVOUR</button>
-          <button class="pos-btn against" id="pos-against" onclick="setPosition('against')">✗ Against — I will argue AGAINST</button>
-        </div>
-      </div>
-      <button class="btn-primary" onclick="startDebate()">Begin the munazara →</button>
-    </div>
-  </div>
-
-  <!-- Debate screen -->
-  <div id="screen-debate" class="hidden">
-    <div class="claim-box">
-      <div class="claim-label">The claim</div>
-      <div class="claim-text" id="debate-claim-text"></div>
-    </div>
-
-    <div class="status-bar">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text"></span>
-    </div>
-
-    <div class="timeline" id="timeline"></div>
-
-    <div id="write-panel" class="card hidden">
-      <div class="card-label" id="write-label"></div>
-      <div class="write-area">
-        <div id="write-context-wrap" class="hidden">
-          <div class="write-context-label" id="write-context-label"></div>
-          <div class="write-context" id="write-context-text"></div>
-        </div>
-        <textarea class="write-textarea" id="write-textarea" placeholder="Write your argument here…"></textarea>
-        <div class="write-footer">
-          <span class="write-hint" id="write-hint"></span>
-          <button class="btn-submit" id="write-submit" onclick="submitMove()">Submit →</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="text-center mt-16 no-print" id="synthesis-btn-wrap" style="display:none">
-      <button class="btn-primary" onclick="generateSynthesis()" style="max-width:360px;margin:0 auto">
-        📊 Generate Wednesday synthesis
-      </button>
-    </div>
-
-    <div class="text-center mt-16 no-print">
-      <button class="btn-secondary" onclick="resetDebate()">↺ Start new debate</button>
-    </div>
-  </div>
-
-  <!-- Synthesis screen -->
-  <div id="screen-synthesis" class="hidden">
-    <div class="claim-box">
-      <div class="claim-label">Debate complete — Wednesday synthesis</div>
-      <div class="claim-text" id="synth-claim"></div>
-    </div>
-
-    <div id="synthesis-content"></div>
-
-    <div class="text-center mt-16 no-print" style="display:flex;gap:10px;justify-content:center">
-      <button class="btn-secondary" onclick="window.print()">🖨 Print synthesis</button>
-      <button class="btn-secondary" onclick="showDebate()">← Back to debate</button>
-      <button class="btn-secondary" onclick="resetDebate()">↺ New debate</button>
-    </div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast"></div>`;
-    wrap.appendChild(bar); wrap.appendChild(inner); document.body.appendChild(wrap);
-  }
-  document.getElementById('mun-panel').style.display='block';
-  initMunazara();
+  window.open('how_munazara_v9.html','_blank');
 }
-function closeMunazara(){
-  var p=document.getElementById('mun-panel'); if(p) p.style.display='none';
-}
+function closeMunazara(){ var p=document.getElementById('mun-panel'); if(p) p.style.display='none'; }
 
 // ═══════════════════════════════════════════════════
 //  STATE
@@ -8520,6 +8407,7 @@ async function applyUserToProfile(user, accessToken){
   var navName = document.getElementById('nav-user-name');
   if(navUser) navUser.style.display='flex';
   if(navName) navName.textContent = welcomeName + ' (' + role + ')';
+  updateNavAuthState();
   toast('Ahlan wa sahlan, '+welcomeName+' — welcome back.');
   // Load notifications + subscribe to live updates
   loadNotifications();
@@ -8556,6 +8444,7 @@ async function howLogout(){
   localStorage.removeItem('how_profile_id');
   localStorage.removeItem('how_profile_role');
   localStorage.removeItem('how_active_student');
+  updateNavAuthState();
   location.reload();
 }
 
@@ -8722,7 +8611,7 @@ async function openStudentManager(){
   var modal = document.getElementById('student-manager-modal');
   if(!modal) return;
   modal.style.display='flex';
-  switchSmTab('students');
+  // tabs removed — single panel
   // Show household code
   var hid = localStorage.getItem('how_household_id')||'';
   var hidEl = document.getElementById('sm-hid-display');
@@ -8747,182 +8636,10 @@ function copyHouseholdCode(){
   });
 }
 
-function switchSmTab(tab){
-  var panels = ['students','matchmaking'];
-  var tabs   = ['sm-tab-students','sm-tab-matchmaking'];
-  panels.forEach(function(p){
-    var el = document.getElementById('sm-panel-'+p);
-    if(el) el.style.display = p===tab?'block':'none';
-  });
-  tabs.forEach(function(t){
-    var el = document.getElementById(t);
-    if(!el) return;
-    var isActive = t === 'sm-tab-'+tab;
-    el.style.color       = isActive?'#1a3d8a':'#9a9ab0';
-    el.style.fontWeight  = isActive?'700':'600';
-    el.style.borderBottom= isActive?'2px solid #1a3d8a':'2px solid transparent';
-  });
-  // Populate my student dropdown when switching to matchmaking
-  if(tab==='matchmaking') populateMyStudentDropdown();
-}
 
-function populateMyStudentDropdown(){
-  var sel = document.getElementById('mm-my-student');
-  if(!sel) return;
-  var students = [];
-  try{ students = JSON.parse(localStorage.getItem('how_students')||'[]'); }catch(e){}
-  sel.innerHTML = '<option value="">— select —</option>';
-  students.forEach(function(s){
-    var opt = document.createElement('option');
-    opt.value = JSON.stringify({id:s.id, name:s.name, grade:s.current_grade||s.grade_start||7});
-    opt.textContent = s.name + ' (Grade '+(s.current_grade||s.grade_start||'?')+')';
-    sel.appendChild(opt);
-  });
-}
 
-async function lookupOpponentHousehold(){
-  var code = (document.getElementById('mm-opp-code')||{}).value.trim();
-  if(!code){ showMmError('Enter a household code'); return; }
-  var jwt = localStorage.getItem('how_jwt');
-  if(!jwt){ showMmError('Sign in to look up households'); return; }
-  showMmError('');
 
-  try{
-    // Look up household by id (short first 8 chars) or full uuid
-    var query = sb.from('student')
-      .select('id, name, current_grade, grade_start, household_id')
-      .order('name');
 
-    // If it looks like a UUID fragment, search by household_id
-    if(code.length >= 8){
-      query = query.ilike('household_id::text', code+'%');
-    }
-    var result = await query;
-    if(result.error) throw result.error;
-
-    if(!result.data||!result.data.length){
-      showMmError('No students found for that household code');
-      return;
-    }
-
-    // Populate opponent student dropdown
-    var sel = document.getElementById('mm-opp-student');
-    if(!sel) return;
-    sel.innerHTML = '<option value="">— select —</option>';
-    result.data.forEach(function(s){
-      var opt = document.createElement('option');
-      opt.value = JSON.stringify({
-        id:          s.id,
-        name:        s.name,
-        grade:       s.current_grade||s.grade_start||7,
-        household_id: s.household_id
-      });
-      opt.textContent = s.name + ' (Grade '+(s.current_grade||s.grade_start||'?')+')';
-      sel.appendChild(opt);
-    });
-
-    document.getElementById('mm-opp-panel').style.display  = 'block';
-    document.getElementById('mm-claim-panel').style.display = 'block';
-    document.getElementById('mm-create-btn').style.display  = 'block';
-
-    // Pre-fill grade from my student selection
-    var mySelVal = (document.getElementById('mm-my-student')||{}).value;
-    if(mySelVal){
-      try{
-        var myS = JSON.parse(mySelVal);
-        var grSel = document.getElementById('mm-grade');
-        if(grSel) grSel.value = String(myS.grade||7);
-      }catch(e){}
-    }
-
-  }catch(e){
-    showMmError('Lookup failed: '+e.message);
-  }
-}
-
-async function createMatchmakeDebate(){
-  var mySelVal  = (document.getElementById('mm-my-student')||{}).value;
-  var oppSelVal = (document.getElementById('mm-opp-student')||{}).value;
-  var claim     = (document.getElementById('mm-claim')||{}).value.trim();
-  var myPos     = (document.getElementById('mm-my-pos')||{}).value||'for';
-  var grade     = parseInt((document.getElementById('mm-grade')||{}).value)||7;
-  var errEl     = document.getElementById('mm-error');
-  var succEl    = document.getElementById('mm-success');
-
-  if(errEl)  errEl.style.display  = 'none';
-  if(succEl) succEl.style.display = 'none';
-
-  if(!mySelVal)  { showMmError('Select your student');    return; }
-  if(!oppSelVal) { showMmError('Select opponent student'); return; }
-  if(!claim)     { showMmError('Enter a debate claim');   return; }
-
-  var myS  = JSON.parse(mySelVal);
-  var oppS = JSON.parse(oppSelVal);
-  var hid  = localStorage.getItem('how_household_id');
-  var jwt  = localStorage.getItem('how_jwt');
-  if(!hid||!jwt){ showMmError('Sign in to create a debate'); return; }
-
-  // Generate debate code
-  var words=['HAQQ','ADAB','SABR','NOOR','HIKM','ILMU','BAYT','WAQT','DEEN','NAFS'];
-  var code = words[Math.floor(Math.random()*words.length)].slice(0,3)
-           + Math.floor(Math.random()*9+1);
-
-  try{
-    var result = await sb.from('debate').insert({
-      household_a:    hid,
-      household_b:    oppS.household_id,
-      student_a_name: myS.name,
-      student_b_name: oppS.name,
-      student_a_pos:  myPos,
-      student_b_pos:  myPos==='for'?'against':'for',
-      claim:          claim,
-      grade:          grade,
-      week:           S.week||1,
-      moves:          [],
-      current_turn:   'a',
-      status:         'active',
-      mode:           'challenge',
-      code:           code
-    }).select().single();
-
-    if(result.error) throw result.error;
-
-    // Notify both students' households
-    await sb.from('notification').insert([
-      {
-        household_id: hid,
-        type:         'debate_move',
-        title:        'Debate created',
-        body:         '"'+claim.slice(0,60)+'" — share code '+code+' with '+myS.name,
-        link_id:      result.data.id
-      },
-      {
-        household_id: oppS.household_id,
-        type:         'debate_move',
-        title:        myS.name+' has challenged '+oppS.name,
-        body:         '"'+claim.slice(0,60)+'" — use code '+code+' in Munazara to accept',
-        link_id:      result.data.id
-      }
-    ]);
-
-    if(succEl){
-      succEl.innerHTML = '✓ Debate created! Code: <strong style="letter-spacing:.1em">'+code+'</strong><br>'
-        +'<span style="font-size:11px">Share this code with the opposing household</span>';
-      succEl.style.display = 'block';
-    }
-    console.log('Matchmade debate created:', result.data.id, 'code:', code);
-
-  }catch(e){
-    showMmError('Could not create debate: '+e.message);
-  }
-}
-
-function showMmError(msg){
-  var el = document.getElementById('mm-error');
-  if(!el) return;
-  el.textContent = msg;
-  el.style.display = msg?'block':'none';
-}
 
 function closeStudentManager(){
   var modal = document.getElementById('student-manager-modal');
@@ -9284,6 +9001,19 @@ function toggleNavDropdown(name, evt){
     }
   }
 }
+function goToSignIn(){
+  var instBtn = document.querySelector('.ntab[data-p="institution"]');
+  if(instBtn) SP(instBtn);
+}
+
+function updateNavAuthState(){
+  var jwt = localStorage.getItem('how_jwt');
+  var signinBtn = document.getElementById('nav-signin-btn');
+  var navUser   = document.getElementById('nav-user');
+  if(signinBtn) signinBtn.style.display = jwt ? 'none' : '';
+  if(navUser)   navUser.style.display   = jwt ? 'flex' : 'none';
+}
+
 function closeNavDropdowns(){
   ['tools','learn'].forEach(function(name){
     var el = document.getElementById('nav-dropdown-'+name);
@@ -9398,73 +9128,7 @@ async function publishTeachingSupabase(entry){
     </div>
     </div><!-- end sm-panel-students -->
 
-    <!-- Matchmaking tab -->
-    <div id="sm-panel-matchmaking" style="display:none">
-      <p style="font-size:12px;color:#5a5a78;line-height:1.6;margin-bottom:16px">Pair one of your students with a student from another household for a real Munazara debate.</p>
-
-      <!-- Step 1: Select your student -->
-      <div style="margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Your student</label>
-        <select id="mm-my-student" style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-          <option value="">— select —</option>
-        </select>
-      </div>
-
-      <!-- Step 2: Enter opponent household code -->
-      <div style="margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Opponent household code</label>
-        <div style="display:flex;gap:8px">
-          <input id="mm-opp-code" type="text" placeholder="Enter household code"
-            style="flex:1;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none"
-            onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
-          <button onclick="lookupOpponentHousehold()"
-            style="padding:10px 16px;background:#1a3d8a;color:white;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">
-            Find
-          </button>
-        </div>
-        <p style="font-size:11px;color:#9a9ab0;margin-top:4px">Ask the other household for their 8-character household ID</p>
-      </div>
-
-      <!-- Step 3: Select opponent student -->
-      <div id="mm-opp-panel" style="display:none;margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Opponent student</label>
-        <select id="mm-opp-student" style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-          <option value="">— select —</option>
-        </select>
-      </div>
-
-      <!-- Step 4: Debate claim -->
-      <div id="mm-claim-panel" style="display:none;margin-bottom:16px">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9a9ab0;display:block;margin-bottom:6px">Debate claim</label>
-        <input id="mm-claim" type="text" placeholder="e.g. Knowledge without action is worse than ignorance"
-          style="width:100%;padding:10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none"
-          onfocus="this.style.borderColor='#d4af37'" onblur="this.style.borderColor='#e4ddd0'">
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <div style="flex:1">
-            <label style="font-size:11px;font-weight:600;color:#9a9ab0;display:block;margin-bottom:4px">Your student position</label>
-            <select id="mm-my-pos" style="width:100%;padding:9px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-              <option value="for">For</option>
-              <option value="against">Against</option>
-            </select>
-          </div>
-          <div style="flex:1">
-            <label style="font-size:11px;font-weight:600;color:#9a9ab0;display:block;margin-bottom:4px">Grade</label>
-            <select id="mm-grade" style="width:100%;padding:9px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:13px;outline:none;background:white">
-              <option value="7" selected>Grade 7</option>
-              <option value="6">Grade 6</option><option value="8">Grade 8</option>
-              <option value="9">Grade 9</option><option value="10">Grade 10</option>
-              <option value="11">Grade 11</option><option value="12">Grade 12</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <button id="mm-create-btn" onclick="createMatchmakeDebate()" style="display:none;width:100%;background:#1d6f6f;color:white;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-        ⚔ Create debate pairing
-      </button>
-      <p id="mm-error" style="display:none;color:#c0522a;font-size:12px;text-align:center;margin-top:8px"></p>
-      <p id="mm-success" style="display:none;color:#1d6f6f;font-size:12px;text-align:center;margin-top:8px"></p>
-    </div><!-- end sm-panel-matchmaking -->
+    
 
   </div>
 </div>

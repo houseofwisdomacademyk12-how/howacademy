@@ -16,14 +16,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--p);color:var(--ink);font-
 .screen.active{display:flex}
 
 /* LOBBY */
-#lobby{flex-direction:column;align-items:center;justify-content:center;background:var(--ink);padding:24px}
-.lob{width:100%;max-width:500px}
+#lobby{flex-direction:column;align-items:center;justify-content:flex-start;background:var(--ink);padding:24px;overflow-y:auto;min-height:0}
+.lob{width:100%;max-width:500px;margin:auto}
 .lob-seal{font-family:'Amiri',serif;font-size:48px;color:var(--gold);text-align:center}
 .lob-ar{font-family:'Amiri',serif;font-size:20px;color:var(--gl);text-align:center;margin-bottom:4px}
 .lob-sub{font-size:12px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:24px;letter-spacing:.04em}
 .lob-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--rl);padding:20px;margin-bottom:10px}
 .lob-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:7px;display:block}
 .lob-input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);padding:9px 13px;font-size:13px;font-family:'DM Sans',sans-serif;color:white;outline:none;transition:border-color .15s;margin-bottom:8px}
+.lob-input textarea,.lob-input[type=text]{resize:none}
+textarea.lob-input{resize:vertical;min-height:38px;max-height:120px;overflow-y:auto}
 .lob-input:focus{border-color:var(--gold)}
 .lob-input::placeholder{color:rgba(255,255,255,.28)}
 textarea.lob-input{resize:vertical;line-height:1.6}
@@ -235,7 +237,7 @@ const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_
       <span class="lob-label">Week / theme</span>
       <input class="lob-input" type="text" id="lb-theme" placeholder="e.g. Grade 7 · Juz 8 · Circles">
       <span class="lob-label">Sahifa context (optional — paste student entries)</span>
-      <textarea class="lob-input" id="lb-sahifa" rows="3" placeholder="Paste sahifa entries to help the AI facilitator name specific thinking…"></textarea>
+      <textarea class="lob-input" id="lb-sahifa" rows="2" placeholder="Paste sahifa entries to help the AI facilitator name specific thinking…"></textarea>
     </div>
     <div class="lob-divider"></div>
     <div style="margin-bottom:8px">
@@ -257,7 +259,7 @@ const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_
     </div>
     <div class="lob-divider"></div>
   </div>
-  <button class="lob-btn primary" onclick="joinSession()">Enter the halaqa</button>
+  <button class="lob-btn primary" onclick="joinSession()" style="margin-bottom:24px">Enter the halaqa</button>
   <button onclick="clearHalaqaSession()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;margin-top:4px;text-decoration:underline">Clear saved session &amp; start fresh</button>
   <button onclick="showPastSessions()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:11px;cursor:pointer;margin-top:2px;text-decoration:underline">📋 Browse past sessions</button>
   <p class="lob-note">No camera. No video. The words are all that matter.<br>The AI facilitator has read your sahifa. You cannot be invisible.</p>
@@ -477,12 +479,42 @@ function joinSession(){
     }
   }
 
-  // Pre-fill from sahifa_settings
+  // Pre-fill from platform state (lesson, schedule, sahifa)
   try{
     var _ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
-    var _lbq=document.getElementById('lb-q'); if(_lbq&&_ss.openingQ&&!_lbq.value) _lbq.value=_ss.openingQ;
-    var _lbt=document.getElementById('lb-theme'); if(_lbt&&_ss.weekTitle&&!_lbt.value) _lbt.value=_ss.weekTitle;
-    var _lbg=document.getElementById('lb-grade'); if(_lbg&&_ss.grade!==undefined) _lbg.value=String(_ss.grade);
+    var _lbg=document.getElementById('lb-grade');
+    // Grade from active student or sahifa_settings
+    var _activeS=JSON.parse(localStorage.getItem('how_active_student')||'null');
+    if(_lbg){
+      var _grade=(_activeS&&(_activeS.current_grade||_activeS.grade_start))||_ss.grade||7;
+      _lbg.value=String(_grade);
+      G.grade=parseInt(_grade)||7;
+      G.band=G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
+    }
+    // Question + theme from platform lesson (S object) or sahifa_settings
+    var _lbq=document.getElementById('lb-q');
+    var _lbt=document.getElementById('lb-theme');
+    // Try platform S object first (most current)
+    var _week=_ss.juz||(_activeS&&_activeS.current_week)||1;
+    var _platformQ='';var _platformTheme='';
+    try{
+      // Try to get opening question from current week curriculum
+      var _sched=JSON.parse(localStorage.getItem('how_sched')||'{}');
+      var _weekData=_sched[String(_week)]||{};
+      _platformQ=_weekData.openingQ||_weekData.q||'';
+      _platformTheme=_weekData.theme||_weekData.weekTitle||'';
+    }catch(e2){}
+    // Fall back to sahifa_settings
+    if(!_platformQ) _platformQ=_ss.openingQ||'';
+    if(!_platformTheme) _platformTheme=_ss.weekTitle||'Week '+_week;
+    if(_lbq&&_platformQ&&!_lbq.value) _lbq.value=_platformQ;
+    if(_lbt&&_platformTheme&&!_lbt.value) _lbt.value=_platformTheme;
+    // Pre-answer from Sunday Sahifa entry
+    try{
+      var _entries=JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
+      var _sunday=_entries.find(function(e){return e.type==='sunday'||e.type==='pre';});
+      if(_sunday&&_sunday.text) G.preAnswer=_sunday.text.slice(0,300);
+    }catch(e3){}
   }catch(e){}
 
   var sfe=S.g('sahifa_entries')||[];
@@ -572,6 +604,26 @@ function openHalaqa(){
 }
 
 async function _buildLiveParticipants(){
+  // Pull Sahifa entries from Supabase to enrich AI context
+  var jwt=localStorage.getItem('how_jwt');
+  var hid=localStorage.getItem('how_household_id');
+  if(jwt&&hid&&sb&&!G.sahifaCtx){
+    try{
+      var active=JSON.parse(localStorage.getItem('how_active_student')||'null');
+      var query=sb.from('sahifa_entry').select('type,text,entry_date')
+        .eq('household_id',hid).eq('grade',G.grade||7).order('entry_date',{ascending:false}).limit(5);
+      if(active) query=query.eq('student_id',active.id);
+      var sRes=await query;
+      if(!sRes.error&&sRes.data&&sRes.data.length){
+        G.sahifaCtx=sRes.data.map(function(e){
+          return '['+G.name+' · '+e.type+' · '+e.entry_date+']: '+e.text;
+        }).join('\n\n');
+        // Also grab pre-answer
+        var pre=sRes.data.find(function(e){return e.type==='sunday'||e.type==='pre';});
+        if(pre&&!G.preAnswer) G.preAnswer=pre.text.slice(0,300);
+      }
+    }catch(e){ console.warn('Sahifa pull for halaqa failed:',e); }
+  }
   // Always re-fetch from DB to get latest state
   if(!_sessionId) return;
   try{
@@ -582,39 +634,36 @@ async function _buildLiveParticipants(){
 }
 
 function _renderLiveSeats(){
-  var realHumans=_liveParticipants.filter(function(p){return p.name&&p.name!==G.name;});
-  var realCount=realHumans.length+1;
-  var aiNames=['Khalid','Fatima','Omar','Nadia','Tariq','Aisha','Sara','Leila']
-    .filter(function(n){return n!==G.name&&!realHumans.some(function(h){return h.name===n;});})
-    .sort(function(){return Math.random()-.5;});
-  var aiCount=Math.max(0,5-realCount);
-
+  // LIVE MODE: real humans only — no AI facilitator, no AI peers
   G.participants=[];
 
   if(_isLiveFac){
-    // I am the facilitator — gold seat, no AI facilitator
+    // I created this session — I am the facilitator (gold seat)
     G.participants.push({n:G.name,role:'self',bg:'var(--gold)',fc:'var(--gp)',st:'on'});
   } else {
-    // Check if a human facilitator is in the session
+    // Show the human facilitator if present
     var facP=_liveParticipants.find(function(p){return p.role==='facilitator';});
     if(facP){
       G.participants.push({n:facP.name,role:'facilitator',bg:'var(--gold)',fc:'var(--gp)',st:'on'});
-    } else {
-      // No human facilitator — AI facilitates
-      G.participants.push({n:'الحلقة',role:'ai',bg:'var(--gold)',fc:'var(--gp)',st:'on'});
     }
+    // My seat (student)
     G.participants.push({n:G.name,role:'self',bg:'var(--bl)',fc:'var(--blue)',st:'on'});
   }
 
-  // Real human students
-  realHumans.filter(function(h){return h.role!=='facilitator';}).forEach(function(h){
-    G.participants.push({n:h.name,role:'peer',bg:'var(--tl)',fc:'var(--teal)',st:'on'});
-  });
-
-  // AI peers to fill remaining seats
-  aiNames.slice(0,aiCount).forEach(function(n){
-    G.participants.push({n,role:'peer',bg:'var(--tl)',fc:'var(--teal)',st:'on'});
-  });
+  // Add all other real human participants
+  _liveParticipants
+    .filter(function(p){ return p.name && p.name!==G.name; })
+    .filter(function(p){ return !_isLiveFac || p.role!=='facilitator'; }) // avoid double-adding fac
+    .forEach(function(p){
+      var alreadyIn=G.participants.some(function(gp){return gp.n===p.name;});
+      if(!alreadyIn){
+        G.participants.push({
+          n:p.name,
+          role:p.role==='facilitator'?'facilitator':'peer',
+          bg:'var(--tl)',fc:'var(--teal)',st:'on'
+        });
+      }
+    });
 
   renderSeats();
 }
@@ -683,9 +732,10 @@ const DEMO=[
 
 function buildSys(){
   const ctx=G.sahifaCtx?'\n\nSahifa context:\n'+G.sahifaCtx.slice(0,700):'';
-  if(G.band==='k2'){
-    var _peerNames=G.participants.filter(function(p){return p.role==='peer';}).map(function(p){return p.n;});
+  // Define _circleMembers for ALL bands
+  var _peerNames=G.participants.filter(function(p){return p.role==='peer'||p.role==='facilitator';}).map(function(p){return p.n;});
   var _circleMembers='Students in this circle: '+[G.name].concat(_peerNames).join(', ')+'. Only name these students — do not invent others.\n';
+  if(G.band==='k2'){
   return 'You are running a halaqa circle for children aged 5-7.\n'
       +'Circle members: '+_circleMembers
       +'Opening question: "'+G.question+'" ('+G.theme+')\n\n'
@@ -807,6 +857,7 @@ async function simSpecificPeer(peerName){
 }
 
 async function simPeer(){
+  if(_liveMode) return; // no AI peers in live sessions
   const peers=G.participants.filter(p=>p.role==='peer');
   if(!peers.length) return;
   if(G.phase==='close'||G.phase==='ended') return; // circle is closing, no more peers
@@ -927,6 +978,8 @@ function sendMsg(){
   addStudent(G.name,t,'self');
   // Broadcast to live session if active
   if(_liveMode) broadcastMessage(t);
+  // In live mode — no AI responses, humans only
+  if(_liveMode) return;
   // If human names a peer, trigger that peer after facilitator responds
   var _tLow=t.toLowerCase();
   var _named=G.participants.find(function(p){
@@ -1088,6 +1141,8 @@ async function joinLiveSession(){
     _sessionCode = session.code;
     G.question   = session.question||G.question;
     G.grade      = session.grade||G.grade;
+    G.theme      = session.week?'Week '+session.week+(session.grade?' · Grade '+session.grade:''):G.theme;
+    G.band       = G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
     // Fetch all current participants with full details
     var pResult = await sb.from('halaqa_participant')
       .select('id, name, role').eq('session_id', _sessionId);

@@ -2369,8 +2369,55 @@ function schedLaunch(action, opts){
 }
 
 function schedHasLesson(g, w, subj, sess){
-  return !!(S.lessons && S.lessons[key(g,w,subj,sess)]);
+  // Check localStorage first
+  if(S.lessons && S.lessons[key(g,w,subj,sess)]) return true;
+  // Check synced lessons from Supabase
+  if(S.syncedLessons){
+    return S.syncedLessons.some(function(l){
+      return l.grade===g && l.week===w && l.subject===subj;
+    });
+  }
+  return false;
 }
+async function fetchSyncedLessons(){
+  // Fetch all synced lessons from Supabase for current grade/week
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt || typeof sb === 'undefined') return;
+  try{
+    var g = parseInt(document.getElementById('sch-grade')&&document.getElementById('sch-grade').value)||S.grade;
+    var w = parseInt(document.getElementById('sch-week')&&document.getElementById('sch-week').value)||S.week;
+    var result = await sb
+      .from('lesson')
+      .select('id, grade, week, subject, title, objective, slides')
+      .eq('grade', g)
+      .eq('week', w);
+    if(result.error){ console.warn('fetchSyncedLessons error:', result.error.message); return; }
+    if(!result.data || !result.data.length) return;
+
+    // Cache in S.syncedLessons
+    S.syncedLessons = result.data;
+
+    // Also load into S.lessons so schedPresent can find them
+    result.data.forEach(function(l){
+      var lessonKey = key(l.grade, l.week, l.subject, 1);
+      if(!S.lessons[lessonKey] && l.slides){
+        S.lessons[lessonKey] = {
+          title:     l.title||'',
+          objective: l.objective||'',
+          slides:    l.slides,
+          fromSync:  true
+        };
+      }
+    });
+
+    // Re-render schedule to show Open deck buttons
+    if(typeof updateSchedule === 'function') updateSchedule();
+    console.log('Synced lessons loaded:', result.data.length, 'lessons for Grade '+g+' Week '+w);
+  }catch(e){
+    console.warn('fetchSyncedLessons failed:', e);
+  }
+}
+
 function schedHasTest(g, w){
   return !!(S.tests && (S.tests[g+'_'+w+'_test'] || S.tests[g+'_'+w]));
 }
@@ -3207,6 +3254,11 @@ function syncScheduleToCurrentWeek(){
   updateSchedule();
 }
 function updateSchedule(){
+  // Fetch synced lessons from Supabase in background
+  if(localStorage.getItem('how_jwt') && typeof sb !== 'undefined'){
+    fetchSyncedLessons();
+  }
+  // Continue with normal schedule render below
   renderScheduleDay(document.querySelector('.day-tab.active').dataset.day);
   // Status indicators
   var statusEl=document.getElementById('sch-status'); if(!statusEl) return;
@@ -7083,6 +7135,29 @@ function loadJuzEdits(){
 
 
 // ─── Role picker ─────────────────────────────────────
+// ── Auth tab toggle ───────────────────────────────────────────────────────
+function switchAuthTab(tab){
+  var signinForm = document.getElementById('auth-signin-form');
+  var signupForm = document.getElementById('auth-signup-form');
+  var signinTab  = document.getElementById('auth-tab-signin');
+  var signupTab  = document.getElementById('auth-tab-signup');
+  if(!signinForm||!signupForm) return;
+  if(tab==='signin'){
+    signinForm.style.display='block';
+    signupForm.style.display='none';
+    signinTab.style.background='#1a3d8a'; signinTab.style.color='white';
+    signupTab.style.background='white';   signupTab.style.color='#9a9ab0';
+  } else {
+    signinForm.style.display='none';
+    signupForm.style.display='block';
+    signinTab.style.background='white';   signinTab.style.color='#9a9ab0';
+    signupTab.style.background='#1d6f6f'; signupTab.style.color='white';
+  }
+  var errEl=document.getElementById('how-login-error');
+  if(errEl) errEl.style.display='none';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function showRolePicker(){
   try{ localStorage.removeItem('how_lg_role'); }catch(e){}
   var picker=document.getElementById('role-picker');
@@ -8214,18 +8289,8 @@ function initRolePicker(){
   else { lgSetMode('facilitator'); }
 }
 
-</script>
+// ── Supabase-dependent functions (need sb in scope) ─────────────────────
 
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-);
-/* ─────────────────────────────────────────────────── */
 
 // ── On page load: check for existing session ──────────────────────────────
 (async function checkSession(){
@@ -8448,27 +8513,7 @@ async function verifyStudentPin(){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Auth tab toggle ───────────────────────────────────────────────────────
-function switchAuthTab(tab){
-  var signinForm = document.getElementById('auth-signin-form');
-  var signupForm = document.getElementById('auth-signup-form');
-  var signinTab  = document.getElementById('auth-tab-signin');
-  var signupTab  = document.getElementById('auth-tab-signup');
-  if(tab==='signin'){
-    signinForm.style.display='block';
-    signupForm.style.display='none';
-    signinTab.style.background='#1a3d8a'; signinTab.style.color='white';
-    signupTab.style.background='white';   signupTab.style.color='#9a9ab0';
-  } else {
-    signinForm.style.display='none';
-    signupForm.style.display='block';
-    signinTab.style.background='white';   signinTab.style.color='#9a9ab0';
-    signupTab.style.background='#1d6f6f'; signupTab.style.color='white';
-  }
-  document.getElementById('how-login-error').style.display='none';
-}
-
-// ── Sign up ────────────────────────────────────────────────────────────────
+// ── Auth tab toggle + sign up moved to main script ──
 async function howSignUp(){
   var name      = document.getElementById('su-name').value.trim();
   var household = document.getElementById('su-household').value.trim();
@@ -8563,10 +8608,8 @@ async function renderStudentList(){
         +'<div style="font-size:11px;color:#9a9ab0">Grade '+grade+' · Week '+(s.current_week||1)+'</div>'
         +'</div>'
         +'<div style="display:flex;gap:6px">'
-        +'<button onclick="resetStudentPin(''+s.id+'',''+s.name+'')" '
-        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e4ddd0;background:white;cursor:pointer;color:#5a5a78">Reset PIN</button>'
-        +'<button onclick="removeStudent(''+s.id+'',''+s.name+'')" '
-        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #fde8e0;background:#fde8e0;cursor:pointer;color:#c0522a">Remove</button>'
+        +'<button data-sid="'+s.id+'" data-sname="'+s.name+'" onclick="resetStudentPin(this.dataset.sid,this.dataset.sname)" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e4ddd0;background:white;cursor:pointer;color:#5a5a78">Reset PIN</button>'
+        +'<button data-sid="'+s.id+'" data-sname="'+s.name+'" onclick="removeStudent(this.dataset.sid,this.dataset.sname)" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #fde8e0;background:#fde8e0;cursor:pointer;color:#c0522a">Remove</button>'
         +'</div>'
         +'</div>';
     }).join('');
@@ -8705,6 +8748,20 @@ async function publishTeachingSupabase(entry){
     console.error('publishTeaching Supabase failed:',e);
   }
 }
+
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+);
+/* ─────────────────────────────────────────────────── */
 </script>
 <!-- Student Manager Modal -->
 <div id="student-manager-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;overflow-y:auto;padding:20px">

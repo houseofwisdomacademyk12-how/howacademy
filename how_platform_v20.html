@@ -1020,6 +1020,15 @@ body.lg-active #lg-root .ustadh-drawer.open { display:flex !important; }
 body.lg-active #lg-root .pres-overlay.active { display:flex !important; }
 body.lg-active #lg-root .toast.show { display:block !important; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',   /* e.g. https://abcdefgh.supabase.co */
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'       /* Project Settings → API → anon public */
+);
+/* ─────────────────────────────────────────────────── */
+</script>
 </head>
 <body>
 <nav class="nav">
@@ -6120,10 +6129,13 @@ async function sendToLibrary(){
         is_published: false,
         helpful:      0
       };
-      var sbResult = await sb.from('teaching').insert(sbEntry);
+      var sbResult = await sb.from('teaching').insert(sbEntry).select();
       if(sbResult.error) throw sbResult.error;
+      console.log('Supabase teaching insert OK:', JSON.stringify(sbResult.data));
     }catch(e){
-      console.warn('Server save failed, keeping local copy:', e);
+      console.error('Supabase teaching insert failed:', e);
+      if(e && e.message) console.error('Error message:', e.message);
+      if(e && e.code) console.error('Error code:', e.code);
     }
   }
 
@@ -8011,13 +8023,10 @@ function initRolePicker(){
 
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase moved to <head> -->
 <script>
 // ── Supabase client ────────────────────────────────────────────────────────
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-);
+// sb initialized in <head>
 
 // ── On page load: check for existing session ───────────────────────────────
 (async function checkSession(){

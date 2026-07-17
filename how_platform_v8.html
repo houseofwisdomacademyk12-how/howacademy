@@ -2369,8 +2369,67 @@ function schedLaunch(action, opts){
 }
 
 function schedHasLesson(g, w, subj, sess){
-  return !!(S.lessons && S.lessons[key(g,w,subj,sess)]);
+  // Check localStorage first
+  if(S.lessons && S.lessons[key(g,w,subj,sess)]) return true;
+  // Check synced lessons from Supabase
+  if(S.syncedLessons){
+    return S.syncedLessons.some(function(l){
+      return l.grade===g && l.week===w && l.subject===subj;
+    });
+  }
+  return false;
 }
+async function fetchSyncedLessons(){
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt || typeof sb === 'undefined') return;
+  try{
+    var g = parseInt((document.getElementById('sch-grade')||{}).value)||S.grade;
+    var w = parseInt((document.getElementById('sch-week')||{}).value)||S.week;
+    // Delta sync — only fetch lessons newer than last sync
+    var since = localStorage.getItem('how_last_sync')||'1970-01-01';
+    var query = sb
+      .from('lesson')
+      .select('id, grade, week, subject, session, title, objective, slides, updated_at')
+      .eq('grade', g)
+      .eq('week', w);
+    // Only apply delta if we have a real sync timestamp
+    if(since !== '1970-01-01') query = query.gt('updated_at', since);
+    var result = await query;
+    if(result.error){ console.warn('fetchSyncedLessons error:', result.error.message); return; }
+    if(!result.data || !result.data.length) return;
+
+    // Cache in S.syncedLessons
+    S.syncedLessons = (S.syncedLessons||[]).concat(result.data);
+
+    // Load into S.lessons — last-write-wins on updated_at
+    result.data.forEach(function(l){
+      var ses = l.session||1;
+      var lessonKey = key(l.grade, l.week, l.subject, ses);
+      var existing = S.lessons[lessonKey];
+      // Only overwrite if server version is newer or no local version
+      if(!existing || existing.fromSync || l.updated_at > (existing.updated_at||'')){
+        if(l.slides){
+          S.lessons[lessonKey] = {
+            title:      l.title||'',
+            objective:  l.objective||'',
+            slides:     l.slides,
+            updated_at: l.updated_at,
+            fromSync:   true
+          };
+        }
+      }
+    });
+
+    // Update last sync timestamp
+    localStorage.setItem('how_last_sync', new Date().toISOString());
+    // Re-render schedule
+    renderScheduleDay(document.querySelector('.day-tab.active')&&document.querySelector('.day-tab.active').dataset.day||'sun');
+    console.log('Delta sync: '+result.data.length+' lessons for Grade '+g+' Week '+w+' (since '+since+')');
+  }catch(e){
+    console.warn('fetchSyncedLessons failed:', e);
+  }
+}
+
 function schedHasTest(g, w){
   return !!(S.tests && (S.tests[g+'_'+w+'_test'] || S.tests[g+'_'+w]));
 }
@@ -3050,7 +3109,8 @@ async function _goToTeachIt(){
           .eq('grade', S.grade)
           .eq('week', S.week)
           .eq('subject', S.subj)
-          .order('created_at', {ascending: false})
+          .eq('session', S.session||1)
+          .order('updated_at', {ascending: false})
           .limit(1)
           .single();
 
@@ -3123,6 +3183,67 @@ function applyTeachSuggestion(suggestion){
   if(ta){ ta.value=(ta.value?ta.value+'\n\n':'')+suggestion; saveNote(idx); toast('\u2713 Suggestion added'); }
 }
 
+async function pushScore(grade, week, scoreObj){
+  var jwt = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(!jwt||!householdId||typeof sb==='undefined') return;
+  var studentId = null;
+  try{
+    var active = JSON.parse(localStorage.getItem('how_active_student')||'null');
+    if(active) studentId = active.id;
+  }catch(e){}
+  try{
+    var result = await sb.from('score')
+      .upsert({
+        household_id: householdId,
+        student_id:   studentId,
+        grade:        grade,
+        week:         week,
+        subjects:     scoreObj,
+        updated_at:   new Date().toISOString()
+      }, { onConflict:'household_id,grade,week' })
+      .select();
+    if(result.error) throw result.error;
+    console.log('Score pushed to Supabase:', grade, week);
+  }catch(e){
+    console.warn('pushScore failed:', e);
+  }
+}
+
+async function pullScores(){
+  var jwt = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(!jwt||!householdId||typeof sb==='undefined') return;
+  try{
+    var result = await sb
+      .from('score')
+      .select('grade, week, subjects, updated_at')
+      .eq('household_id', householdId);
+    if(result.error){ console.warn('pullScores error:', result.error.message); return; }
+    if(!result.data||!result.data.length) return;
+    // Server is authoritative — overwrite local scores
+    result.data.forEach(function(row){
+      var k = row.grade+'_'+row.week;
+      S.scores[k] = row.subjects;
+      // Also update history
+      if(row.subjects){
+        var patch = {};
+        Object.keys(row.subjects).forEach(function(subj){
+          var sd = row.subjects[subj]||{};
+          var earned = sd.details?sd.details.reduce(function(a,d){return a+(d.awarded>=0?d.awarded:0);},0):0;
+          var total  = sd.details?sd.details.reduce(function(a,d){return a+d.marks;},0):0;
+          patch['test_'+subj]={earned:earned,total:total,pct:total?Math.round(earned/total*100):null};
+        });
+        saveHistory(row.grade, row.week, patch);
+      }
+    });
+    autosave();
+    console.log('Scores pulled from Supabase:', result.data.length, 'weeks');
+  }catch(e){
+    console.warn('pullScores failed:', e);
+  }
+}
+
 async function syncLesson(){
   var l=lesson();
   if(!l){ toast('No lesson to sync — generate first'); return; }
@@ -3131,21 +3252,25 @@ async function syncLesson(){
   if(!jwt||!householdId){ toast('Sign in to sync lessons to students'); return; }
   try{
     var profileId = localStorage.getItem('how_profile_id');
+    var ses = S.session||1;
     var syncEntry={
       household_id: householdId,
       created_by:   profileId||null,
       grade:        S.grade,
       week:         S.week,
       subject:      S.subj,
+      session:      ses,
       title:        l.title||'Week '+S.week+' '+S.subj,
       objective:    l.objective||'',
-      slides:       l.slides||[]
+      slides:       l.slides||[],
+      updated_at:   new Date().toISOString()
     };
-    // Upsert — replaces existing lesson for same grade/week/subject
     var result=await sb.from('lesson')
-      .upsert(syncEntry, { onConflict:'household_id,grade,week,subject' })
+      .upsert(syncEntry, { onConflict:'household_id,grade,week,subject,session' })
       .select();
     if(result.error) throw result.error;
+    // Update last sync timestamp
+    localStorage.setItem('how_last_sync', new Date().toISOString());
     toast('☁ Lesson synced — students can now access it in Teach It');
     console.log('Lesson synced:', result.data);
   }catch(e){
@@ -3207,6 +3332,11 @@ function syncScheduleToCurrentWeek(){
   updateSchedule();
 }
 function updateSchedule(){
+  // Fetch synced lessons from Supabase in background
+  if(localStorage.getItem('how_jwt') && typeof sb !== 'undefined'){
+    fetchSyncedLessons();
+  }
+  // Continue with normal schedule render below
   renderScheduleDay(document.querySelector('.day-tab.active').dataset.day);
   // Status indicators
   var statusEl=document.getElementById('sch-status'); if(!statusEl) return;
@@ -5066,6 +5196,8 @@ function finishTest(){
   });
   S.scores[testKey()]=scoreObj;
   autosave();
+  // Push to Supabase — server is authoritative for scores
+  pushScore(S.grade, S.week, scoreObj.subjects||scoreObj);
   var _hp={};
   SUBJ_ORDER.forEach(function(subj){
     var sd=scoreObj.subjects[subj]||{};
@@ -8237,18 +8369,8 @@ function initRolePicker(){
   else { lgSetMode('facilitator'); }
 }
 
-</script>
+// ── Supabase-dependent functions (need sb in scope) ─────────────────────
 
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-);
-/* ─────────────────────────────────────────────────── */
 
 // ── On page load: check for existing session ──────────────────────────────
 (async function checkSession(){
@@ -8333,6 +8455,8 @@ async function applyUserToProfile(user, accessToken){
   if(navUser) navUser.style.display='flex';
   if(navName) navName.textContent = welcomeName + ' (' + role + ')';
   toast('Ahlan wa sahlan, '+welcomeName+' — welcome back.');
+  // First-time migration: offer to upload existing local data
+  checkFirstTimeMigration();
   var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
   if(schedBtn) SP(schedBtn);
   render();
@@ -8566,10 +8690,8 @@ async function renderStudentList(){
         +'<div style="font-size:11px;color:#9a9ab0">Grade '+grade+' · Week '+(s.current_week||1)+'</div>'
         +'</div>'
         +'<div style="display:flex;gap:6px">'
-        +'<button onclick="resetStudentPin(''+s.id+'',''+s.name+'')" '
-        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e4ddd0;background:white;cursor:pointer;color:#5a5a78">Reset PIN</button>'
-        +'<button onclick="removeStudent(''+s.id+'',''+s.name+'')" '
-        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #fde8e0;background:#fde8e0;cursor:pointer;color:#c0522a">Remove</button>'
+        +'<button data-sid="'+s.id+'" data-sname="'+s.name+'" onclick="resetStudentPin(this.dataset.sid,this.dataset.sname)" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e4ddd0;background:white;cursor:pointer;color:#5a5a78">Reset PIN</button>'
+        +'<button data-sid="'+s.id+'" data-sname="'+s.name+'" onclick="removeStudent(this.dataset.sid,this.dataset.sname)" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #fde8e0;background:#fde8e0;cursor:pointer;color:#c0522a">Remove</button>'
         +'</div>'
         +'</div>';
     }).join('');
@@ -8671,6 +8793,91 @@ async function removeStudent(studentId, studentName){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+async function checkFirstTimeMigration(){
+  // Only offer migration if this is the first login on this device
+  var migrated = localStorage.getItem('how_migrated');
+  if(migrated) return;
+
+  // Check if there are local lessons or scores worth migrating
+  var localLessons = Object.keys(S.lessons||{}).length;
+  var localScores  = Object.keys(S.scores||{}).length;
+  if(!localLessons && !localScores){ 
+    localStorage.setItem('how_migrated','1'); 
+    return; 
+  }
+
+  // Show migration prompt
+  var msg = 'We found existing data on this device. '+(localLessons?localLessons+' lesson(s). ':'')+(localScores?localScores+' score record(s). ':'')+'Sync to your account?';
+  if(!confirm(msg)){
+    localStorage.setItem('how_migrated','1');
+    return;
+  }
+
+  // Upload lessons
+  var householdId = localStorage.getItem('how_household_id');
+  var profileId   = localStorage.getItem('how_profile_id');
+  var uploaded = 0;
+  var errors   = 0;
+
+  if(localLessons && householdId){
+    var lessonEntries = Object.keys(S.lessons).map(function(k){
+      var parts = k.split('_'); // grade_week_subj_sSes
+      var l = S.lessons[k];
+      if(!l||!l.slides) return null;
+      return {
+        household_id: householdId,
+        created_by:   profileId||null,
+        grade:        parseInt(parts[0])||S.grade,
+        week:         parseInt(parts[1])||S.week,
+        subject:      parts[2]||S.subj,
+        session:      parseInt((parts[3]||'s1').replace('s',''))||1,
+        title:        l.title||'',
+        objective:    l.objective||'',
+        slides:       l.slides||[],
+        updated_at:   new Date().toISOString()
+      };
+    }).filter(Boolean);
+
+    for(var i=0; i<lessonEntries.length; i++){
+      try{
+        var r = await sb.from('lesson')
+          .upsert(lessonEntries[i], {onConflict:'household_id,grade,week,subject,session'});
+        if(r.error) throw r.error;
+        uploaded++;
+      }catch(e){ errors++; console.warn('Migration lesson error:', e); }
+    }
+  }
+
+  // Upload scores
+  if(localScores && householdId){
+    var scoreKeys = Object.keys(S.scores);
+    for(var j=0; j<scoreKeys.length; j++){
+      var sk = scoreKeys[j];
+      var parts2 = sk.split('_');
+      var scoreObj = S.scores[sk];
+      if(!scoreObj) continue;
+      try{
+        var sr = await sb.from('score')
+          .upsert({
+            household_id: householdId,
+            grade:        parseInt(parts2[0])||S.grade,
+            week:         parseInt(parts2[1])||S.week,
+            subjects:     scoreObj.subjects||scoreObj,
+            updated_at:   new Date().toISOString()
+          }, {onConflict:'household_id,grade,week'});
+        if(sr.error) throw sr.error;
+        uploaded++;
+      }catch(e){ errors++; console.warn('Migration score error:', e); }
+    }
+  }
+
+  localStorage.setItem('how_migrated','1');
+  var resultMsg = '✓ Migration complete: '+uploaded+' item(s) synced.';
+  if(errors) resultMsg += ' ('+errors+' error(s) — check console)';
+  toast(resultMsg);
+  console.log('First-time migration complete:', uploaded, 'uploaded,', errors, 'errors');
+}
+
 function showLoginError(msg){
   var el=document.getElementById('how-login-error');
   if(!el) return;
@@ -8708,6 +8915,20 @@ async function publishTeachingSupabase(entry){
     console.error('publishTeaching Supabase failed:',e);
   }
 }
+
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+);
+/* ─────────────────────────────────────────────────── */
 </script>
 <!-- Student Manager Modal -->
 <div id="student-manager-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;overflow-y:auto;padding:20px">
