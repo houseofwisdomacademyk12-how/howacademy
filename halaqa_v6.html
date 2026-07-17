@@ -153,6 +153,18 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 /* ── SUPABASE CREDENTIALS ── */
 const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
 /* ─────────────────────────── */
+// Restore auth session from platform
+(async function(){
+  try{
+    var _jwt = localStorage.getItem('how_jwt');
+    var _ref = localStorage.getItem('how_refresh_token');
+    if(_jwt && _ref){
+      await sb.auth.setSession({access_token:_jwt, refresh_token:_ref});
+    } else if(_jwt){
+      await sb.auth.setSession({access_token:_jwt, refresh_token:_jwt});
+    }
+  }catch(e){ console.warn('Halaqa: session restore failed:', e.message); }
+})();
 </script>
 </head>
 <body>

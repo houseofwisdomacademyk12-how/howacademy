@@ -149,7 +149,7 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ── SUPABASE CREDENTIALS ── */
-const sb = supabase.createClient('SUPABASE_PROJECT_URL','SUPABASE_ANON_KEY');
+const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
 /* ─────────────────────────── */
 </script>
 </head>
@@ -256,8 +256,6 @@ const sb = supabase.createClient('SUPABASE_PROJECT_URL','SUPABASE_ANON_KEY');
       </div>
     </div>
     <div class="lob-divider"></div>
-    <span class="lob-label">Anthropic API key (leave blank for demo mode)</span>
-    <input class="lob-input" type="password" id="lb-key" placeholder="sk-ant-…">
   </div>
   <button class="lob-btn primary" onclick="joinSession()">Enter the halaqa</button>
   <button onclick="clearHalaqaSession()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;margin-top:4px;text-decoration:underline">Clear saved session &amp; start fresh</button>
