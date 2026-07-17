@@ -146,6 +146,12 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 
 @keyframes dp{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── SUPABASE CREDENTIALS ── */
+const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+/* ─────────────────────────── */
+</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -171,11 +177,57 @@ textarea.lob-input{resize:vertical;line-height:1.6}
     <div class="lob-divider"></div>
     <span class="lob-label">Your role</span>
     <div class="role-grid">
-      <button class="role-btn sel" data-role="student" onclick="selRole(this)">Student</button>
-      <button class="role-btn" data-role="facilitator" onclick="selRole(this)">Facilitator (set up)</button>
-      <button class="role-btn" data-role="facilitator-live" onclick="selRole(this)" style="grid-column:1/-1">Facilitator — join circle</button>
+      <button class="role-btn sel" data-role="student" onclick="selRole(this)">🧒 Student</button>
+      <button class="role-btn" data-role="facilitator" onclick="selRole(this)">👨‍🏫 Facilitator</button>
     </div>
-    <p style="font-size:11px;color:#9a9ab0;margin-top:8px;line-height:1.5"><strong style="color:#5a5a78">Set up:</strong> enter question first. <strong style="color:#5a5a78">Join circle:</strong> enter as facilitator with controls. <strong style="color:#5a5a78">Student:</strong> AI runs the circle.</p>
+
+    <!-- Student: solo vs live -->
+    <div id="student-mode-choice" style="margin-top:13px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="setStudentMode('solo')" id="btn-solo-mode"
+          style="padding:12px 8px;border-radius:8px;border:2px solid #1d6f6f;background:#0d2a2a;
+          color:#1d6f6f;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">
+          🤖 Start solo<br><span style="font-weight:400;font-size:11px;color:#5a8a8a">AI facilitator</span>
+        </button>
+        <button onclick="setStudentMode('live')" id="btn-live-mode"
+          style="padding:12px 8px;border-radius:8px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);
+          color:rgba(255,255,255,.7);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">
+          👥 Join live<br><span style="font-weight:400;font-size:11px;opacity:.7">enter a code</span>
+        </button>
+      </div>
+      <!-- Live code entry -->
+      <div id="live-code-entry" style="display:none;margin-top:12px">
+        <span class="lob-label">Session code</span>
+        <input class="lob-input" type="text" id="lb-code" maxlength="4"
+          placeholder="e.g. TEAL" autocomplete="off"
+          style="text-transform:uppercase;letter-spacing:.2em;font-size:1.2rem;text-align:center"
+          oninput="this.value=this.value.toUpperCase()">
+        <p style="font-size:11px;color:#9a9ab0;margin-top:6px">Ask your facilitator for the 4-letter code</p>
+      </div>
+    </div>
+
+    <!-- Facilitator: create live session or set up solo ── -->
+    <div id="fac-mode-choice" style="display:none;margin-top:13px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <button onclick="setFacMode('create')" id="btn-fac-create"
+          style="padding:12px 8px;border-radius:8px;border:2px solid #d4af37;background:rgba(212,175,55,.1);
+          color:#d4af37;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">
+          ✦ Create live<br><span style="font-weight:400;font-size:11px;opacity:.8">generate a code</span>
+        </button>
+        <button onclick="setFacMode('solo')" id="btn-fac-solo"
+          style="padding:12px 8px;border-radius:8px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);
+          color:rgba(255,255,255,.7);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">
+          🤖 Set up solo<br><span style="font-weight:400;font-size:11px;opacity:.7">AI circle</span>
+        </button>
+      </div>
+      <!-- Generated code display -->
+      <div id="fac-code-display" style="display:none;text-align:center;padding:14px;
+        background:rgba(212,175,55,.1);border:1.5px solid rgba(212,175,55,.3);border-radius:10px;margin-bottom:12px">
+        <p style="font-size:11px;color:#d4af37;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Session code — share with students</p>
+        <p id="fac-code-text" style="font-size:2.5rem;font-weight:900;color:#d4af37;letter-spacing:.3em"></p>
+        <p style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">Students join at halaqa.html and enter this code</p>
+      </div>
+    </div>
     <div id="fac-fields" style="display:none;margin-top:13px">
       <div class="lob-divider"></div>
       <span class="lob-label">Opening question</span>
@@ -324,36 +376,27 @@ const delay=ms=>new Promise(r=>setTimeout(r,ms));
 let G={name:'',role:'student',apiKey:'',question:'',theme:'',sahifaCtx:'',preAnswer:'',participants:[],messages:[],phase:'pre',sessionStart:null,timerInt:null,aiThinking:false,turnCount:0,handRaised:false,demoIdx:0};
 
 let selRoleVal='student';
-function selRole(btn){document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');selRoleVal=btn.dataset.role;document.getElementById('fac-fields').style.display=selRoleVal==='facilitator'?'block':'none'}
+let _liveMode=false;       // true = live Supabase session
+let _facMode='solo';       // 'create'|'solo'
+let _studentMode='solo';   // 'solo'|'live'
+let _sessionId=null;       // Supabase halaqa_session id
+let _sessionCode=null;     // 4-char join code
+let _realtimeChannel=null; // Supabase Realtime channel
+let _liveParticipants=[];  // real humans in session
+let _isLiveFac=false;      // this user is the live facilitator
 
-function joinSession(){
-  const name=document.getElementById('lb-name').value.trim();
-  if(!name){toast('Enter your name.');return}
-  G.name=name;G.role=selRoleVal==='facilitator-live'?'facilitator':selRoleVal;G.apiKey=document.getElementById('lb-key').value.trim();
-  G.grade=parseInt(document.getElementById('lb-grade')?.value||'7')||7;
-  G.band=G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
-  if(selRoleVal==='facilitator-live'){
-    var _sv2=S.g('hq_session');
-    if(_sv2&&_sv2.q){G.question=_sv2.q;G.theme=_sv2.theme||'';G.sahifaCtx=_sv2.ctx||'';}
-    else{try{var _ss2=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');G.question=_ss2.openingQ||'';G.theme=_ss2.weekTitle||'';}catch(e){}}
-  } else if(selRoleVal==='facilitator'){
-    const q=document.getElementById('lb-q').value.trim();
-    if(!q){toast('Enter an opening question.');return}
-    G.question=q;G.theme=document.getElementById('lb-theme').value.trim();G.sahifaCtx=document.getElementById('lb-sahifa').value.trim();
-    S.s('hq_session',{q:G.question,theme:G.theme,ctx:G.sahifaCtx,ts:Date.now()});
-  } else {
-    const sv=S.g('hq_session');
-    if(sv&&Date.now()-sv.ts<7200000){G.question=sv.q||'';G.theme=sv.theme||'';G.sahifaCtx=sv.ctx||'';}
-    else{ try{ var _sS=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');G.question=_sS.openingQ||'';G.theme=_sS.weekTitle||'';G.sahifaCtx=''; }catch(e){G.question='';G.theme='';G.sahifaCtx='';} }
-  }
-  const sfe=S.g('sahifa_entries')||[];
-  try{ var _ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
-    var _lbq=document.getElementById('lb-q'); if(_lbq&&_ss.openingQ) _lbq.value=_ss.openingQ;
-    var _lbt=document.getElementById('lb-theme'); if(_lbt&&_ss.weekTitle) _lbt.value=_ss.weekTitle;
-    var _lbg=document.getElementById('lb-grade'); if(_lbg&&_ss.grade!==undefined) _lbg.value=String(_ss.grade);
-  }catch(e){}
-  if(sfe.length&&!G.sahifaCtx) G.sahifaCtx=sfe.map(e=>`[${G.name} · ${e.type||'entry'} · ${e.date||'recent'}]: ${e.text}`).join('\n\n');
-  showScreen('pre');setupPre();
+function selRole(btn){
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selRoleVal = btn.dataset.role;
+  var isStudent = selRoleVal === 'student';
+  var isFac     = selRoleVal === 'facilitator';
+  var smChoice  = document.getElementById('student-mode-choice');
+  var fmChoice  = document.getElementById('fac-mode-choice');
+  var facFields = document.getElementById('fac-fields');
+  if(smChoice) smChoice.style.display = isStudent ? 'block' : 'none';
+  if(fmChoice) fmChoice.style.display = isFac     ? 'block' : 'none';
+  if(facFields) facFields.style.display = 'none'; // shown by setFacMode
 }
 
 function setupPre(){
@@ -706,6 +749,8 @@ function sendMsg(){
   var k2=document.getElementById('k2-hq-choices'); if(k2) k2.style.display='none';
   var st=document.getElementById('hq-starters'); if(st) st.style.display='none';
   addStudent(G.name,t,'self');
+  // Broadcast to live session if active
+  if(_liveMode) broadcastMessage(t);
   // If human names a peer, trigger that peer after facilitator responds
   var _tLow=t.toLowerCase();
   var _named=G.participants.find(function(p){
@@ -725,10 +770,12 @@ function raiseHand(){
   if(handRaised){
     btn.textContent='Hand raised ✋';btn.style.background='var(--gp)';btn.style.borderColor='var(--gold)';btn.style.color='var(--gold)';
     addSys(`${G.name} raised their hand.`);
-    setTimeout(async()=>{
+    setTimeout(function(){
+      (async function(){
       if(!G.aiThinking){setSt('الحلقة','typing');await delay(600);
         const r=await callAI([{role:'user',content:`${G.name} has raised their hand and wants to speak. Acknowledge them and invite them to share.`}],buildSys());
-        setSt('الحلقة','on');addAI(r);}
+        setSt('الحلقة','on');addAI(r);}}
+      )();
     },800);
   } else {
     btn.textContent='Raise hand ✋';btn.style.background='';btn.style.borderColor='';btn.style.color='';
@@ -819,6 +866,176 @@ var S_hq={
   s:function(k,v){try{localStorage.setItem('hq_'+k,JSON.stringify(v));}catch(e){}}
 };
 
+// ── Live session functions ────────────────────────────────────────────────
+async function createLiveSession(){
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  var pid = localStorage.getItem('how_profile_id');
+  if(!jwt||!hid){ toast('Sign in to create a live session'); return; }
+  try{
+    var result = await sb.from('halaqa_session').insert({
+      household_id:     hid,
+      created_by:       pid||null,
+      code:             _sessionCode,
+      grade:            G.grade||7,
+      week:             parseInt((S.g('sahifa_settings')||{}).juz)||1,
+      question:         G.question||'',
+      phase:            'lobby',
+      ai_facilitator:   false
+    }).select().single();
+    if(result.error) throw result.error;
+    _sessionId = result.data.id;
+    // Add facilitator as participant
+    await addParticipant('facilitator');
+    // Subscribe to Realtime
+    subscribeToSession();
+    console.log('Live session created:', _sessionCode);
+  }catch(e){
+    console.error('createLiveSession failed:', e);
+    toast('⚠ Could not create live session — running solo instead');
+    _liveMode = false;
+  }
+}
+
+async function joinLiveSession(){
+  var code = (document.getElementById('lb-code')||{}).value;
+  if(!code||code.length<3){ toast('Enter a valid session code'); return false; }
+  try{
+    // Look up session by code
+    var result = await sb.from('halaqa_session')
+      .select('*').eq('code', code.toUpperCase()).single();
+    if(result.error||!result.data){ toast('Session not found — check the code'); return false; }
+    var session = result.data;
+    if(session.phase==='ended'){ toast('This session has already ended'); return false; }
+    _sessionId   = session.id;
+    _sessionCode = session.code;
+    G.question   = session.question||G.question;
+    G.grade      = session.grade||G.grade;
+    // Count current participants
+    var pResult = await sb.from('halaqa_participant')
+      .select('id, role').eq('session_id', _sessionId);
+    _liveParticipants = pResult.data||[];
+    // Adjust AI peer count based on real humans
+    _adjustAIPeers(_liveParticipants.length);
+    // Add this student as participant
+    await addParticipant('student');
+    // Subscribe to Realtime
+    subscribeToSession();
+    console.log('Joined live session:', _sessionCode);
+    return true;
+  }catch(e){
+    console.error('joinLiveSession failed:', e);
+    toast('⚠ Could not join session — starting solo instead');
+    _liveMode = false;
+    return true; // continue as solo
+  }
+}
+
+async function addParticipant(role){
+  var jwt = localStorage.getItem('how_jwt');
+  var pid = localStorage.getItem('how_profile_id');
+  var active = null;
+  try{ active = JSON.parse(localStorage.getItem('how_active_student')||'null'); }catch(e){}
+  if(!jwt||!_sessionId) return;
+  try{
+    await sb.from('halaqa_participant').upsert({
+      session_id: _sessionId,
+      profile_id: pid||null,
+      student_id: active?active.id:null,
+      name:       G.name,
+      role:       role,
+      last_seen:  new Date().toISOString()
+    }, { onConflict:'session_id,profile_id' });
+  }catch(e){ console.warn('addParticipant failed:', e); }
+}
+
+function _adjustAIPeers(realCount){
+  // Scale AI peers based on real human count (max circle = 6)
+  // 0 real → all 8 AI peers active (solo mode)
+  // 1-2 real → 4 AI peers
+  // 3-4 real → 2 AI peers
+  // 5-6 real → 0 AI peers
+  if(realCount>=5) PEER_NAMES_ACTIVE = [];
+  else if(realCount>=3) PEER_NAMES_ACTIVE = ['Khalid','Fatima'];
+  else if(realCount>=1) PEER_NAMES_ACTIVE = ['Khalid','Fatima','Omar','Nadia'];
+  else PEER_NAMES_ACTIVE = null; // use all
+  console.log('AI peers adjusted for '+realCount+' real participants');
+}
+
+function subscribeToSession(){
+  if(!_sessionId) return;
+  _realtimeChannel = sb.channel('halaqa-'+_sessionId)
+    .on('postgres_changes',
+      { event:'INSERT', schema:'public', table:'halaqa_message',
+        filter:'session_id=eq.'+_sessionId },
+      function(payload){
+        var msg = payload.new;
+        // Only render if not from this user (we already rendered locally)
+        if(msg.sender_name !== G.name){
+          addStudent(msg.sender_name, msg.text, 'student');
+        }
+      })
+    .on('postgres_changes',
+      { event:'INSERT', schema:'public', table:'halaqa_participant',
+        filter:'session_id=eq.'+_sessionId },
+      function(payload){
+        var p = payload.new;
+        _liveParticipants.push(p);
+        _adjustAIPeers(_liveParticipants.length);
+        addSys(p.name+' joined the circle');
+      })
+    .subscribe(function(status){
+      console.log('Realtime status:', status);
+      if(status==='SUBSCRIBED'){
+        console.log('Subscribed to halaqa-'+_sessionId);
+      }
+    });
+}
+
+async function broadcastMessage(text){
+  // Send human message to Supabase so other devices see it
+  if(!_liveMode||!_sessionId) return;
+  var pid = localStorage.getItem('how_profile_id');
+  try{
+    await sb.from('halaqa_message').insert({
+      session_id:  _sessionId,
+      sender_name: G.name,
+      sender_role: G.role,
+      sender_id:   pid||null,
+      text:        text
+    });
+  }catch(e){ console.warn('broadcastMessage failed:', e); }
+}
+
+async function saveSessionToSupabase(entry){
+  if(!_sessionId) return;
+  try{
+    var hid = localStorage.getItem('how_household_id');
+    await sb.from('halaqa_transcript').insert({
+      session_id:   _sessionId,
+      household_id: hid||null,
+      summary:      entry.summary||'',
+      messages:     entry.messages||[],
+      turns:        entry.turns||0,
+      duration_min: entry.duration||0
+    });
+    // Mark session as ended
+    await sb.from('halaqa_session').update({
+      phase:    'ended',
+      ended_at: new Date().toISOString()
+    }).eq('id', _sessionId);
+    console.log('Session saved to Supabase');
+  }catch(e){ console.warn('saveSessionToSupabase failed:', e); }
+}
+
+function endLiveSession(){
+  if(_realtimeChannel){
+    sb.removeChannel(_realtimeChannel);
+    _realtimeChannel = null;
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 async function endHalaqaSession(){
   if(!G.messages||!G.messages.length){toast('No messages to save');return;}
   toast('Saving session…');
@@ -853,6 +1070,9 @@ async function endHalaqaSession(){
   transcripts.unshift(entry);
   if(transcripts.length>20) transcripts=transcripts.slice(0,20);
   S_hq.s('transcripts',transcripts);
+  // Save to Supabase if live session
+  if(_liveMode && _sessionId) saveSessionToSupabase(entry);
+  endLiveSession();
   // Show clear in-circle save confirmation before leaving
   hideHalaqaTyping();
   addSys('\u2713 Session saved — '+entry.date+' \u00b7 '+entry.turns+' turns \u00b7 '+entry.duration+' min. You can browse it in Past sessions from the lobby.');

@@ -190,40 +190,7 @@ button.btn.primary {
 button.btn.primary:hover { background: var(--gold-light); }
 button.btn.teal { background: var(--teal-light); border-color: var(--teal); color: var(--teal); }
 
-/* ── MURSHID ── */
-.murshid-panel {
-  background: var(--gold-pale); border: 1px solid var(--gold-light);
-  border-radius: var(--rl); padding: 16px; margin-bottom: 14px;
-}
-.murshid-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.murshid-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--gold); display: flex; align-items: center;
-  justify-content: center; font-family: 'Amiri', serif; font-size: 14px;
-  color: var(--parchment); flex-shrink: 0;
-}
-.murshid-name { font-size: 13px; font-weight: 500; color: var(--gold); }
-.murshid-sub { font-size: 11px; color: var(--ink-4); }
-.murshid-text {
-  font-family: 'DM Serif Display', serif; font-style: italic;
-  font-size: 14px; color: var(--ink-2); line-height: 1.75; margin-bottom: 12px;
-}
-.murshid-prompt {
-  font-size: 12px; font-weight: 500; color: var(--gold);
-  border-top: 1px solid var(--gold-light); padding-top: 10px;
-}
-.murshid-thinking {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 12px; color: var(--ink-4); padding: 10px 0;
-}
-.dot-pulse { display: flex; gap: 4px; }
-.dot-pulse span {
-  width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
-  animation: pulse 1.2s ease-in-out infinite;
-}
-.dot-pulse span:nth-child(2) { animation-delay: .2s; }
-.dot-pulse span:nth-child(3) { animation-delay: .4s; }
-@keyframes pulse { 0%,80%,100% { opacity: .2; } 40% { opacity: 1; } }
+
 
 /* ── THREADS ── */
 .thread-card {
@@ -392,11 +359,7 @@ const sb = supabase.createClient(
         Weekly entry
         <span class="nav-dot" style="background:var(--gold)"></span>
       </button>
-      <button class="nav-item" data-section="murshid" onclick="nav(this)">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        Murshid
-        <span class="nav-dot" style="background:var(--teal)"></span>
-      </button>
+      
       <button class="nav-item" data-section="threads" onclick="nav(this)">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
         Threads
@@ -909,26 +872,7 @@ function renderMurshid(mc){
     <p class="page-sub">The murshid reads your sahifa and responds to where you actually are — not where the curriculum says you should be.</p>
   </div>
 
-  <div class="murshid-panel" id="murshid-response">
-    <div class="murshid-header">
-      <div class="murshid-avatar">م</div>
-      <div>
-        <p class="murshid-name">Murshid</p>
-        <p class="murshid-sub">reading your sahifa…</p>
-      </div>
-    </div>
-    <p class="murshid-text" id="murshid-text">
-      ${!hasEntry
-        ? 'Write your opening question and today\'s entry first — the murshid reads your sahifa before responding.'
-        : hasKey
-          ? 'Ready to read your entries. Ask a question below and the murshid will respond based on what you\'ve written.'
-          : 'The murshid is connected in demo mode. Enter your Anthropic API key in Settings to activate live responses.'
-      }
-    </p>
-    <p class="murshid-prompt" id="murshid-prompt" style="display:${hasEntry?'block':'none'}">
-      What have you tried so far? Write that first, then ask.
-    </p>
-  </div>
+  
 
   <div class="entry-card">
     <div class="entry-card-header">
@@ -965,65 +909,7 @@ function renderMurshid(mc){
   </div>`;
 }
 
-async function askMurshid(){
-  const q = document.getElementById('murshid-question')?.value?.trim();
-  if(!q){ toast('Write your question first.'); return; }
-
-  const s = getSettings();
-  const entries = getEntries();
-  const sahifaContext = entries.map(e=>`[${e.type} · ${e.date}]: ${e.text}`).join('\n\n');
-
-  document.getElementById('murshid-loading').style.display = 'block';
-  document.getElementById('murshid-reply').innerHTML = '';
-
-  if(!s.apiKey){
-    await new Promise(r=>setTimeout(r,1200));
-    document.getElementById('murshid-loading').style.display = 'none';
-    document.getElementById('murshid-reply').innerHTML = `
-      <div class="murshid-panel">
-        <div class="murshid-header"><div class="murshid-avatar">م</div>
-          <div><p class="murshid-name">Murshid · demo mode</p></div>
-        </div>
-        <p class="murshid-text">You asked: "${q.slice(0,80)}…"<br><br>Before I respond — what have you already tried? Describe one thing you attempted, even if it didn't work. Write it in your entry, then return here. The act of articulating what you've tried is often more useful than the answer itself.</p>
-        <p class="murshid-prompt">Add your Anthropic API key in Settings to receive a full, personalised response based on your sahifa entries.</p>
-      </div>`;
-    return;
-  }
-
-  try {
-    const systemPrompt = `You are the Murshid — a scholarly guide in the tradition of the Islamic Golden Age. You have read this student's sahifa (living manuscript). Your role is to respond to where the student actually is in their thinking, not where the curriculum says they should be.
-
-Rules you never break:
-1. Never give an answer before asking what the student has already tried — unless they have clearly described their attempt in their message.
-2. Never complete the student's thought for them. Ask a question that points toward the answer.
-3. Always connect your response to something the student has written in their sahifa.
-4. Speak in the tradition of a scholar who takes knowledge seriously — warm but precise, never condescending.
-5. End every response with a single question that sends the student back to their manuscript.
-
-Student's sahifa entries:
-${sahifaContext || '(no entries yet this week)'}`;
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': s.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:600, system: systemPrompt, messages:[{ role:'user', content: q }] })
-    });
-    const data = await resp.json();
-    const reply = data.content?.[0]?.text || 'The murshid could not respond. Check your API key in Settings.';
-    document.getElementById('murshid-loading').style.display = 'none';
-    document.getElementById('murshid-reply').innerHTML = `
-      <div class="murshid-panel">
-        <div class="murshid-header"><div class="murshid-avatar">م</div>
-          <div><p class="murshid-name">Murshid</p><p class="murshid-sub">responding to your sahifa</p></div>
-        </div>
-        <p class="murshid-text">${reply.replace(/\n/g,'<br>')}</p>
-      </div>`;
-  } catch(e){
-    document.getElementById('murshid-loading').style.display = 'none';
-    document.getElementById('murshid-reply').innerHTML = `<p style="font-size:13px;color:var(--coral)">Error: ${e.message}. Check your API key in Settings.</p>`;
-  }
-}
-
+async 
 async function generateChallenge(){
   const s = getSettings();
   const entries = getEntries();

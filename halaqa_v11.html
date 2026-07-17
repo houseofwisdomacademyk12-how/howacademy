@@ -597,16 +597,16 @@ function openHalaqa(){
   renderSeats();renderSahifa();startTimer();
   addSys('The circle opens. No video. No rows. Everyone is equal here.');
 
-  // AI facilitator opens only in solo mode or when no human facilitator
-  var hasHumanFac = _isLiveFac || _liveParticipants.some(function(p){return p.role==='facilitator';});
-  if(!_liveMode || !hasHumanFac){
-    setTimeout(function(){aiOpen();},1400);
-  } else if(_isLiveFac){
-    // Human facilitator: prompt them to open
-    setTimeout(function(){
-      addSys('You are the facilitator. Open the circle with your question or invite a student to share their pre-answer.');
-    },1000);
-  }
+  // In live mode: wait 3s for Realtime participants to arrive before deciding AI role
+  var openDelay = _liveMode ? 3000 : 1400;
+  setTimeout(function(){
+    var hasHumanFac = _isLiveFac || _liveParticipants.some(function(p){return p.role==='facilitator';});
+    if(!_liveMode || !hasHumanFac){
+      aiOpen();
+    } else if(_isLiveFac){
+      addSys('You are the facilitator. Open the circle with your question, or invite a student to share their pre-answer.');
+    }
+  }, openDelay);
 
   if(!_liveMode) setTimeout(function(){if(Math.random()<0.6) simPeer();},7000+Math.random()*4000);
 }
@@ -1035,6 +1035,7 @@ var S_hq={
 
 // ── Live session functions ────────────────────────────────────────────────
 async function createLiveSession(){
+  _isLiveFac = true; // explicitly set — this user created the session
   var jwt = localStorage.getItem('how_jwt');
   var hid = localStorage.getItem('how_household_id');
   var pid = localStorage.getItem('how_profile_id');
@@ -1078,14 +1079,29 @@ async function joinLiveSession(){
     _sessionCode = session.code;
     G.question   = session.question||G.question;
     G.grade      = session.grade||G.grade;
-    // Count current participants
+    // Fetch all current participants with full details
     var pResult = await sb.from('halaqa_participant')
-      .select('id, role').eq('session_id', _sessionId);
+      .select('id, name, role').eq('session_id', _sessionId);
     _liveParticipants = pResult.data||[];
     // Adjust AI peer count based on real humans
     _adjustAIPeers(_liveParticipants.length);
     // Add this student as participant
     await addParticipant('student');
+    // Pre-populate G.participants with real humans so seats are correct
+    if(_liveParticipants.length > 0 && G.participants && G.participants.length > 0){
+      _liveParticipants.filter(function(p){ return p.name && p.name !== G.name; }).forEach(function(p){
+        var already = G.participants.some(function(gp){ return gp.n === p.name; });
+        if(!already){
+          G.participants.push({n:p.name, role:p.role==='facilitator'?'facilitator':'peer',
+            bg:'var(--tl)', fc:'var(--teal)', st:'on'});
+          var aiIdx = G.participants.findIndex(function(gp){
+            return gp.role==='peer' && ['Khalid','Fatima','Omar','Nadia','Tariq','Aisha','Sara','Leila'].includes(gp.n);
+          });
+          if(aiIdx>-1) G.participants.splice(aiIdx,1);
+        }
+      });
+      if(typeof renderSeats === 'function') renderSeats();
+    }
     // Subscribe to Realtime
     subscribeToSession();
     console.log('Joined live session:', _sessionCode);

@@ -205,7 +205,7 @@ const S={
   set(k,v){localStorage.setItem(k,JSON.stringify(v))},
 };
 const getSahifa=()=>S.get('sahifa_entries')||[];
-const getSettings=()=>S.get('sahifa_settings')||S.get('ptl_settings')||{name:'',grade:'',juz:'',apiKey:''};
+const getSettings=()=>S.get('sahifa_settings')||S.get('ptl_settings')||{name:'',grade:'',juz:''};
 const getMHistory=()=>S.get('murshid_history')||[];
 const saveMHistory=h=>S.set('murshid_history',h.slice(-40));
 const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
@@ -563,11 +563,7 @@ function renderSahifaCtx(){
     <span class="ctx-label" style="margin-top:10px;display:block">Earlier entries (${entries.filter(e=>!isRecent(e.date)).length})</span>
     ${entries.filter(e=>!isRecent(e.date)).slice(0,6).map(e=>ctxEntryHtml(e,true)).join('')}
   </div>
-  <div style="padding:12px 0;border-top:1px solid var(--ink-5);margin-top:8px">
-    <p style="font-size:11px;font-weight:500;color:var(--ink-3);margin-bottom:8px">Add API key</p>
-    <input class="field" type="password" id="ctx-api-key" placeholder="sk-ant-…" value="${s.apiKey||''}" style="margin-bottom:6px">
-    <button class="btn primary" style="width:100%;font-size:11px;padding:6px" onclick="saveCtxKey()">Save key</button>
-  </div>`;
+  `;
 }
 
 function ctxEntryHtml(e,selectable){

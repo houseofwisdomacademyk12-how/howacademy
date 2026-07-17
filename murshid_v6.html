@@ -126,6 +126,12 @@ input.field:focus{outline:none;border-color:var(--gold);background:white}
 .toast.show{opacity:1}
 .constraint-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;background:var(--p3);color:var(--ink-4);border:1px solid var(--ink-5);margin-right:4px;margin-bottom:4px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+const sb = supabase.createClient('SUPABASE_PROJECT_URL','SUPABASE_ANON_KEY');
+/* ─────────────────────────────────────────────────── */
+</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -378,9 +384,8 @@ async function getMurshidResponse(userMessage){
       // already added
     }
 
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-6',
         max_tokens:400,
@@ -635,6 +640,46 @@ setTimeout(()=>{
     hdr.appendChild(cb);
   }
 },100);
+</script>
+<script>
+// ── Pull Sahifa entries from Supabase on load ─────────────────────────────
+(async function pullMurshidContext(){
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  if(!jwt || !hid || typeof sb === 'undefined') return;
+  try{
+    var settings = {};
+    try{ settings = JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); }catch(e){}
+    var grade = parseInt(settings.grade)||7;
+    var week  = parseInt(settings.juz)||1;
+    var active = null;
+    try{ active = JSON.parse(localStorage.getItem('how_active_student')||'null'); }catch(e){}
+    var query = sb.from('sahifa_entry')
+      .select('type, text, entry_date')
+      .eq('household_id', hid)
+      .eq('grade', grade)
+      .eq('week', week)
+      .order('entry_date', {ascending: true});
+    if(active) query = query.eq('student_id', active.id);
+    var result = await query;
+    if(!result.error && result.data && result.data.length){
+      var entries = result.data.map(function(r){
+        return {type: r.type, text: r.text, date: r.entry_date};
+      });
+      // Merge with local (local may have unsaved entries)
+      var local = [];
+      try{ local = JSON.parse(localStorage.getItem('sahifa_entries')||'[]'); }catch(e){}
+      var localTypes = new Set(local.map(function(e){ return e.type; }));
+      entries.forEach(function(e){
+        if(!localTypes.has(e.type)) local.push(e);
+      });
+      localStorage.setItem('sahifa_entries', JSON.stringify(local));
+      console.log('Murshid: pulled', result.data.length, 'Sahifa entries from Supabase');
+    }
+  }catch(e){
+    console.warn('pullMurshidContext failed:', e);
+  }
+})();
 </script>
 </body>
 </html>
