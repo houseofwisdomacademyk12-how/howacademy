@@ -1081,21 +1081,80 @@ async function endHalaqaSession(){
   setTimeout(function(){showScreen('lobby');},3000);
 }
 
-function showPastSessions(){
+async function showPastSessions(){
   var overlay=document.getElementById('past-sessions-overlay');
   var list=document.getElementById('past-sessions-list');
   if(!overlay||!list) return;
+  overlay.style.display='block';
+
+  // Show loading state
+  list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.4);padding:40px 20px">Loading sessions…</div>';
+
+  // Local transcripts
   var transcripts=S_hq.g('transcripts')||[];
+
+  // Fetch from Supabase if logged in
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  if(jwt && hid && typeof sb !== 'undefined'){
+    try{
+      var result = await sb
+        .from('halaqa_transcript')
+        .select('id, summary, messages, turns, duration_min, saved_at, session_id')
+        .eq('household_id', hid)
+        .order('saved_at', {ascending: false})
+        .limit(20);
+
+      if(!result.error && result.data && result.data.length){
+        // Map Supabase rows to local transcript format
+        var serverTranscripts = result.data.map(function(r){
+          var d = new Date(r.saved_at);
+          return {
+            id:            r.id,
+            date:          d.toLocaleDateString(),
+            time:          d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),
+            summary:       r.summary||'',
+            messages:      Array.isArray(r.messages)?r.messages:[],
+            turns:         r.turns||0,
+            duration:      r.duration_min||0,
+            grade:         '',
+            question:      r.summary?r.summary.slice(0,80):'Live session',
+            theme:         'Saved from live session',
+            contributions: [],
+            fromServer:    true
+          };
+        });
+
+        // Merge: local entries first, then server entries not already in local
+        var localIds = new Set(transcripts.map(function(t){ return t.id; }));
+        serverTranscripts.forEach(function(st){
+          if(!localIds.has(st.id)) transcripts.push(st);
+        });
+
+        // Sort by date descending
+        transcripts.sort(function(a,b){
+          return new Date(b.date+' '+b.time) - new Date(a.date+' '+a.time);
+        });
+      }
+    }catch(e){
+      console.warn('fetchTranscripts failed:', e);
+    }
+  }
+
   if(!transcripts.length){
     list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.4);padding:40px 20px">No saved sessions yet.<br><span style="font-size:.8rem">End a session using the ✓ End & save button to save it here.</span></div>';
-  } else {
+    return;
+  }
+
+  // Render all transcripts
+  {
     list.innerHTML=transcripts.map(function(t){
       var summaryHtml=t.summary?'<div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:10px 12px;font-size:.8rem;color:rgba(255,255,255,.75);line-height:1.6;margin:8px 0">'+t.summary+'</div>':'';
       var contribHtml=t.contributions&&t.contributions.length?'<div style="font-size:.7rem;color:rgba(255,255,255,.4);margin:4px 0 8px">Your contributions: '+(t.contributions.length)+' · "'+(t.contributions[0]||'').slice(0,60)+'…"</div>':'';
       return '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:16px;margin-bottom:12px">'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">'
         +'<div>'
-        +'<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:3px">'+t.date+' · '+t.time+' · Grade '+(t.grade||'?')+' · '+t.duration+' min</div>'
+        +'<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:3px">'+t.date+' · '+t.time+(t.grade?' · Grade '+t.grade:'')+' · '+t.duration+' min'+(t.fromServer?' · ☁ synced':'')+' </div>'
         +'<div style="font-size:.9rem;font-weight:700;color:white;line-height:1.4">'+t.question+'</div>'
         +'<div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:3px">'+t.theme+'</div>'
         +'</div>'
@@ -1110,7 +1169,6 @@ function showPastSessions(){
         +'</div>';
     }).join('');
   }
-  overlay.style.display='block';
 }
 
 function toggleTranscript(id){
