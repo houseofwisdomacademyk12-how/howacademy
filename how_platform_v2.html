@@ -1056,7 +1056,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <span class="nav-logo">م بَيْتُ الْحِكْمَة</span>
     <div class="nav-tabs">
       <!-- Primary tabs — always visible -->
-      <button class="ntab" data-p="institution" onclick="SP(this)">Home</button>
+      <button class="ntab active" data-p="overview" onclick="SP(this)">Home</button>
       <button class="ntab" data-p="schedule" onclick="SP(this)">📅 Schedule</button>
       <button class="ntab" data-p="generate" onclick="SP(this);syncLG()">⚡ Generate</button>
 
@@ -1072,7 +1072,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
           <button onclick="event.stopPropagation();window.open('how_munazara_v4.html','_blank');closeNavDropdowns()">⚔ Munazara</button>
           <button onclick="event.stopPropagation();window.open('murshid_v4.html','_blank');closeNavDropdowns()">م Murshid</button>
           <button onclick="event.stopPropagation();window.open('how_isnad.html','_blank');closeNavDropdowns()">🔗 Isnad</button>
-          <button onclick="event.stopPropagation();window.open('studio_digital_twin_v4.html','_blank');closeNavDropdowns()">🏗 Studio</button>
+          <button onclick="event.stopPropagation();window.open('studio_digital_twin.html','_blank');closeNavDropdowns()">🏗 Studio</button>
         </div>
       </div>
 
@@ -1210,7 +1210,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     </div>
     <div class="tc-arrow">↗</div>
   </a>
-  <a class="tc" href="studio_digital_twin_v4.html" target="_blank">
+  <a class="tc" href="studio_digital_twin.html" target="_blank">
     <div class="tc-icon">🏗</div>
     <div class="tc-body">
       <p class="tc-name">Studio Digital Twin</p>
@@ -2130,7 +2130,7 @@ function getCURRICULUM(){
 }
 
 // ═══ CURRICULUM BROWSER ═══════════════════════════════
-let currentGrade='7', currentWeek=null;
+var currentGrade='7', currentWeek=null;
 
 function selectGrade(g){
   currentGrade=g; currentWeek=null;
@@ -2449,7 +2449,7 @@ function schedLaunch(action, opts){
     window.open('sahifa_prototype_v3.html','_blank');
 
   } else if(action==='studio-twin'){
-    window.open('studio_digital_twin_v4.html','_blank');
+    window.open('studio_digital_twin.html','_blank');
 
   } else if(action==='studio'){
     showStudioCard(w, g);
@@ -2703,7 +2703,7 @@ function showStudioCard(weekNum, grade){
 
 function closeStudioModal(){ var m=document.getElementById('studio-card-modal'); if(m) m.remove(); }
 
-function openStudioGenerator(){ window.open('studio_digital_twin_v4.html','_blank'); }
+function openStudioGenerator(){ window.open('studio_digital_twin.html','_blank'); }
 
 
 function normaliseSubj(s){
@@ -3425,8 +3425,9 @@ function syncScheduleToCurrentWeek(){
   var gEl=document.getElementById('sch-grade');
   var wEl=document.getElementById('sch-week');
   if(gEl) gEl.value=String(currentGrade||7);
-  if(wEl) wEl.value=String(currentWeek||S.week||8);
-  updateSchedule();
+  var _week=currentWeek||(typeof S!=='undefined'&&S?S.week:null)||8;
+  if(wEl) wEl.value=String(_week);
+  if(typeof updateSchedule==='function') updateSchedule();
 }
 function updateSchedule(){
   // Fetch synced lessons from Supabase in background
@@ -8431,6 +8432,7 @@ async function howLogin(email, password){
     if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
     return;
   }
+  if(data.session) localStorage.setItem('how_refresh_token', data.session.refresh_token||'');
   await applyUserToProfile(data.user, data.session.access_token);
   if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
 }
@@ -8539,9 +8541,18 @@ async function verifyStudentPin(){
 
     toast('Ahlan, '+student.name+' — let\'s learn!');
 
-    // Go to schedule
+    // Go to schedule and set schedule role to child (student)
     var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
     if(schedBtn) SP(schedBtn);
+    // Update schedule role buttons to show Student active
+    _schedRole='child';
+    ['fac','prep','child'].forEach(function(r){
+      var b=document.getElementById('sch-role-'+r); if(!b) return;
+      var on=(r==='child');
+      b.style.background=on?'#1d6f6f':'transparent';
+      b.style.color=on?'white':'var(--ink3,#5a5a78)';
+      b.style.borderColor=on?'#1d6f6f':'var(--p3,#e4ddd0)';
+    });
     render();
     if(typeof updateSchedule==='function') updateSchedule();
 
@@ -9083,7 +9094,7 @@ async function publishTeachingSupabase(entry){
     <!-- Tabs -->
     <div style="display:flex;border-bottom:2px solid #e4ddd0;margin-bottom:20px">
       <button id="sm-tab-students" onclick="switchSmTab('students')" style="padding:8px 16px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#1a3d8a;border-bottom:2px solid #1a3d8a;margin-bottom:-2px">Students</button>
-      <button id="sm-tab-matchmaking" onclick="switchSmTab('matchmaking')" style="padding:8px 16px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:#9a9ab0;border-bottom:2px solid transparent;margin-bottom:-2px">⚔ Matchmaking</button>
+
     </div>
 
     <!-- Students tab -->

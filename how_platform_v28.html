@@ -29,10 +29,36 @@
 body{font-family:'DM Sans',sans-serif;background:var(--p);color:var(--ink);font-size:13px;line-height:1.5;overflow-x:hidden}
 
 /* NAV */
-.nav{background:var(--ink);position:sticky;top:0;z-index:200;height:46px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.06)}
+.nav{background:var(--ink);position:sticky;top:0;z-index:200;height:46px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);overflow:visible}
 .nav-in{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;align-items:center;width:100%;height:100%;gap:0}
+.notif-item{padding:12px 16px;border-bottom:1px solid #f0ebe4;cursor:pointer;transition:background .12s}
+.notif-item:hover{background:#f8f6f2}
+.notif-item.unread{background:#f0f8f8;border-left:3px solid #1d6f6f}
+.notif-item.unread:hover{background:#e8f4f4}
+.notif-title{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:2px}
+.notif-body{font-size:11px;color:#5a5a78;line-height:1.4}
+.notif-time{font-size:10px;color:#9a9ab0;margin-top:3px}
+.nav-dropdown{position:relative;display:inline-block}
+.nav-dropdown-btn{position:relative}
+.nav-dropdown-menu{
+  position:fixed;top:46px;
+  background:#1a1a2e;border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;padding:6px 0;min-width:170px;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:99999;
+}
+.nav-dropdown-menu button{
+  display:block;width:100%;padding:9px 16px;
+  background:none;border:none;color:rgba(255,255,255,.85);
+  font-family:inherit;font-size:12px;font-weight:500;
+  text-align:left;cursor:pointer;white-space:nowrap;
+  transition:background .12s;
+}
+.nav-dropdown-menu button:hover{background:rgba(255,255,255,.1)}
+.nav-dropdown-menu button.active-page{
+  color:#d4af37;font-weight:700;
+}
 .nav-logo{font-family:'Amiri',serif;font-size:15px;color:var(--gl);margin-right:16px;flex-shrink:0;white-space:nowrap}
-.nav-tabs{display:flex;height:100%;overflow-x:auto;scrollbar-width:none}
+.nav-tabs{display:flex;height:100%;overflow:visible;scrollbar-width:none}
 .nav-tabs::-webkit-scrollbar{display:none}
 .ntab{font-size:11px;padding:0 11px;color:rgba(255,255,255,.38);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;height:100%;display:flex;align-items:center;flex-shrink:0}
 .ntab:hover{color:rgba(255,255,255,.7)}
@@ -1029,31 +1055,66 @@ body.lg-active #lg-root .toast.show { display:block !important; }
   <div class="nav-in">
     <span class="nav-logo">م بَيْتُ الْحِكْمَة</span>
     <div class="nav-tabs">
-      <button class="ntab" data-p="overview" onclick="SP(this)">Overview</button>
-      <button class="ntab" data-p="curriculum" onclick="SP(this)">Curriculum</button>
-      <button class="ntab" data-p="pedagogy" onclick="SP(this)">Pedagogy</button>
-      <button class="ntab" data-p="schedule" onclick="SP(this)">Schedule</button>
-      <button class="ntab stab" data-p="sacred" onclick="SP(this)">Sacred layer</button>
-      <button class="ntab" data-p="assessment" onclick="SP(this)">Assessment</button>
-      <button class="ntab" data-p="murshid" onclick="SP(this)">م Murshid</button>
-      <button class="ntab active" data-p="institution" onclick="SP(this)">Institution</button>
+      <!-- Primary tabs — always visible -->
+      <button class="ntab" data-p="institution" onclick="SP(this)">Home</button>
+      <button class="ntab" data-p="schedule" onclick="SP(this)">📅 Schedule</button>
       <button class="ntab" data-p="generate" onclick="SP(this);syncLG()">⚡ Generate</button>
-      <button class="ntab" onclick="window.open('peer_teaching_library.html','_blank')" title="Open peer teaching library">📚 Peer Library</button>
-      <button class="ntab" onclick="window.open('sahifa_prototype_v3.html','_blank')" title="Open the Sahifa">📜 Sahifa</button>
-      <button class="ntab" onclick="window.open('studio_digital_twin_v4.html','_blank')" title="Studio Digital Twin">🏗 Studio</button>
-      <button class="ntab" onclick="window.open('halaqa_v6.html','_blank')" title="The Halaqa">🔵 Halaqa</button>
-      <button class="ntab" onclick="window.open('Knowledge_Transmission_Chain_v3.html','_blank')" title="Isnad">🔗 Isnad</button>
+
+      <!-- Tools dropdown -->
+      <div class="nav-dropdown" id="nav-tools-dropdown">
+        <button class="ntab nav-dropdown-btn" onclick="toggleNavDropdown('tools',event)">
+          🛠 Tools <span style="font-size:9px;opacity:.7">▾</span>
+        </button>
+        <div class="nav-dropdown-menu" id="nav-dropdown-tools" style="display:none">
+          <button onclick="event.stopPropagation();window.open('peer_teaching_library.html','_blank');closeNavDropdowns()">📚 Peer Library</button>
+          <button onclick="event.stopPropagation();window.open('sahifa_prototype_v3.html','_blank');closeNavDropdowns()">📜 Sahifa</button>
+          <button onclick="event.stopPropagation();window.open('halaqa_v6.html','_blank');closeNavDropdowns()">🔵 Halaqa</button>
+          <button onclick="event.stopPropagation();window.open('how_munazara_v4.html','_blank');closeNavDropdowns()">⚔ Munazara</button>
+          <button onclick="event.stopPropagation();window.open('murshid_v4.html','_blank');closeNavDropdowns()">م Murshid</button>
+          <button onclick="event.stopPropagation();window.open('how_isnad.html','_blank');closeNavDropdowns()">🔗 Isnad</button>
+          <button onclick="event.stopPropagation();window.open('studio_digital_twin_v4.html','_blank');closeNavDropdowns()">🏗 Studio</button>
+        </div>
+      </div>
+
+      <!-- Learn dropdown -->
+      <div class="nav-dropdown" id="nav-learn-dropdown">
+        <button class="ntab nav-dropdown-btn" onclick="toggleNavDropdown('learn',event)">
+          📖 Learn <span style="font-size:9px;opacity:.7">▾</span>
+        </button>
+        <div class="nav-dropdown-menu" id="nav-dropdown-learn" style="display:none">
+          <button data-p="curriculum" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Curriculum</button>
+          <button data-p="pedagogy" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Pedagogy</button>
+          <button data-p="sacred" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Sacred layer</button>
+          <button data-p="assessment" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Assessment</button>
+          <button data-p="overview" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Overview</button>
+        </div>
+      </div>
     </div>
-    <!-- User indicator + sign out -->
+    <!-- Sign in button (shown when logged out) -->
+    <button id="nav-signin-btn" onclick="goToSignIn()" style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.85);cursor:pointer;font-family:inherit;font-weight:600;margin-right:8px">Sign in / Sign up</button>
+    <!-- User indicator + notifications + sign out -->
     <div id="nav-user" style="display:none;align-items:center;gap:8px;padding:0 12px;flex-shrink:0">
       <span id="nav-user-name" style="font-size:12px;font-weight:600;color:rgba(255,255,255,.7)"></span>
+      <!-- Notification bell -->
+      <div style="position:relative">
+        <button id="notif-bell" onclick="toggleNotifPanel()" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:16px;cursor:pointer;padding:4px;position:relative" title="Notifications">🔔</button>
+        <span id="notif-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:#e05050;color:white;font-size:9px;font-weight:800;min-width:14px;height:14px;border-radius:7px;display:none;align-items:center;justify-content:center;padding:0 3px">0</span>
+      </div>
       <button onclick="howLogout()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;font-family:inherit;font-weight:600">Sign out</button>
+    </div>
+    <!-- Notification panel -->
+    <div id="notif-panel" style="display:none;position:fixed;top:48px;right:12px;width:320px;max-height:400px;overflow-y:auto;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9998;border:1px solid #e4ddd0">
+      <div style="padding:12px 16px;border-bottom:1px solid #f0ebe4;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;font-size:13px;color:#1a1a2e">Notifications</span>
+        <button onclick="markAllNotifsRead()" style="font-size:11px;color:#1d6f6f;background:none;border:none;cursor:pointer;font-weight:600">Mark all read</button>
+      </div>
+      <div id="notif-list" style="padding:8px 0"><p style="text-align:center;color:#9a9ab0;font-size:12px;padding:20px">No notifications</p></div>
     </div>
   </div>
 </nav>
 
 <!-- ═══ OVERVIEW ═══════════════════════════════════════ -->
-<div class="page" id="p-overview">
+<div class="page active" id="p-overview">
 <div class="mh">
   <p class="mh-seal">م</p>
   <p class="mh-ar">بَيْتُ الْحِكْمَة — House of Wisdom</p>
@@ -1087,7 +1148,28 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 <div class="g2">
   <div class="card"><div class="ch"><span style="font-size:14px">📜</span><div style="margin-left:7px"><p class="ct">Layer 1 — Curriculum</p><p class="cs">390 weeks · 5 subjects · audited against CCSS & NGSS</p></div></div><div class="cb"><p class="ct2">390 weeks of curriculum across 13 grades and 5 subjects — Mathematics, ELA, Writing, Science, and Social Studies — with Islamic scholars woven throughout as the actual history of each discipline. Every week connects to a Quranic Juz, a scholar, and an opening question that drives the week's inquiry. The curriculum meets CCSS and NGSS standards while restoring what those standards omit: the Islamic roots of algebra, astronomy, medicine, optics, and geography. Browse the full scope and sequence in the Curriculum tab.</p></div></div>
   <div class="card"><div class="ch"><span style="font-size:14px">🏛</span><div style="margin-left:7px"><p class="ct">Layer 2 — Studios</p><p class="cs">10 enrichment studios · backward-planned</p></div></div><div class="cb"><p class="ct2">Each studio has a peak task, a prerequisite map, and a direct connection to specific curriculum weeks. Tuesday open studio — all ages, all studios simultaneously — is the irreplaceable physical moment the platform is designed around.</p><div class="badge-row"><span class="badge ppurp">Math</span><span class="badge pteal">Astronomy</span><span class="badge pamber">Engineering</span><span class="badge pblue">Medicine</span><span class="badge pcoral">Humanities</span></div></div></div>
-  <div class="card"><div class="ch"><span style="font-size:14px">م</span><div style="margin-left:7px"><p class="ct">Layer 3 — Pedagogy</p><p class="cs">7 approaches from the House of Wisdom tradition</p></div></div><div class="cb"><p class="ct2">Sahifa, halaqa, translation chain, munazara, maktaba, murshid, isnad — each drawn from actual Islamic scholarly practice. The Murshid tab gives you live access to the AI murshid. Provide your API key and use it now.</p></div></div>
+  <div class="card"><div class="ch"><span style="font-size:14px">م</span><div style="margin-left:7px"><p class="ct">Layer 3 — Pedagogy</p><p class="cs">7 approaches from the House of Wisdom tradition</p></div></div><div class="cb">
+<p class="ct2" style="margin-bottom:12px">One week · one inquiry · seven dimensions</p>
+<div style="background:rgba(255,255,255,.06);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.8">
+  <div style="font-weight:700;color:#d4af37;margin-bottom:6px">Week anchor · Al-Battani · Circles · Al-Khaliq</div>
+  <div><span style="color:#4cd3a0;font-weight:700">MATHEMATICS</span> · Circumference, π, Al-Battani's tables</div>
+  <div><span style="color:#5fd0e6;font-weight:700">SCIENCE</span> · Measuring the sky — arc, radius, orbit</div>
+  <div><span style="color:#ff9d6b;font-weight:700">SOCIAL STUDIES</span> · Baghdad's House of Wisdom, Islamic astronomy</div>
+  <div><span style="color:#a0c4ff;font-weight:700">ELA / WRITING</span> · Argue why π is irrational — evidence, precision</div>
+  <div><span style="color:#c9a0ff;font-weight:700">STUDIO</span> · Build a dome — geometry becomes architecture</div>
+  <div><span style="color:#d4af37;font-weight:700">SACRED LAYER</span> · Al-Khaliq — creation has measurable, beautiful order</div>
+</div>
+<p class="ct2" style="font-weight:700;margin-bottom:8px">Seven approaches from the House of Wisdom</p>
+<div style="font-size:12px;line-height:2">
+  <div>📜 <strong>Sahifa</strong> — 13-year personal manuscript</div>
+  <div>🔵 <strong>Halaqa</strong> — circle of named inquiry</div>
+  <div>⚔ <strong>Munazara</strong> — claim defended under pressure</div>
+  <div>🏗 <strong>Maktaba</strong> — studio's library of making</div>
+  <div>م <strong>Murshid</strong> — guide who asks before answering</div>
+  <div>🔗 <strong>Isnad</strong> — chain of transmission</div>
+  <div>↔ <strong>Translation Chain</strong> — knowledge moves across disciplines and generations, as it did from Greek to Arabic to the world. You are next.</div>
+</div>
+</div></div>
   <div class="card"><div class="ch"><span style="font-size:14px">✦</span><div style="margin-left:7px"><p class="ct">Layer 4 — Sacred layer</p><p class="cs">Name · Hadith · Muhasaba · Mathnawi · Istajibullah</p></div></div><div class="cb"><p class="ct2">Not a separate subject. The Name sets the lens (Saturday evening). The hadith holds the mirror (Wednesday). The muhasaba asks who you are becoming (Thursday). Browse all 30 Names mapped to all 30 Juz in the Sacred Layer tab.</p></div>  <div class="card"><div class="ch"><span style="font-size:14px">🖥</span><div style="margin-left:7px"><p class="ct">Layer 5 — Digital tools</p><p class="cs">5 standalone tools · all downloadable · offline-capable</p></div></div><div class="cb"><p class="ct2">Sahifa (living manuscript), Murshid (AI scholarly guide), Halaqa (learning circle), Peer Teaching Library (knowledge commons), and Studio Digital Twin (maktaba of making). Each tool functions independently and connects to the others through the student's own record of learning.</p></div></div>
 
 <div class="sh"><div class="shb" style="height:18px;background:var(--purple)"></div><div><p class="sht">Digital tools — all downloadable</p></div></div>
@@ -1330,7 +1412,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 </div>
 
 <!-- ═══ INSTITUTION ════════════════════════════════════ -->
-<div class="page active" id="p-institution">
+<div class="page" id="p-institution">
 <div id="how-login-panel" style="max-width:380px;margin:0 auto 2rem;background:white;border-radius:14px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.1);border:1px solid #e4ddd0">
   <!-- Header -->
   <div style="text-align:center;margin-bottom:20px">
@@ -1624,7 +1706,14 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 </div>
 <div class="foot"><p class="ft">بَيْتُ الْحِكْمَة — House of Wisdom</p><p class="fs">K–12 Platform · Browse the curriculum · Explore the sacred layer · Use the murshid</p></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+var sb = (typeof supabase !== 'undefined')
+  ? supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9')
+  : null;
+/* ─────────────────────────────────────────────────── */
+
 // ═══ NAVIGATION ═══════════════════════════════════════
 function SP(btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -2304,8 +2393,16 @@ function setSchedRole(role){
     b.style.color=on?'white':'var(--ink3,#5a5a78)';
     b.style.borderColor=on?'#1d6f6f':'var(--p3,#e4ddd0)';
   });
-  if(role==='child'){ setRole('student'); }
-  else if(role==='prep'){ setRole('parent'); }
+  if(role==='child'||role==='student'){
+    var jwt=localStorage.getItem('how_jwt');
+    var students=[];
+    try{students=JSON.parse(localStorage.getItem('how_students')||'[]');}catch(e){}
+    if(jwt&&students.length){
+      var instBtn=document.querySelector('.ntab[data-p="institution"]');
+      if(instBtn) SP(instBtn);
+      showStudentPinPanel(true);
+    } else { setRole('student'); }
+  } else if(role==='prep'){ setRole('parent'); }
   else if(role==='facilitator'){ setRole('facilitator'); }
   updateSchedule();
 }
@@ -2369,8 +2466,67 @@ function schedLaunch(action, opts){
 }
 
 function schedHasLesson(g, w, subj, sess){
-  return !!(S.lessons && S.lessons[key(g,w,subj,sess)]);
+  // Check localStorage first
+  if(S.lessons && S.lessons[key(g,w,subj,sess)]) return true;
+  // Check synced lessons from Supabase
+  if(S.syncedLessons){
+    return S.syncedLessons.some(function(l){
+      return l.grade===g && l.week===w && l.subject===subj;
+    });
+  }
+  return false;
 }
+async function fetchSyncedLessons(){
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt || typeof sb === 'undefined') return;
+  try{
+    var g = parseInt((document.getElementById('sch-grade')||{}).value)||S.grade;
+    var w = parseInt((document.getElementById('sch-week')||{}).value)||S.week;
+    // Delta sync — only fetch lessons newer than last sync
+    var since = localStorage.getItem('how_last_sync')||'1970-01-01';
+    var query = sb
+      .from('lesson')
+      .select('id, grade, week, subject, session, title, objective, slides, updated_at')
+      .eq('grade', g)
+      .eq('week', w);
+    // Only apply delta if we have a real sync timestamp
+    if(since !== '1970-01-01') query = query.gt('updated_at', since);
+    var result = await query;
+    if(result.error){ console.warn('fetchSyncedLessons error:', result.error.message); return; }
+    if(!result.data || !result.data.length) return;
+
+    // Cache in S.syncedLessons
+    S.syncedLessons = (S.syncedLessons||[]).concat(result.data);
+
+    // Load into S.lessons — last-write-wins on updated_at
+    result.data.forEach(function(l){
+      var ses = l.session||1;
+      var lessonKey = key(l.grade, l.week, l.subject, ses);
+      var existing = S.lessons[lessonKey];
+      // Only overwrite if server version is newer or no local version
+      if(!existing || existing.fromSync || l.updated_at > (existing.updated_at||'')){
+        if(l.slides){
+          S.lessons[lessonKey] = {
+            title:      l.title||'',
+            objective:  l.objective||'',
+            slides:     l.slides,
+            updated_at: l.updated_at,
+            fromSync:   true
+          };
+        }
+      }
+    });
+
+    // Update last sync timestamp
+    localStorage.setItem('how_last_sync', new Date().toISOString());
+    // Re-render schedule
+    renderScheduleDay(document.querySelector('.day-tab.active')&&document.querySelector('.day-tab.active').dataset.day||'sun');
+    console.log('Delta sync: '+result.data.length+' lessons for Grade '+g+' Week '+w+' (since '+since+')');
+  }catch(e){
+    console.warn('fetchSyncedLessons failed:', e);
+  }
+}
+
 function schedHasTest(g, w){
   return !!(S.tests && (S.tests[g+'_'+w+'_test'] || S.tests[g+'_'+w]));
 }
@@ -3050,7 +3206,8 @@ async function _goToTeachIt(){
           .eq('grade', S.grade)
           .eq('week', S.week)
           .eq('subject', S.subj)
-          .order('created_at', {ascending: false})
+          .eq('session', S.session||1)
+          .order('updated_at', {ascending: false})
           .limit(1)
           .single();
 
@@ -3123,6 +3280,67 @@ function applyTeachSuggestion(suggestion){
   if(ta){ ta.value=(ta.value?ta.value+'\n\n':'')+suggestion; saveNote(idx); toast('\u2713 Suggestion added'); }
 }
 
+async function pushScore(grade, week, scoreObj){
+  var jwt = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(!jwt||!householdId||typeof sb==='undefined') return;
+  var studentId = null;
+  try{
+    var active = JSON.parse(localStorage.getItem('how_active_student')||'null');
+    if(active) studentId = active.id;
+  }catch(e){}
+  try{
+    var result = await sb.from('score')
+      .upsert({
+        household_id: householdId,
+        student_id:   studentId,
+        grade:        grade,
+        week:         week,
+        subjects:     scoreObj,
+        updated_at:   new Date().toISOString()
+      }, { onConflict:'household_id,grade,week' })
+      .select();
+    if(result.error) throw result.error;
+    console.log('Score pushed to Supabase:', grade, week);
+  }catch(e){
+    console.warn('pushScore failed:', e);
+  }
+}
+
+async function pullScores(){
+  var jwt = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(!jwt||!householdId||typeof sb==='undefined') return;
+  try{
+    var result = await sb
+      .from('score')
+      .select('grade, week, subjects, updated_at')
+      .eq('household_id', householdId);
+    if(result.error){ console.warn('pullScores error:', result.error.message); return; }
+    if(!result.data||!result.data.length) return;
+    // Server is authoritative — overwrite local scores
+    result.data.forEach(function(row){
+      var k = row.grade+'_'+row.week;
+      S.scores[k] = row.subjects;
+      // Also update history
+      if(row.subjects){
+        var patch = {};
+        Object.keys(row.subjects).forEach(function(subj){
+          var sd = row.subjects[subj]||{};
+          var earned = sd.details?sd.details.reduce(function(a,d){return a+(d.awarded>=0?d.awarded:0);},0):0;
+          var total  = sd.details?sd.details.reduce(function(a,d){return a+d.marks;},0):0;
+          patch['test_'+subj]={earned:earned,total:total,pct:total?Math.round(earned/total*100):null};
+        });
+        saveHistory(row.grade, row.week, patch);
+      }
+    });
+    autosave();
+    console.log('Scores pulled from Supabase:', result.data.length, 'weeks');
+  }catch(e){
+    console.warn('pullScores failed:', e);
+  }
+}
+
 async function syncLesson(){
   var l=lesson();
   if(!l){ toast('No lesson to sync — generate first'); return; }
@@ -3131,21 +3349,25 @@ async function syncLesson(){
   if(!jwt||!householdId){ toast('Sign in to sync lessons to students'); return; }
   try{
     var profileId = localStorage.getItem('how_profile_id');
+    var ses = S.session||1;
     var syncEntry={
       household_id: householdId,
       created_by:   profileId||null,
       grade:        S.grade,
       week:         S.week,
       subject:      S.subj,
+      session:      ses,
       title:        l.title||'Week '+S.week+' '+S.subj,
       objective:    l.objective||'',
-      slides:       l.slides||[]
+      slides:       l.slides||[],
+      updated_at:   new Date().toISOString()
     };
-    // Upsert — replaces existing lesson for same grade/week/subject
     var result=await sb.from('lesson')
-      .upsert(syncEntry, { onConflict:'household_id,grade,week,subject' })
+      .upsert(syncEntry, { onConflict:'household_id,grade,week,subject,session' })
       .select();
     if(result.error) throw result.error;
+    // Update last sync timestamp
+    localStorage.setItem('how_last_sync', new Date().toISOString());
     toast('☁ Lesson synced — students can now access it in Teach It');
     console.log('Lesson synced:', result.data);
   }catch(e){
@@ -3207,6 +3429,11 @@ function syncScheduleToCurrentWeek(){
   updateSchedule();
 }
 function updateSchedule(){
+  // Fetch synced lessons from Supabase in background
+  if(localStorage.getItem('how_jwt') && typeof sb !== 'undefined'){
+    fetchSyncedLessons();
+  }
+  // Continue with normal schedule render below
   renderScheduleDay(document.querySelector('.day-tab.active').dataset.day);
   // Status indicators
   var statusEl=document.getElementById('sch-status'); if(!statusEl) return;
@@ -3751,6 +3978,7 @@ var _cvs = {}; // idx→{ctx, drawing, color, tool, size}
   setColour('math'); render();
   var _savedRole=localStorage.getItem('how_role')||'facilitator';
   setRole(_savedRole);
+  updateNavAuthState();
 })();
 
 var _lastRebuildGrade = null;
@@ -5066,6 +5294,8 @@ function finishTest(){
   });
   S.scores[testKey()]=scoreObj;
   autosave();
+  // Push to Supabase — server is authoritative for scores
+  pushScore(S.grade, S.week, scoreObj.subjects||scoreObj);
   var _hp={};
   SUBJ_ORDER.forEach(function(subj){
     var sd=scoreObj.subjects[subj]||{};
@@ -7083,6 +7313,29 @@ function loadJuzEdits(){
 
 
 // ─── Role picker ─────────────────────────────────────
+// ── Auth tab toggle ───────────────────────────────────────────────────────
+function switchAuthTab(tab){
+  var signinForm = document.getElementById('auth-signin-form');
+  var signupForm = document.getElementById('auth-signup-form');
+  var signinTab  = document.getElementById('auth-tab-signin');
+  var signupTab  = document.getElementById('auth-tab-signup');
+  if(!signinForm||!signupForm) return;
+  if(tab==='signin'){
+    signinForm.style.display='block';
+    signupForm.style.display='none';
+    signinTab.style.background='#1a3d8a'; signinTab.style.color='white';
+    signupTab.style.background='white';   signupTab.style.color='#9a9ab0';
+  } else {
+    signinForm.style.display='none';
+    signupForm.style.display='block';
+    signinTab.style.background='white';   signinTab.style.color='#9a9ab0';
+    signupTab.style.background='#1d6f6f'; signupTab.style.color='white';
+  }
+  var errEl=document.getElementById('how-login-error');
+  if(errEl) errEl.style.display='none';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function showRolePicker(){
   try{ localStorage.removeItem('how_lg_role'); }catch(e){}
   var picker=document.getElementById('role-picker');
@@ -7092,154 +7345,9 @@ function showRolePicker(){
 
 // ─── Munazara Panel ───────────────────────────────────
 function openMunazara(){
-  var p=document.getElementById('mun-panel');
-  if(!p){
-    if(!document.getElementById('mun-css')){
-      var s=document.createElement('style'); s.id='mun-css';
-      s.textContent="*{box-sizing:border-box;margin:0;padding:0}\n:root{\n  --ink:#1a1a2e;--ink2:#2e2e44;--ink3:#5a5a78;--ink4:#9a9ab0;\n  --cream:#faf8f4;--cream2:#f5ede0;--cream3:#e8ddd0;\n  --teal:#1d6f6f;--teal-pale:#d0eaea;\n  --gold:#d4af37;--gold-pale:#fdf5d0;\n  --sacred:#5c2080;--sacred-pale:#ede0f8;\n  --navy:#1a3d8a;--red:#c0392b;\n  --radius:10px;--radius-sm:6px;\n  --shadow:0 4px 20px rgba(0,0,0,.08);\n}\nbody{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}\nh1,h2,h3{font-family:'Spectral',serif;font-weight:600}\n\n/* ── Layout ── */\n.app{max-width:740px;margin:0 auto;padding:24px 16px 60px}\n.app-header{text-align:center;padding:24px 0 32px}\n.app-ar{font-family:'Amiri',serif;font-size:22px;color:var(--gold);margin-bottom:4px}\n.app-title{font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px}\n.app-sub{font-size:13px;color:var(--ink3)}\n\n/* ── Cards ── */\n.card{background:white;border:1px solid var(--cream3);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}\n.card-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ink4);margin-bottom:8px}\n.card-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px}\n\n/* ── Claim box ── */\n.claim-box{background:var(--sacred-pale);border:2px solid var(--sacred);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px}\n.claim-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--sacred);margin-bottom:8px}\n.claim-text{font-family:'Spectral',serif;font-size:17px;font-style:italic;color:var(--ink);line-height:1.6}\n.claim-meta{font-size:12px;color:var(--ink3);margin-top:8px}\n\n/* ── Setup screen ── */\n.setup-section{margin-bottom:20px}\n.setup-label{font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px;display:block}\n.setup-input{width:100%;padding:10px 12px;border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--ink)}\n.setup-input:focus{outline:none;border-color:var(--teal)}\ntextarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}\n.position-row{display:flex;gap:10px;margin-top:4px}\n.pos-btn{flex:1;padding:12px;border:2px solid var(--cream3);border-radius:var(--radius-sm);background:white;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}\n.pos-btn.for.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal)}\n.pos-btn.against.active{border-color:var(--red);background:#fef5f5;color:var(--red)}\n.pos-btn:hover{border-color:var(--ink3)}\n\n/* ── Primary button ── */\n.btn-primary{display:block;width:100%;padding:14px;background:var(--navy);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-top:8px}\n.btn-primary:hover{opacity:.88}\n.btn-primary:disabled{opacity:.4;cursor:not-allowed}\n.btn-secondary{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:white;color:var(--ink);border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}\n.btn-secondary:hover{border-color:var(--teal);color:var(--teal)}\n\n/* ── Debate timeline ── */\n.timeline{display:flex;flex-direction:column;gap:16px;margin-bottom:24px}\n.move{border-radius:var(--radius);overflow:hidden;border:1px solid var(--cream3)}\n.move-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--cream3)}\n.move-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}\n.move-num.student{background:var(--navy);color:white}\n.move-num.ustadh{background:var(--teal);color:white}\n.move-num.pending{background:var(--cream2);color:var(--ink4)}\n.move-who{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}\n.move-type{font-size:13px;font-weight:700;color:var(--ink)}\n.move-timer{margin-left:auto;font-size:11px;color:var(--ink4)}\n.move-body{padding:14px 16px}\n.move-text{font-family:'Spectral',serif;font-size:15px;line-height:1.75;color:var(--ink2)}\n.move-placeholder{font-size:13px;color:var(--ink4);font-style:italic}\n.move-active{border:2px solid var(--navy)}\n.move-active .move-header{background:var(--navy);border-bottom-color:rgba(255,255,255,.15)}\n.move-active .move-type{color:white}\n.move-active .move-who{color:rgba(255,255,255,.6)}\n.move-active .move-timer{color:rgba(255,255,255,.5)}\n.move-ustadh-active{border:2px solid var(--teal)}\n.move-ustadh-active .move-header{background:var(--teal)}\n.move-ustadh-active .move-type{color:white}\n.move-ustadh-active .move-who{color:rgba(255,255,255,.6)}\n.move-done-student .move-header{background:var(--cream2)}\n.move-done-ustadh .move-header{background:var(--teal-pale)}\n\n/* ── Write area ── */\n.write-area{padding:16px}\n.write-context{background:var(--cream2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-family:'Spectral',serif;font-size:14px;line-height:1.7;color:var(--ink2);border-left:3px solid var(--teal)}\n.write-context-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:6px}\n.write-textarea{width:100%;min-height:140px;padding:12px;border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:14px;font-family:'Spectral',serif;line-height:1.75;color:var(--ink);resize:vertical}\n.write-textarea:focus{outline:none;border-color:var(--navy)}\n.write-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}\n.write-hint{font-size:12px;color:var(--ink4)}\n.btn-submit{padding:10px 24px;background:var(--navy);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}\n.btn-submit:disabled{opacity:.4;cursor:not-allowed}\n\n/* ── Ustadh generating ── */\n.ustadh-gen{padding:16px;display:flex;align-items:center;gap:12px;color:var(--teal)}\n.spinner{width:20px;height:20px;border:2.5px solid var(--teal-pale);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}\n@keyframes spin{to{transform:rotate(360deg)}}\n\n/* ── Synthesis screen ── */\n.synthesis-section{margin-bottom:20px}\n.synthesis-section h3{font-size:16px;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--cream3)}\n.synthesis-block{background:var(--cream2);border-radius:var(--radius-sm);padding:14px;font-size:14px;line-height:1.7;color:var(--ink2);margin-bottom:12px}\n.synthesis-block.gold{background:var(--gold-pale);border-left:3px solid var(--gold)}\n.synthesis-block.teal{background:var(--teal-pale);border-left:3px solid var(--teal)}\n.synthesis-block.red{background:#fef5f5;border-left:3px solid var(--red)}\n.synthesis-block.sacred{background:var(--sacred-pale);border-left:3px solid var(--sacred)}\n.facilitator-prompt{background:var(--navy);color:white;border-radius:var(--radius);padding:18px 20px;margin-top:20px}\n.fp-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.5);margin-bottom:8px}\n.fp-text{font-family:'Spectral',serif;font-size:16px;font-style:italic;line-height:1.6}\n\n/* ── Status bar ── */\n.status-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--cream2);border-radius:var(--radius-sm);margin-bottom:20px;font-size:13px}\n.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}\n.status-dot.active{background:var(--teal)}\n.status-dot.complete{background:var(--gold)}\n.status-dot.pending{background:var(--cream3)}\n\n/* ── Utility ── */\n.text-center{text-align:center}\n.mt-8{margin-top:8px}\n.mt-16{margin-top:16px}\n.hidden{display:none}\n.api-row{display:flex;gap:8px;margin-bottom:16px}\n.api-input{flex:1;padding:9px 12px;border:1.5px solid var(--cream3);border-radius:var(--radius-sm);font-size:13px;font-family:inherit}\n.api-input:focus{outline:none;border-color:var(--teal)}\n.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}\n.toast.show{opacity:1}\n@media print{.no-print{display:none!important}}\n\n/* ── K-2 choice buttons ── */\n.k2-choice-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;background:white;border:2px solid var(--cream3);border-radius:var(--radius);font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;width:100%;transition:all .15s;position:relative}\n.k2-choice-btn:hover{border-color:var(--teal);background:var(--teal-pale)}\n.k2-choice-btn.k2-selected{border-color:var(--navy);background:#e8edf8;font-weight:700}\n.k2-icon{font-size:24px;flex-shrink:0;width:36px;text-align:center}\n.k2-listen-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:4px 10px;background:var(--cream2);border:1px solid var(--cream3);border-radius:12px;font-size:11px;cursor:pointer;font-family:inherit}\n.k2-listen-btn:hover{background:var(--teal-pale)}";
-      document.head.appendChild(s);
-    }
-    var wrap=document.createElement('div'); wrap.id='mun-panel';
-    wrap.style.cssText='display:none;position:fixed;inset:0;background:#faf8f4;z-index:8000;overflow-y:auto';
-    var bar=document.createElement('div');
-    bar.style.cssText='position:sticky;top:0;background:#faf8f4;border-bottom:1px solid #e4ddd0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;z-index:1';
-    bar.innerHTML='<div style="font-size:14px;font-weight:800">المُنَاظَرَة · Munazara</div>'
-      +'<button onclick="closeMunazara()" style="padding:6px 14px;background:none;border:1.5px solid #e4ddd0;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✕ Close</button>';
-    var inner=document.createElement('div');
-    inner.style.cssText='max-width:740px;margin:0 auto;padding:20px 16px 60px';
-    inner.innerHTML=`<div class="app">
-
-  <div class="app-header">
-    <div class="app-ar">المُنَاظَرَة</div>
-    <h1 class="app-title">Munazara — Week-Long Debate</h1>
-    <p class="app-sub">Bayt al-Hikmah · بَيْتُ الْحِكْمَة</p>
-  </div>
-
-  <!-- API Key row -->
-  <div class="card no-print" id="api-card">
-    <div class="card-label">Anthropic API Key</div>
-    <div class="api-row">
-      <input class="api-input" id="api-key" type="password" placeholder="sk-ant-..." />
-      <button class="btn-secondary" onclick="saveKey()">Save</button>
-    </div>
-    <p style="font-size:12px;color:var(--ink4);margin-top:4px">Stored in your browser only. Required for the Ustadh to generate responses.</p>
-  </div>
-
-  <!-- Setup screen -->
-  <div id="screen-setup">
-    <div class="claim-box" id="claim-display">
-      <div class="claim-label">This week's munazara claim</div>
-      <div class="claim-text" id="claim-text-display">Loading from platform…</div>
-      <div class="claim-meta" id="claim-meta"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-label">Customize claim (optional)</div>
-      <div class="setup-section">
-        <label class="setup-label">Claim — the proposition to debate</label>
-        <textarea class="setup-input" id="custom-claim" rows="3" placeholder="Enter a custom claim, or leave blank to use the platform claim…"></textarea>
-      </div>
-      <div class="setup-section">
-        <label class="setup-label">Student name</label>
-        <input class="setup-input" id="student-name" placeholder="e.g. Yusuf" />
-      </div>
-      <div class="setup-section">
-        <label class="setup-label">Grade</label>
-        <select class="setup-input" id="student-grade" style="width:200px" onchange="loadPlatformClaim(this.value)">
-          <option value="0">Kindergarten</option>
-          <option value="1">Grade 1</option>
-          <option value="2">Grade 2</option>
-          <option value="3">Grade 3</option>
-          <option value="4">Grade 4</option>
-          <option value="5">Grade 5</option>
-          <option value="6">Grade 6</option>
-          <option value="7" selected>Grade 7</option>
-          <option value="8">Grade 8</option>
-          <option value="9">Grade 9</option>
-          <option value="10">Grade 10</option>
-          <option value="11">Grade 11</option>
-          <option value="12">Grade 12</option>
-        </select>
-        <div style="font-size:11px;color:var(--ink4);margin-top:4px">Auto-filled from platform — change as needed</div>
-      </div>
-      <div class="setup-section">
-        <label class="setup-label">Your position</label>
-        <div class="position-row">
-          <button class="pos-btn for" id="pos-for" onclick="setPosition('for')">✓ For — I will argue IN FAVOUR</button>
-          <button class="pos-btn against" id="pos-against" onclick="setPosition('against')">✗ Against — I will argue AGAINST</button>
-        </div>
-      </div>
-      <button class="btn-primary" onclick="startDebate()">Begin the munazara →</button>
-    </div>
-  </div>
-
-  <!-- Debate screen -->
-  <div id="screen-debate" class="hidden">
-    <div class="claim-box">
-      <div class="claim-label">The claim</div>
-      <div class="claim-text" id="debate-claim-text"></div>
-    </div>
-
-    <div class="status-bar">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text"></span>
-    </div>
-
-    <div class="timeline" id="timeline"></div>
-
-    <div id="write-panel" class="card hidden">
-      <div class="card-label" id="write-label"></div>
-      <div class="write-area">
-        <div id="write-context-wrap" class="hidden">
-          <div class="write-context-label" id="write-context-label"></div>
-          <div class="write-context" id="write-context-text"></div>
-        </div>
-        <textarea class="write-textarea" id="write-textarea" placeholder="Write your argument here…"></textarea>
-        <div class="write-footer">
-          <span class="write-hint" id="write-hint"></span>
-          <button class="btn-submit" id="write-submit" onclick="submitMove()">Submit →</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="text-center mt-16 no-print" id="synthesis-btn-wrap" style="display:none">
-      <button class="btn-primary" onclick="generateSynthesis()" style="max-width:360px;margin:0 auto">
-        📊 Generate Wednesday synthesis
-      </button>
-    </div>
-
-    <div class="text-center mt-16 no-print">
-      <button class="btn-secondary" onclick="resetDebate()">↺ Start new debate</button>
-    </div>
-  </div>
-
-  <!-- Synthesis screen -->
-  <div id="screen-synthesis" class="hidden">
-    <div class="claim-box">
-      <div class="claim-label">Debate complete — Wednesday synthesis</div>
-      <div class="claim-text" id="synth-claim"></div>
-    </div>
-
-    <div id="synthesis-content"></div>
-
-    <div class="text-center mt-16 no-print" style="display:flex;gap:10px;justify-content:center">
-      <button class="btn-secondary" onclick="window.print()">🖨 Print synthesis</button>
-      <button class="btn-secondary" onclick="showDebate()">← Back to debate</button>
-      <button class="btn-secondary" onclick="resetDebate()">↺ New debate</button>
-    </div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast"></div>`;
-    wrap.appendChild(bar); wrap.appendChild(inner); document.body.appendChild(wrap);
-  }
-  document.getElementById('mun-panel').style.display='block';
-  initMunazara();
+  window.open('how_munazara_v9.html','_blank');
 }
-function closeMunazara(){
-  var p=document.getElementById('mun-panel'); if(p) p.style.display='none';
-}
+function closeMunazara(){ var p=document.getElementById('mun-panel'); if(p) p.style.display='none'; }
 
 // ═══════════════════════════════════════════════════
 //  STATE
@@ -8214,18 +8322,8 @@ function initRolePicker(){
   else { lgSetMode('facilitator'); }
 }
 
-</script>
+// ── Supabase-dependent functions (need sb in scope) ─────────────────────
 
-
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-);
-/* ─────────────────────────────────────────────────── */
 
 // ── On page load: check for existing session ──────────────────────────────
 (async function checkSession(){
@@ -8309,7 +8407,13 @@ async function applyUserToProfile(user, accessToken){
   var navName = document.getElementById('nav-user-name');
   if(navUser) navUser.style.display='flex';
   if(navName) navName.textContent = welcomeName + ' (' + role + ')';
+  updateNavAuthState();
   toast('Ahlan wa sahlan, '+welcomeName+' — welcome back.');
+  // Load notifications + subscribe to live updates
+  loadNotifications();
+  subscribeToNotifications();
+  // First-time migration: offer to upload existing local data
+  checkFirstTimeMigration();
   var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
   if(schedBtn) SP(schedBtn);
   render();
@@ -8340,6 +8444,7 @@ async function howLogout(){
   localStorage.removeItem('how_profile_id');
   localStorage.removeItem('how_profile_role');
   localStorage.removeItem('how_active_student');
+  updateNavAuthState();
   location.reload();
 }
 
@@ -8448,27 +8553,7 @@ async function verifyStudentPin(){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Auth tab toggle ───────────────────────────────────────────────────────
-function switchAuthTab(tab){
-  var signinForm = document.getElementById('auth-signin-form');
-  var signupForm = document.getElementById('auth-signup-form');
-  var signinTab  = document.getElementById('auth-tab-signin');
-  var signupTab  = document.getElementById('auth-tab-signup');
-  if(tab==='signin'){
-    signinForm.style.display='block';
-    signupForm.style.display='none';
-    signinTab.style.background='#1a3d8a'; signinTab.style.color='white';
-    signupTab.style.background='white';   signupTab.style.color='#9a9ab0';
-  } else {
-    signinForm.style.display='none';
-    signupForm.style.display='block';
-    signinTab.style.background='white';   signinTab.style.color='#9a9ab0';
-    signupTab.style.background='#1d6f6f'; signupTab.style.color='white';
-  }
-  document.getElementById('how-login-error').style.display='none';
-}
-
-// ── Sign up ────────────────────────────────────────────────────────────────
+// ── Auth tab toggle + sign up moved to main script ──
 async function howSignUp(){
   var name      = document.getElementById('su-name').value.trim();
   var household = document.getElementById('su-household').value.trim();
@@ -8526,8 +8611,35 @@ async function openStudentManager(){
   var modal = document.getElementById('student-manager-modal');
   if(!modal) return;
   modal.style.display='flex';
+  // tabs removed — single panel
+  // Show household code
+  var hid = localStorage.getItem('how_household_id')||'';
+  var hidEl = document.getElementById('sm-hid-display');
+  if(hidEl) hidEl.textContent = hid ? hid.slice(0,8).toUpperCase()+'…' : 'Not signed in';
   await renderStudentList();
 }
+
+function copyHouseholdCode(){
+  var hid = localStorage.getItem('how_household_id')||'';
+  if(!hid){ toast('No household ID found'); return; }
+  navigator.clipboard.writeText(hid).then(function(){
+    toast('✓ Household code copied');
+  }).catch(function(){
+    // Fallback
+    var el = document.createElement('textarea');
+    el.value = hid;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast('✓ Household code copied');
+  });
+}
+
+
+
+
+
 
 function closeStudentManager(){
   var modal = document.getElementById('student-manager-modal');
@@ -8563,10 +8675,8 @@ async function renderStudentList(){
         +'<div style="font-size:11px;color:#9a9ab0">Grade '+grade+' · Week '+(s.current_week||1)+'</div>'
         +'</div>'
         +'<div style="display:flex;gap:6px">'
-        +'<button onclick="resetStudentPin(''+s.id+'',''+s.name+'')" '
-        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e4ddd0;background:white;cursor:pointer;color:#5a5a78">Reset PIN</button>'
-        +'<button onclick="removeStudent(''+s.id+'',''+s.name+'')" '
-        +'style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #fde8e0;background:#fde8e0;cursor:pointer;color:#c0522a">Remove</button>'
+        +'<button data-sid="'+s.id+'" data-sname="'+s.name+'" onclick="resetStudentPin(this.dataset.sid,this.dataset.sname)" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e4ddd0;background:white;cursor:pointer;color:#5a5a78">Reset PIN</button>'
+        +'<button data-sid="'+s.id+'" data-sname="'+s.name+'" onclick="removeStudent(this.dataset.sid,this.dataset.sname)" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #fde8e0;background:#fde8e0;cursor:pointer;color:#c0522a">Remove</button>'
         +'</div>'
         +'</div>';
     }).join('');
@@ -8668,6 +8778,250 @@ async function removeStudent(studentId, studentName){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+async function checkFirstTimeMigration(){
+  // Only offer migration if this is the first login on this device
+  var migrated = localStorage.getItem('how_migrated');
+  if(migrated) return;
+
+  // Check if there are local lessons or scores worth migrating
+  var localLessons = Object.keys(S.lessons||{}).length;
+  var localScores  = Object.keys(S.scores||{}).length;
+  if(!localLessons && !localScores){ 
+    localStorage.setItem('how_migrated','1'); 
+    return; 
+  }
+
+  // Show migration prompt
+  var msg = 'We found existing data on this device. '+(localLessons?localLessons+' lesson(s). ':'')+(localScores?localScores+' score record(s). ':'')+'Sync to your account?';
+  if(!confirm(msg)){
+    localStorage.setItem('how_migrated','1');
+    return;
+  }
+
+  // Upload lessons
+  var householdId = localStorage.getItem('how_household_id');
+  var profileId   = localStorage.getItem('how_profile_id');
+  var uploaded = 0;
+  var errors   = 0;
+
+  if(localLessons && householdId){
+    var lessonEntries = Object.keys(S.lessons).map(function(k){
+      var parts = k.split('_'); // grade_week_subj_sSes
+      var l = S.lessons[k];
+      if(!l||!l.slides) return null;
+      return {
+        household_id: householdId,
+        created_by:   profileId||null,
+        grade:        parseInt(parts[0])||S.grade,
+        week:         parseInt(parts[1])||S.week,
+        subject:      parts[2]||S.subj,
+        session:      parseInt((parts[3]||'s1').replace('s',''))||1,
+        title:        l.title||'',
+        objective:    l.objective||'',
+        slides:       l.slides||[],
+        updated_at:   new Date().toISOString()
+      };
+    }).filter(Boolean);
+
+    for(var i=0; i<lessonEntries.length; i++){
+      try{
+        var r = await sb.from('lesson')
+          .upsert(lessonEntries[i], {onConflict:'household_id,grade,week,subject,session'});
+        if(r.error) throw r.error;
+        uploaded++;
+      }catch(e){ errors++; console.warn('Migration lesson error:', e); }
+    }
+  }
+
+  // Upload scores
+  if(localScores && householdId){
+    var scoreKeys = Object.keys(S.scores);
+    for(var j=0; j<scoreKeys.length; j++){
+      var sk = scoreKeys[j];
+      var parts2 = sk.split('_');
+      var scoreObj = S.scores[sk];
+      if(!scoreObj) continue;
+      try{
+        var sr = await sb.from('score')
+          .upsert({
+            household_id: householdId,
+            grade:        parseInt(parts2[0])||S.grade,
+            week:         parseInt(parts2[1])||S.week,
+            subjects:     scoreObj.subjects||scoreObj,
+            updated_at:   new Date().toISOString()
+          }, {onConflict:'household_id,grade,week'});
+        if(sr.error) throw sr.error;
+        uploaded++;
+      }catch(e){ errors++; console.warn('Migration score error:', e); }
+    }
+  }
+
+  localStorage.setItem('how_migrated','1');
+  var resultMsg = '✓ Migration complete: '+uploaded+' item(s) synced.';
+  if(errors) resultMsg += ' ('+errors+' error(s) — check console)';
+  toast(resultMsg);
+  console.log('First-time migration complete:', uploaded, 'uploaded,', errors, 'errors');
+}
+
+// ── Notifications ────────────────────────────────────────────────────────
+var _notifChannel = null;
+
+async function loadNotifications(){
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  if(!jwt||!hid||typeof sb==='undefined') return;
+  try{
+    var result = await sb
+      .from('notification')
+      .select('*')
+      .eq('household_id', hid)
+      .order('created_at', {ascending: false})
+      .limit(20);
+    if(result.error){ console.warn('loadNotifications error:', result.error.message); return; }
+    renderNotifications(result.data||[]);
+  }catch(e){ console.warn('loadNotifications failed:', e); }
+}
+
+function renderNotifications(notifs){
+  var list  = document.getElementById('notif-list');
+  var badge = document.getElementById('notif-badge');
+  if(!list) return;
+
+  var unread = notifs.filter(function(n){ return !n.is_read; }).length;
+
+  // Update badge
+  if(badge){
+    badge.textContent = unread > 9 ? '9+' : String(unread);
+    badge.style.display = unread > 0 ? 'flex' : 'none';
+  }
+
+  if(!notifs.length){
+    list.innerHTML = '<p style="text-align:center;color:#9a9ab0;font-size:12px;padding:20px">No notifications</p>';
+    return;
+  }
+
+  list.innerHTML = notifs.map(function(n){
+    var icon = n.type==='debate_move'?'⚔':
+               n.type==='debate_complete'?'🏆':
+               n.type==='halaqa_saved'?'🕌':
+               n.type==='lesson_synced'?'☁':'🔔';
+    var time = '';
+    try{
+      var d = new Date(n.created_at);
+      var diff = Math.floor((Date.now()-d.getTime())/60000);
+      time = diff<1?'just now':diff<60?diff+'m ago':
+             diff<1440?Math.floor(diff/60)+'h ago':
+             Math.floor(diff/1440)+'d ago';
+    }catch(e){}
+    return '<div class="notif-item'+(n.is_read?'':' unread')+'" '
+      +'data-nid="'+n.id+'" data-ntype="'+n.type+'" data-nlid="'+(n.link_id||'')+'" onclick="handleNotifClick(this)">'  
+      +'<div class="notif-title">'+icon+' '+n.title+'</div>'
+      +'<div class="notif-body">'+n.body+'</div>'
+      +'<div class="notif-time">'+time+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function toggleNotifPanel(){
+  var panel = document.getElementById('notif-panel');
+  if(!panel) return;
+  var isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen) loadNotifications();
+}
+
+async function handleNotifClick(el){
+  var notifId = el.getAttribute('data-nid');
+  var type    = el.getAttribute('data-ntype');
+  var linkId  = el.getAttribute('data-nlid');
+  // Mark as read
+  var hid = localStorage.getItem('how_household_id');
+  if(hid && typeof sb !== 'undefined'){
+    try{
+      await sb.from('notification').update({is_read:true}).eq('id', notifId);
+    }catch(e){}
+  }
+  // Navigate based on type
+  if(type==='debate_move'||type==='debate_complete'){
+    toast('Open the Munazara to view your debate');
+  }
+  // Close panel and reload
+  document.getElementById('notif-panel').style.display='none';
+  loadNotifications();
+}
+
+async function markAllNotifsRead(){
+  var hid = localStorage.getItem('how_household_id');
+  if(!hid||typeof sb==='undefined') return;
+  try{
+    await sb.from('notification')
+      .update({is_read:true})
+      .eq('household_id', hid)
+      .eq('is_read', false);
+    loadNotifications();
+  }catch(e){}
+}
+
+function subscribeToNotifications(){
+  var hid = localStorage.getItem('how_household_id');
+  if(!hid||typeof sb==='undefined') return;
+  _notifChannel = sb.channel('notif-'+hid)
+    .on('postgres_changes',
+      { event:'INSERT', schema:'public', table:'notification',
+        filter:'household_id=eq.'+hid },
+      function(payload){
+        // New notification — reload and show badge
+        loadNotifications();
+        // Brief toast
+        if(payload.new && payload.new.title){
+          toast('🔔 '+payload.new.title);
+        }
+      })
+    .subscribe();
+  console.log('Subscribed to notifications for household:', hid);
+}
+// ─────────────────────────────────────────────────────────────────────────
+
+
+// ── Nav dropdown ─────────────────────────────────────────────────────────
+function toggleNavDropdown(name, evt){
+  if(evt) evt.stopPropagation();
+  var menu = document.getElementById('nav-dropdown-'+name);
+  if(!menu) return;
+  var isOpen = menu.style.display !== 'none';
+  closeNavDropdowns();
+  if(!isOpen){
+    menu.style.display = 'block';
+    // Position menu under the button using fixed coords
+    var btn = evt && evt.currentTarget;
+    if(!btn) btn = document.querySelector('#nav-'+name+'-dropdown .nav-dropdown-btn');
+    if(btn){
+      var rect = btn.getBoundingClientRect();
+      menu.style.left = rect.left + 'px';
+    }
+  }
+}
+function goToSignIn(){
+  var instBtn = document.querySelector('.ntab[data-p="institution"]');
+  if(instBtn) SP(instBtn);
+}
+
+function updateNavAuthState(){
+  var jwt = localStorage.getItem('how_jwt');
+  var signinBtn = document.getElementById('nav-signin-btn');
+  var navUser   = document.getElementById('nav-user');
+  if(signinBtn) signinBtn.style.display = jwt ? 'none' : '';
+  if(navUser)   navUser.style.display   = jwt ? 'flex' : 'none';
+}
+
+function closeNavDropdowns(){
+  ['tools','learn'].forEach(function(name){
+    var el = document.getElementById('nav-dropdown-'+name);
+    if(el) el.style.display = 'none';
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 function showLoginError(msg){
   var el=document.getElementById('how-login-error');
   if(!el) return;
@@ -8705,15 +9059,35 @@ async function publishTeachingSupabase(entry){
     console.error('publishTeaching Supabase failed:',e);
   }
 }
+
 </script>
+
+
+
+
 <!-- Student Manager Modal -->
 <div id="student-manager-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;overflow-y:auto;padding:20px">
   <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(0,0,0,.2)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <h2 style="font-family:'Spectral',serif;font-size:1.2rem;font-weight:600;color:#1a1a2e">👥 Manage students</h2>
       <button onclick="closeStudentManager()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9a9ab0">✕</button>
     </div>
+    <!-- Household code display -->
+    <div id="sm-household-code" style="background:#f0f8f8;border:1px solid #b0d8d8;border-radius:8px;padding:8px 12px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1d6f6f;display:block">Your household code</span>
+        <span id="sm-hid-display" style="font-size:12px;font-weight:700;color:#1a1a2e;letter-spacing:.05em;font-family:monospace"></span>
+      </div>
+      <button onclick="copyHouseholdCode()" style="padding:5px 10px;border-radius:6px;border:1px solid #1d6f6f;background:white;color:#1d6f6f;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Copy</button>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:2px solid #e4ddd0;margin-bottom:20px">
+      <button id="sm-tab-students" onclick="switchSmTab('students')" style="padding:8px 16px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#1a3d8a;border-bottom:2px solid #1a3d8a;margin-bottom:-2px">Students</button>
+      <button id="sm-tab-matchmaking" onclick="switchSmTab('matchmaking')" style="padding:8px 16px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:#9a9ab0;border-bottom:2px solid transparent;margin-bottom:-2px">⚔ Matchmaking</button>
+    </div>
 
+    <!-- Students tab -->
+    <div id="sm-panel-students">
     <!-- Existing students list -->
     <div id="student-list" style="margin-bottom:24px"></div>
 
@@ -8752,9 +9126,31 @@ async function publishTeachingSupabase(entry){
         <p id="sm-success" style="display:none;color:#1d6f6f;font-size:12px;text-align:center"></p>
       </div>
     </div>
+    </div><!-- end sm-panel-students -->
+
+    
+
   </div>
 </div>
 
+<script>
+// Close notification panel when clicking outside
+document.addEventListener("click", function(e){
+  var panel = document.getElementById("notif-panel");
+  var bell  = document.getElementById("notif-bell");
+  if(panel && panel.style.display !== "none"){
+    if(!panel.contains(e.target) && e.target !== bell){
+      panel.style.display = "none";
+    }
+  }
+});
+</script>
+<script>
+// Close nav dropdowns when clicking outside
+document.addEventListener("click", function(e){
+  if(!e.target.closest(".nav-dropdown")) closeNavDropdowns();
+});
+</script>
 </body>
 </html>
 

@@ -151,7 +151,9 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ── SUPABASE CREDENTIALS ── */
-const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9', {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+});
 /* ─────────────────────────── */
 // Restore auth session from platform
 (async function(){
