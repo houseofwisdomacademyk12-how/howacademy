@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الإسناد — The Isnad Map · House of Wisdom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Amiri&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var sb = null;
+try{
+  if(typeof supabase !== 'undefined'){
+    sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+  }
+}catch(e){}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#1a1a2e;color:#e8e4d8;min-height:100vh;display:flex;flex-direction:column}
+
+/* Nav */
+.nav{background:rgba(0,0,0,.45);padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.nav-logo{display:flex;flex-direction:column;line-height:1.2}
+.nav-logo-ar{font-family:'Amiri',serif;font-size:.95rem;color:#d4af37}
+.nav-logo-en{font-size:.65rem;color:rgba(255,255,255,.45);letter-spacing:.06em;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-btn{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-family:inherit;font-size:11px;padding:4px 12px;border-radius:6px;cursor:pointer}
+.nav-btn:hover{background:rgba(255,255,255,.1)}
+.nav-status{font-size:11px;color:rgba(255,255,255,.35)}
+
+/* Layout */
+.app{flex:1;display:flex;min-height:0;overflow:hidden}
+
+/* Stage */
+.stage{flex:1;position:relative;overflow:hidden}
+#isnad-svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
+#isnad-svg:active{cursor:grabbing}
+
+/* Mode overlay */
+.mode-overlay{position:absolute;top:10px;left:10px;z-index:10;display:flex;gap:5px;flex-wrap:wrap}
+.mode-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:14px;border:1.5px solid transparent;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;background:rgba(20,20,40,.75);color:rgba(255,255,255,.65);transition:all .15s;backdrop-filter:blur(4px)}
+.mode-btn.active{background:rgba(20,20,40,.9);border-color:currentColor;color:white}
+.mode-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Grade overlay */
+.grade-overlay{position:absolute;bottom:10px;left:10px;z-index:10;display:flex;gap:4px;flex-wrap:wrap}
+.grade-btn{padding:3px 9px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(20,20,40,.7);color:rgba(255,255,255,.55);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;backdrop-filter:blur(4px);transition:all .15s}
+.grade-btn.active{background:#d4af37;border-color:#d4af37;color:#1a1a2e}
+
+/* Sidebar */
+.sidebar{width:360px;flex-shrink:0;background:#fffefb;color:#2e2e1a;border-left:1px solid #e6d8ba;display:flex;flex-direction:column;overflow:hidden}
+.sidebar-header{padding:14px 18px 10px;border-bottom:1px solid #ede4cc;flex-shrink:0}
+.sidebar-title-ar{font-family:'Amiri',serif;font-size:1.05rem;color:#a07f3e;margin-bottom:1px}
+.sidebar-title-en{font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#2e2e1a;margin-bottom:3px}
+.sidebar-sub{font-size:11px;color:#8a7a5a;line-height:1.5}
+.sidebar-body{flex:1;overflow-y:auto;padding:14px 18px}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.stat-card{background:#f6f1e4;border-radius:8px;padding:9px 12px;border:1px solid #e6d8ba}
+.stat-n{font-size:1.4rem;font-weight:800;color:#a07f3e;font-family:'Spectral',serif}
+.stat-l{font-size:10px;color:#8a7a5a;margin-top:1px}
+
+/* Search */
+.search-input{width:100%;padding:7px 12px;border:1px solid #e6d8ba;border-radius:8px;font-family:inherit;font-size:12px;outline:none;background:white;color:#2e2e1a;margin-bottom:12px}
+.search-input:focus{border-color:#d4af37}
+
+/* Intro text */
+.intro-text{font-size:12.5px;color:#5a4a32;line-height:1.7;margin-bottom:12px;font-style:italic}
+.steps{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.step{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:#5a4a32}
+.step-n{width:19px;height:19px;border-radius:50%;background:#117a60;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px}
+.reading-map{border-top:1px solid #e6d8ba;padding-top:10px;margin-bottom:14px}
+.reading-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a7a5a;margin-bottom:7px}
+.reading-item{display:flex;align-items:center;gap:7px;font-size:11px;color:#5a4a32;margin-bottom:4px}
+
+/* Subject chips */
+.subj-legend{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.subj-chip{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
+.subj-chip.active{border-color:currentColor}
+
+/* Detail panel */
+.detail-panel{animation:risein .18s ease both}
+@keyframes risein{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+
+/* Banner */
+.node-banner{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+/* Avatar */
+.detail-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:white;flex-shrink:0}
+.detail-name-input{width:100%;font-family:'Spectral',serif;font-size:1.1rem;font-weight:600;color:#2e2e1a;background:#fffdf6;border:1px solid #e3d6b6;border-radius:8px;padding:4px 8px;outline:none;font-family:inherit}
+.detail-meta{font-size:11px;color:#8a7a5a;margin-top:3px}
+
+/* Isnad chain ribbon */
+.chain-ribbon{margin:12px 0;padding:10px 12px;background:#f7efdc;border-radius:10px}
+.chain-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#a07f3e;margin-bottom:7px}
+.chain-items{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
+.chain-chip{font-size:11.5px;font-weight:700;color:#5a4a2e;background:white;border:1px solid #e0d3b4;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.chain-chip.focus{color:white;background:#0c5a47;border-color:#0c5a47}
+.chain-arrow{color:#a07f3e;font-size:12px}
+
+/* Section labels */
+.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;margin:14px 0 8px}
+
+/* Subject selector */
+.subj-selector{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.subj-pill{padding:4px 10px;border-radius:999px;border:1px solid #e6dcc4;background:#f6f1e4;color:#8a7350;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s}
+.subj-pill.active{border-color:currentColor}
+
+/* Studio sub-focus */
+.studio-panel{padding:10px 12px;background:#f4f0fa;border:1px solid #e3d9f3;border-radius:10px;margin-bottom:10px}
+.studio-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6a4ca0;margin-bottom:7px}
+.studio-pills{display:flex;flex-wrap:wrap;gap:5px}
+.studio-pill{padding:3px 9px;border-radius:999px;border:1px solid #d3c8f0;background:white;color:#6a4ca0;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.studio-pill.active{background:#6a4ca0;color:white;border-color:#6a4ca0}
+
+/* Learned / taught cards */
+.extra-card{background:#f6f1e4;border-radius:9px;padding:9px 11px;margin-bottom:7px}
+.extra-card.taught{background:#eef5f6}
+.extra-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.extra-mode-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;cursor:pointer;border:none;padding:0}
+.extra-name-input{flex:1;font-family:inherit;font-size:13px;font-weight:700;color:#2e2e1a;background:#fffdf6;border:1px solid #dfe7e2;border-radius:7px;padding:2px 7px;outline:none;min-width:0}
+.extra-mode-label{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+.extra-remove{background:none;border:none;cursor:pointer;color:#c0b395;padding:2px;font-size:14px;flex-shrink:0}
+.extra-note-input{width:100%;font-family:inherit;font-size:12px;color:#3a2e1a;background:#fffdf6;border:1px solid #e3d6b6;border-radius:7px;padding:6px 8px;outline:none;resize:vertical;min-height:38px}
+.add-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px dashed #c6b48a;border-radius:8px;background:none;color:#8a7a5a;font-family:inherit;font-size:11px;cursor:pointer;width:100%;margin-bottom:8px;transition:all .15s}
+.add-btn:hover{border-color:#117a60;color:#117a60}
+
+/* Adab section */
+.adab-panel{padding:11px 12px;background:#fbeceb;border:1px solid #f1d3d3;border-radius:10px;margin-bottom:10px}
+.adab-label{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#b0394a;margin-bottom:7px}
+.adab-textarea{width:100%;font-family:inherit;font-size:12px;color:#3a2e1a;background:#fffdf6;border:1px solid #e3d6b6;border-radius:8px;padding:7px 9px;outline:none;resize:vertical;min-height:58px;line-height:1.5}
+
+/* Origin / leaf banners */
+.origin-banner{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#8a7350;font-weight:700;padding-bottom:6px}
+.leaf-banner{font-size:12.5px;color:#8a7350;font-weight:700;padding-bottom:6px;font-style:italic}
+
+/* Loading */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.4);gap:10px}
+.spinner{width:26px;height:26px;border:2px solid rgba(255,255,255,.15);border-top-color:#d4af37;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <span class="nav-logo-ar">بَيْتُ الْحِكْمَة — الإسناد</span>
+    <span class="nav-logo-en">House of Wisdom · The Isnad Map</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-status" id="nav-status">Loading…</span>
+    <button class="nav-btn" onclick="history.back()">← Back</button>
+  </div>
+</nav>
+
+<div class="app">
+
+  <!-- Stage -->
+  <div class="stage">
+    <div class="loading" id="map-loading">
+      <div class="spinner"></div>
+      <p style="font-size:13px">Loading the knowledge network…</p>
+    </div>
+    <svg id="isnad-svg" style="display:none"></svg>
+
+    <!-- Mode overlay -->
+    <div class="mode-overlay" id="mode-row">
+      <button class="mode-btn active" onclick="setMode('all',this)"><span class="mode-dot" style="background:rgba(255,255,255,.4)"></span>All</button>
+      <button class="mode-btn" onclick="setMode('facilitator',this)"><span class="mode-dot" style="background:#4cd3a0"></span>Facilitator</button>
+      <button class="mode-btn" onclick="setMode('parent',this)"><span class="mode-dot" style="background:#ff9d6b"></span>Parent</button>
+      <button class="mode-btn" onclick="setMode('peer',this)"><span class="mode-dot" style="background:#5fd0e6"></span>Peer</button>
+      <button class="mode-btn" onclick="setMode('debate',this)"><span class="mode-dot" style="background:#9b59b6"></span>Debate</button>
+    </div>
+
+    <!-- Grade overlay -->
+    <div class="grade-overlay" id="grade-row"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title-ar">الإسناد</div>
+      <div class="sidebar-title-en">The Isnad Map — Chain of Transmission</div>
+      <div class="sidebar-sub">Published teachings and completed debates only. Only consented records appear in the network view.</div>
+    </div>
+    <div class="sidebar-body" id="sidebar-body">
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-n" id="stat-nodes">—</div><div class="stat-l">People in network</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-links">—</div><div class="stat-l">Transmissions</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-teachings">—</div><div class="stat-l">Published teachings</div></div>
+        <div class="stat-card"><div class="stat-n" id="stat-debates">—</div><div class="stat-l">Completed debates</div></div>
+      </div>
+
+      <!-- Search -->
+      <input class="search-input" type="text" placeholder="Search person, subject, grade…" oninput="searchNodes(this.value)">
+
+      <!-- Subject chips -->
+      <div class="subj-legend" id="subj-legend"></div>
+
+      <!-- Intro -->
+      <p class="intro-text">Trace a chain. Every learner here sits inside an <em>isnād</em> — a chain of who passed knowledge to whom. Hover any name to light up its full chain, then click to pin it and record what really happened.</p>
+      <div class="steps">
+        <div class="step"><span class="step-n">1</span><span>Hover a name to see its chain glow up the grades.</span></div>
+        <div class="step"><span class="step-n">2</span><span>Click to pin a person and edit their record here.</span></div>
+        <div class="step"><span class="step-n">3</span><span>Filter by teaching mode using the legend up top.</span></div>
+      </div>
+      <div class="reading-map">
+        <div class="reading-label">Reading the map</div>
+        <div class="reading-item"><span style="font-size:13px">⭐</span>Gold star = origin (facilitator or parent).</div>
+        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#4cd3a0;flex-shrink:0;display:inline-block"></span>Green edge = facilitator transmission.</div>
+        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#5fd0e6;flex-shrink:0;display:inline-block"></span>Cyan edge = peer teaching.</div>
+        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#ff9d6b;flex-shrink:0;display:inline-block"></span>Orange edge = parent transmission.</div>
+        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#9b59b6;flex-shrink:0;display:inline-block"></span>Purple dashed = completed debate.</div>
+      </div>
+
+      <!-- Detail area -->
+      <div id="detail-area"></div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════
+var MODE = {
+  facilitator:{ label:'Facilitator', c:'#117a60', edge:'#4cd3a0' },
+  parent:     { label:'Parent',      c:'#c25a34', edge:'#ff9d6b' },
+  peer:       { label:'Peer',        c:'#1f7a8c', edge:'#5fd0e6' },
+  debate:     { label:'Debate',      c:'#6a2d91', edge:'#9b59b6' }
+};
+var SUBJ = {
+  quran:   { label:"Qur'an",           pale:'#f6e6c2', color:'#a9781f', glyph:'☪' },
+  math:    { label:'Math',             pale:'#d6e7da', color:'#2e6b3f', glyph:'∑' },
+  ela:     { label:'Reading / ELA',    pale:'#d3e3e8', color:'#1f6a7a', glyph:'📖' },
+  reading: { label:'Reading / ELA',    pale:'#d3e3e8', color:'#1f6a7a', glyph:'📖' },
+  science: { label:'Science',          pale:'#e7ead0', color:'#6b7a2e', glyph:'🔭' },
+  social:  { label:'Social Studies',   pale:'#f0e3cf', color:'#b06a2e', glyph:'🌍' },
+  adab:    { label:'Adab & Character', pale:'#f3d8d8', color:'#b0394a', glyph:'♥' },
+  studios: { label:'Studios',          pale:'#e6ddf2', color:'#6a4ca0', glyph:'⚙' },
+  writing: { label:'Writing',          pale:'#d3e3e8', color:'#1f6a7a', glyph:'✍' }
+};
+var STUDIOS = [
+  'Civil & Water Engineering','Observatory / Optics',
+  'Pharmacopoeia / Anatomy','Algebra / Cipher','Philosophy / Translation'
+];
+var SUBJ_KEYS = ['quran','math','ela','science','social','adab','studios'];
+var STORE_KEY = 'how_isnad_edits_v1';
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+var _nodes = [], _links = [];
+var _mode = 'all', _gradeFilter = null;
+var _highlighted = null, _hovered = null;
+var _panStart = null;
+var _edits = {};
+
+function loadEdits(){ try{ _edits=JSON.parse(localStorage.getItem(STORE_KEY)||'{}'); }catch(e){ _edits={}; } }
+function saveEdits(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(_edits)); }catch(e){} }
+function getEdit(id){ return _edits[id]||{name:'',subj:'',studio:'',adab:'',learned:[],taught:[],transmit:{}}; }
+function patchEdit(id,patch){
+  _edits[id]=Object.assign(getEdit(id),patch);
+  saveEdits();
+}
+
+// ══════════════════════════════════════════════════════════════
+// STARS
+// ══════════════════════════════════════════════════════════════
+function makeStars(){
+  var s=987654321,rnd=function(){s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};
+  var o='';
+  for(var i=0;i<80;i++){
+    o+='<circle cx="'+(rnd()*100).toFixed(2)+'%" cy="'+(rnd()*100).toFixed(2)+'%" r="'+(rnd()*1.4+0.4).toFixed(2)+'" fill="white" opacity="'+(rnd()*.5+.12).toFixed(2)+'"/>';
+  }
+  return o;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+async function loadData(){
+  if(!sb){
+    loadLocalFallback();
+    document.getElementById('nav-status').textContent='Add Supabase credentials to see full network';
+    return;
+  }
+  var jwt=localStorage.getItem('how_jwt');
+  if(!jwt){
+    loadLocalFallback();
+    document.getElementById('nav-status').textContent='Sign in to see the full network';
+    return;
+  }
+  try{
+    var [tRes,dRes]=await Promise.all([
+      sb.from('teaching').select('*').eq('is_published',true).order('created_at',{ascending:true}),
+      sb.from('debate').select('*').eq('is_public',true).eq('status','complete').order('updated_at',{ascending:true})
+    ]);
+    buildGraph(tRes.data||[],dRes.data||[]);
+  }catch(e){
+    document.getElementById('map-loading').innerHTML=
+      '<div style="text-align:center;color:rgba(255,255,255,.5);padding:40px"><p>⚠ '+e.message+'</p></div>';
+  }
+}
+
+function loadLocalFallback(){
+  var teachings=[];
+  try{
+    var ptl=JSON.parse(localStorage.getItem('ptl_teachings')||'[]');
+    teachings=ptl.filter(function(t){return t.isTeachIt||t.fromSupabase;}).map(function(t){
+      return {id:t.id,teacher_name:t.teacherName||'Student',taught_grade:parseInt(t.taughtGrade)||7,
+              subject:(t.subject||'math').toLowerCase(),title:t.title||'',student_id:t.id};
+    });
+  }catch(e){}
+  buildGraph(teachings,[]);
+}
+
+// ══════════════════════════════════════════════════════════════
+// GRAPH BUILD
+// ══════════════════════════════════════════════════════════════
+function buildGraph(teachings,debates){
+  loadEdits();
+  var nodeMap={};
+  _nodes=[];_links=[];
+  var grades=new Set();
+
+  function node(id,label,type,grade,subj,isSource){
+    if(!nodeMap[id]){
+      var sc=SUBJ[subj]||SUBJ.math;
+      nodeMap[id]={
+        id,label,type,grade:grade||'',subj:subj||'',isSource:!!isSource,
+        x:Math.random()*820+40,y:Math.random()*460+20,
+        r:isSource?20:type==='subject'?11:15,
+        color:isSource?'#c8a230':type==='debate'?MODE.debate.c:
+              type==='student'?'#1a3d8a':'#117a60',
+        subjColor:sc.color,subjPale:sc.pale,connections:[]
+      };
+      _nodes.push(nodeMap[id]);
+      if(grade) grades.add(String(grade));
+    }
+    return nodeMap[id];
+  }
+
+  teachings.forEach(function(t){
+    var tName=t.teacher_name||(t.student_id?'Student':'Facilitator');
+    var tType=t.student_id?'student':'facilitator';
+    var tId='p_'+tName.toLowerCase().replace(/\W+/g,'_');
+    var subj=(t.subject||'math').toLowerCase().replace(/[^a-z]/g,'');
+    if(!SUBJ[subj]) subj='math';
+    var sId='subj_'+subj+'_g'+(t.taught_grade||'');
+    var sLabel=(SUBJ[subj].label)+(t.taught_grade?' · G'+t.taught_grade:'');
+    var modeKey=t.student_id?'peer':'facilitator';
+    var src=node(tId,tName,tType,'',subj,!t.student_id);
+    var tgt=node(sId,sLabel,'subject',t.taught_grade,subj,false);
+    tgt.r=11;
+    _links.push({source:tId,target:sId,type:'teaching',mode:modeKey,subj,color:MODE[modeKey].edge,title:t.title||t.subject||''});
+    src.connections.push({dir:'→',label:t.title||sLabel,to:sLabel});
+    tgt.connections.push({dir:'←',label:t.title||'',from:tName});
+  });
+
+  debates.forEach(function(d){
+    if(!d.student_a_name&&!d.student_b_name) return;
+    var aId='p_'+(d.student_a_name||'A').toLowerCase().replace(/\W+/g,'_');
+    var bId='p_'+(d.student_b_name||'B').toLowerCase().replace(/\W+/g,'_');
+    var a=node(aId,d.student_a_name||'Student A','student',d.grade,'',false);
+    var b=node(bId,d.student_b_name||'Student B','debate',d.grade,'',false);
+    _links.push({source:aId,target:bId,type:'debate',mode:'debate',subj:'',color:MODE.debate.edge,title:d.claim||''});
+    a.connections.push({dir:'⚔',label:(d.claim||'').slice(0,50),to:b.label});
+    b.connections.push({dir:'⚔',label:(d.claim||'').slice(0,50),to:a.label});
+  });
+
+  // Stats
+  document.getElementById('stat-nodes').textContent=_nodes.length;
+  document.getElementById('stat-links').textContent=_links.length;
+  document.getElementById('stat-teachings').textContent=teachings.length;
+  document.getElementById('stat-debates').textContent=debates.length;
+  document.getElementById('nav-status').textContent=_nodes.length+' people · '+_links.length+' links';
+
+  // Grade buttons
+  var allGrades=Array.from(grades).sort(function(a,b){return +a-+b;});
+  document.getElementById('grade-row').innerHTML=
+    '<button class="grade-btn active" onclick="setGrade(null,this)">All grades</button>'
+    +allGrades.map(function(g){return '<button class="grade-btn" onclick="setGrade('+g+',this)">G'+g+'</button>';}).join('');
+
+  // Subject chips
+  var usedSubjs=new Set(_nodes.map(function(n){return n.subj;}).filter(Boolean));
+  document.getElementById('subj-legend').innerHTML=Array.from(usedSubjs).map(function(s){
+    var cfg=SUBJ[s]||{label:s,color:'#888',pale:'#eee'};
+    return '<div class="subj-chip" data-subj="'+s+'" onclick="filterSubj(\''+s+'\')" style="background:'+cfg.pale+';color:'+cfg.color+'">'
+      +'<span style="width:7px;height:7px;border-radius:50%;background:'+cfg.color+';display:inline-block"></span>'+cfg.label+'</div>';
+  }).join('');
+
+  layout();
+  render();
+  document.getElementById('map-loading').style.display='none';
+  document.getElementById('isnad-svg').style.display='block';
+}
+
+// ══════════════════════════════════════════════════════════════
+// LAYOUT
+// ══════════════════════════════════════════════════════════════
+function layout(){
+  if(!_nodes.length) return;
+  var byG={};
+  _nodes.forEach(function(n){var g=String(n.grade||'0');if(!byG[g])byG[g]=[];byG[g].push(n);});
+  var gs=Object.keys(byG).sort(function(a,b){return +a-+b;});
+  var W=900,H=500,cW=W/Math.max(gs.length,1);
+  gs.forEach(function(g,gi){
+    var col=byG[g];
+    col.forEach(function(n,ni){n.x=cW*gi+cW/2+(Math.random()-.5)*cW*.35;n.y=H/(col.length+1)*(ni+1)+(Math.random()-.5)*25;});
+  });
+  for(var it=0;it<60;it++){
+    for(var i=0;i<_nodes.length;i++){
+      for(var j=i+1;j<_nodes.length;j++){
+        var a=_nodes[i],b=_nodes[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy)||1,min=a.r+b.r+38;
+        if(d<min){var f=(min-d)/d*.22;a.x+=dx*f;a.y+=dy*f;b.x-=dx*f;b.y-=dy*f;}
+      }
+    }
+    _links.forEach(function(l){
+      var s=_nodes.find(function(n){return n.id===l.source;}),t=_nodes.find(function(n){return n.id===l.target;});
+      if(!s||!t) return;
+      var dx=t.x-s.x,dy=t.y-s.y,d=Math.sqrt(dx*dx+dy*dy)||1,ideal=130,f=(d-ideal)/d*.04;
+      s.x+=dx*f;s.y+=dy*f;t.x-=dx*f;t.y-=dy*f;
+    });
+    _nodes.forEach(function(n){n.x=Math.max(n.r+8,Math.min(892-n.r,n.x));n.y=Math.max(n.r+8,Math.min(492-n.r,n.y));});
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════
+function render(){
+  var svg=document.getElementById('isnad-svg');
+  if(!svg) return;
+
+  var vLinks=_links.filter(function(l){
+    if(_mode!=='all'&&l.mode!==_mode) return false;
+    if(_gradeFilter!==null){
+      var s=_nodes.find(function(n){return n.id===l.source;}),t=_nodes.find(function(n){return n.id===l.target;});
+      if((!s||String(s.grade)!==String(_gradeFilter))&&(!t||String(t.grade)!==String(_gradeFilter))) return false;
+    }
+    return true;
+  });
+  var aIds=new Set();vLinks.forEach(function(l){aIds.add(l.source);aIds.add(l.target);});
+  var vNodes=(_mode==='all'&&_gradeFilter===null)?_nodes:_nodes.filter(function(n){return aIds.has(n.id);});
+
+  var h='<rect width="100%" height="100%" fill="#12122a"/>'+makeStars();
+  h+='<defs>'
+    +'<marker id="at" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#4cd3a0"/></marker>'
+    +'<marker id="ap" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#ff9d6b"/></marker>'
+    +'<marker id="ae" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#5fd0e6"/></marker>'
+    +'<marker id="ad" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#9b59b6"/></marker>'
+    +'</defs>';
+
+  vLinks.forEach(function(l){
+    var s=_nodes.find(function(n){return n.id===l.source;}),t=_nodes.find(function(n){return n.id===l.target;});
+    if(!s||!t) return;
+    var dx=t.x-s.x,dy=t.y-s.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    var x1=s.x+dx/d*s.r,y1=s.y+dy/d*s.r,x2=t.x-dx/d*(t.r+6),y2=t.y-dy/d*(t.r+6);
+    var isD=l.type==='debate',mark='url(#a'+(isD?'d':l.mode==='parent'?'p':l.mode==='peer'?'e':'t')+')';
+    h+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"'
+      +' stroke="'+l.color+'" stroke-width="1.5" opacity="0.55"'+(isD?' stroke-dasharray="6,3"':'')+' marker-end="'+mark+'"/>';
+  });
+
+  vNodes.forEach(function(n){
+    var hl=_highlighted===n.id,hv=_hovered===n.id&&!_highlighted;
+    var dim=(_highlighted&&!hl)||(_hovered&&!hv&&!hl)?0.18:1;
+    var ed=getEdit(n.id);
+    var subj=ed.subj||n.subj||'';
+    var sc=SUBJ[subj]||SUBJ.math;
+    var color=n.isSource?'#c8a230':subj&&sc?sc.color:n.color;
+    var label=ed.name||n.label;
+    var init=label.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+    var glyph=sc.glyph||init;
+
+    h+='<g class="inode" data-id="'+n.id+'" onclick="clickNode(\''+n.id+'\')" onmouseenter="hoverNode(\''+n.id+'\')" onmouseleave="unhoverNode()" style="cursor:pointer" opacity="'+dim+'">';
+    if(hl||hv) h+='<circle cx="'+n.x+'" cy="'+n.y+'" r="'+(n.r+9)+'" fill="'+color+'" opacity="0.18"/>';
+    h+='<circle cx="'+n.x+'" cy="'+n.y+'" r="'+n.r+'" fill="'+color+'" stroke="'+(hl?'#d4af37':'rgba(255,255,255,.2')+'" stroke-width="'+(hl?3:1.5)+'"/>';
+    if(n.isSource) h+='<text x="'+(n.x+n.r-3)+'" y="'+(n.y-n.r+4)+'" font-size="10">⭐</text>';
+    h+='<text x="'+n.x+'" y="'+(n.y+1)+'" text-anchor="middle" dominant-baseline="middle" font-size="'+(n.r>13?10:8)+'" fill="white" font-weight="700" pointer-events="none">'+esc(glyph.slice(0,2))+'</text>';
+    if(n.grade) h+='<text x="'+n.x+'" y="'+(n.y+n.r+9)+'" text-anchor="middle" font-size="8" fill="#7fc0ae" pointer-events="none">G'+n.grade+'</text>';
+    h+='<text x="'+n.x+'" y="'+(n.y+n.r+(n.grade?18:10))+'" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.6)" pointer-events="none">'+esc(label.slice(0,14))+'</text>';
+    h+='</g>';
+  });
+
+  svg.innerHTML=h;
+  setupPan(svg);
+}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ══════════════════════════════════════════════════════════════
+// PAN + ZOOM
+// ══════════════════════════════════════════════════════════════
+function setupPan(svg){
+  svg.onmousedown=function(e){if(e.target.closest&&e.target.closest('.inode'))return;_panStart={x:e.clientX,y:e.clientY,vb:svg.getAttribute('viewBox')};};
+  svg.onmousemove=function(e){
+    if(!_panStart)return;
+    var dx=e.clientX-_panStart.x,dy=e.clientY-_panStart.y;
+    var p=(_panStart.vb||'0 0 900 500').split(' ').map(Number);
+    svg.setAttribute('viewBox',(p[0]-dx*.7)+' '+(p[1]-dy*.7)+' '+p[2]+' '+p[3]);
+    _panStart.x=e.clientX;_panStart.y=e.clientY;_panStart.vb=svg.getAttribute('viewBox');
+  };
+  svg.onmouseup=svg.onmouseleave=function(){_panStart=null;};
+  svg.onwheel=function(e){
+    e.preventDefault();
+    var p=(svg.getAttribute('viewBox')||'0 0 900 500').split(' ').map(Number),sc=e.deltaY>0?1.1:0.9;
+    svg.setAttribute('viewBox',p[0]+' '+p[1]+' '+(p[2]*sc)+' '+(p[3]*sc));
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// HOVER
+// ══════════════════════════════════════════════════════════════
+function hoverNode(id){
+  if(_highlighted) return;
+  _hovered=id;
+  var cIds=new Set([id]);
+  _links.forEach(function(l){if(l.source===id)cIds.add(l.target);if(l.target===id)cIds.add(l.source);});
+  document.querySelectorAll('.inode').forEach(function(g){g.setAttribute('opacity',cIds.has(g.getAttribute('data-id'))?'1':'0.15');});
+}
+function unhoverNode(){
+  if(_highlighted) return;
+  _hovered=null;
+  document.querySelectorAll('.inode').forEach(function(g){g.setAttribute('opacity','1');});
+}
+
+// ══════════════════════════════════════════════════════════════
+// CLICK / DETAIL
+// ══════════════════════════════════════════════════════════════
+function clickNode(id){
+  _highlighted=_highlighted===id?null:id;
+  _hovered=null;
+  render();
+  if(_highlighted) showDetail(id);
+  else document.getElementById('detail-area').innerHTML='';
+}
+
+function getNodeSubj(id){
+  var ed=getEdit(id);
+  return ed.subj||(_nodes.find(function(n){return n.id===id;})||{}).subj||'math';
+}
+
+function buildChain(id){
+  var anc=[],cur=id,g=0;
+  while(g++<40){var l=_links.find(function(x){return x.target===cur;});if(!l)break;anc.unshift({id:l.source,mode:l.mode});cur=l.source;}
+  var desc=[],g2=0;cur=id;
+  while(g2++<40){var l2=_links.find(function(x){return x.source===cur;});if(!l2)break;desc.push({id:l2.target,mode:l2.mode});cur=l2.target;}
+  var chain=[];
+  anc.forEach(function(a,k){chain.push({id:a.id,arrowMode:k===0?null:anc[k-1].mode});});
+  chain.push({id,arrowMode:anc.length?anc[anc.length-1].mode:null,isFocus:true});
+  desc.forEach(function(d){chain.push({id:d.id,arrowMode:d.mode});});
+  return chain;
+}
+
+function showDetail(id){
+  var n=_nodes.find(function(n){return n.id===id;});
+  if(!n) return;
+  var ed=getEdit(id);
+  var sk=getNodeSubj(id);
+  var sc=SUBJ[sk]||SUBJ.math;
+  var label=ed.name||n.label;
+  var isOrigin=n.isSource||!_links.some(function(l){return l.target===id;});
+  var isLeaf=!_links.some(function(l){return l.source===id;});
+
+  // Banner
+  var bannerBg=n.isSource?'#fff8e6':n.type==='student'?'#e8edf8':'#e6f1ec';
+  var bannerColor=n.isSource?'#a07f3e':n.type==='student'?'#1a3d8a':'#117a60';
+  var bannerText=n.isSource?'⭐ '+(n.grade||'Facilitator / Parent'):n.type==='debate'?'⚔ Debate participant':'🎓 '+(n.grade?'Grade '+n.grade:'Student');
+
+  // Chain
+  var chain=buildChain(id);
+  var chainHtml=chain.map(function(c,i){
+    var cLabel=(_edits[c.id]&&_edits[c.id].name)||(_nodes.find(function(x){return x.id===c.id;})||{}).label||c.id;
+    var arrow=c.arrowMode?'<span class="chain-arrow" style="color:'+(MODE[c.arrowMode]||MODE.peer).edge+'">→</span>':'';
+    return arrow+'<span class="chain-chip'+(c.isFocus?' focus':'')+'" title="'+esc(cLabel)+'">'+esc(cLabel.slice(0,16))+'</span>';
+  }).join('');
+
+  // Learned from (DB links)
+  var learnedFrom=_links.filter(function(l){return l.target===id;}).map(function(l){
+    var fromNode=_nodes.find(function(x){return x.id===l.source;});
+    var fromLabel=(_edits[l.source]&&_edits[l.source].name)||(fromNode&&fromNode.label)||l.source;
+    var txKey=l.source+'>'+id;
+    var txNote=(ed.transmit&&ed.transmit[txKey])||'';
+    var mc=MODE[l.mode]||MODE.peer;
+    return {name:fromLabel,mode:l.mode,modeLabel:mc.label,color:mc.c,txKey,txNote};
+  });
+
+  // Teaches (DB links)
+  var teaches=_links.filter(function(l){return l.source===id;}).map(function(l){
+    var toNode=_nodes.find(function(x){return x.id===l.target;});
+    var toLabel=(_edits[l.target]&&_edits[l.target].name)||(toNode&&toNode.label)||l.target;
+    var txKey=id+'>'+l.target;
+    var txNote=(ed.transmit&&ed.transmit[txKey])||'';
+    var mc=MODE[l.mode]||MODE.peer;
+    return {name:toLabel,mode:l.mode,modeLabel:mc.label,color:mc.c,txKey,txNote};
+  });
+
+  var h='<div class="detail-panel">';
+
+  // Banner
+  h+='<div class="node-banner" style="background:'+bannerBg+';color:'+bannerColor+'">'+bannerText+'</div>';
+
+  // Avatar + name
+  h+='<div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:12px">';
+  h+='<div class="detail-avatar" style="background:'+sc.color+'">'+esc(sc.glyph||label.slice(0,1))+'</div>';
+  h+='<div style="flex:1;min-width:0">';
+  h+='<input class="detail-name-input" value="'+esc(label)+'" placeholder="'+esc(n.label)+'" onchange="editField(\''+id+'\',\'name\',this.value)">';
+  h+='<div class="detail-meta">'+esc(n.type)+(n.grade?' · Grade '+n.grade:'')+(n.isSource?' · ⭐ Origin':'')+'</div>';
+  h+='<div style="font-size:12.5px;font-weight:800;color:'+sc.color+';margin-top:4px">'+sc.label+'</div>';
+  h+='</div></div>';
+
+  // Subject selector
+  h+='<div class="sec-label" style="color:#9a8a6c">What this person carries</div>';
+  h+='<div class="subj-selector">';
+  SUBJ_KEYS.forEach(function(k){
+    var s=SUBJ[k]; var active=k===sk;
+    h+='<button class="subj-pill'+(active?' active':'')+'" style="color:'+s.color+';border-color:'+(active?s.color:'#e6dcc4')+';background:'+(active?s.pale:'#f6f1e4')+'" onclick="editSubj(\''+id+'\',\''+k+'\')">'+s.label+'</button>';
+  });
+  h+='</div>';
+
+  // Studio sub-focus
+  if(sk==='studios'){
+    var studioEdit=ed.studio||'';
+    h+='<div class="studio-panel"><div class="studio-label">Studio focus</div><div class="studio-pills">';
+    STUDIOS.forEach(function(st){
+      var active=studioEdit===st;
+      h+='<button class="studio-pill'+(active?' active':'')+'" onclick="editField(\''+id+'\',\'studio\',\''+(active?'':st)+'\')">'+esc(st)+'</button>';
+    });
+    h+='</div></div>';
+  }
+
+  // Isnad chain ribbon
+  if(chain.length>1){
+    h+='<div class="chain-ribbon">';
+    h+='<div class="chain-label">The chain (isnād)</div>';
+    h+='<div class="chain-items">'+chainHtml+'</div>';
+    h+='</div>';
+  }
+
+  // Learned from
+  h+='<div class="sec-label" style="color:#117a60">Learned from</div>';
+  if(isOrigin) h+='<div class="origin-banner"><span>⭐</span>Origin of the chain — knowledge enters here.</div>';
+  learnedFrom.forEach(function(lf){
+    h+='<div class="extra-card">';
+    h+='<div class="extra-top">';
+    h+='<span style="width:9px;height:9px;border-radius:50%;background:'+lf.color+';flex-shrink:0;display:inline-block"></span>';
+    h+='<span style="font-size:13px;font-weight:800;color:#2f2110;flex:1">'+esc(lf.name)+'</span>';
+    h+='<span class="extra-mode-label" style="color:'+lf.color+'">'+lf.modeLabel+'</span>';
+    h+='</div>';
+    h+='<input class="extra-note-input" placeholder="What was passed on… (e.g. Surah Al-Fātiḥah, tajwīd of the first 3 āyāt)" value="'+esc(lf.txNote)+'" onchange="editTransmit(\''+id+'\',\''+lf.txKey+'\',this.value)">';
+    h+='</div>';
+  });
+  // Extra learned (manually added)
+  (ed.learned||[]).forEach(function(x,xi){
+    h+=renderExtraCard(id,'learned',xi,x);
+  });
+  h+='<button class="add-btn" onclick="addExtra(\''+id+'\',\'learned\')">+ Add learned from</button>';
+
+  // Adab
+  h+='<div class="adab-panel">';
+  h+='<div class="adab-label"><span>♥</span>Adab &amp; character shown</div>';
+  h+='<textarea class="adab-textarea" placeholder="Good character this learner displayed or passed on… (e.g. helped a younger student without being asked; gave salām first)" onchange="editField(\''+id+'\',\'adab\',this.value)">'+esc(ed.adab||'')+'</textarea>';
+  h+='</div>';
+
+  // Then teaches
+  h+='<div class="sec-label" style="color:#1f7a8c">Then teaches</div>';
+  if(isLeaf) h+='<div class="leaf-banner">The youngest learner in this chain — for now.</div>';
+  teaches.forEach(function(t){
+    h+='<div class="extra-card taught">';
+    h+='<div class="extra-top">';
+    h+='<span style="width:9px;height:9px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block"></span>';
+    h+='<span style="font-size:13px;font-weight:800;color:#2f2110;flex:1">'+esc(t.name)+'</span>';
+    h+='<span class="extra-mode-label" style="color:'+t.color+'">'+t.modeLabel+'</span>';
+    h+='</div>';
+    h+='<input class="extra-note-input" placeholder="What was transmitted to them…" value="'+esc(t.txNote)+'" onchange="editTransmit(\''+id+'\',\''+t.txKey+'\',this.value)">';
+    h+='</div>';
+  });
+  (ed.taught||[]).forEach(function(x,xi){
+    h+=renderExtraCard(id,'taught',xi,x);
+  });
+  h+='<button class="add-btn" onclick="addExtra(\''+id+'\',\'taught\')">+ Add taught to</button>';
+
+  h+='</div>';
+  document.getElementById('detail-area').innerHTML=h;
+}
+
+function renderExtraCard(nodeId, dir, idx, x){
+  var mc=MODE[x.mode||'peer']||MODE.peer;
+  var isTaught=dir==='taught';
+  return '<div class="extra-card'+(isTaught?' taught':'')+'">'
+    +'<div class="extra-top">'
+    +'<button class="extra-mode-dot" style="background:'+mc.c+'" title="Click to change mode" onclick="cycleExtra(\''+nodeId+'\',\''+dir+'\','+idx+')"></button>'
+    +'<input class="extra-name-input" value="'+esc(x.name||'')+'" placeholder="'+(isTaught?"Peer's name":"Teacher's name")+'" onchange="setExtra(\''+nodeId+'\',\''+dir+'\','+idx+',\'name\',this.value)">'
+    +'<span class="extra-mode-label" style="color:'+mc.c+'">'+mc.label+'</span>'
+    +'<button class="extra-remove" onclick="removeExtra(\''+nodeId+'\',\''+dir+'\','+idx+')">✕</button>'
+    +'</div>'
+    +'<input class="extra-note-input" value="'+esc(x.note||'')+'" placeholder="What was passed on…" onchange="setExtra(\''+nodeId+'\',\''+dir+'\','+idx+',\'note\',this.value)">'
+    +'</div>';
+}
+
+// ══════════════════════════════════════════════════════════════
+// EDIT FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+function editField(id,field,val){
+  var patch={};patch[field]=val;
+  patchEdit(id,patch);
+  if(field==='name'||field==='subj') render();
+  showDetail(id);
+}
+function editSubj(id,subj){
+  patchEdit(id,{subj:subj});
+  render();
+  showDetail(id);
+}
+function editTransmit(id,key,val){
+  var ed=getEdit(id);
+  var tx=Object.assign({},ed.transmit||{});
+  tx[key]=val;
+  patchEdit(id,{transmit:tx});
+}
+function addExtra(id,dir){
+  var ed=getEdit(id);
+  var list=(ed[dir]||[]).slice();
+  list.push({name:'',note:'',mode:dir==='learned'?'facilitator':'peer'});
+  var p={};p[dir]=list;patchEdit(id,p);
+  showDetail(id);
+}
+function setExtra(id,dir,idx,field,val){
+  var ed=getEdit(id);
+  var list=(ed[dir]||[]).slice();
+  if(list[idx]) list[idx][field]=val;
+  var p={};p[dir]=list;patchEdit(id,p);
+}
+function removeExtra(id,dir,idx){
+  var ed=getEdit(id);
+  var list=(ed[dir]||[]).slice();
+  list.splice(idx,1);
+  var p={};p[dir]=list;patchEdit(id,p);
+  showDetail(id);
+}
+function cycleExtra(id,dir,idx){
+  var modes=['facilitator','parent','peer'];
+  var ed=getEdit(id);
+  var list=(ed[dir]||[]).slice();
+  if(!list[idx]) return;
+  var cur=modes.indexOf(list[idx].mode||'peer');
+  list[idx].mode=modes[(cur+1)%modes.length];
+  var p={};p[dir]=list;patchEdit(id,p);
+  showDetail(id);
+}
+
+// ══════════════════════════════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════════════════════════════
+function setMode(m,btn){
+  _mode=m;
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.toggle('active',b===btn);});
+  render();
+}
+function setGrade(g,btn){
+  _gradeFilter=g;
+  document.querySelectorAll('.grade-btn').forEach(function(b){b.classList.toggle('active',b===btn);});
+  render();
+}
+function filterSubj(subj){
+  var match=_nodes.find(function(n){return (getEdit(n.id).subj||n.subj)===subj;});
+  if(match){_highlighted=match.id;render();showDetail(match.id);}
+  document.querySelectorAll('.subj-chip').forEach(function(c){c.classList.toggle('active',c.dataset.subj===subj&&!!_highlighted);});
+}
+function searchNodes(q){
+  if(!q){_highlighted=null;document.getElementById('detail-area').innerHTML='';render();return;}
+  q=q.toLowerCase();
+  var match=_nodes.find(function(n){
+    var ed=getEdit(n.id);
+    return (ed.name||n.label).toLowerCase().includes(q)||(n.subj||'').includes(q)||(String(n.grade)).includes(q);
+  });
+  if(match){_highlighted=match.id;render();showDetail(match.id);}
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+loadData();
+</script>
+</body>
+</html>

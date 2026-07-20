@@ -252,8 +252,8 @@ textarea.field{resize:vertical;line-height:1.65}
         <span class="sb-label" style="margin-bottom:8px">My stats</span>
         <p style="font-size:12px;color:var(--ink-3);line-height:1.7">
           Teachings recorded: <strong id="my-count">0</strong><br>
-          Students helped: <strong id="my-helped">—</strong><br>
-          Isnad links: <strong id="my-links">—</strong>
+          Students helped: <strong>—</strong><br>
+          Isnad links: <strong>—</strong>
         </p>
       </div>
     </aside>
@@ -664,8 +664,6 @@ function openTeaching(id){
     </div>
   </div>`:''}
 
-  ${verifyPanelHtml(t)}
-
   <hr style="border:none;border-top:1px solid var(--ink-5);margin:18px 0">
   <div class="btn-row">
     <button class="btn teal" onclick="markHelpful('${t.id}')">This helped me</button>
@@ -673,175 +671,11 @@ function openTeaching(id){
     <button class="btn primary" onclick="switchTab(document.querySelector('[data-tab=record]'))">Record a related teaching →</button>
   </div>
   <p style="font-size:11px;color:var(--ink-4);margin-top:10px">${t.views||0} views · ${t.helpful||0} found helpful</p>`;
-  checkExistingVerification(t);
 }
 
 function markHelpful(id){toast('Marked as helpful. Added to your isnad.')}
 function addToSahifa(id){toast('Added as a thread in your sahifa.')}
 function startFollowUp(id){switchTab(document.querySelector('[data-tab=record]'));toast('Starting a follow-up teaching...')}
-
-// ══════════════════════════════════════════════════════════════════════
-// VERIFY LEARNING — the digital samāʿ certificate
-// The learner attests reception in writing; the Murshid checks the
-// reflection actually engages the content (ḍabṭ); the platform then
-// seals the transmission in `transmission_verification`.
-// ══════════════════════════════════════════════════════════════════════
-function escV(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
-function getLearnerIdentity(){
-  var name='';
-  try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); if(a&&a.name) name=a.name; }catch(e){}
-  if(!name){ try{ var ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); if(ss.name) name=ss.name; }catch(e){} }
-  if(!name){ var s=getSettings(); if(s.name) name=s.name; }
-  var grade='';
-  try{ var ss2=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); grade=ss2.grade||''; }catch(e){}
-  return {
-    name: name,
-    grade: grade,
-    jwt: localStorage.getItem('how_jwt'),
-    hid: localStorage.getItem('how_household_id'),
-    studentId: (function(){ try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); return a?a.id:null; }catch(e){ return null; } })()
-  };
-}
-
-// Murshid ḍabṭ (precision) check — does the reflection show the content was
-// actually received? Fails open on network error (facilitator retains override).
-async function dabtCheck(t, reflection){
-  try{
-    const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:150,
-        system:'You check whether a student\'s written reflection shows they genuinely received a peer teaching (dabt — precision of retention). PASS if the reflection engages the actual content: names the key idea, explains it in their own words, applies it, or asks a real question about it. FAIL if it is generic praise ("it was good", "I learned a lot") or could have been written without reading the teaching. Be generous with young students — simple language is fine as long as it is specific. Respond ONLY with JSON: {"pass":true|false,"note":"if fail, one short encouraging pointer toward what to add"}',
-        messages:[{role:'user',content:'TEACHING: "'+t.title+'"\nKey idea: '+(t.keyIdea||'')+'\nSummary: '+(t.summary||'')+'\n\nSTUDENT REFLECTION:\n'+reflection+'\n\nJSON verdict:'}]})
-    });
-    const d = await resp.json();
-    const raw = (d.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
-    const v = JSON.parse(raw);
-    return { pass: !!v.pass, note: v.note||'', via:'murshid' };
-  }catch(e){
-    return { pass:true, note:'', via:'platform' };
-  }
-}
-
-function verifyPanelHtml(t){
-  const me = getLearnerIdentity();
-  const isOwn = me.name && t.teacherName && me.name.trim().toLowerCase()===t.teacherName.trim().toLowerCase();
-  if(isOwn) return '';
-  return `
-  <hr style="border:none;border-top:1px solid var(--ink-5);margin:18px 0">
-  <div class="detail-section" id="verify-panel">
-    <span class="detail-section-label">🖋 Verify what you learned — your samāʿ</span>
-    <p style="font-size:12.5px;color:var(--ink-3);line-height:1.7;margin:0 0 10px">In the manuscript tradition, a <em>samāʿ</em> certificate recorded who received a text and attested it in writing. Write what you learned from ${escV(t.teacherName||'this teacher')} — be specific about the idea itself. This becomes an entry in your sahifa and seals the transmission on the Isnād Map.</p>
-    <input id="verify-name" value="${escV(me.name)}" placeholder="Your name" style="width:100%;box-sizing:border-box;border:1px solid var(--ink-5);border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--paper,#fff);margin-bottom:8px">
-    <textarea id="verify-text" rows="4" placeholder="What I learned: … The key insight was… I could now explain it as…" style="width:100%;box-sizing:border-box;border:1px solid var(--ink-5);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--paper,#fff);line-height:1.6"></textarea>
-    <div id="verify-status" style="margin-top:8px"></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn primary" id="verify-btn" onclick="submitLearningVerification('${escV(t.id)}')">Record my learning →</button>
-    </div>
-  </div>`;
-}
-
-async function submitLearningVerification(teachingId){
-  const t = getAllTeachings().find(x=>x.id===teachingId);
-  if(!t) return;
-  const nameEl = document.getElementById('verify-name');
-  const txtEl  = document.getElementById('verify-text');
-  const statusEl = document.getElementById('verify-status');
-  const btn = document.getElementById('verify-btn');
-  const learner = (nameEl?.value||'').trim();
-  const txt = (txtEl?.value||'').trim();
-
-  const coral = m=>`<div style="background:var(--coral-l,#FAECE7);border:1px solid var(--coral,#C4552E);border-radius:8px;padding:9px 12px;font-size:12.5px;color:var(--ink-2);line-height:1.6">${m}</div>`;
-  if(!learner){ statusEl.innerHTML = coral('Add your name so the chain records who received this.'); return; }
-  if(t.teacherName && learner.toLowerCase()===t.teacherName.trim().toLowerCase()){
-    statusEl.innerHTML = coral('A teacher can\'t verify their own transmission — that\'s for the one who received it.'); return;
-  }
-  if(txt.length < 25){
-    statusEl.innerHTML = coral('<strong>Say more about what you learned</strong> — mention the actual idea. What was the key insight? How would you explain it to someone else?'); return;
-  }
-
-  if(btn) btn.disabled = true;
-  statusEl.innerHTML = `<div style="font-size:12.5px;color:var(--ink-4)"><em>The Murshid is reading your reflection…</em></div>`;
-
-  const verdict = await dabtCheck(t, txt);
-  if(!verdict.pass){
-    if(btn) btn.disabled = false;
-    statusEl.innerHTML = coral('<strong>Say more about what you learned.</strong> '+escV(verdict.note||'Mention the specific idea — what was the key insight, and how would you explain it to someone else?'));
-    return;
-  }
-
-  const me = getLearnerIdentity();
-  const entryText = 'What I learned from '+(t.teacherName||'a peer')+' — "'+t.title+'": '+txt;
-
-  // 1) Sahifa entry — local (the sahifa app and Murshid read this key)
-  try{
-    var entries = JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
-    entries.unshift({ id:'pl'+Date.now(), type:'peer_learning', text:entryText, date:new Date().toISOString(),
-                      teachingId:t.id, teacherName:t.teacherName||'' });
-    localStorage.setItem('sahifa_entries', JSON.stringify(entries.slice(0,500)));
-  }catch(e){}
-
-  // 2) Sahifa entry — Supabase (best-effort)
-  if(sb && me.jwt && me.hid){
-    try{
-      await sb.from('sahifa_entry').insert({
-        household_id: me.hid, student_id: me.studentId, type:'peer_learning',
-        text: entryText, grade: parseInt(me.grade,10)||null,
-        entry_date: new Date().toISOString().split('T')[0]
-      });
-    }catch(e){ console.warn('sahifa_entry insert failed:', e.message||e); }
-  }
-
-  // 3) Seal the transmission
-  var sealed = false;
-  if(sb && me.jwt){
-    try{
-      var row = {
-        household_id: me.hid||null,
-        kind: 'reception',
-        teaching_id: (t.fromSupabase && /^[0-9a-f-]{36}$/.test(t.id)) ? t.id : null,
-        from_name: t.teacherName||'Unknown teacher',
-        to_name: learner,
-        evidence: txt,
-        evidence_ref: t.title,
-        status: 'verified',
-        verified_by: verdict.via
-      };
-      var r = await sb.from('transmission_verification').insert(row);
-      if(r.error) throw r.error;
-      sealed = true;
-    }catch(e){ console.warn('verification insert failed:', e.message||e); }
-  }
-
-  const panel = document.getElementById('verify-panel');
-  if(panel) panel.innerHTML = `
-    <span class="detail-section-label">🖋 Samāʿ recorded</span>
-    <div style="background:var(--gold-pale,#FAEEDA);border:1px solid var(--gold,#B98A2F);border-radius:10px;padding:14px 16px">
-      <p style="font-size:13.5px;font-weight:600;color:var(--ink);margin:0 0 6px">✓ Transmission ${sealed?'verified':'recorded'} — ${escV(t.teacherName||'teacher')} → ${escV(learner)}</p>
-      <p style="font-size:12.5px;color:var(--ink-2);line-height:1.7;margin:0 0 8px">"${escV(txt)}"</p>
-      <p style="font-size:11.5px;color:var(--ink-4);line-height:1.6;margin:0">Saved to your sahifa${sealed?' and sealed on the Isnād Map. This link is now <em>muttaṣil</em> — attested by the one who received it.':'. Sign in on the platform to seal it on the Isnād Map.'}</p>
-    </div>`;
-  toast(sealed ? 'Transmission verified ✓' : 'Learning recorded ✓');
-}
-
-// If this learner already verified this teaching, show that instead of the form
-async function checkExistingVerification(t){
-  const me = getLearnerIdentity();
-  if(!sb || !me.jwt || !me.name || !t.fromSupabase) return;
-  try{
-    var r = await sb.from('transmission_verification').select('created_at,evidence')
-      .eq('teaching_id', t.id).eq('to_name', me.name).eq('kind','reception').limit(1);
-    if(r.data && r.data.length){
-      const panel = document.getElementById('verify-panel');
-      if(panel) panel.innerHTML = `
-        <span class="detail-section-label">🖋 Samāʿ recorded</span>
-        <div style="background:var(--gold-pale,#FAEEDA);border:1px solid var(--gold,#B98A2F);border-radius:10px;padding:12px 16px">
-          <p style="font-size:13px;font-weight:600;color:var(--ink);margin:0 0 4px">✓ You verified this transmission on ${new Date(r.data[0].created_at).toLocaleDateString()}</p>
-          <p style="font-size:12.5px;color:var(--ink-2);line-height:1.6;margin:0">"${escV(r.data[0].evidence||'')}"</p>
-        </div>`;
-    }
-  }catch(e){}
-}
 
 // ── RECORD ────────────────────────────────────────────────────────
 let recStep = 1;
@@ -1233,15 +1067,10 @@ function libSlideNav(id, dir){
 </script>
 <script>
 /* ── SUPABASE CREDENTIALS — replace before deploying ── */
-var sb = null;
-try{
-  if(typeof supabase !== 'undefined'){
-    sb = supabase.createClient(
-      'https://apallkuclqcqxnbmjuqu.supabase.co',
-      'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-    );
-  }
-}catch(e){}
+var sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+);
 /* ─────────────────────────────────────────────────── */
 
 // ── Fetch published teachings from Supabase and merge with local ──────────
@@ -1304,7 +1133,9 @@ async function fetchSupabaseDebates(){
         return (m.who==='a'?(r.student_a_name||'Student A'):
                 m.who==='b'?(r.student_b_name||'Student B'):'Ustadh')
                +': '+m.text;
-      }).join('\n\n');
+      }).join('
+
+');
       var synth = '';
       try{ var s=JSON.parse(r.synthesis||'{}'); synth=s.verdict||s.summary||''; }catch(e){}
       return {
@@ -1336,26 +1167,8 @@ async function fetchSupabaseDebates(){
   }
 }
 
-// ── Sidebar stats: who has verified learning from MY teachings ────────────
-async function updateIsnadStats(){
-  const me = getLearnerIdentity();
-  if(!sb || !me.jwt || !me.name) return;
-  try{
-    var r = await sb.from('transmission_verification')
-      .select('to_name').eq('from_name', me.name).eq('kind','reception').eq('status','verified');
-    if(r.data){
-      var learners = {}; r.data.forEach(function(x){ learners[x.to_name]=1; });
-      var helpedEl = document.getElementById('my-helped');
-      var linksEl  = document.getElementById('my-links');
-      if(helpedEl) helpedEl.textContent = Object.keys(learners).length;
-      if(linksEl)  linksEl.textContent  = r.data.length;
-    }
-  }catch(e){}
-}
-
 // ── Load on startup: fetch Supabase + merge with local + re-render ────────
 (async function initLibrary(){
-  updateIsnadStats();
   var sbTeachings = await fetchSupabaseTeachings();
   var sbDebates   = await fetchSupabaseDebates();
   var allServer   = sbTeachings.concat(sbDebates);
