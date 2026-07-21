@@ -526,16 +526,11 @@ async function acceptDebateChallenge(){
   if(!jwt||!hid){ toast('Sign in to accept a challenge'); return false; }
   if(!sb){ toast('No connection — try again in a moment'); return false; }
   try{
-    // Use limit(1) + order instead of .single() — codes can repeat across old
-    // debates (small space, rows never deleted) and .single() errors on duplicates.
+    // Look up debate by code
     var result = await sb.from('debate')
-      .select('*').eq('code', code.toUpperCase())
-      .neq('status','complete')
-      .order('created_at',{ascending:false})
-      .limit(1);
-    if(result.error){ toast('Could not look up challenge: '+(result.error.message||'connection error')); return false; }
-    if(!result.data || !result.data.length){ toast('Challenge not found — check the code'); return false; }
-    var debate = result.data[0];
+      .select('*').eq('code', code.toUpperCase()).single();
+    if(result.error||!result.data){ toast('Challenge not found — check the code'); return false; }
+    var debate = result.data;
     if(debate.status==='complete'){ toast('This debate is already complete'); return false; }
     // Join as household_b
     var upd = await sb.from('debate').update({

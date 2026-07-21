@@ -151,18 +151,12 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ── SUPABASE CREDENTIALS ── */
-var sb = null;
-try{
-  if(typeof supabase !== 'undefined'){
-    sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9', {
+const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9', {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
 });
-  }
-}catch(e){}
 /* ─────────────────────────── */
 // Restore auth session from platform
 (async function(){
-  if(!sb) return;
   try{
     var _jwt = localStorage.getItem('how_jwt');
     var _ref = localStorage.getItem('how_refresh_token');
@@ -393,7 +387,7 @@ const ini=n=>(n||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCas
 const ts=()=>{const n=new Date();return`${n.getHours()}:${n.getMinutes().toString().padStart(2,'0')}`};
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 
-var G={name:'',role:'student',apiKey:'',question:'',theme:'',sahifaCtx:'',preAnswer:'',participants:[],messages:[],phase:'pre',sessionStart:null,timerInt:null,aiThinking:false,turnCount:0,handRaised:false,demoIdx:0};
+let G={name:'',role:'student',apiKey:'',question:'',theme:'',sahifaCtx:'',preAnswer:'',participants:[],messages:[],phase:'pre',sessionStart:null,timerInt:null,aiThinking:false,turnCount:0,handRaised:false,demoIdx:0};
 
 let selRoleVal='student';
 let _liveMode=false;       // true = live Supabase session
@@ -404,8 +398,6 @@ let _sessionCode=null;     // 4-char join code
 let _realtimeChannel=null; // Supabase Realtime channel
 let _liveParticipants=[];  // real humans in session
 let _isLiveFac=false;      // this user is the live facilitator
-let _sessionAiFac=false;   // joined session's ai_facilitator flag (false = human-run circle)
-let _myParticipantRowId=null; // this tab's own row in halaqa_participant (strict per-device identity)
 
 function selRole(btn){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
@@ -519,47 +511,18 @@ function joinSession(){
     // Try platform S object first (most current)
     var _week=_ss.juz||(_activeS&&_activeS.current_week)||1;
     var _platformQ='';var _platformTheme='';
-    // Per-grade question map written by the platform's week view (how_week_qs)
-    function _gradeQ(g){
-      try{
-        var m=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
-        return m[String(g)]||null;
-      }catch(e){ return null; }
-    }
-    var _gq=_gradeQ(G.grade);
-    if(_gq){ _platformQ=_gq.q||''; _platformTheme=_gq.theme||''; if(_gq.week) _week=_gq.week; }
     try{
-      // Legacy fallback: week-keyed schedule (older platform builds)
-      if(!_platformQ){
-        var _sched=JSON.parse(localStorage.getItem('how_sched')||'{}');
-        var _weekData=_sched[String(_week)]||{};
-        _platformQ=_weekData.openingQ||_weekData.q||'';
-        _platformTheme=_platformTheme||_weekData.theme||_weekData.weekTitle||'';
-      }
+      // Try to get opening question from current week curriculum
+      var _sched=JSON.parse(localStorage.getItem('how_sched')||'{}');
+      var _weekData=_sched[String(_week)]||{};
+      _platformQ=_weekData.openingQ||_weekData.q||'';
+      _platformTheme=_weekData.theme||_weekData.weekTitle||'';
     }catch(e2){}
     // Fall back to sahifa_settings
     if(!_platformQ) _platformQ=_ss.openingQ||'';
     if(!_platformTheme) _platformTheme=_ss.weekTitle||'Week '+_week;
     if(_lbq&&_platformQ&&!_lbq.value) _lbq.value=_platformQ;
     if(_lbt&&_platformTheme&&!_lbt.value) _lbt.value=_platformTheme;
-    // When the facilitator changes the grade dropdown, refresh the question
-    // for THAT grade (previously the stale question silently stuck around).
-    var _lbgEl=document.getElementById('lb-grade');
-    if(_lbgEl && !_lbgEl._howQBound){
-      _lbgEl._howQBound=true;
-      _lbgEl.addEventListener('change', function(){
-        var q2=_gradeQ(this.value);
-        var qEl=document.getElementById('lb-q'), tEl=document.getElementById('lb-theme');
-        if(q2){
-          if(qEl) qEl.value=q2.q||'';
-          if(tEl) tEl.value=q2.theme||'';
-        } else if(qEl && qEl.value){
-          // No stored question for this grade — clear the stale one and say so
-          qEl.value='';
-          qEl.placeholder='No saved question for Grade '+this.value+' — open that grade\'s week on the platform first, or type one here.';
-        }
-      });
-    }
     // Pre-answer from Sunday Sahifa entry
     try{
       var _entries=JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
@@ -632,14 +595,9 @@ function openHalaqa(){
           addSys('You are the facilitator. Open the circle with your question, or invite a student to share their pre-answer.');
         },1000);
       } else {
-        // AI only takes over if this session was created as AI-facilitated.
-        // A human-run circle (ai_facilitator=false) waits for its facilitator.
+        // Check if human facilitator is present, else AI takes over
         var hasFac=_liveParticipants.some(function(p){return p.role==='facilitator';});
-        setTimeout(function(){
-          if(hasFac) return;
-          if(_sessionAiFac){ aiOpen(); }
-          else addSys('Waiting for your facilitator to open the circle…');
-        },2000);
+        setTimeout(function(){ if(!hasFac) aiOpen(); },2000);
       }
     });
   } else {
@@ -729,7 +687,7 @@ function renderSeats(){
   document.getElementById('cc-seats').innerHTML=G.participants.map(p=>`
   <div class="seat">
     <div class="s-av ${p.role==='ai'?'ai-av':''}" style="background:${p.bg};color:${p.fc}">${p.role==='ai'?p.n:ini(p.n)}<span class="s-dot ${p.st}"></span></div>
-    <div><p class="s-name">${p.n}</p><p class="s-role">${p.role==='ai'?'AI facilitator':p.role==='facilitator'?'facilitator':p.role==='self'?(_liveMode&&_isLiveFac?'you · facilitator':'you'):'student'}</p></div>
+    <div><p class="s-name">${p.n}</p><p class="s-role">${p.role==='ai'?'AI facilitator':p.role==='self'?'you':'student'}</p></div>
   </div>`).join('');
 }
 
@@ -859,11 +817,8 @@ async function aiRespond(who,text){
     },2000);
   }
   addAI(r);G.aiThinking=false;
-  // Only trigger a peer off a HUMAN turn (peers must never chain off their own
-  // responses — that was the runaway-Tariq loop), and never against a hold.
-  var _humanTurn = !PEER_CHARS[who];
-  if(_humanTurn && !_facWantsQuiet() && Math.random()<(_slowMode?0.12:0.30) && G.turnCount>1)
-    setTimeout(()=>simPeer(),getSimDelay(6000,6000));
+  // Only trigger peer if human hasn't spoken recently and not too frequent
+  if(Math.random()<(_slowMode?0.12:0.30)&&G.turnCount>1) setTimeout(()=>simPeer(),getSimDelay(6000,6000));
 }
 
 async function callAI(msgs,sys){
@@ -917,32 +872,13 @@ async function simSpecificPeer(peerName){
   }
 }
 
-// Did the facilitator's most recent message ask the circle to pause/quiet down?
-// If so, peers structurally stay silent until the facilitator says something else.
-function _facWantsQuiet(){
-  for(var i=G.messages.length-1;i>=0;i--){
-    var m=G.messages[i];
-    if(m.t==='student' && !PEER_CHARS[m.n]){ // most recent HUMAN message
-      return /\b(stop|quiet|pause|hold on|wait|shh+|silence|no more|settle down|calm down|that's enough|enough for now|let (him|her|them|\w+) (speak|answer|think|finish)|give (\w+ )?a (turn|chance)|one at a time|listen)\b/i.test(m.txt||'');
-    }
-  }
-  return false;
-}
-
 async function simPeer(){
   if(_liveMode) return; // no AI peers in live sessions
   const peers=G.participants.filter(p=>p.role==='peer');
   if(!peers.length) return;
   if(G.phase==='close'||G.phase==='ended') return; // circle is closing, no more peers
-  if(_facWantsQuiet()) return; // the facilitator asked for quiet — peers hold
   if(G.aiThinking){ setTimeout(()=>simPeer(),3000); return; } // wait for AI to finish
-  // Never let two peers speak back-to-back without a human or facilitator turn,
-  // and never let the same peer take consecutive turns.
-  var _circ=G.messages.filter(function(m){return m.t==='student';});
-  var _last2=_circ.slice(-2);
-  if(_last2.length===2 && _last2.every(function(m){return !!PEER_CHARS[m.n];})) return;
-  var _lastSpeaker=_circ.length?_circ[_circ.length-1].n:null;
-  const p=_selectPeer(peers.filter(function(x){return x.n!==_lastSpeaker;}));
+  const p=_selectPeer(peers);
   if(!p) return;
   const hist=G.messages.filter(m=>m.t==='student'||m.t==='ai').slice(-6).map(m=>({role:m.t==='ai'?'assistant':'user',content:m.n+': '+m.txt}));
   const bandInstr=G.band==='k2'?'You are a 5-7 year old child. 3-6 words per sentence. One simple concrete thing.':
@@ -950,7 +886,7 @@ async function simPeer(){
     G.band==='68'?'You are an 11-14 year old. Think aloud, 1-2 sentences.':
     'You are a 14-18 year old student. Thoughtful, 1-2 sentences.';
   const peerSys='You are '+p.n+', a student in a halaqa. '+bandInstr
-    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'". RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. (5) The facilitator leads the circle: if their most recent message asks anyone to pause, stop, wait, or give someone else a turn, you have NOTHING to add — respond with silence by writing only \'…\'. (6) If you have already pushed back on an idea once, do not push back on it again — listen or build instead. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
+    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'". RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
 
   // Show thinking indicator
   setSt(p.n,'typing');
@@ -969,8 +905,7 @@ async function simPeer(){
 
   hideHalaqaTyping();
   setSt(p.n,'on');
-  if(resp && resp.trim() && resp.trim()!=='…'){
-    _peerSpeakCount[p.n]=(_peerSpeakCount[p.n]||0)+1;
+  if(resp){
     addStudent(p.n,resp,'peer');
     setTimeout(()=>aiRespond(p.n,resp),1000+Math.random()*800);
   }
@@ -1037,11 +972,7 @@ function addStudent(name,text,role){
   G.messages.push({t:'student',n:name,txt:text,role});
   const c=document.getElementById('mc-msgs');const d=document.createElement('div');d.className='msg';
   const isSelf=role==='self';
-  const isFac=role==='facilitator'||(isSelf&&_liveMode&&_isLiveFac);
-  const avStyle=isFac?' style="background:var(--gold);color:var(--ink)"':'';
-  const nameStyle=isFac?' style="color:var(--gold)"':'';
-  const roleTag=isFac?' · facilitator':'';
-  d.innerHTML=`<div class="m-av ${isSelf?'self':'peer'}"${avStyle}>${ini(name)}</div><div class="m-body"><div class="m-hdr"><span class="m-name"${nameStyle}>${esc(name)}${isSelf?' (you)':''}${roleTag}</span><span class="m-time">${ts()}</span></div><div class="m-text">${esc(text)}</div></div>`;
+  d.innerHTML=`<div class="m-av ${isSelf?'self':'peer'}">${ini(name)}</div><div class="m-body"><div class="m-hdr"><span class="m-name">${esc(name)}${isSelf?' (you)':''}</span><span class="m-time">${ts()}</span></div><div class="m-text">${esc(text)}</div></div>`;
   c.appendChild(d);scrollC();
 }
 
@@ -1216,21 +1147,14 @@ async function joinLiveSession(){
   var code = (document.getElementById('lb-code')||{}).value;
   if(!code||code.length<3){ toast('Enter a valid session code'); return false; }
   try{
-    // Look up session by code. Codes can repeat across old sessions (small code
-    // space, rows never deleted), so take the NEWEST non-ended match instead of
-    // .single(), which errors on duplicates and masked it as "not found".
+    // Look up session by code
     var result = await sb.from('halaqa_session')
-      .select('*').eq('code', code.toUpperCase())
-      .neq('phase','ended')
-      .order('created_at',{ascending:false})
-      .limit(1);
-    if(result.error){ toast('Could not look up session: '+(result.error.message||'connection error')); return false; }
-    if(!result.data || !result.data.length){ toast('Session not found — check the code (or the session may have ended)'); return false; }
-    var session = result.data[0];
+      .select('*').eq('code', code.toUpperCase()).single();
+    if(result.error||!result.data){ toast('Session not found — check the code'); return false; }
+    var session = result.data;
     if(session.phase==='ended'){ toast('This session has already ended'); return false; }
     _sessionId   = session.id;
     _sessionCode = session.code;
-    _sessionAiFac= !!session.ai_facilitator;
     G.question   = session.question||G.question;
     G.grade      = session.grade||G.grade;
     G.theme      = session.week?'Week '+session.week+(session.grade?' · Grade '+session.grade:''):G.theme;
@@ -1277,47 +1201,14 @@ async function addParticipant(role){
   try{ active = JSON.parse(localStorage.getItem('how_active_student')||'null'); }catch(e){}
   if(!jwt||!_sessionId) return;
   try{
-    // ── Strict per-device identity ─────────────────────────────────────────
-    // Each browser tab owns exactly one participant row, remembered in
-    // sessionStorage. A refresh re-uses the same row; a second device (or tab)
-    // gets its own row even on the same shared household account.
-    var storeKey='hq_pid_'+_sessionId;
-    var savedId=null;
-    try{ savedId=sessionStorage.getItem(storeKey); }catch(e){}
-    if(savedId){
-      var chk=await sb.from('halaqa_participant').select('id').eq('id',savedId).limit(1);
-      if(chk.data && chk.data.length){
-        _myParticipantRowId=savedId;
-        await sb.from('halaqa_participant').update({
-          name:      G.name,
-          role:      role,
-          last_seen: new Date().toISOString()
-        }).eq('id',savedId);
-        return;
-      }
-    }
-    // New participant in this tab — make the display name unique in the session
-    // so seats and message attribution can never collide.
-    var ex=await sb.from('halaqa_participant').select('id,name').eq('session_id',_sessionId);
-    var names=(ex.data||[]).map(function(r){ return r.name; });
-    if(names.indexOf(G.name)>-1){
-      var base=G.name, n=2;
-      while(names.indexOf(base+' ('+n+')')>-1) n++;
-      G.name=base+' ('+n+')';
-      toast('Someone here is already called '+base+' — you\'ll appear as '+G.name);
-    }
-    var ins=await sb.from('halaqa_participant').insert({
+    await sb.from('halaqa_participant').upsert({
       session_id: _sessionId,
       profile_id: pid||null,
       student_id: active?active.id:null,
       name:       G.name,
       role:       role,
       last_seen:  new Date().toISOString()
-    }).select().single();
-    if(!ins.error && ins.data){
-      _myParticipantRowId=ins.data.id;
-      try{ sessionStorage.setItem(storeKey, ins.data.id); }catch(e){}
-    }
+    }, { onConflict:'session_id,profile_id' });
   }catch(e){ console.warn('addParticipant failed:', e); }
 }
 
@@ -1344,13 +1235,7 @@ function subscribeToSession(){
         var msg = payload.new;
         // Only render if not from this user (we already rendered locally)
         if(msg.sender_name !== G.name){
-          addStudent(msg.sender_name, msg.text, msg.sender_role==='facilitator'?'facilitator':'student');
-          // Self-heal: if the sender isn't in the side panel yet, add them
-          if(!G.participants.some(function(gp){ return gp.n===msg.sender_name; })){
-            if(!_liveParticipants.some(function(p){ return p.name===msg.sender_name; }))
-              _liveParticipants.push({ name:msg.sender_name, role:msg.sender_role||'student' });
-            _renderLiveSeats();
-          }
+          addStudent(msg.sender_name, msg.text, 'student');
         }
       })
     .on('postgres_changes',
@@ -1358,11 +1243,9 @@ function subscribeToSession(){
         filter:'session_id=eq.'+_sessionId },
       function(payload){
         var p = payload.new;
-        if(!_liveParticipants.some(function(x){ return x.name===p.name; })) _liveParticipants.push(p);
+        _liveParticipants.push(p);
         _adjustAIPeers(_liveParticipants.length);
-        if(p.name!==G.name) addSys(p.name+' joined the circle');
-        // Rebuild the side panel so the new person appears immediately
-        _renderLiveSeats();
+        addSys(p.name+' joined the circle');
       })
     .subscribe(function(status){
       console.log('Realtime status:', status);
@@ -1586,7 +1469,7 @@ var PEER_CHARS={
   'Fatima':  {prob:0.80, chr:'You are careful and build on what others said. Always name the person you are responding to. Qualify your statements.'},
   'Omar':    {prob:0.75, chr:'You are curious. Notice something unexpected or wonder aloud. End with "I wonder if…" or an observation, not a question.'},
   'Nadia':   {prob:0.50, chr:'You speak rarely but with precision. One sentence, carefully chosen. Never more than two sentences.'},
-  'Tariq':   {prob:0.45, chr:'You push back gently — but at most ONCE on any single idea. After you have raised your complication, you listen; you never re-argue the same point or answer every speaker. Start with "But…" or "I am not sure that holds because…"'},
+  'Tariq':   {prob:0.65, chr:'You push back gently. Find the complication. Start with "But…" or "I am not sure that holds because…"'},
   'Aisha':   {prob:0.75, chr:'You connect ideas. Explicitly link what two different people said. Start with "Both X and Y are saying…"'},
   'Sara':    {prob:0.40, chr:'You are hesitant but thoughtful. Start with "I am not sure, but…" Speak last, after others have gone.'},
   'Leila':   {prob:0.60, chr:'You think through analogies. Begin with a concrete image or brief comparison that illustrates your point.'},

@@ -375,6 +375,14 @@ try{
     </div>
 
     <div class="nav-section">
+      <span class="nav-label">Community</span>
+      <button class="nav-item" data-section="community" onclick="nav(this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        From peers &amp; studio
+      </button>
+    </div>
+
+    <div class="nav-section">
       <span class="nav-label">Archive</span>
       <button class="nav-item" data-section="archive" onclick="nav(this)">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
@@ -443,7 +451,7 @@ function renderSection(id){
   const renders = {
     weekly: renderWeekly, murshid: renderMurshid, threads: renderThreads,
     revisions: renderRevisions, isnad: renderIsnad, questions: renderQuestions,
-    archive: renderArchive, settings: renderSettings,
+    archive: renderArchive, settings: renderSettings, community: renderCommunity,
   };
   mc.innerHTML = '';
   if(renders[id]) renders[id](mc);
@@ -1234,6 +1242,51 @@ function saveQuestion(){
 }
 
 // ── ARCHIVE ────────────────────────────────────────────────────────
+// ── COMMUNITY — peer_learning and studio_buildon entries ───────────────────
+function renderCommunity(mc){
+  // Read ALL types from the shared sahifa_entries key (written by PTL and Studio)
+  var all = [];
+  try{ all = JSON.parse(localStorage.getItem('sahifa_entries')||'[]'); }catch(e){}
+  var items = all.filter(function(e){
+    return e.type==='peer_learning' || e.type==='studio_buildon';
+  }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+
+  var typeLabel = { peer_learning:'📖 Peer learning', studio_buildon:'🏛 Studio build-on' };
+  var typeSub   = { peer_learning:'verified reception from the peer teaching library', studio_buildon:'contribution to a studio project' };
+
+  mc.innerHTML = `
+  <div class="page-header">
+    <p class="page-kicker">What you received and contributed</p>
+    <h1 class="page-title serif">From peers &amp; studio</h1>
+    <p class="page-sub">Every time you verify a peer teaching or contribute to a studio project, it appears here. These are part of your chain of transmission.</p>
+  </div>
+
+  ${items.length === 0 ? `
+  <div style="text-align:center;padding:2rem 1rem;color:var(--ink-4)">
+    <p style="font-size:1.5rem;margin-bottom:.5rem">◌</p>
+    <p style="font-weight:600;color:var(--ink-2);margin-bottom:.4rem">Nothing here yet</p>
+    <p style="font-size:.85rem;line-height:1.6">When you verify a peer teaching in the library, or contribute to a studio project, it will appear here — as part of your manuscript and your isnād.</p>
+  </div>` : items.map(function(e){
+    var label = typeLabel[e.type] || e.type;
+    var sub   = typeSub[e.type] || '';
+    var date  = e.date ? new Date(e.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '';
+    return `<div class="entry-card" style="margin-bottom:12px">
+      <div class="entry-card-header">
+        <span class="entry-icon">${e.type==='peer_learning'?'📖':'🏛'}</span>
+        <span class="entry-card-title">${escH(label)}</span>
+        <span class="entry-card-meta">${escH(date)}</span>
+      </div>
+      <div class="entry-card-body">
+        <p style="font-size:11px;color:var(--ink-4);font-style:italic;margin-bottom:6px">${escH(sub)}</p>
+        <p style="font-size:13px;color:var(--ink-2);line-height:1.65">${escH(e.text||'')}</p>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── ARCHIVE ───────────────────────────────────────────────────────────────
 function renderArchive(mc){
   const s = getSettings();
   const grade = parseInt(s.grade)||7;

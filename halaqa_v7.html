@@ -398,6 +398,8 @@ let _sessionCode=null;     // 4-char join code
 let _realtimeChannel=null; // Supabase Realtime channel
 let _liveParticipants=[];  // real humans in session
 let _isLiveFac=false;      // this user is the live facilitator
+let _sessionAiFac=false;   // joined session's ai_facilitator flag (false = human-run circle)
+let _myParticipantRowId=null; // this tab's own row in halaqa_participant (strict per-device identity)
 
 function selRole(btn){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
@@ -595,9 +597,14 @@ function openHalaqa(){
           addSys('You are the facilitator. Open the circle with your question, or invite a student to share their pre-answer.');
         },1000);
       } else {
-        // Check if human facilitator is present, else AI takes over
+        // AI only takes over if this session was created as AI-facilitated.
+        // A human-run circle (ai_facilitator=false) waits for its facilitator.
         var hasFac=_liveParticipants.some(function(p){return p.role==='facilitator';});
-        setTimeout(function(){ if(!hasFac) aiOpen(); },2000);
+        setTimeout(function(){
+          if(hasFac) return;
+          if(_sessionAiFac){ aiOpen(); }
+          else addSys('Waiting for your facilitator to open the circle…');
+        },2000);
       }
     });
   } else {
@@ -687,7 +694,7 @@ function renderSeats(){
   document.getElementById('cc-seats').innerHTML=G.participants.map(p=>`
   <div class="seat">
     <div class="s-av ${p.role==='ai'?'ai-av':''}" style="background:${p.bg};color:${p.fc}">${p.role==='ai'?p.n:ini(p.n)}<span class="s-dot ${p.st}"></span></div>
-    <div><p class="s-name">${p.n}</p><p class="s-role">${p.role==='ai'?'AI facilitator':p.role==='self'?'you':'student'}</p></div>
+    <div><p class="s-name">${p.n}</p><p class="s-role">${p.role==='ai'?'AI facilitator':p.role==='facilitator'?'facilitator':p.role==='self'?(_liveMode&&_isLiveFac?'you · facilitator':'you'):'student'}</p></div>
   </div>`).join('');
 }
 
@@ -972,7 +979,11 @@ function addStudent(name,text,role){
   G.messages.push({t:'student',n:name,txt:text,role});
   const c=document.getElementById('mc-msgs');const d=document.createElement('div');d.className='msg';
   const isSelf=role==='self';
-  d.innerHTML=`<div class="m-av ${isSelf?'self':'peer'}">${ini(name)}</div><div class="m-body"><div class="m-hdr"><span class="m-name">${esc(name)}${isSelf?' (you)':''}</span><span class="m-time">${ts()}</span></div><div class="m-text">${esc(text)}</div></div>`;
+  const isFac=role==='facilitator'||(isSelf&&_liveMode&&_isLiveFac);
+  const avStyle=isFac?' style="background:var(--gold);color:var(--ink)"':'';
+  const nameStyle=isFac?' style="color:var(--gold)"':'';
+  const roleTag=isFac?' · facilitator':'';
+  d.innerHTML=`<div class="m-av ${isSelf?'self':'peer'}"${avStyle}>${ini(name)}</div><div class="m-body"><div class="m-hdr"><span class="m-name"${nameStyle}>${esc(name)}${isSelf?' (you)':''}${roleTag}</span><span class="m-time">${ts()}</span></div><div class="m-text">${esc(text)}</div></div>`;
   c.appendChild(d);scrollC();
 }
 
@@ -1155,6 +1166,7 @@ async function joinLiveSession(){
     if(session.phase==='ended'){ toast('This session has already ended'); return false; }
     _sessionId   = session.id;
     _sessionCode = session.code;
+    _sessionAiFac= !!session.ai_facilitator;
     G.question   = session.question||G.question;
     G.grade      = session.grade||G.grade;
     G.theme      = session.week?'Week '+session.week+(session.grade?' · Grade '+session.grade:''):G.theme;
@@ -1201,14 +1213,47 @@ async function addParticipant(role){
   try{ active = JSON.parse(localStorage.getItem('how_active_student')||'null'); }catch(e){}
   if(!jwt||!_sessionId) return;
   try{
-    await sb.from('halaqa_participant').upsert({
+    // ── Strict per-device identity ─────────────────────────────────────────
+    // Each browser tab owns exactly one participant row, remembered in
+    // sessionStorage. A refresh re-uses the same row; a second device (or tab)
+    // gets its own row even on the same shared household account.
+    var storeKey='hq_pid_'+_sessionId;
+    var savedId=null;
+    try{ savedId=sessionStorage.getItem(storeKey); }catch(e){}
+    if(savedId){
+      var chk=await sb.from('halaqa_participant').select('id').eq('id',savedId).limit(1);
+      if(chk.data && chk.data.length){
+        _myParticipantRowId=savedId;
+        await sb.from('halaqa_participant').update({
+          name:      G.name,
+          role:      role,
+          last_seen: new Date().toISOString()
+        }).eq('id',savedId);
+        return;
+      }
+    }
+    // New participant in this tab — make the display name unique in the session
+    // so seats and message attribution can never collide.
+    var ex=await sb.from('halaqa_participant').select('id,name').eq('session_id',_sessionId);
+    var names=(ex.data||[]).map(function(r){ return r.name; });
+    if(names.indexOf(G.name)>-1){
+      var base=G.name, n=2;
+      while(names.indexOf(base+' ('+n+')')>-1) n++;
+      G.name=base+' ('+n+')';
+      toast('Someone here is already called '+base+' — you\'ll appear as '+G.name);
+    }
+    var ins=await sb.from('halaqa_participant').insert({
       session_id: _sessionId,
       profile_id: pid||null,
       student_id: active?active.id:null,
       name:       G.name,
       role:       role,
       last_seen:  new Date().toISOString()
-    }, { onConflict:'session_id,profile_id' });
+    }).select().single();
+    if(!ins.error && ins.data){
+      _myParticipantRowId=ins.data.id;
+      try{ sessionStorage.setItem(storeKey, ins.data.id); }catch(e){}
+    }
   }catch(e){ console.warn('addParticipant failed:', e); }
 }
 
@@ -1235,7 +1280,13 @@ function subscribeToSession(){
         var msg = payload.new;
         // Only render if not from this user (we already rendered locally)
         if(msg.sender_name !== G.name){
-          addStudent(msg.sender_name, msg.text, 'student');
+          addStudent(msg.sender_name, msg.text, msg.sender_role==='facilitator'?'facilitator':'student');
+          // Self-heal: if the sender isn't in the side panel yet, add them
+          if(!G.participants.some(function(gp){ return gp.n===msg.sender_name; })){
+            if(!_liveParticipants.some(function(p){ return p.name===msg.sender_name; }))
+              _liveParticipants.push({ name:msg.sender_name, role:msg.sender_role||'student' });
+            _renderLiveSeats();
+          }
         }
       })
     .on('postgres_changes',
@@ -1243,9 +1294,11 @@ function subscribeToSession(){
         filter:'session_id=eq.'+_sessionId },
       function(payload){
         var p = payload.new;
-        _liveParticipants.push(p);
+        if(!_liveParticipants.some(function(x){ return x.name===p.name; })) _liveParticipants.push(p);
         _adjustAIPeers(_liveParticipants.length);
-        addSys(p.name+' joined the circle');
+        if(p.name!==G.name) addSys(p.name+' joined the circle');
+        // Rebuild the side panel so the new person appears immediately
+        _renderLiveSeats();
       })
     .subscribe(function(status){
       console.log('Realtime status:', status);
