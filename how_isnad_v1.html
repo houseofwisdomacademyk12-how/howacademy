@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الإسناد — The Isnad Map · House of Wisdom</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Isnād of Our School · House of Wisdom</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Amiri&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var sb = null;
@@ -16,776 +17,771 @@ try{
 }catch(e){}
 </script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:#1a1a2e;color:#e8e4d8;min-height:100vh;display:flex;flex-direction:column}
-
-/* Nav */
-.nav{background:rgba(0,0,0,.45);padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
-.nav-logo{display:flex;flex-direction:column;line-height:1.2}
-.nav-logo-ar{font-family:'Amiri',serif;font-size:.95rem;color:#d4af37}
-.nav-logo-en{font-size:.65rem;color:rgba(255,255,255,.45);letter-spacing:.06em;text-transform:uppercase}
-.nav-right{display:flex;align-items:center;gap:8px}
-.nav-btn{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-family:inherit;font-size:11px;padding:4px 12px;border-radius:6px;cursor:pointer}
-.nav-btn:hover{background:rgba(255,255,255,.1)}
-.nav-status{font-size:11px;color:rgba(255,255,255,.35)}
-
-/* Layout */
-.app{flex:1;display:flex;min-height:0;overflow:hidden}
-
-/* Stage */
-.stage{flex:1;position:relative;overflow:hidden}
-#isnad-svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
-#isnad-svg:active{cursor:grabbing}
-
-/* Mode overlay */
-.mode-overlay{position:absolute;top:10px;left:10px;z-index:10;display:flex;gap:5px;flex-wrap:wrap}
-.mode-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:14px;border:1.5px solid transparent;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;background:rgba(20,20,40,.75);color:rgba(255,255,255,.65);transition:all .15s;backdrop-filter:blur(4px)}
-.mode-btn.active{background:rgba(20,20,40,.9);border-color:currentColor;color:white}
-.mode-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-
-/* Grade overlay */
-.grade-overlay{position:absolute;bottom:10px;left:10px;z-index:10;display:flex;gap:4px;flex-wrap:wrap}
-.grade-btn{padding:3px 9px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(20,20,40,.7);color:rgba(255,255,255,.55);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;backdrop-filter:blur(4px);transition:all .15s}
-.grade-btn.active{background:#d4af37;border-color:#d4af37;color:#1a1a2e}
-
-/* Sidebar */
-.sidebar{width:360px;flex-shrink:0;background:#fffefb;color:#2e2e1a;border-left:1px solid #e6d8ba;display:flex;flex-direction:column;overflow:hidden}
-.sidebar-header{padding:14px 18px 10px;border-bottom:1px solid #ede4cc;flex-shrink:0}
-.sidebar-title-ar{font-family:'Amiri',serif;font-size:1.05rem;color:#a07f3e;margin-bottom:1px}
-.sidebar-title-en{font-family:'Spectral',serif;font-size:.95rem;font-weight:600;color:#2e2e1a;margin-bottom:3px}
-.sidebar-sub{font-size:11px;color:#8a7a5a;line-height:1.5}
-.sidebar-body{flex:1;overflow-y:auto;padding:14px 18px}
-
-/* Stats */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
-.stat-card{background:#f6f1e4;border-radius:8px;padding:9px 12px;border:1px solid #e6d8ba}
-.stat-n{font-size:1.4rem;font-weight:800;color:#a07f3e;font-family:'Spectral',serif}
-.stat-l{font-size:10px;color:#8a7a5a;margin-top:1px}
-
-/* Search */
-.search-input{width:100%;padding:7px 12px;border:1px solid #e6d8ba;border-radius:8px;font-family:inherit;font-size:12px;outline:none;background:white;color:#2e2e1a;margin-bottom:12px}
-.search-input:focus{border-color:#d4af37}
-
-/* Intro text */
-.intro-text{font-size:12.5px;color:#5a4a32;line-height:1.7;margin-bottom:12px;font-style:italic}
-.steps{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-.step{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:#5a4a32}
-.step-n{width:19px;height:19px;border-radius:50%;background:#117a60;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px}
-.reading-map{border-top:1px solid #e6d8ba;padding-top:10px;margin-bottom:14px}
-.reading-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a7a5a;margin-bottom:7px}
-.reading-item{display:flex;align-items:center;gap:7px;font-size:11px;color:#5a4a32;margin-bottom:4px}
-
-/* Subject chips */
-.subj-legend{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
-.subj-chip{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
-.subj-chip.active{border-color:currentColor}
-
-/* Detail panel */
-.detail-panel{animation:risein .18s ease both}
-@keyframes risein{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
-
-/* Banner */
-.node-banner{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-
-/* Avatar */
-.detail-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:white;flex-shrink:0}
-.detail-name-input{width:100%;font-family:'Spectral',serif;font-size:1.1rem;font-weight:600;color:#2e2e1a;background:#fffdf6;border:1px solid #e3d6b6;border-radius:8px;padding:4px 8px;outline:none;font-family:inherit}
-.detail-meta{font-size:11px;color:#8a7a5a;margin-top:3px}
-
-/* Isnad chain ribbon */
-.chain-ribbon{margin:12px 0;padding:10px 12px;background:#f7efdc;border-radius:10px}
-.chain-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#a07f3e;margin-bottom:7px}
-.chain-items{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
-.chain-chip{font-size:11.5px;font-weight:700;color:#5a4a2e;background:white;border:1px solid #e0d3b4;padding:3px 9px;border-radius:999px;white-space:nowrap}
-.chain-chip.focus{color:white;background:#0c5a47;border-color:#0c5a47}
-.chain-arrow{color:#a07f3e;font-size:12px}
-
-/* Section labels */
-.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;margin:14px 0 8px}
-
-/* Subject selector */
-.subj-selector{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.subj-pill{padding:4px 10px;border-radius:999px;border:1px solid #e6dcc4;background:#f6f1e4;color:#8a7350;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s}
-.subj-pill.active{border-color:currentColor}
-
-/* Studio sub-focus */
-.studio-panel{padding:10px 12px;background:#f4f0fa;border:1px solid #e3d9f3;border-radius:10px;margin-bottom:10px}
-.studio-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6a4ca0;margin-bottom:7px}
-.studio-pills{display:flex;flex-wrap:wrap;gap:5px}
-.studio-pill{padding:3px 9px;border-radius:999px;border:1px solid #d3c8f0;background:white;color:#6a4ca0;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
-.studio-pill.active{background:#6a4ca0;color:white;border-color:#6a4ca0}
-
-/* Learned / taught cards */
-.extra-card{background:#f6f1e4;border-radius:9px;padding:9px 11px;margin-bottom:7px}
-.extra-card.taught{background:#eef5f6}
-.extra-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
-.extra-mode-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;cursor:pointer;border:none;padding:0}
-.extra-name-input{flex:1;font-family:inherit;font-size:13px;font-weight:700;color:#2e2e1a;background:#fffdf6;border:1px solid #dfe7e2;border-radius:7px;padding:2px 7px;outline:none;min-width:0}
-.extra-mode-label{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
-.extra-remove{background:none;border:none;cursor:pointer;color:#c0b395;padding:2px;font-size:14px;flex-shrink:0}
-.extra-note-input{width:100%;font-family:inherit;font-size:12px;color:#3a2e1a;background:#fffdf6;border:1px solid #e3d6b6;border-radius:7px;padding:6px 8px;outline:none;resize:vertical;min-height:38px}
-.add-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px dashed #c6b48a;border-radius:8px;background:none;color:#8a7a5a;font-family:inherit;font-size:11px;cursor:pointer;width:100%;margin-bottom:8px;transition:all .15s}
-.add-btn:hover{border-color:#117a60;color:#117a60}
-
-/* Adab section */
-.adab-panel{padding:11px 12px;background:#fbeceb;border:1px solid #f1d3d3;border-radius:10px;margin-bottom:10px}
-.adab-label{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#b0394a;margin-bottom:7px}
-.adab-textarea{width:100%;font-family:inherit;font-size:12px;color:#3a2e1a;background:#fffdf6;border:1px solid #e3d6b6;border-radius:8px;padding:7px 9px;outline:none;resize:vertical;min-height:58px;line-height:1.5}
-
-/* Origin / leaf banners */
-.origin-banner{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#8a7350;font-weight:700;padding-bottom:6px}
-.leaf-banner{font-size:12.5px;color:#8a7350;font-weight:700;padding-bottom:6px;font-style:italic}
-
-/* Loading */
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.4);gap:10px}
-.spinner{width:26px;height:26px;border:2px solid rgba(255,255,255,.15);border-top-color:#d4af37;border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; height:100%; }
+  button { font-family:inherit; }
+  input, textarea { font-family:inherit; }
+  @keyframes risein { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes twinkle { 0%,100%{opacity:.2} 50%{opacity:.9} }
+  @keyframes spinslow { from{transform:translate(-50%,-50%) rotate(0deg)} to{transform:translate(-50%,-50%) rotate(360deg)} }
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <div class="nav-logo">
-    <span class="nav-logo-ar">بَيْتُ الْحِكْمَة — الإسناد</span>
-    <span class="nav-logo-en">House of Wisdom · The Isnad Map</span>
-  </div>
-  <div class="nav-right">
-    <span class="nav-status" id="nav-status">Loading…</span>
-    <button class="nav-btn" onclick="history.back()">← Back</button>
-  </div>
-</nav>
+<div style="position:relative;height:100vh;display:flex;flex-direction:column;background:#f3e7c9;font-family:'Nunito',system-ui,sans-serif;overflow:hidden;">
 
-<div class="app">
-
-  <!-- Stage -->
-  <div class="stage">
-    <div class="loading" id="map-loading">
-      <div class="spinner"></div>
-      <p style="font-size:13px">Loading the knowledge network…</p>
-    </div>
-    <svg id="isnad-svg" style="display:none"></svg>
-
-    <!-- Mode overlay -->
-    <div class="mode-overlay" id="mode-row">
-      <button class="mode-btn active" onclick="setMode('all',this)"><span class="mode-dot" style="background:rgba(255,255,255,.4)"></span>All</button>
-      <button class="mode-btn" onclick="setMode('facilitator',this)"><span class="mode-dot" style="background:#4cd3a0"></span>Facilitator</button>
-      <button class="mode-btn" onclick="setMode('parent',this)"><span class="mode-dot" style="background:#ff9d6b"></span>Parent</button>
-      <button class="mode-btn" onclick="setMode('peer',this)"><span class="mode-dot" style="background:#5fd0e6"></span>Peer</button>
-      <button class="mode-btn" onclick="setMode('debate',this)"><span class="mode-dot" style="background:#9b59b6"></span>Debate</button>
-    </div>
-
-    <!-- Grade overlay -->
-    <div class="grade-overlay" id="grade-row"></div>
-  </div>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-title-ar">الإسناد</div>
-      <div class="sidebar-title-en">The Isnad Map — Chain of Transmission</div>
-      <div class="sidebar-sub">Published teachings and completed debates only. Only consented records appear in the network view.</div>
-    </div>
-    <div class="sidebar-body" id="sidebar-body">
-
-      <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-n" id="stat-nodes">—</div><div class="stat-l">People in network</div></div>
-        <div class="stat-card"><div class="stat-n" id="stat-links">—</div><div class="stat-l">Transmissions</div></div>
-        <div class="stat-card"><div class="stat-n" id="stat-teachings">—</div><div class="stat-l">Published teachings</div></div>
-        <div class="stat-card"><div class="stat-n" id="stat-debates">—</div><div class="stat-l">Completed debates</div></div>
+  <!-- ===== TOP BAR ===== -->
+  <div style="flex:none;background:#0c5a47;padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 2px 16px rgba(0,0,0,.2);z-index:30;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:13px;min-width:0;">
+      <div style="flex:none;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="4" r="2.4" fill="#f2c14e"></circle><circle cx="6" cy="13" r="2.2" fill="#bfe6da"></circle><circle cx="18" cy="13" r="2.2" fill="#e7a98c"></circle><circle cx="12" cy="20.5" r="2.2" fill="#fff"></circle><path d="M12 6.4v11M11 5.8L7 11M13 5.8L17 11M7.2 15l4 4M16.8 15l-4 4" stroke="#fbe7b8" stroke-width="1.4"></path></svg>
       </div>
-
-      <!-- Search -->
-      <input class="search-input" type="text" placeholder="Search person, subject, grade…" oninput="searchNodes(this.value)">
-
-      <!-- Subject chips -->
-      <div class="subj-legend" id="subj-legend"></div>
-
-      <!-- Intro -->
-      <p class="intro-text">Trace a chain. Every learner here sits inside an <em>isnād</em> — a chain of who passed knowledge to whom. Hover any name to light up its full chain, then click to pin it and record what really happened.</p>
-      <div class="steps">
-        <div class="step"><span class="step-n">1</span><span>Hover a name to see its chain glow up the grades.</span></div>
-        <div class="step"><span class="step-n">2</span><span>Click to pin a person and edit their record here.</span></div>
-        <div class="step"><span class="step-n">3</span><span>Filter by teaching mode using the legend up top.</span></div>
+      <div style="min-width:0;">
+        <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:21px;color:#fff;line-height:1.05;">The Isnād of Our School</div>
+        <div style="font-size:13px;color:#9fd3c4;margin-top:1px;">Hover a name to trace its chain · click to pin &amp; edit.</div>
       </div>
-      <div class="reading-map">
-        <div class="reading-label">Reading the map</div>
-        <div class="reading-item"><span style="font-size:13px">⭐</span>Gold star = origin (facilitator or parent).</div>
-        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#4cd3a0;flex-shrink:0;display:inline-block"></span>Green edge = facilitator transmission.</div>
-        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#5fd0e6;flex-shrink:0;display:inline-block"></span>Cyan edge = peer teaching.</div>
-        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#ff9d6b;flex-shrink:0;display:inline-block"></span>Orange edge = parent transmission.</div>
-        <div class="reading-item"><span style="width:9px;height:9px;border-radius:50%;background:#9b59b6;flex-shrink:0;display:inline-block"></span>Purple dashed = completed debate.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7fc0ae;">Mode</span>
+        <span id="mode-legend" style="display:inline-flex;align-items:center;gap:8px;"></span>
       </div>
-
-      <!-- Detail area -->
-      <div id="detail-area"></div>
-
+      <div style="width:1px;height:24px;background:rgba(255,255,255,.18);"></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7fc0ae;">What</span>
+        <div style="display:flex;align-items:center;gap:6px;color:#eafff7;font-size:12.5px;font-weight:700;"><svg width="15" height="15" viewBox="0 0 20 20"><path d="M10 1.5l2 4.6 5 .4-3.8 3.3 1.2 4.9L10 12.1 5.4 14.7 6.6 9.8 2.8 6.5l5-.4z" fill="#e6b54e"></path></svg>Qur'an</div>
+        <div style="display:flex;align-items:center;gap:6px;color:#eafff7;font-size:12.5px;font-weight:700;"><svg width="15" height="15" viewBox="0 0 20 20"><circle cx="6" cy="7" r="2.4" fill="#7bd0a8"></circle><circle cx="14" cy="7" r="2.4" fill="#7bd0a8"></circle><circle cx="10" cy="13" r="2.4" fill="#7bd0a8"></circle></svg>Math</div>
+        <div style="display:flex;align-items:center;gap:6px;color:#eafff7;font-size:12.5px;font-weight:700;"><svg width="15" height="15" viewBox="0 0 20 20"><path d="M10 5C8.3 3.8 5.8 3.8 4 5v10c1.8-1.2 4.3-1.2 6 0 1.7-1.2 4.2-1.2 6 0V5c-1.8-1.2-4.3-1.2-6 0z" stroke="#7ec6d4" stroke-width="1.5" fill="none" stroke-linejoin="round"></path><path d="M10 5v10" stroke="#7ec6d4" stroke-width="1.5"></path></svg>Reading / ELA</div>
+        <div style="display:flex;align-items:center;gap:6px;color:#eafff7;font-size:12.5px;font-weight:700;"><svg width="15" height="15" viewBox="0 0 20 20"><path d="M2 10s3-4.5 8-4.5 8 4.5 8 4.5-3 4.5-8 4.5-8-4.5-8-4.5z" stroke="#b9c97e" stroke-width="1.5" fill="none"></path><circle cx="10" cy="10" r="2.3" fill="#b9c97e"></circle></svg>Science</div>
+        <div style="display:flex;align-items:center;gap:6px;color:#eafff7;font-size:12.5px;font-weight:700;"><svg width="15" height="15" viewBox="0 0 20 20"><path d="M4 6l4-1.6 4 1.6 4-1.6V14l-4 1.6-4-1.6-4 1.6z" stroke="#e0b07d" stroke-width="1.4" fill="none" stroke-linejoin="round"></path><path d="M8 4.4V16M12 6v11.6" stroke="#e0b07d" stroke-width="1.4"></path></svg>Social Studies</div>
+        <div style="display:flex;align-items:center;gap:6px;color:#eafff7;font-size:12.5px;font-weight:700;"><svg width="15" height="15" viewBox="0 0 20 20"><path d="M10 16.5s-5.5-3.4-5.5-7.3C4.5 7 6 5.8 7.6 5.8c1.1 0 1.9.6 2.4 1.5.5-.9 1.3-1.5 2.4-1.5 1.6 0 3.1 1.2 3.1 3.4 0 3.9-5.5 7.3-5.5 7.3z" fill="#e08a8a"></path></svg>Adab</div>
+        <div style="display:flex;align-items:center;gap:6px;color:#eafff7;font-size:12.5px;font-weight:700;"><svg width="15" height="15" viewBox="0 0 20 20"><path d="M10 4l-4 12.5M10 4l4 12.5" stroke="#b8a6e0" stroke-width="1.7" stroke-linecap="round"></path><circle cx="10" cy="4" r="1.7" fill="#b8a6e0"></circle><path d="M7 11h6" stroke="#b8a6e0" stroke-width="1.4"></path></svg>Studios</div>
+      </div>
+      <div style="width:1px;height:24px;background:rgba(255,255,255,.18);"></div>
+      <span id="nav-status" style="font-size:12px;color:#7fc0ae;font-weight:700;">Loading…</span>
+      <button onclick="resetAll(event)" style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:none;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;cursor:pointer;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 4v6h6M20 20v-6h-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19 9a8 8 0 00-14-3M5 15a8 8 0 0014 3" stroke="#fff" stroke-width="2" stroke-linecap="round"></path></svg>
+        Reset
+      </button>
+      <button onclick="history.back()" style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:none;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;cursor:pointer;">← Back</button>
     </div>
   </div>
 
+  <!-- ===== BODY: STAGE + SIDEBAR ===== -->
+  <div style="flex:1;display:flex;min-height:0;">
+
+    <!-- STAGE -->
+    <div id="stage-container" onclick="clearPin()" style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:16px;min-width:0;background:radial-gradient(ellipse 130% 95% at 50% -5%, #14654f 0%, #0a4536 42%, #062a22 100%);">
+      <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
+        <span id="stars-layer"></span>
+        <svg width="1000" height="1000" viewBox="0 0 400 400" style="position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);opacity:.13;animation:spinslow 240s linear infinite;">
+          <g fill="none" stroke="#e9c66a" stroke-width="0.7" stroke-linecap="round">
+            <circle cx="200" cy="200" r="192"></circle><circle cx="200" cy="200" r="155"></circle><circle cx="200" cy="200" r="118"></circle><circle cx="200" cy="200" r="78"></circle><circle cx="200" cy="200" r="38"></circle>
+            <ellipse cx="200" cy="200" rx="192" ry="74"></ellipse><ellipse cx="200" cy="200" rx="74" ry="192"></ellipse><ellipse cx="200" cy="200" rx="192" ry="132"></ellipse>
+            <line x1="8" y1="200" x2="392" y2="200"></line><line x1="200" y1="8" x2="200" y2="392"></line>
+            <line x1="64" y1="64" x2="336" y2="336"></line><line x1="336" y1="64" x2="64" y2="336"></line>
+            <line x1="118" y1="22" x2="282" y2="378"></line><line x1="282" y1="22" x2="118" y2="378"></line>
+            <line x1="22" y1="118" x2="378" y2="282"></line><line x1="22" y1="282" x2="378" y2="118"></line>
+          </g>
+          <circle cx="200" cy="200" r="4" fill="#e9c66a" opacity="0.5"></circle>
+        </svg>
+      </div>
+      <div id="stage-message" style="position:relative;z-index:5;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:16px;color:#dcc683;text-align:center;max-width:420px;line-height:1.5;">Loading the knowledge network…</div>
+      <div id="stage-sized" style="position:relative;flex:none;display:none;">
+        <div id="stage-inner" style="position:absolute;top:0;left:0;width:1740px;height:1010px;transform-origin:top left;"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar" style="flex:none;width:392px;background:#fffefb;border-left:1px solid #e6d8ba;box-shadow:-5px 0 20px rgba(60,40,10,.06);overflow-y:auto;overflow-x:hidden;z-index:10;"></div>
+
+  </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// CONFIG
+// CONFIG  (KTC design constants + backend modes)
 // ══════════════════════════════════════════════════════════════
 var MODE = {
-  facilitator:{ label:'Facilitator', c:'#117a60', edge:'#4cd3a0' },
-  parent:     { label:'Parent',      c:'#c25a34', edge:'#ff9d6b' },
-  peer:       { label:'Peer',        c:'#1f7a8c', edge:'#5fd0e6' },
-  debate:     { label:'Debate',      c:'#6a2d91', edge:'#9b59b6' }
+  facilitator:{ label:'Facilitator', c:'#117a60' },
+  parent:     { label:'Parent',      c:'#c25a34' },
+  peer:       { label:'Peer',        c:'#1f7a8c' },
+  debate:     { label:'Debate',      c:'#6a2d91' }
 };
+var EDGEC = { facilitator:'#4cd3a0', parent:'#ff9d6b', peer:'#5fd0e6', debate:'#b78ae0' };
 var SUBJ = {
-  quran:   { label:"Qur'an",           pale:'#f6e6c2', color:'#a9781f', glyph:'☪' },
-  math:    { label:'Math',             pale:'#d6e7da', color:'#2e6b3f', glyph:'∑' },
-  ela:     { label:'Reading / ELA',    pale:'#d3e3e8', color:'#1f6a7a', glyph:'📖' },
-  reading: { label:'Reading / ELA',    pale:'#d3e3e8', color:'#1f6a7a', glyph:'📖' },
-  science: { label:'Science',          pale:'#e7ead0', color:'#6b7a2e', glyph:'🔭' },
-  social:  { label:'Social Studies',   pale:'#f0e3cf', color:'#b06a2e', glyph:'🌍' },
-  adab:    { label:'Adab & Character', pale:'#f3d8d8', color:'#b0394a', glyph:'♥' },
-  studios: { label:'Studios',          pale:'#e6ddf2', color:'#6a4ca0', glyph:'⚙' },
-  writing: { label:'Writing',          pale:'#d3e3e8', color:'#1f6a7a', glyph:'✍' }
+  quran:  { label:"Qur'an",          pale:'#f6e6c2', color:'#a9781f' },
+  math:   { label:'Math',            pale:'#d6e7da', color:'#2e6b3f' },
+  reading:{ label:'Reading / ELA',   pale:'#d3e3e8', color:'#1f6a7a' },
+  science:{ label:'Science',         pale:'#e7ead0', color:'#6b7a2e' },
+  social: { label:'Social Studies',  pale:'#f0e3cf', color:'#b06a2e' },
+  adab:   { label:'Adab & Character',pale:'#f3d8d8', color:'#b0394a' },
+  studios:{ label:'Studios',         pale:'#e6ddf2', color:'#6a4ca0' }
 };
-var STUDIOS = [
-  'Civil & Water Engineering','Observatory / Optics',
-  'Pharmacopoeia / Anatomy','Algebra / Cipher','Philosophy / Translation'
+var SUBJ_KEYS = ['quran','math','reading','science','social','adab','studios'];
+var SUBJ_ALIAS = { ela:'reading', writing:'reading', ss:'social', socialstudies:'social', sci:'science' };
+var STUDIOS = ['Civil & Water Engineering','Observatory / Optics','Pharmacopoeia / Anatomy','Algebra / Cipher','Philosophy / Translation'];
+var STORE = 'how_isnad_edits_v2';
+var STAGE_W = 1740, STAGE_H = 1010;
+var BANDS = [
+  { y:110, top:'Facilitators<br>&amp; Parents', sub:'THE SEEDS' },
+  { y:320, top:'High School',                   sub:'GRADES 9–12' },
+  { y:530, top:'Middle School',                 sub:'GRADES 6–8' },
+  { y:740, top:'Upper Elementary',              sub:'GRADES 3–5' },
+  { y:920, top:'Lower Elem &amp; KG',           sub:'GRADES K–2' }
 ];
-var SUBJ_KEYS = ['quran','math','ela','science','social','adab','studios'];
-var STORE_KEY = 'how_isnad_edits_v1';
+
+// Subject glyph SVGs (KTC originals)
+function glyphSvg(subject, size){
+  var s = 'width="'+size+'" height="'+size+'" viewBox="0 0 20 20"';
+  if(subject==='quran')   return '<svg '+s+'><path d="M10 1.5l2 4.6 5 .4-3.8 3.3 1.2 4.9L10 12.1 5.4 14.7 6.6 9.8 2.8 6.5l5-.4z" fill="#a9781f"></path></svg>';
+  if(subject==='math')    return '<svg '+s+'><circle cx="6" cy="7" r="2.4" fill="#2e6b3f"></circle><circle cx="14" cy="7" r="2.4" fill="#2e6b3f"></circle><circle cx="10" cy="13" r="2.4" fill="#2e6b3f"></circle></svg>';
+  if(subject==='reading') return '<svg '+s+'><path d="M10 5C8.3 3.8 5.8 3.8 4 5v10c1.8-1.2 4.3-1.2 6 0 1.7-1.2 4.2-1.2 6 0V5c-1.8-1.2-4.3-1.2-6 0z" stroke="#1f6a7a" stroke-width="1.6" fill="none" stroke-linejoin="round"></path><path d="M10 5v10" stroke="#1f6a7a" stroke-width="1.6"></path></svg>';
+  if(subject==='science') return '<svg '+s+'><path d="M2 10s3-4.5 8-4.5 8 4.5 8 4.5-3 4.5-8 4.5-8-4.5-8-4.5z" stroke="#6b7a2e" stroke-width="1.6" fill="none"></path><circle cx="10" cy="10" r="2.4" fill="#6b7a2e"></circle></svg>';
+  if(subject==='social')  return '<svg '+s+'><path d="M4 6l4-1.6 4 1.6 4-1.6V14l-4 1.6-4-1.6-4 1.6z" stroke="#b06a2e" stroke-width="1.5" fill="none" stroke-linejoin="round"></path><path d="M8 4.4V16M12 6v11.6" stroke="#b06a2e" stroke-width="1.5"></path></svg>';
+  if(subject==='studios') return '<svg '+s+'><path d="M10 4l-4 12.5M10 4l4 12.5" stroke="#6a4ca0" stroke-width="1.7" stroke-linecap="round"></path><circle cx="10" cy="4" r="1.7" fill="#6a4ca0"></circle><path d="M7 11h6" stroke="#6a4ca0" stroke-width="1.4"></path></svg>';
+  return '<svg '+s+'><path d="M10 16.5s-5.5-3.4-5.5-7.3C4.5 7 6 5.8 7.6 5.8c1.1 0 1.9.6 2.4 1.5.5-.9 1.3-1.5 2.4-1.5 1.6 0 3.1 1.2 3.1 3.4 0 3.9-5.5 7.3-5.5 7.3z" fill="#b0394a"></path></svg>';
+}
+var STAR_SVG = '<svg width="14" height="14" viewBox="0 0 20 20"><path d="M10 1.5l2 4.6 5 .4-3.8 3.3 1.2 4.9L10 12.1 5.4 14.7 6.6 9.8 2.8 6.5l5-.4z" fill="#e0a92e"></path></svg>';
 
 // ══════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════
-var _nodes = [], _links = [];
-var _mode = 'all', _gradeFilter = null;
-var _highlighted = null, _hovered = null;
-var _panStart = null;
-var _edits = {};
+var _people = [];      // { id, name, grade (label), band, subject, source, x, y }
+var _links  = [];      // { from, to, mode }
+var _map    = {};
+var _hover  = null, _pin = null, _modeFilter = null;
+var _edits  = { names:{}, subjects:{}, studio:{}, adab:{}, transmit:{}, extra:{ learned:{}, taught:{} } };
 
-function loadEdits(){ try{ _edits=JSON.parse(localStorage.getItem(STORE_KEY)||'{}'); }catch(e){ _edits={}; } }
-function saveEdits(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(_edits)); }catch(e){} }
-function getEdit(id){ return _edits[id]||{name:'',subj:'',studio:'',adab:'',learned:[],taught:[],transmit:{}}; }
-function patchEdit(id,patch){
-  _edits[id]=Object.assign(getEdit(id),patch);
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escJs(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+// ── Edits (saved locally, KTC shape) ─────────────────────────
+function loadEdits(){
+  try{
+    var raw = localStorage.getItem(STORE);
+    if(raw){
+      var d = JSON.parse(raw), ex = d.extra||{};
+      _edits = { names:d.names||{}, subjects:d.subjects||{}, studio:d.studio||{}, adab:d.adab||{},
+                 transmit:d.transmit||{}, extra:{ learned:ex.learned||{}, taught:ex.taught||{} } };
+    }
+  }catch(e){}
+}
+function saveEdits(){ try{ localStorage.setItem(STORE, JSON.stringify(_edits)); }catch(e){} }
+function setEdit(group, key, val){
+  _edits[group][key] = val;
   saveEdits();
 }
-
-// ══════════════════════════════════════════════════════════════
-// STARS
-// ══════════════════════════════════════════════════════════════
-function makeStars(){
-  var s=987654321,rnd=function(){s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};
-  var o='';
-  for(var i=0;i<80;i++){
-    o+='<circle cx="'+(rnd()*100).toFixed(2)+'%" cy="'+(rnd()*100).toFixed(2)+'%" r="'+(rnd()*1.4+0.4).toFixed(2)+'" fill="white" opacity="'+(rnd()*.5+.12).toFixed(2)+'"/>';
-  }
-  return o;
+function getName(id){ return Object.prototype.hasOwnProperty.call(_edits.names,id) ? _edits.names[id] : (_map[id]?_map[id].name:id); }
+function getSubject(id){ return Object.prototype.hasOwnProperty.call(_edits.subjects,id) ? _edits.subjects[id] : ((_map[id]&&_map[id].subject)||'math'); }
+function getStudio(id){ return _edits.studio[id]||''; }
+function getExtra(dir,id){ return (_edits.extra[dir] && _edits.extra[dir][id]) || []; }
+function updateExtra(dir,id,fn){
+  var list = getExtra(dir,id).map(function(x){ return { name:x.name, note:x.note, mode:x.mode }; });
+  fn(list);
+  if(!_edits.extra[dir]) _edits.extra[dir]={};
+  _edits.extra[dir][id]=list;
+  saveEdits();
+}
+function addExtra(dir,id){ updateExtra(dir,id,function(l){ l.push({name:'',note:'',mode:dir==='learned'?'facilitator':'peer'}); }); renderAll(); }
+function setExtra(dir,id,idx,field,val){ updateExtra(dir,id,function(l){ if(l[idx]) l[idx][field]=val; }); }
+function removeExtra(dir,id,idx){ updateExtra(dir,id,function(l){ l.splice(idx,1); }); renderAll(); }
+function cycleExtra(dir,id,idx){
+  var order=['facilitator','parent','peer'];
+  updateExtra(dir,id,function(l){ if(l[idx]){ var i=order.indexOf(l[idx].mode||'peer'); l[idx].mode=order[(i+1)%3]; } });
+  renderAll();
 }
 
 // ══════════════════════════════════════════════════════════════
-// DATA
+// BACKEND — load published teachings + completed public debates
 // ══════════════════════════════════════════════════════════════
+function normSubj(s){
+  s = String(s||'math').toLowerCase().replace(/[^a-z]/g,'');
+  if(SUBJ[s]) return s;
+  if(SUBJ_ALIAS[s]) return SUBJ_ALIAS[s];
+  return 'math';
+}
+function bandForGrade(g){
+  var n = parseInt(g,10);
+  if(isNaN(n)) return 2;               // unknown grade → middle band
+  if(n>=9) return 1;
+  if(n>=6) return 2;
+  if(n>=3) return 3;
+  return 4;                             // K–2
+}
+function gradeLabel(g){
+  if(g===0||g==='0'||String(g).toUpperCase()==='K') return 'Kindergarten';
+  var n=parseInt(g,10);
+  return isNaN(n)?'':('Grade '+n);
+}
+
 async function loadData(){
+  var status = document.getElementById('nav-status');
   if(!sb){
     loadLocalFallback();
-    document.getElementById('nav-status').textContent='Add Supabase credentials to see full network';
+    status.textContent = 'Offline — showing local records';
     return;
   }
-  var jwt=localStorage.getItem('how_jwt');
+  var jwt = localStorage.getItem('how_jwt');
   if(!jwt){
     loadLocalFallback();
-    document.getElementById('nav-status').textContent='Sign in to see the full network';
+    status.textContent = 'Sign in to see the full network';
     return;
   }
   try{
-    var [tRes,dRes]=await Promise.all([
+    var res = await Promise.all([
       sb.from('teaching').select('*').eq('is_published',true).order('created_at',{ascending:true}),
-      sb.from('debate').select('*').eq('is_public',true).eq('status','complete').order('updated_at',{ascending:true})
+      sb.from('debate').select('*').eq('is_public',true).eq('status','complete').order('updated_at',{ascending:true}),
+      sb.from('transmission_verification').select('*').eq('status','verified').order('created_at',{ascending:true})
     ]);
-    buildGraph(tRes.data||[],dRes.data||[]);
+    buildGraph(res[0].data||[], res[1].data||[], (res[2]&&res[2].data)||[]);
   }catch(e){
-    document.getElementById('map-loading').innerHTML=
-      '<div style="text-align:center;color:rgba(255,255,255,.5);padding:40px"><p>⚠ '+e.message+'</p></div>';
+    document.getElementById('stage-message').innerHTML = '⚠ '+esc(e.message||'Could not load the network');
+    status.textContent = 'Connection error';
   }
 }
 
 function loadLocalFallback(){
-  var teachings=[];
+  var teachings = [];
   try{
-    var ptl=JSON.parse(localStorage.getItem('ptl_teachings')||'[]');
-    teachings=ptl.filter(function(t){return t.isTeachIt||t.fromSupabase;}).map(function(t){
-      return {id:t.id,teacher_name:t.teacherName||'Student',taught_grade:parseInt(t.taughtGrade)||7,
-              subject:(t.subject||'math').toLowerCase(),title:t.title||'',student_id:t.id};
+    var ptl = JSON.parse(localStorage.getItem('ptl_teachings')||'[]');
+    teachings = ptl.filter(function(t){ return t.isTeachIt||t.fromSupabase; }).map(function(t){
+      return { id:t.id, teacher_name:t.teacherName||'Student', taught_grade:parseInt(t.taughtGrade)||7,
+               subject:(t.subject||'math').toLowerCase(), title:t.title||'', student_id:t.id };
     });
   }catch(e){}
-  buildGraph(teachings,[]);
+  buildGraph(teachings, []);
 }
 
 // ══════════════════════════════════════════════════════════════
-// GRAPH BUILD
+// GRAPH BUILD  (backend records → KTC people cards + links)
 // ══════════════════════════════════════════════════════════════
-function buildGraph(teachings,debates){
+function buildGraph(teachings, debates, verifications){
   loadEdits();
-  var nodeMap={};
-  _nodes=[];_links=[];
-  var grades=new Set();
+  _people=[]; _links=[]; _map={};
+  verifications = verifications||[];
 
-  function node(id,label,type,grade,subj,isSource){
-    if(!nodeMap[id]){
-      var sc=SUBJ[subj]||SUBJ.math;
-      nodeMap[id]={
-        id,label,type,grade:grade||'',subj:subj||'',isSource:!!isSource,
-        x:Math.random()*820+40,y:Math.random()*460+20,
-        r:isSource?20:type==='subject'?11:15,
-        color:isSource?'#c8a230':type==='debate'?MODE.debate.c:
-              type==='student'?'#1a3d8a':'#117a60',
-        subjColor:sc.color,subjPale:sc.pale,connections:[]
-      };
-      _nodes.push(nodeMap[id]);
-      if(grade) grades.add(String(grade));
+  function person(id, name, grade, band, subject, source){
+    if(!_map[id]){
+      _map[id] = { id:id, name:name, grade:grade, band:band, subject:subject||'math', source:!!source, x:0, y:0 };
+      _people.push(_map[id]);
     }
-    return nodeMap[id];
+    return _map[id];
+  }
+  function slug(n){ return 'p_'+String(n||'').toLowerCase().replace(/\W+/g,'_'); }
+  function addLink(from, to, mode){
+    var ex=null;
+    for(var i=0;i<_links.length;i++){ if(_links[i].from===from && _links[i].to===to){ ex=_links[i]; break; } }
+    if(!ex){ ex={ from:from, to:to, mode:mode }; _links.push(ex); }
+    return ex;
   }
 
+  var teachingLink = {};  // teaching row id → {teacherId, subjId}
+
   teachings.forEach(function(t){
-    var tName=t.teacher_name||(t.student_id?'Student':'Facilitator');
-    var tType=t.student_id?'student':'facilitator';
-    var tId='p_'+tName.toLowerCase().replace(/\W+/g,'_');
-    var subj=(t.subject||'math').toLowerCase().replace(/[^a-z]/g,'');
-    if(!SUBJ[subj]) subj='math';
-    var sId='subj_'+subj+'_g'+(t.taught_grade||'');
-    var sLabel=(SUBJ[subj].label)+(t.taught_grade?' · G'+t.taught_grade:'');
-    var modeKey=t.student_id?'peer':'facilitator';
-    var src=node(tId,tName,tType,'',subj,!t.student_id);
-    var tgt=node(sId,sLabel,'subject',t.taught_grade,subj,false);
-    tgt.r=11;
-    _links.push({source:tId,target:sId,type:'teaching',mode:modeKey,subj,color:MODE[modeKey].edge,title:t.title||t.subject||''});
-    src.connections.push({dir:'→',label:t.title||sLabel,to:sLabel});
-    tgt.connections.push({dir:'←',label:t.title||'',from:tName});
+    var tName = t.teacher_name || (t.student_id ? 'Student' : 'Facilitator');
+    var tId   = slug(tName);
+    var subj  = normSubj(t.subject);
+    var isFac = !t.student_id;
+    var g     = t.taught_grade;
+    var sId   = 'subj_'+subj+'_g'+(g||'');
+    var sName = SUBJ[subj].label + (g!=null && g!=='' ? ' · G'+g : '');
+    var mode  = isFac ? 'facilitator' : 'peer';
+
+    person(tId, tName, isFac?'Facilitator':'Student', isFac?0:2, subj, isFac);
+    var tgt = person(sId, sName, gradeLabel(g), bandForGrade(g), subj, false);
+    tgt.isGroup = true;
+    addLink(tId, sId, mode);
+    if(t.id) teachingLink[t.id] = { teacherId:tId, subjId:sId, subject:subj };
   });
 
   debates.forEach(function(d){
-    if(!d.student_a_name&&!d.student_b_name) return;
-    var aId='p_'+(d.student_a_name||'A').toLowerCase().replace(/\W+/g,'_');
-    var bId='p_'+(d.student_b_name||'B').toLowerCase().replace(/\W+/g,'_');
-    var a=node(aId,d.student_a_name||'Student A','student',d.grade,'',false);
-    var b=node(bId,d.student_b_name||'Student B','debate',d.grade,'',false);
-    _links.push({source:aId,target:bId,type:'debate',mode:'debate',subj:'',color:MODE.debate.edge,title:d.claim||''});
-    a.connections.push({dir:'⚔',label:(d.claim||'').slice(0,50),to:b.label});
-    b.connections.push({dir:'⚔',label:(d.claim||'').slice(0,50),to:a.label});
+    if(!d.student_a_name && !d.student_b_name) return;
+    var aId=slug(d.student_a_name||'A');
+    var bId=slug(d.student_b_name||'B');
+    person(aId, d.student_a_name||'Student A', gradeLabel(d.grade)||'Student', bandForGrade(d.grade), 'reading', false);
+    person(bId, d.student_b_name||'Student B', gradeLabel(d.grade)||'Student', bandForGrade(d.grade), 'reading', false);
+    if(!_links.some(function(l){ return (l.from===aId&&l.to===bId)||(l.from===bId&&l.to===aId); }))
+      _links.push({ from:aId, to:bId, mode:'debate' });
   });
 
-  // Stats
-  document.getElementById('stat-nodes').textContent=_nodes.length;
-  document.getElementById('stat-links').textContent=_links.length;
-  document.getElementById('stat-teachings').textContent=teachings.length;
-  document.getElementById('stat-debates').textContent=debates.length;
-  document.getElementById('nav-status').textContent=_nodes.length+' people · '+_links.length+' links';
-
-  // Grade buttons
-  var allGrades=Array.from(grades).sort(function(a,b){return +a-+b;});
-  document.getElementById('grade-row').innerHTML=
-    '<button class="grade-btn active" onclick="setGrade(null,this)">All grades</button>'
-    +allGrades.map(function(g){return '<button class="grade-btn" onclick="setGrade('+g+',this)">G'+g+'</button>';}).join('');
-
-  // Subject chips
-  var usedSubjs=new Set(_nodes.map(function(n){return n.subj;}).filter(Boolean));
-  document.getElementById('subj-legend').innerHTML=Array.from(usedSubjs).map(function(s){
-    var cfg=SUBJ[s]||{label:s,color:'#888',pale:'#eee'};
-    return '<div class="subj-chip" data-subj="'+s+'" onclick="filterSubj(\''+s+'\')" style="background:'+cfg.pale+';color:'+cfg.color+'">'
-      +'<span style="width:7px;height:7px;border-radius:50%;background:'+cfg.color+';display:inline-block"></span>'+cfg.label+'</div>';
-  }).join('');
-
-  layout();
-  render();
-  document.getElementById('map-loading').style.display='none';
-  document.getElementById('isnad-svg').style.display='block';
-}
-
-// ══════════════════════════════════════════════════════════════
-// LAYOUT
-// ══════════════════════════════════════════════════════════════
-function layout(){
-  if(!_nodes.length) return;
-  var byG={};
-  _nodes.forEach(function(n){var g=String(n.grade||'0');if(!byG[g])byG[g]=[];byG[g].push(n);});
-  var gs=Object.keys(byG).sort(function(a,b){return +a-+b;});
-  var W=900,H=500,cW=W/Math.max(gs.length,1);
-  gs.forEach(function(g,gi){
-    var col=byG[g];
-    col.forEach(function(n,ni){n.x=cW*gi+cW/2+(Math.random()-.5)*cW*.35;n.y=H/(col.length+1)*(ni+1)+(Math.random()-.5)*25;});
-  });
-  for(var it=0;it<60;it++){
-    for(var i=0;i<_nodes.length;i++){
-      for(var j=i+1;j<_nodes.length;j++){
-        var a=_nodes[i],b=_nodes[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy)||1,min=a.r+b.r+38;
-        if(d<min){var f=(min-d)/d*.22;a.x+=dx*f;a.y+=dy*f;b.x-=dx*f;b.y-=dy*f;}
+  // ── Seals: verified receptions (samāʿ certificates) ─────────────────
+  // Each verified reception seals the teaching's link and connects the
+  // chain onward to the learner who attested it.
+  verifications.forEach(function(v){
+    // Person-level: confirmed adab (taʿdīl) attaches to the person, not a link
+    if(v.kind==='adab'){
+      if(!v.to_name) return;
+      var pid=slug(v.to_name);
+      var pn=person(pid, v.to_name, 'Student', 2, 'adab', false);
+      (pn.adab=pn.adab||[]).push({ text:v.evidence||'', by:v.verified_by||'facilitator' });
+      return;
+    }
+    if((v.kind!=='reception' && v.kind!=='buildon') || !v.to_name) return;
+    var learnerId = slug(v.to_name);
+    var tl = v.teaching_id ? teachingLink[v.teaching_id] : null;
+    var subjKey = tl ? tl.subject : 'math';
+    person(learnerId, v.to_name, 'Student', 2, subjKey, false);
+    function seal(l, ev){
+      l.verified = true;
+      l.vCount = (l.vCount||0)+1;
+      if(ev && !l.evidence) l.evidence = ev;
+      if(ev){ (l.evidences=l.evidences||[]).push({ who:v.to_name, text:ev }); }
+    }
+    if(tl){
+      // Seal teacher → teaching (carrying the attestation), and teaching → learner
+      for(var i=0;i<_links.length;i++){
+        if(_links[i].from===tl.teacherId && _links[i].to===tl.subjId){ seal(_links[i], v.evidence); break; }
       }
+      if(learnerId!==tl.teacherId) seal(addLink(tl.subjId, learnerId, 'peer'), v.evidence);
+    } else if(v.from_name){
+      // No teaching row to anchor to — seal a direct teacher → learner link
+      var teacherId = slug(v.from_name);
+      person(teacherId, v.from_name, 'Student', 2, subjKey, false);
+      if(learnerId!==teacherId) seal(addLink(teacherId, learnerId, 'peer'), v.evidence);
     }
-    _links.forEach(function(l){
-      var s=_nodes.find(function(n){return n.id===l.source;}),t=_nodes.find(function(n){return n.id===l.target;});
-      if(!s||!t) return;
-      var dx=t.x-s.x,dy=t.y-s.y,d=Math.sqrt(dx*dx+dy*dy)||1,ideal=130,f=(d-ideal)/d*.04;
-      s.x+=dx*f;s.y+=dy*f;t.x-=dx*f;t.y-=dy*f;
-    });
-    _nodes.forEach(function(n){n.x=Math.max(n.r+8,Math.min(892-n.r,n.x));n.y=Math.max(n.r+8,Math.min(492-n.r,n.y));});
+  });
+
+  layoutBands();
+
+  var status = document.getElementById('nav-status');
+  var sealedCount=_links.filter(function(l){return l.verified;}).length;
+  if(_people.length){
+    status.textContent = _people.length+' people · '+_links.length+' links'+(sealedCount?' · '+sealedCount+' sealed':'');
+    document.getElementById('stage-message').style.display='none';
+    document.getElementById('stage-sized').style.display='block';
+  } else {
+    document.getElementById('stage-message').innerHTML =
+      'No published teachings yet.<br><span style="font-weight:600;font-size:13.5px;color:#8fae9f;">Publish a Teach It lesson or complete a public debate, and the isnād will begin to grow.</span>';
+    status.textContent = '0 people · 0 links';
   }
+
+  measure();
+  renderAll();
+}
+
+// ── Assign x/y positions inside the KTC grade bands ──────────
+function layoutBands(){
+  var CARD_W=164, GAP=36, X0=230, X1=STAGE_W-40;
+  var byBand={};
+  _people.forEach(function(p){ (byBand[p.band]=byBand[p.band]||[]).push(p); });
+  Object.keys(byBand).forEach(function(b){
+    var list=byBand[b], y=BANDS[b].y;
+    var perRow=Math.max(1, Math.floor((X1-X0)/(CARD_W+GAP)));
+    var rows=Math.ceil(list.length/perRow);
+    list.forEach(function(p,i){
+      var row=Math.floor(i/perRow), inRow=Math.min(perRow, list.length-row*perRow);
+      var idx=i-row*perRow;
+      var span=inRow*(CARD_W+GAP)-GAP;
+      var startX=X0+((X1-X0)-span)/2+CARD_W/2;
+      p.x=startX+idx*(CARD_W+GAP);
+      p.y=y+(rows>1 ? (row-(rows-1)/2)*74 : 0);
+    });
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
-// RENDER
+// CHAIN HIGHLIGHT  (KTC computeHot)
 // ══════════════════════════════════════════════════════════════
-function render(){
-  var svg=document.getElementById('isnad-svg');
-  if(!svg) return;
+function computeHot(focus){
+  if(!focus) return { nodes:null, edges:null };
+  var up=new Set(), down=new Set(), stack=[focus];
+  while(stack.length){ var id=stack.pop(); _links.forEach(function(l){ if(l.to===id && !up.has(l.from)){ up.add(l.from); stack.push(l.from); } }); }
+  stack=[focus];
+  while(stack.length){ var id2=stack.pop(); _links.forEach(function(l){ if(l.from===id2 && !down.has(l.to)){ down.add(l.to); stack.push(l.to); } }); }
+  var nodes=new Set([focus]); up.forEach(function(x){nodes.add(x);}); down.forEach(function(x){nodes.add(x);});
+  var edges=new Set();
+  _links.forEach(function(l,i){ if(nodes.has(l.from)&&nodes.has(l.to)) edges.add(i); });
+  return { nodes:nodes, edges:edges };
+}
 
-  var vLinks=_links.filter(function(l){
-    if(_mode!=='all'&&l.mode!==_mode) return false;
-    if(_gradeFilter!==null){
-      var s=_nodes.find(function(n){return n.id===l.source;}),t=_nodes.find(function(n){return n.id===l.target;});
-      if((!s||String(s.grade)!==String(_gradeFilter))&&(!t||String(t.grade)!==String(_gradeFilter))) return false;
+// ══════════════════════════════════════════════════════════════
+// STARS  (KTC twinkle field)
+// ══════════════════════════════════════════════════════════════
+function makeStars(){
+  var s=987654321, rnd=function(){ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; };
+  var out='';
+  for(var i=0;i<70;i++){
+    var x=(rnd()*100).toFixed(2), y=(rnd()*100).toFixed(2);
+    var r=(rnd()*1.4+0.5), o=(rnd()*0.5+0.2).toFixed(2);
+    var dur=(rnd()*3+2.5).toFixed(2), del=(rnd()*4).toFixed(2);
+    out+='<span style="position:absolute;left:'+x+'%;top:'+y+'%;width:'+(r*2).toFixed(1)+'px;height:'+(r*2).toFixed(1)+'px;border-radius:50%;background:#fbf3d8;opacity:'+o+';box-shadow:0 0 '+(r*3).toFixed(1)+'px #fbe7b8;animation:twinkle '+dur+'s ease-in-out '+del+'s infinite;"></span>';
+  }
+  document.getElementById('stars-layer').innerHTML=out;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCALE  (fit 1740×1010 stage into container, KTC getScale)
+// ══════════════════════════════════════════════════════════════
+function measure(){
+  var c=document.getElementById('stage-container');
+  if(!c) return;
+  var w=c.clientWidth-32, h=c.clientHeight-32;
+  var scale=Math.min(w/STAGE_W, h/STAGE_H, 1.05);
+  if(!(scale>0)) scale=0.5;
+  var sized=document.getElementById('stage-sized');
+  sized.style.width=(STAGE_W*scale)+'px';
+  sized.style.height=(STAGE_H*scale)+'px';
+  document.getElementById('stage-inner').style.transform='scale('+scale+')';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER — STAGE  (band labels + edges + KTC cards)
+// ══════════════════════════════════════════════════════════════
+function renderStage(){
+  var highlight=_hover||_pin||null;
+  var hot=computeHot(highlight);
+  var h='';
+
+  // Band labels
+  BANDS.forEach(function(b,i){
+    h+='<div style="position:absolute;left:10px;top:'+b.y+'px;transform:translateY(-50%);width:172px;text-align:right;">'
+      +'<div style="font-family:\'Baloo 2\',sans-serif;font-weight:800;font-size:15px;color:#dcc683;line-height:1.1;">'+b.top+'</div>'
+      +'<div style="font-size:11px;color:#8fae9f;font-weight:700;letter-spacing:.04em;margin-top:3px;">'+b.sub+'</div>'
+      +'</div>';
+  });
+
+  // Edges
+  h+='<svg viewBox="0 0 '+STAGE_W+' '+STAGE_H+'" width="'+STAGE_W+'" height="'+STAGE_H+'" style="position:absolute;inset:0;pointer-events:none;overflow:visible;">';
+  _links.forEach(function(l,i){
+    var a=_map[l.from], b=_map[l.to];
+    if(!a||!b) return;
+    var dim=false, hotE=false;
+    if(highlight){ hotE=hot.edges.has(i); dim=!hotE; }
+    if(_modeFilter){ if(l.mode!==_modeFilter) dim=true; else if(!highlight) hotE=true; }
+    var isDebate=l.mode==='debate';
+    var sx=a.x, sy=a.y+28, tx=b.x, ty=b.y-28, my=(sy+ty)/2, d, mx, mY;
+    if(a.band===b.band){
+      // same-band link (debate or peer-to-peer): gentle arc between the cards
+      sx=a.x + (b.x>a.x?86:-86); sy=a.y; tx=b.x + (b.x>a.x?-92:92); ty=b.y;
+      d='M '+sx+' '+sy+' C '+((sx+tx)/2)+' '+(sy-46)+' '+((sx+tx)/2)+' '+(ty-46)+' '+tx+' '+ty;
+      mx=(sx+tx)/2; mY=(sy+ty)/2-34.5;
+    } else {
+      d='M '+sx+' '+sy+' C '+sx+' '+my+' '+tx+' '+my+' '+tx+' '+ty;
+      mx=(sx+tx)/2; mY=(sy+ty)/2;
     }
-    return true;
+    var op=dim?0.06:(hotE?1:(l.verified?0.85:0.5));
+    var col=EDGEC[l.mode];
+    var glow=hotE?'filter:drop-shadow(0 0 5px '+col+');':'';
+    h+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(hotE?4.5:(l.verified?2.6:2))+'" stroke-linecap="round"'
+      +(isDebate?' stroke-dasharray="7,5"':'')
+      +' style="opacity:'+op+';'+glow+'transition:opacity .25s,stroke-width .2s;"></path>';
+    if(l.verified){
+      // Gold seal — verified transmission (samāʿ recorded)
+      var sealOp=dim?0.08:1;
+      h+='<g style="opacity:'+sealOp+';transition:opacity .25s;">'
+        +'<circle cx="'+mx+'" cy="'+mY+'" r="9" fill="#e9c66a" stroke="#0a342a" stroke-width="1.5"'+(hotE?' style="filter:drop-shadow(0 0 6px #e9c66a)"':'')+'></circle>'
+        +'<path d="M '+(mx-3.5)+' '+mY+' l 2.5 2.8 l 4.5 -5.4" fill="none" stroke="#0a342a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>'
+        +(l.vCount>1?'<text x="'+(mx+12)+'" y="'+(mY+3.5)+'" font-family="Baloo 2,sans-serif" font-weight="800" font-size="11" fill="#e9c66a">×'+l.vCount+'</text>':'')
+        +'</g>';
+    }
   });
-  var aIds=new Set();vLinks.forEach(function(l){aIds.add(l.source);aIds.add(l.target);});
-  var vNodes=(_mode==='all'&&_gradeFilter===null)?_nodes:_nodes.filter(function(n){return aIds.has(n.id);});
+  h+='</svg>';
 
-  var h='<rect width="100%" height="100%" fill="#12122a"/>'+makeStars();
-  h+='<defs>'
-    +'<marker id="at" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#4cd3a0"/></marker>'
-    +'<marker id="ap" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#ff9d6b"/></marker>'
-    +'<marker id="ae" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#5fd0e6"/></marker>'
-    +'<marker id="ad" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#9b59b6"/></marker>'
-    +'</defs>';
+  // People cards
+  _people.forEach(function(p){
+    var dim=false, hotN=false;
+    if(highlight){ hotN=hot.nodes.has(p.id); dim=!hotN; }
+    if(_modeFilter){ var touches=_links.some(function(l){ return l.mode===_modeFilter && (l.from===p.id||l.to===p.id); }); if(!touches) dim=true; }
+    var inc=_links.filter(function(l){ return l.to===p.id; });
+    var primary=inc.length?inc[0].mode:null;
+    var sk=getSubject(p.id);
+    var subj=SUBJ[sk]||SUBJ.math;
+    var dotModes=[]; inc.forEach(function(l){ if(dotModes.indexOf(l.mode)<0) dotModes.push(l.mode); });
+    var ringGlow=p.source?'#e9c66a':(primary?EDGEC[primary]:'#4cd3a0');
+    var isPinned=_pin===p.id;
+    var cardBg=hotN?'rgba(18,78,62,.94)':'rgba(9,49,40,.62)';
+    var cardBorder=p.source?'rgba(233,198,106,.5)':(hotN?'rgba(233,198,106,.42)':'rgba(180,205,194,.16)');
+    var glow=isPinned?'0 0 0 2px '+ringGlow+', 0 0 24px '+ringGlow+'aa, 0 8px 24px rgba(0,0,0,.5)'
+      :hotN?'0 0 0 1px '+ringGlow+', 0 0 20px '+ringGlow+'88, 0 8px 22px rgba(0,0,0,.5)'
+      :p.source?'0 0 18px rgba(233,198,106,.35), 0 6px 16px rgba(0,0,0,.45)'
+      :'0 4px 14px rgba(0,0,0,.4)';
 
-  vLinks.forEach(function(l){
-    var s=_nodes.find(function(n){return n.id===l.source;}),t=_nodes.find(function(n){return n.id===l.target;});
-    if(!s||!t) return;
-    var dx=t.x-s.x,dy=t.y-s.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-    var x1=s.x+dx/d*s.r,y1=s.y+dy/d*s.r,x2=t.x-dx/d*(t.r+6),y2=t.y-dy/d*(t.r+6);
-    var isD=l.type==='debate',mark='url(#a'+(isD?'d':l.mode==='parent'?'p':l.mode==='peer'?'e':'t')+')';
-    h+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"'
-      +' stroke="'+l.color+'" stroke-width="1.5" opacity="0.55"'+(isD?' stroke-dasharray="6,3"':'')+' marker-end="'+mark+'"/>';
+    h+='<button onclick="clickNode(event,\''+escJs(p.id)+'\')" onmouseenter="hoverNode(\''+escJs(p.id)+'\')" onmouseleave="unhoverNode(\''+escJs(p.id)+'\')"'
+      +' style="position:absolute;left:'+p.x+'px;top:'+p.y+'px;transform:translate(-50%,-50%);width:164px;box-sizing:border-box;display:flex;align-items:center;gap:9px;padding:8px 11px;background:'+cardBg+';-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border:1px solid '+cardBorder+';border-radius:14px;box-shadow:'+glow+';cursor:pointer;opacity:'+(dim?0.18:1)+';transition:opacity .3s,box-shadow .3s,background .3s;">';
+    h+='<div style="flex:none;width:38px;height:38px;border-radius:50%;background:'+subj.pale+';display:flex;align-items:center;justify-content:center;">'+glyphSvg(sk,20)+'</div>';
+    h+='<div style="min-width:0;flex:1;text-align:left;">'
+      +'<div style="font-family:\'Baloo 2\',sans-serif;font-weight:800;font-size:14.5px;color:#f4ecd9;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(getName(p.id))+'</div>'
+      +'<div style="font-size:11px;color:#a7c6b8;font-weight:700;letter-spacing:.02em;white-space:nowrap;">'+esc(p.grade||'')+'</div>'
+      +'</div>';
+    if(p.source){
+      h+='<span style="position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2);">'+STAR_SVG+'</span>';
+    } else if(dotModes.length){
+      h+='<span style="position:absolute;top:-7px;right:-7px;display:flex;gap:3px;">';
+      dotModes.forEach(function(md){
+        h+='<span style="width:11px;height:11px;border-radius:50%;background:'+EDGEC[md]+';border:2px solid #0a342a;box-shadow:0 0 5px '+EDGEC[md]+'aa;"></span>';
+      });
+      h+='</span>';
+    }
+    if(p.adab && p.adab.length){
+      h+='<span title="Adab confirmed" style="position:absolute;top:-8px;left:-8px;width:20px;height:20px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2), 0 0 8px rgba(224,138,138,.6);">'
+        +'<svg width="12" height="12" viewBox="0 0 20 20"><path d="M10 16.5s-5.5-3.4-5.5-7.3C4.5 7 6 5.8 7.6 5.8c1.1 0 1.9.6 2.4 1.5.5-.9 1.3-1.5 2.4-1.5 1.6 0 3.1 1.2 3.1 3.4 0 3.9-5.5 7.3-5.5 7.3z" fill="#e08a8a"></path></svg>'
+        +(p.adab.length>1?'<span style="position:absolute;bottom:-4px;right:-5px;font-family:\'Baloo 2\',sans-serif;font-weight:800;font-size:9px;color:#e08a8a;text-shadow:0 0 3px #062a22;">×'+p.adab.length+'</span>':'')
+        +'</span>';
+    }
+    h+='</button>';
   });
 
-  vNodes.forEach(function(n){
-    var hl=_highlighted===n.id,hv=_hovered===n.id&&!_highlighted;
-    var dim=(_highlighted&&!hl)||(_hovered&&!hv&&!hl)?0.18:1;
-    var ed=getEdit(n.id);
-    var subj=ed.subj||n.subj||'';
-    var sc=SUBJ[subj]||SUBJ.math;
-    var color=n.isSource?'#c8a230':subj&&sc?sc.color:n.color;
-    var label=ed.name||n.label;
-    var init=label.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
-    var glyph=sc.glyph||init;
+  document.getElementById('stage-inner').innerHTML=h;
+}
 
-    h+='<g class="inode" data-id="'+n.id+'" onclick="clickNode(\''+n.id+'\')" onmouseenter="hoverNode(\''+n.id+'\')" onmouseleave="unhoverNode()" style="cursor:pointer" opacity="'+dim+'">';
-    if(hl||hv) h+='<circle cx="'+n.x+'" cy="'+n.y+'" r="'+(n.r+9)+'" fill="'+color+'" opacity="0.18"/>';
-    h+='<circle cx="'+n.x+'" cy="'+n.y+'" r="'+n.r+'" fill="'+color+'" stroke="'+(hl?'#d4af37':'rgba(255,255,255,.2')+'" stroke-width="'+(hl?3:1.5)+'"/>';
-    if(n.isSource) h+='<text x="'+(n.x+n.r-3)+'" y="'+(n.y-n.r+4)+'" font-size="10">⭐</text>';
-    h+='<text x="'+n.x+'" y="'+(n.y+1)+'" text-anchor="middle" dominant-baseline="middle" font-size="'+(n.r>13?10:8)+'" fill="white" font-weight="700" pointer-events="none">'+esc(glyph.slice(0,2))+'</text>';
-    if(n.grade) h+='<text x="'+n.x+'" y="'+(n.y+n.r+9)+'" text-anchor="middle" font-size="8" fill="#7fc0ae" pointer-events="none">G'+n.grade+'</text>';
-    h+='<text x="'+n.x+'" y="'+(n.y+n.r+(n.grade?18:10))+'" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.6)" pointer-events="none">'+esc(label.slice(0,14))+'</text>';
-    h+='</g>';
+// ══════════════════════════════════════════════════════════════
+// RENDER — MODE LEGEND  (KTC pills + Debate)
+// ══════════════════════════════════════════════════════════════
+function renderModeLegend(){
+  var h='';
+  ['facilitator','parent','peer','debate'].forEach(function(k){
+    var active=_modeFilter===k;
+    h+='<button onclick="toggleMode(event,\''+k+'\')" style="display:inline-flex;align-items:center;gap:7px;font-family:\'Baloo 2\',sans-serif;font-weight:700;font-size:12.5px;color:'+(active?'#0c5a47':'#eafff7')+';background:'+(active?'#fff':'rgba(255,255,255,.08)')+';border:1px solid '+(active?'#fff':'rgba(255,255,255,.16)')+';padding:6px 11px;border-radius:999px;cursor:pointer;transition:all .15s;">'
+      +'<span style="width:11px;height:11px;border-radius:50%;flex:none;background:'+MODE[k].c+';"></span>'+MODE[k].label+'</button>';
   });
-
-  svg.innerHTML=h;
-  setupPan(svg);
-}
-function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-// ══════════════════════════════════════════════════════════════
-// PAN + ZOOM
-// ══════════════════════════════════════════════════════════════
-function setupPan(svg){
-  svg.onmousedown=function(e){if(e.target.closest&&e.target.closest('.inode'))return;_panStart={x:e.clientX,y:e.clientY,vb:svg.getAttribute('viewBox')};};
-  svg.onmousemove=function(e){
-    if(!_panStart)return;
-    var dx=e.clientX-_panStart.x,dy=e.clientY-_panStart.y;
-    var p=(_panStart.vb||'0 0 900 500').split(' ').map(Number);
-    svg.setAttribute('viewBox',(p[0]-dx*.7)+' '+(p[1]-dy*.7)+' '+p[2]+' '+p[3]);
-    _panStart.x=e.clientX;_panStart.y=e.clientY;_panStart.vb=svg.getAttribute('viewBox');
-  };
-  svg.onmouseup=svg.onmouseleave=function(){_panStart=null;};
-  svg.onwheel=function(e){
-    e.preventDefault();
-    var p=(svg.getAttribute('viewBox')||'0 0 900 500').split(' ').map(Number),sc=e.deltaY>0?1.1:0.9;
-    svg.setAttribute('viewBox',p[0]+' '+p[1]+' '+(p[2]*sc)+' '+(p[3]*sc));
-  };
+  document.getElementById('mode-legend').innerHTML=h;
 }
 
 // ══════════════════════════════════════════════════════════════
-// HOVER
+// RENDER — SIDEBAR  (KTC idle panel / detail panel)
 // ══════════════════════════════════════════════════════════════
-function hoverNode(id){
-  if(_highlighted) return;
-  _hovered=id;
-  var cIds=new Set([id]);
-  _links.forEach(function(l){if(l.source===id)cIds.add(l.target);if(l.target===id)cIds.add(l.source);});
-  document.querySelectorAll('.inode').forEach(function(g){g.setAttribute('opacity',cIds.has(g.getAttribute('data-id'))?'1':'0.15');});
-}
-function unhoverNode(){
-  if(_highlighted) return;
-  _hovered=null;
-  document.querySelectorAll('.inode').forEach(function(g){g.setAttribute('opacity','1');});
+function renderSidebar(){
+  var focus=_pin||_hover||null;
+  var el=document.getElementById('sidebar');
+  if(!focus||!_map[focus]){ el.innerHTML=idlePanel(); return; }
+  el.innerHTML=detailPanel(focus, !!_pin);
 }
 
-// ══════════════════════════════════════════════════════════════
-// CLICK / DETAIL
-// ══════════════════════════════════════════════════════════════
-function clickNode(id){
-  _highlighted=_highlighted===id?null:id;
-  _hovered=null;
-  render();
-  if(_highlighted) showDetail(id);
-  else document.getElementById('detail-area').innerHTML='';
+function idlePanel(){
+  return '<div style="padding:30px 26px;">'
+    +'<div style="font-family:\'Baloo 2\',sans-serif;font-weight:800;font-size:22px;color:#2f2110;">Trace a chain</div>'
+    +'<p style="font-size:14.5px;line-height:1.6;color:#6a5a3f;margin:10px 0 22px;">Every learner here sits inside an <strong style="color:#117a60;">isnād</strong> — a chain of who passed knowledge to whom. Hover any name to light up its full chain, then click to pin it and record what really happened.</p>'
+    +'<div style="display:flex;flex-direction:column;gap:14px;">'
+    +stepRow(1,'<strong>Hover</strong> a name to see its chain glow up the grades.')
+    +stepRow(2,'<strong>Click</strong> to pin a person and edit their record here.')
+    +stepRow(3,'<strong>Filter</strong> by teaching mode using the legend up top.')
+    +'</div>'
+    +'<div style="margin-top:24px;padding:14px 16px;background:#f7efdc;border-radius:14px;">'
+    +'<div style="font-family:\'Baloo 2\';font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#a07f3e;margin-bottom:9px;">Reading the map</div>'
+    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="width:16px;height:16px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.2);"><svg width="11" height="11" viewBox="0 0 20 20"><path d="M10 1.5l2 4.6 5 .4-3.8 3.3 1.2 4.9L10 12.1 5.4 14.7 6.6 9.8 2.8 6.5l5-.4z" fill="#e0a92e"></path></svg></span>Gold star = origin (a facilitator or parent).</div>'
+    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="display:flex;gap:3px;"><span style="width:10px;height:10px;border-radius:50%;background:#117a60;"></span><span style="width:10px;height:10px;border-radius:50%;background:#1f7a8c;"></span></span>Corner dots = how that person was taught.</div>'
+    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;">Edge colour = the teaching mode of each link.</div>'
+    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="width:22px;height:0;border-top:2px dashed '+EDGEC.debate+';flex:none;"></span>Purple dashed = a completed debate.</div>'
+    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="width:16px;height:16px;border-radius:50%;background:#e9c66a;border:1.5px solid #7a6428;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0a342a;font-weight:800;flex:none;">✓</span>Gold seal = verified transmission (samāʿ recorded by the learner).</div>'
+    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;"><span style="width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid #eecaca;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="10" height="10" viewBox="0 0 20 20"><path d="M10 16.5s-5.5-3.4-5.5-7.3C4.5 7 6 5.8 7.6 5.8c1.1 0 1.9.6 2.4 1.5.5-.9 1.3-1.5 2.4-1.5 1.6 0 3.1 1.2 3.1 3.4 0 3.9-5.5 7.3-5.5 7.3z" fill="#e08a8a"></path></svg></span>Heart badge = adab confirmed by the facilitator (taʿdīl).</div>'
+    +'</div>'
+    +'<div style="margin-top:16px;font-size:12px;color:#a08f6a;line-height:1.55;">Only published teachings and completed public debates appear here. Notes you add are saved on this device.</div>'
+    +'</div>';
 }
-
-function getNodeSubj(id){
-  var ed=getEdit(id);
-  return ed.subj||(_nodes.find(function(n){return n.id===id;})||{}).subj||'math';
+function stepRow(n, text){
+  return '<div style="display:flex;gap:12px;align-items:flex-start;"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:#e9f1ec;display:flex;align-items:center;justify-content:center;font-family:\'Baloo 2\';font-weight:800;color:#117a60;">'+n+'</span><div style="font-size:13.5px;line-height:1.5;color:#5a4a32;">'+text+'</div></div>';
 }
 
 function buildChain(id){
-  var anc=[],cur=id,g=0;
-  while(g++<40){var l=_links.find(function(x){return x.target===cur;});if(!l)break;anc.unshift({id:l.source,mode:l.mode});cur=l.source;}
-  var desc=[],g2=0;cur=id;
-  while(g2++<40){var l2=_links.find(function(x){return x.source===cur;});if(!l2)break;desc.push({id:l2.target,mode:l2.mode});cur=l2.target;}
+  var anc=[], cur=id, g=0;
+  while(g++<40){ var l=null; for(var i=0;i<_links.length;i++){ if(_links[i].to===cur){ l=_links[i]; break; } } if(!l) break; anc.unshift({id:l.from,mode:l.mode}); cur=l.from; }
+  var desc=[]; cur=id; g=0;
+  while(g++<40){ var l2=null; for(var j=0;j<_links.length;j++){ if(_links[j].from===cur){ l2=_links[j]; break; } } if(!l2) break; desc.push({id:l2.to,mode:l2.mode}); cur=l2.to; }
   var chain=[];
-  anc.forEach(function(a,k){chain.push({id:a.id,arrowMode:k===0?null:anc[k-1].mode});});
-  chain.push({id,arrowMode:anc.length?anc[anc.length-1].mode:null,isFocus:true});
-  desc.forEach(function(d){chain.push({id:d.id,arrowMode:d.mode});});
+  anc.forEach(function(a,k){ chain.push({ id:a.id, arrowColor:k===0?'':MODE[anc[k-1].mode].c }); });
+  chain.push({ id:id, arrowColor:anc.length?MODE[anc[anc.length-1].mode].c:'', isFocus:true });
+  desc.forEach(function(d){ chain.push({ id:d.id, arrowColor:MODE[d.mode].c }); });
   return chain;
 }
 
-function showDetail(id){
-  var n=_nodes.find(function(n){return n.id===id;});
-  if(!n) return;
-  var ed=getEdit(id);
-  var sk=getNodeSubj(id);
-  var sc=SUBJ[sk]||SUBJ.math;
-  var label=ed.name||n.label;
-  var isOrigin=n.isSource||!_links.some(function(l){return l.target===id;});
-  var isLeaf=!_links.some(function(l){return l.source===id;});
-
-  // Banner
-  var bannerBg=n.isSource?'#fff8e6':n.type==='student'?'#e8edf8':'#e6f1ec';
-  var bannerColor=n.isSource?'#a07f3e':n.type==='student'?'#1a3d8a':'#117a60';
-  var bannerText=n.isSource?'⭐ '+(n.grade||'Facilitator / Parent'):n.type==='debate'?'⚔ Debate participant':'🎓 '+(n.grade?'Grade '+n.grade:'Student');
-
-  // Chain
-  var chain=buildChain(id);
-  var chainHtml=chain.map(function(c,i){
-    var cLabel=(_edits[c.id]&&_edits[c.id].name)||(_nodes.find(function(x){return x.id===c.id;})||{}).label||c.id;
-    var arrow=c.arrowMode?'<span class="chain-arrow" style="color:'+(MODE[c.arrowMode]||MODE.peer).edge+'">→</span>':'';
-    return arrow+'<span class="chain-chip'+(c.isFocus?' focus':'')+'" title="'+esc(cLabel)+'">'+esc(cLabel.slice(0,16))+'</span>';
+function sealChipHtml(item){
+  if(!item.verified) return '';
+  var h='<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#0a342a;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:#e9c66a;border-radius:999px;padding:2px 8px;flex:none;">\u2713 Verified</span>';
+  return h;
+}
+function evidenceHtml(item){
+  if(!item.evidences || !item.evidences.length) return '';
+  return item.evidences.slice(0,3).map(function(ev){
+    return '<div style="margin-top:7px;padding:8px 10px;background:#fdf6e3;border-left:3px solid #e9c66a;border-radius:0 8px 8px 0;">'
+      +'<div style="font-size:10px;color:#a07f3e;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;">Sam\u0101\u02bf \u00b7 '+esc(ev.who)+'</div>'
+      +'<div style="font-size:12px;color:#5a4a32;line-height:1.5;font-style:italic;">\u201c'+esc(ev.text)+'\u201d</div>'
+      +'</div>';
   }).join('');
+}
 
-  // Learned from (DB links)
-  var learnedFrom=_links.filter(function(l){return l.target===id;}).map(function(l){
-    var fromNode=_nodes.find(function(x){return x.id===l.source;});
-    var fromLabel=(_edits[l.source]&&_edits[l.source].name)||(fromNode&&fromNode.label)||l.source;
-    var txKey=l.source+'>'+id;
-    var txNote=(ed.transmit&&ed.transmit[txKey])||'';
-    var mc=MODE[l.mode]||MODE.peer;
-    return {name:fromLabel,mode:l.mode,modeLabel:mc.label,color:mc.c,txKey,txNote};
+function detailPanel(id, editable){
+  var p=_map[id];
+  var sk=getSubject(id);
+  var subj=SUBJ[sk]||SUBJ.math;
+  var readOnly=!editable;
+  var name=getName(id);
+
+  var fieldStyle="width:100%;box-sizing:border-box;font-family:'Nunito',sans-serif;font-size:13px;color:"+(editable?'#3a2e1a':'#6a5a3f')+";background:"+(editable?'#fffdf6':'#f1ece0')+";border:1px solid #e3d6b6;border-radius:8px;padding:7px 9px;outline:none;";
+  var areaStyle=fieldStyle+"min-height:58px;resize:vertical;line-height:1.45;";
+  var titleStyle="width:100%;box-sizing:border-box;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:21px;color:#2f2110;background:"+(editable?'#fffdf6':'transparent')+";border:1px solid "+(editable?'#e3d6b6':'transparent')+";border-radius:8px;padding:"+(editable?'4px 8px':'4px 0')+";outline:none;";
+  var nameInlineStyle="flex:1;min-width:0;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:13.5px;color:#2f2110;background:"+(editable?'#fffdf6':'transparent')+";border:1px solid "+(editable?'#e3d6b6':'transparent')+";border-radius:7px;padding:"+(editable?'3px 7px':'2px 0')+";outline:none;";
+
+  var learnedFrom=_links.filter(function(l){ return l.to===id; }).map(function(l){
+    var key=l.from+'>'+id;
+    return { id:l.from, name:getName(l.from), modeLabel:MODE[l.mode].label, color:MODE[l.mode].c, key:key, note:_edits.transmit[key]||'', verified:!!l.verified, evidences:l.evidences||[] };
   });
-
-  // Teaches (DB links)
-  var teaches=_links.filter(function(l){return l.source===id;}).map(function(l){
-    var toNode=_nodes.find(function(x){return x.id===l.target;});
-    var toLabel=(_edits[l.target]&&_edits[l.target].name)||(toNode&&toNode.label)||l.target;
-    var txKey=id+'>'+l.target;
-    var txNote=(ed.transmit&&ed.transmit[txKey])||'';
-    var mc=MODE[l.mode]||MODE.peer;
-    return {name:toLabel,mode:l.mode,modeLabel:mc.label,color:mc.c,txKey,txNote};
+  var teaches=_links.filter(function(l){ return l.from===id; }).map(function(l){
+    var key=id+'>'+l.to;
+    return { id:l.to, name:getName(l.to), modeLabel:MODE[l.mode].label, color:MODE[l.mode].c, key:key, note:_edits.transmit[key]||'', verified:!!l.verified, evidences:l.evidences||[] };
   });
+  var chain=buildChain(id);
+  var extraLearned=getExtra('learned',id), extraTaught=getExtra('taught',id);
+  var isOrigin=learnedFrom.length===0, isLeaf=teaches.length===0;
+  var subjectLabel=(sk==='studios'&&getStudio(id))?('Studios · '+getStudio(id)):subj.label;
 
-  var h='<div class="detail-panel">';
+  var bannerStyle="font-family:'Baloo 2';font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:7px 12px;border-radius:8px;text-align:center;background:"+(editable?'#e7f1ec':'#f3ede0')+";color:"+(editable?'#117a60':'#a07f3e')+";";
+  var bannerText=editable?'● Editing — changes save automatically':'Previewing — click to pin & edit';
 
-  // Banner
-  h+='<div class="node-banner" style="background:'+bannerBg+';color:'+bannerColor+'">'+bannerText+'</div>';
+  var h='<div style="padding:20px 22px 40px;animation:risein .2s ease both;">';
+  h+='<div style="'+bannerStyle+'">'+bannerText+'</div>';
 
-  // Avatar + name
-  h+='<div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:12px">';
-  h+='<div class="detail-avatar" style="background:'+sc.color+'">'+esc(sc.glyph||label.slice(0,1))+'</div>';
-  h+='<div style="flex:1;min-width:0">';
-  h+='<input class="detail-name-input" value="'+esc(label)+'" placeholder="'+esc(n.label)+'" onchange="editField(\''+id+'\',\'name\',this.value)">';
-  h+='<div class="detail-meta">'+esc(n.type)+(n.grade?' · Grade '+n.grade:'')+(n.isSource?' · ⭐ Origin':'')+'</div>';
-  h+='<div style="font-size:12.5px;font-weight:800;color:'+sc.color+';margin-top:4px">'+sc.label+'</div>';
-  h+='</div></div>';
-
-  // Subject selector
-  h+='<div class="sec-label" style="color:#9a8a6c">What this person carries</div>';
-  h+='<div class="subj-selector">';
-  SUBJ_KEYS.forEach(function(k){
-    var s=SUBJ[k]; var active=k===sk;
-    h+='<button class="subj-pill'+(active?' active':'')+'" style="color:'+s.color+';border-color:'+(active?s.color:'#e6dcc4')+';background:'+(active?s.pale:'#f6f1e4')+'" onclick="editSubj(\''+id+'\',\''+k+'\')">'+s.label+'</button>';
-  });
+  // Avatar + name + close
+  h+='<div style="display:flex;align-items:flex-start;gap:12px;margin-top:14px;">';
+  h+='<div style="flex:none;width:46px;height:46px;border-radius:50%;background:'+subj.pale+';display:flex;align-items:center;justify-content:center;margin-top:2px;">'+glyphSvg(sk,26)+'</div>';
+  h+='<div style="flex:1;min-width:0;">';
+  h+='<input value="'+esc(name)+'" '+(readOnly?'readonly ':'')+'onchange="setEdit(\'names\',\''+escJs(id)+'\',this.value);renderAll()" placeholder="Name" style="'+titleStyle+'">';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-top:6px;">'
+    +'<span style="font-size:12.5px;color:#8a7350;font-weight:700;">'+esc(p.grade||'')+'</span>'
+    +'<span style="width:4px;height:4px;border-radius:50%;background:#cdbb90;"></span>'
+    +'<span style="font-size:12.5px;color:'+subj.color+';font-weight:800;">'+esc(subjectLabel)+'</span>'
+    +'</div></div>';
+  h+='<button onclick="closeDetail(event)" style="flex:none;background:none;border:none;cursor:pointer;color:#b0a487;padding:4px;line-height:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button>';
   h+='</div>';
 
-  // Studio sub-focus
-  if(sk==='studios'){
-    var studioEdit=ed.studio||'';
-    h+='<div class="studio-panel"><div class="studio-label">Studio focus</div><div class="studio-pills">';
-    STUDIOS.forEach(function(st){
-      var active=studioEdit===st;
-      h+='<button class="studio-pill'+(active?' active':'')+'" onclick="editField(\''+id+'\',\'studio\',\''+(active?'':st)+'\')">'+esc(st)+'</button>';
+  // Subject pills (editable only)
+  if(editable){
+    h+='<div style="margin-top:14px;">';
+    h+='<div style="font-family:\'Baloo 2\';font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#9a8a6c;margin-bottom:7px;">What this person carries</div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    SUBJ_KEYS.forEach(function(k){
+      var s=SUBJ[k], active=k===sk;
+      h+='<button onclick="event.stopPropagation();setEdit(\'subjects\',\''+escJs(id)+'\',\''+k+'\');renderAll()" style="font-family:\'Baloo 2\',sans-serif;font-weight:700;font-size:12px;cursor:pointer;padding:5px 11px;border-radius:999px;border:1px solid '+(active?s.color:'#e6dcc4')+';background:'+(active?s.pale:'#f6f1e4')+';color:'+(active?s.color:'#8a7350')+';">'+s.label+'</button>';
     });
-    h+='</div></div>';
-  }
-
-  // Isnad chain ribbon
-  if(chain.length>1){
-    h+='<div class="chain-ribbon">';
-    h+='<div class="chain-label">The chain (isnād)</div>';
-    h+='<div class="chain-items">'+chainHtml+'</div>';
+    h+='</div>';
+    if(sk==='studios'){
+      h+='<div style="margin-top:11px;padding:11px 12px;background:#f4f0fa;border:1px solid #e3d9f3;border-radius:12px;">';
+      h+='<div style="font-family:\'Baloo 2\';font-weight:700;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#6a4ca0;margin-bottom:8px;">Studio focus</div>';
+      h+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+      STUDIOS.forEach(function(a){
+        var active=getStudio(id)===a;
+        h+='<button onclick="event.stopPropagation();setEdit(\'studio\',\''+escJs(id)+'\',\''+(active?'':escJs(a))+'\');renderAll()" style="font-family:\'Nunito\',sans-serif;font-weight:700;font-size:12px;cursor:pointer;padding:5px 11px;border-radius:999px;border:1px solid '+(active?'#6a4ca0':'#ddd1ee')+';background:'+(active?'#e6ddf2':'#f4f0fa')+';color:'+(active?'#6a4ca0':'#8a7ba8')+';">'+esc(a)+'</button>';
+      });
+      h+='</div></div>';
+    }
     h+='</div>';
   }
+
+  // Isnād chain ribbon
+  h+='<div style="margin-top:16px;padding:11px 12px;background:#f7efdc;border-radius:12px;">';
+  h+='<div style="font-family:\'Baloo 2\';font-weight:700;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#a07f3e;margin-bottom:8px;">The chain (isnād)</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;align-items:center;gap:3px;">';
+  chain.forEach(function(c){
+    if(c.arrowColor) h+='<svg width="15" height="13" viewBox="0 0 16 14" style="flex:none;"><path d="M2 7h10M9 3l4 4-4 4" stroke="'+c.arrowColor+'" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+    var chipStyle=c.isFocus
+      ? "font-family:'Baloo 2',sans-serif;font-weight:800;font-size:12.5px;color:#fff;background:#0c5a47;padding:4px 11px;border-radius:999px;white-space:nowrap;"
+      : "font-family:'Baloo 2',sans-serif;font-weight:700;font-size:12.5px;color:#5a4a2e;background:#fff;border:1px solid #e0d3b4;padding:4px 10px;border-radius:999px;white-space:nowrap;";
+    h+='<span style="'+chipStyle+'">'+esc(getName(c.id))+'</span>';
+  });
+  h+='</div></div>';
 
   // Learned from
-  h+='<div class="sec-label" style="color:#117a60">Learned from</div>';
-  if(isOrigin) h+='<div class="origin-banner"><span>⭐</span>Origin of the chain — knowledge enters here.</div>';
-  learnedFrom.forEach(function(lf){
-    h+='<div class="extra-card">';
-    h+='<div class="extra-top">';
-    h+='<span style="width:9px;height:9px;border-radius:50%;background:'+lf.color+';flex-shrink:0;display:inline-block"></span>';
-    h+='<span style="font-size:13px;font-weight:800;color:#2f2110;flex:1">'+esc(lf.name)+'</span>';
-    h+='<span class="extra-mode-label" style="color:'+lf.color+'">'+lf.modeLabel+'</span>';
-    h+='</div>';
-    h+='<input class="extra-note-input" placeholder="What was passed on… (e.g. Surah Al-Fātiḥah, tajwīd of the first 3 āyāt)" value="'+esc(lf.txNote)+'" onchange="editTransmit(\''+id+'\',\''+lf.txKey+'\',this.value)">';
+  h+='<div style="margin-top:18px;">';
+  h+='<div style="font-family:\'Baloo 2\';font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#117a60;margin-bottom:9px;">Learned from</div>';
+  if(isOrigin) h+='<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7350;font-weight:700;padding-bottom:4px;">'+STAR_SVG+'Origin of the chain — knowledge enters here.</div>';
+  learnedFrom.forEach(function(l){
+    h+='<div style="margin-bottom:12px;padding:10px 12px;background:#f6f1e4;border-radius:11px;">';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
+      +'<span style="width:9px;height:9px;border-radius:50%;flex:none;background:'+l.color+';"></span>'
+      +'<span style="font-size:13.5px;color:#2f2110;font-weight:800;font-family:\'Baloo 2\';">'+esc(l.name)+'</span>'
+      +'<span style="font-size:10.5px;color:'+l.color+';font-weight:800;letter-spacing:.06em;text-transform:uppercase;">'+l.modeLabel+'</span>'
+      +sealChipHtml(l)
+      +'</div>';
+    h+='<input value="'+esc(l.note)+'" '+(readOnly?'readonly ':'')+'onchange="setEdit(\'transmit\',\''+escJs(l.key)+'\',this.value)" placeholder="What was passed on… (e.g. Surah Al-Fātiḥah, tajwīd of the first 3 āyāt)" style="'+fieldStyle+'">';
+    h+=evidenceHtml(l);
     h+='</div>';
   });
-  // Extra learned (manually added)
-  (ed.learned||[]).forEach(function(x,xi){
-    h+=renderExtraCard(id,'learned',xi,x);
+  extraLearned.forEach(function(x,xi){
+    h+=extraCard(id,'learned',xi,x,readOnly,fieldStyle,nameInlineStyle,'#f6f1e4','#c0b395',"Teacher's name");
   });
-  h+='<button class="add-btn" onclick="addExtra(\''+id+'\',\'learned\')">+ Add learned from</button>';
+  if(editable) h+='<button onclick="event.stopPropagation();addExtra(\'learned\',\''+escJs(id)+'\')" style="width:100%;box-sizing:border-box;font-family:\'Baloo 2\',sans-serif;font-weight:700;font-size:12.5px;border-radius:9px;padding:8px;cursor:pointer;margin-top:2px;border-style:dashed;border-width:1px;color:#117a60;background:#eef5f0;border-color:#b8d4c8;">+ Add another teacher</button>';
+  h+='</div>';
 
   // Adab
-  h+='<div class="adab-panel">';
-  h+='<div class="adab-label"><span>♥</span>Adab &amp; character shown</div>';
-  h+='<textarea class="adab-textarea" placeholder="Good character this learner displayed or passed on… (e.g. helped a younger student without being asked; gave salām first)" onchange="editField(\''+id+'\',\'adab\',this.value)">'+esc(ed.adab||'')+'</textarea>';
+  h+='<div style="margin-top:8px;padding:12px 13px;background:#fbeceb;border:1px solid #f1d3d3;border-radius:12px;">';
+  h+='<div style="display:flex;align-items:center;gap:7px;font-family:\'Baloo 2\';font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#b0394a;margin-bottom:8px;"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M10 16.5s-5.5-3.4-5.5-7.3C4.5 7 6 5.8 7.6 5.8c1.1 0 1.9.6 2.4 1.5.5-.9 1.3-1.5 2.4-1.5 1.6 0 3.1 1.2 3.1 3.4 0 3.9-5.5 7.3-5.5 7.3z" fill="#b0394a"></path></svg>Adab &amp; character shown</div>';
+  if(p.adab && p.adab.length){
+    p.adab.slice(0,4).forEach(function(a){
+      h+='<div style="margin-bottom:8px;padding:8px 10px;background:#fff;border-left:3px solid #e08a8a;border-radius:0 8px 8px 0;">'
+        +'<div style="font-size:10px;color:#b0394a;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;">Witnessed · confirmed by '+esc(a.by)+'</div>'
+        +'<div style="font-size:12px;color:#5a4a32;line-height:1.5;font-style:italic;">'+esc(a.text)+'</div>'
+        +'</div>';
+    });
+  }
+  h+='<textarea '+(readOnly?'readonly ':'')+'onchange="setEdit(\'adab\',\''+escJs(id)+'\',this.value)" placeholder="Good character this learner displayed or passed on… (e.g. helped a younger student without being asked; lowered their voice in the masjid; gave salām first)" style="'+areaStyle+'">'+esc(_edits.adab[id]||'')+'</textarea>';
   h+='</div>';
 
   // Then teaches
-  h+='<div class="sec-label" style="color:#1f7a8c">Then teaches</div>';
-  if(isLeaf) h+='<div class="leaf-banner">The youngest learner in this chain — for now.</div>';
+  h+='<div style="margin-top:18px;">';
+  h+='<div style="font-family:\'Baloo 2\';font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#1f7a8c;margin-bottom:9px;">Then teaches</div>';
+  if(isLeaf) h+='<div style="font-size:13px;color:#8a7350;font-weight:700;padding-bottom:4px;">The youngest learner in this chain — for now.</div>';
   teaches.forEach(function(t){
-    h+='<div class="extra-card taught">';
-    h+='<div class="extra-top">';
-    h+='<span style="width:9px;height:9px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block"></span>';
-    h+='<span style="font-size:13px;font-weight:800;color:#2f2110;flex:1">'+esc(t.name)+'</span>';
-    h+='<span class="extra-mode-label" style="color:'+t.color+'">'+t.modeLabel+'</span>';
-    h+='</div>';
-    h+='<input class="extra-note-input" placeholder="What was transmitted to them…" value="'+esc(t.txNote)+'" onchange="editTransmit(\''+id+'\',\''+t.txKey+'\',this.value)">';
+    h+='<div style="margin-bottom:12px;padding:10px 12px;background:#eef5f6;border-radius:11px;">';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
+      +'<span style="width:9px;height:9px;border-radius:50%;flex:none;background:'+t.color+';"></span>'
+      +'<input value="'+esc(t.name)+'" '+(readOnly?'readonly ':'')+'onchange="setEdit(\'names\',\''+escJs(t.id)+'\',this.value);renderAll()" placeholder="Peer\'s name" style="'+nameInlineStyle+'">'
+      +'<span style="font-size:10.5px;color:'+t.color+';font-weight:800;letter-spacing:.06em;text-transform:uppercase;flex:none;">'+t.modeLabel+'</span>'
+      +sealChipHtml(t)
+      +'</div>';
+    h+='<input value="'+esc(t.note)+'" '+(readOnly?'readonly ':'')+'onchange="setEdit(\'transmit\',\''+escJs(t.key)+'\',this.value)" placeholder="What was transmitted to them…" style="'+fieldStyle+'">';
+    h+=evidenceHtml(t);
     h+='</div>';
   });
-  (ed.taught||[]).forEach(function(x,xi){
-    h+=renderExtraCard(id,'taught',xi,x);
+  extraTaught.forEach(function(x,xi){
+    h+=extraCard(id,'taught',xi,x,readOnly,fieldStyle,nameInlineStyle,'#eef5f6','#a9bcc1',"Peer's name");
   });
-  h+='<button class="add-btn" onclick="addExtra(\''+id+'\',\'taught\')">+ Add taught to</button>';
+  if(editable) h+='<button onclick="event.stopPropagation();addExtra(\'taught\',\''+escJs(id)+'\')" style="width:100%;box-sizing:border-box;font-family:\'Baloo 2\',sans-serif;font-weight:700;font-size:12.5px;border-radius:9px;padding:8px;cursor:pointer;margin-top:2px;border-style:dashed;border-width:1px;color:#1f7a8c;background:#eef5f6;border-color:#bcd9df;">+ Add another student</button>';
+  h+='</div>';
+
+  if(readOnly) h+='<div style="margin-top:6px;text-align:center;font-size:12.5px;color:#a07f3e;font-weight:700;">Click this person on the map to edit ✎</div>';
 
   h+='</div>';
-  document.getElementById('detail-area').innerHTML=h;
+  return h;
 }
 
-function renderExtraCard(nodeId, dir, idx, x){
+function extraCard(nodeId, dir, idx, x, readOnly, fieldStyle, nameInlineStyle, bg, removeColor, namePlaceholder){
   var mc=MODE[x.mode||'peer']||MODE.peer;
-  var isTaught=dir==='taught';
-  return '<div class="extra-card'+(isTaught?' taught':'')+'">'
-    +'<div class="extra-top">'
-    +'<button class="extra-mode-dot" style="background:'+mc.c+'" title="Click to change mode" onclick="cycleExtra(\''+nodeId+'\',\''+dir+'\','+idx+')"></button>'
-    +'<input class="extra-name-input" value="'+esc(x.name||'')+'" placeholder="'+(isTaught?"Peer's name":"Teacher's name")+'" onchange="setExtra(\''+nodeId+'\',\''+dir+'\','+idx+',\'name\',this.value)">'
-    +'<span class="extra-mode-label" style="color:'+mc.c+'">'+mc.label+'</span>'
-    +'<button class="extra-remove" onclick="removeExtra(\''+nodeId+'\',\''+dir+'\','+idx+')">✕</button>'
-    +'</div>'
-    +'<input class="extra-note-input" value="'+esc(x.note||'')+'" placeholder="What was passed on…" onchange="setExtra(\''+nodeId+'\',\''+dir+'\','+idx+',\'note\',this.value)">'
-    +'</div>';
+  var h='<div style="margin-bottom:12px;padding:10px 12px;background:'+bg+';border-radius:11px;">';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">';
+  h+='<button '+(readOnly?'disabled ':'')+'onclick="event.stopPropagation();cycleExtra(\''+dir+'\',\''+escJs(nodeId)+'\','+idx+')" title="Change teaching mode" style="width:13px;height:13px;border-radius:50%;flex:none;border:none;padding:0;cursor:pointer;background:'+mc.c+';"></button>';
+  h+='<input value="'+esc(x.name||'')+'" '+(readOnly?'readonly ':'')+'onchange="setExtra(\''+dir+'\',\''+escJs(nodeId)+'\','+idx+',\'name\',this.value)" placeholder="'+esc(namePlaceholder)+'" style="'+nameInlineStyle+'">';
+  h+='<span style="font-size:10.5px;color:'+mc.c+';font-weight:800;letter-spacing:.06em;text-transform:uppercase;flex:none;">'+mc.label+'</span>';
+  if(!readOnly) h+='<button onclick="event.stopPropagation();removeExtra(\''+dir+'\',\''+escJs(nodeId)+'\','+idx+')" style="flex:none;background:none;border:none;cursor:pointer;color:'+removeColor+';padding:2px;line-height:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button>';
+  h+='</div>';
+  h+='<input value="'+esc(x.note||'')+'" '+(readOnly?'readonly ':'')+'onchange="setExtra(\''+dir+'\',\''+escJs(nodeId)+'\','+idx+',\'note\',this.value)" placeholder="What was passed on…" style="'+fieldStyle+'">';
+  h+='</div>';
+  return h;
 }
 
 // ══════════════════════════════════════════════════════════════
-// EDIT FUNCTIONS
+// INTERACTIONS
 // ══════════════════════════════════════════════════════════════
-function editField(id,field,val){
-  var patch={};patch[field]=val;
-  patchEdit(id,patch);
-  if(field==='name'||field==='subj') render();
-  showDetail(id);
-}
-function editSubj(id,subj){
-  patchEdit(id,{subj:subj});
-  render();
-  showDetail(id);
-}
-function editTransmit(id,key,val){
-  var ed=getEdit(id);
-  var tx=Object.assign({},ed.transmit||{});
-  tx[key]=val;
-  patchEdit(id,{transmit:tx});
-}
-function addExtra(id,dir){
-  var ed=getEdit(id);
-  var list=(ed[dir]||[]).slice();
-  list.push({name:'',note:'',mode:dir==='learned'?'facilitator':'peer'});
-  var p={};p[dir]=list;patchEdit(id,p);
-  showDetail(id);
-}
-function setExtra(id,dir,idx,field,val){
-  var ed=getEdit(id);
-  var list=(ed[dir]||[]).slice();
-  if(list[idx]) list[idx][field]=val;
-  var p={};p[dir]=list;patchEdit(id,p);
-}
-function removeExtra(id,dir,idx){
-  var ed=getEdit(id);
-  var list=(ed[dir]||[]).slice();
-  list.splice(idx,1);
-  var p={};p[dir]=list;patchEdit(id,p);
-  showDetail(id);
-}
-function cycleExtra(id,dir,idx){
-  var modes=['facilitator','parent','peer'];
-  var ed=getEdit(id);
-  var list=(ed[dir]||[]).slice();
-  if(!list[idx]) return;
-  var cur=modes.indexOf(list[idx].mode||'peer');
-  list[idx].mode=modes[(cur+1)%modes.length];
-  var p={};p[dir]=list;patchEdit(id,p);
-  showDetail(id);
-}
+function renderAll(){ renderModeLegend(); renderStage(); renderSidebar(); }
 
-// ══════════════════════════════════════════════════════════════
-// FILTERS
-// ══════════════════════════════════════════════════════════════
-function setMode(m,btn){
-  _mode=m;
-  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.toggle('active',b===btn);});
-  render();
-}
-function setGrade(g,btn){
-  _gradeFilter=g;
-  document.querySelectorAll('.grade-btn').forEach(function(b){b.classList.toggle('active',b===btn);});
-  render();
-}
-function filterSubj(subj){
-  var match=_nodes.find(function(n){return (getEdit(n.id).subj||n.subj)===subj;});
-  if(match){_highlighted=match.id;render();showDetail(match.id);}
-  document.querySelectorAll('.subj-chip').forEach(function(c){c.classList.toggle('active',c.dataset.subj===subj&&!!_highlighted);});
-}
-function searchNodes(q){
-  if(!q){_highlighted=null;document.getElementById('detail-area').innerHTML='';render();return;}
-  q=q.toLowerCase();
-  var match=_nodes.find(function(n){
-    var ed=getEdit(n.id);
-    return (ed.name||n.label).toLowerCase().includes(q)||(n.subj||'').includes(q)||(String(n.grade)).includes(q);
-  });
-  if(match){_highlighted=match.id;render();showDetail(match.id);}
-}
+function hoverNode(id){ if(_hover===id) return; _hover=id; renderStage(); if(!_pin) renderSidebar(); }
+function unhoverNode(id){ if(_hover===id){ _hover=null; renderStage(); if(!_pin) renderSidebar(); } }
+function clickNode(ev,id){ ev.stopPropagation(); _pin=_pin===id?null:id; renderAll(); }
+function clearPin(){ if(_pin){ _pin=null; renderAll(); } }
+function closeDetail(ev){ if(ev) ev.stopPropagation(); _pin=null; _hover=null; renderAll(); }
+function toggleMode(ev,k){ if(ev) ev.stopPropagation(); _modeFilter=_modeFilter===k?null:k; renderAll(); }
+function resetAll(ev){ if(ev) ev.stopPropagation(); _hover=null; _pin=null; _modeFilter=null; renderAll(); }
 
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
+makeStars();
+renderModeLegend();
+renderSidebar();
+window.addEventListener('resize', measure);
+if(typeof ResizeObserver!=='undefined'){
+  new ResizeObserver(function(){ measure(); }).observe(document.getElementById('stage-container'));
+}
+measure();
 loadData();
 </script>
 </body>

@@ -179,7 +179,7 @@ try{
           🤖 Debate the Ustadh<br><span style="font-weight:400;font-size:11px;opacity:.8">Solo — AI responds immediately</span>
         </button>
         <button id="btn-challenge-mun" onclick="setMunMode('challenge')" style="padding:14px 10px;border-radius:8px;border:2px solid var(--cream3);background:var(--cream2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink3)">
-          ⚖ Engage a household<br><span style="font-weight:400;font-size:11px;opacity:.8">Async — inquiry with a real partner</span>
+          ⚔ Challenge a household<br><span style="font-weight:400;font-size:11px;opacity:.8">Async — real opponent</span>
         </button>
       </div>
       <!-- Spectator option -->
@@ -206,7 +206,7 @@ try{
         </div>
         <!-- Create: show generated code -->
         <div id="challenge-code-display" style="display:none;text-align:center;padding:12px;background:var(--sacred-pale);border:1.5px solid var(--sacred);border-radius:8px;margin-bottom:10px">
-          <p style="font-size:11px;font-weight:700;color:var(--sacred);margin-bottom:4px">Share this code with your inquiry partner</p>
+          <p style="font-size:11px;font-weight:700;color:var(--sacred);margin-bottom:4px">Share this code with your opponent</p>
           <p id="challenge-code-text" style="font-size:2rem;font-weight:900;color:var(--sacred);letter-spacing:.3em"></p>
         </div>
         <!-- Accept: enter code -->
@@ -531,6 +531,7 @@ async function acceptDebateChallenge(){
     var result = await sb.from('debate')
       .select('*').eq('code', code.toUpperCase())
       .neq('status','complete')
+      .order('created_at',{ascending:false})
       .limit(1);
     if(result.error){ toast('Could not look up challenge: '+(result.error.message||'connection error')); return false; }
     if(!result.data || !result.data.length){ toast('Challenge not found — check the code'); return false; }
@@ -946,24 +947,23 @@ async function generateUstadhMove(idx){
   var ustadhPos=D.studentPosition==='for'?'against':'for';
   var transcript=buildTranscript(idx);
 
-  var sys='You are the Ustadh — a learned, rigorous co-inquirer in the Islamic scholarly tradition.\n'+
-    'You are participating in a Munazara (structured inquiry) with '+D.studentName+', a Grade '+D.grade+' student.\n'+
-    'You are exploring the '+ustadhPos.toUpperCase()+' position on this claim:\n"'+D.claim+'"\n\n'+
-    'CRITICAL — UNDERSTAND YOUR ROLE:\n'+
-    'You are not trying to win. You are finding what is genuinely defensible from this position — the classical practice of nazar: examining a claim under pressure to find what is actually true.\n'+
-    'If the claim is comparative, argue the opposite comparison fully — not that both sides are problematic, but that your assigned side is actually stronger.\n'+
-    'INTELLECTUAL VIRTUE RULES (model these for the student):\n'+
-    '- When the student makes a genuinely strong point, concede it by name: "That is insaf — I grant that point. Here is what remains."\n'+
-    '- If they expose an assumption you cannot defend, acknowledge it openly: "I do not have a strong answer to that. This is where my position is weakest."\n'+
-    '- Do not retreat into vagueness to avoid conceding — sidq requires saying clearly what you cannot hold.\n'+
-    '- Leave one genuine vulnerability in your argument that a careful student could find.\n'+
-    'STYLE RULES:\n'+
-    '- Calibrate to Grade '+D.grade+' level — intellectually demanding but accessible\n'+
+  var sys='You are the Ustadh — a learned, patient, and formidable debate opponent in the Islamic tradition.\n'+
+    'You are participating in a Munazara (structured debate) with '+D.studentName+', a Grade '+D.grade+' student.\n'+
+    'You are arguing the '+ustadhPos.toUpperCase()+' position on this claim:\n"'+D.claim+'"\n\n'+
+    'CRITICAL — UNDERSTAND YOUR POSITION:\n'+
+    'If the claim is comparative ("X is more useful/better/worse than Y"), you must argue the OPPOSITE comparison.\n'+
+    'If FOR means "X is better than Y", then AGAINST means "Y is actually better than X" — not that both are bad.\n'+
+    'If FOR means "incomplete maps are more useful than wrong maps", AGAINST must argue "wrong maps are actually more useful than incomplete maps."\n'+
+    'Do NOT argue that both sides of the comparison are problematic. Pick the side you are assigned and defend it fully.\n'+
+    'IMPORTANT RULES:\n'+
+    '- Calibrate your argument to Grade '+D.grade+' level — intellectually challenging but accessible\n'+
+    '- Be a genuine opponent, not a gentle tutor. You believe your position.\n'+
+    '- Leave one small vulnerability in your argument that a sharp student could find\n'+
     '- Cite Islamic scholars, Quranic references, or historical examples where natural\n'+
-    '- 2-4 paragraphs. Direct. No flowery preamble.\n'+
-    '- For Opening: establish your position and its strongest grounds clearly\n'+
-    '- For Rebuttal: engage what the student said — grant what deserves granting, press what remains\n'+
-    '- For Closing: name the central disagreement honestly and what evidence or argument would resolve it';
+    '- 2-4 paragraphs. Direct and clear. No flowery preamble.\n'+
+    '- For Opening: establish your position clearly — state what you are arguing FOR, not just what you are against\n'+
+    '- For Rebuttal: engage directly with what your opponent said\n'+
+    '- For Closing: summarise your strongest point and address the central disagreement';
 
   var usr='Current stage: '+seq.label+'\n\n'+
     'Debate transcript so far:\n'+transcript+'\n\n'+
@@ -1039,17 +1039,16 @@ async function generateSynthesis(){
   var transcript=buildTranscript(6);
   var ustadhPos=D.studentPosition==='for'?'against':'for';
 
-  var sys='You are generating a Wednesday synthesis for a Munazara (structured inquiry) in an Islamic K-12 education platform.\n'+
-    'The inquiry was between '+D.studentName+' (Grade '+D.grade+', arguing '+D.studentPosition+') and the Ustadh (arguing '+ustadhPos+').\n'+
+  var sys='You are generating a Wednesday synthesis for a Munazara (structured debate) in an Islamic K-12 education platform.\n'+
+    'The debate was between '+D.studentName+' (Grade '+D.grade+', arguing '+D.studentPosition+') and the Ustadh (arguing '+ustadhPos+').\n'+
     'The claim was: "'+D.claim+'"\n\n'+
-    'The goal of a munazara is not to win but to find what is true. Evaluate accordingly.\n\n'+
     'Return a JSON object with exactly these keys:\n'+
     '{\n'+
-    '  "deepest_insight": "string — the single most important thing either side revealed about this claim, with who said it",\n'+
-    '  "where_understanding_shifted": "string — a moment where one debater\'s thinking visibly moved, or where the most important concession was made",\n'+
-    '  "what_remains_open": "string — the central question the inquiry could not settle, and why it is genuinely hard",\n'+
-    '  "adab_moments": ["string","string"] — up to 3 verbatim quotes (max 25 words each) where a debater showed intellectual virtue: conceding a point (insaf), expressing genuine uncertainty (tawadu), crediting the other\'s argument (amana), or honestly revising a position (sidq). Empty array if none occurred.",\n'+
-    '  "facilitator_prompt": "string — one question to open Wednesday discussion, pointing toward what the inquiry left unresolved"\n'+
+    '  "strongest_argument": "string — the single strongest argument made by either side, with who made it",\n'+
+    '  "weakest_point": "string — where one debater missed an opportunity the other left open",\n'+
+    '  "unresolved": "string — the central question the debate did not settle, and why",\n'+
+    '  "facilitator_prompt": "string — one question to open Wednesday discussion with the student",\n'+
+    '  "key_moves": ["string","string","string"] — three verbatim quotes (max 30 words each) that were the turning points\n'+
     '}\n'+
     'Return ONLY valid JSON. No markdown.';
 
@@ -1069,29 +1068,26 @@ async function generateSynthesis(){
 
 function renderSynthesis(s){
   var html='';
-
   html+='<div class="synthesis-section">';
-  html+='<h3>🔍 Deepest insight</h3>';
-  html+='<div class="synthesis-block gold">'+escHtml(s.deepest_insight||s.strongest_argument||'')+'</div>';
+  html+='<h3>💡 Strongest argument</h3>';
+  html+='<div class="synthesis-block gold">'+escHtml(s.strongest_argument||'')+'</div>';
   html+='</div>';
 
   html+='<div class="synthesis-section">';
-  html+='<h3>↔ Where understanding shifted</h3>';
-  html+='<div class="synthesis-block teal">'+escHtml(s.where_understanding_shifted||s.weakest_point||'')+'</div>';
+  html+='<h3>⚠ Missed opportunity</h3>';
+  html+='<div class="synthesis-block red">'+escHtml(s.weakest_point||'')+'</div>';
   html+='</div>';
 
   html+='<div class="synthesis-section">';
-  html+='<h3>❓ What remains open</h3>';
-  html+='<div class="synthesis-block" style="border-left:3px solid var(--sacred)">'+escHtml(s.what_remains_open||s.unresolved||'')+'</div>';
+  html+='<h3>❓ What remained unresolved</h3>';
+  html+='<div class="synthesis-block teal">'+escHtml(s.unresolved||'')+'</div>';
   html+='</div>';
 
-  var adabMoments=s.adab_moments||s.key_moves||[];
-  if(adabMoments.length){
+  if(s.key_moves&&s.key_moves.length){
     html+='<div class="synthesis-section">';
-    html+='<h3>🌿 Moments of intellectual virtue</h3>';
-    html+='<p style="font-size:12px;color:var(--ink3,#6a5a3a);margin-bottom:10px;line-height:1.6">Inṣāf (conceding a better argument) · Tawāḍuʿ (acknowledging uncertainty) · Amāna (crediting another\'s idea) · Ṣidq (honestly revising a position)</p>';
-    adabMoments.forEach(function(m){
-      html+='<div class="synthesis-block" style="font-family:Spectral,serif;font-style:italic;border-left:3px solid #e08a8a">'+escHtml(m)+'</div>';
+    html+='<h3>📌 Key moves to read aloud</h3>';
+    s.key_moves.forEach(function(m){
+      html+='<div class="synthesis-block" style="font-family:Spectral,serif;font-style:italic">'+escHtml(m)+'</div>';
     });
     html+='</div>';
   }
@@ -1102,10 +1098,10 @@ function renderSynthesis(s){
   html+='</div>';
 
   html+='<div class="synthesis-block sacred" style="margin-top:20px;font-size:13px">';
-  html+='<strong>How to use this on Wednesday:</strong> Read the insight and the open question aloud. ';
-  html+='If any moments of intellectual virtue are listed, read those too — name the virtue. ';
-  html+='Ask the facilitator prompt and let the student respond without preparation. ';
-  html+='The question that remained open becomes the seed for next week\'s munazara claim.';
+  html+='<strong>How to use this on Wednesday:</strong> Read the key moves aloud together. ';
+  html+='Ask the facilitator prompt. Let the student respond without preparation. ';
+  html+='Discuss the unresolved question — why didn\'t the debate settle it? ';
+  html+='This discussion becomes the capstone that the Thursday synthesis deck can reference.';
   html+='</div>';
 
   document.getElementById('synthesis-content').innerHTML=html;

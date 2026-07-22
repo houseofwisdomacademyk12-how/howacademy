@@ -129,7 +129,12 @@ input.field:focus{outline:none;border-color:var(--gold);background:white}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+var sb = null;
+try{
+  if(typeof supabase !== 'undefined'){
+    sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+  }
+}catch(e){}
 /* ─────────────────────────────────────────────────── */
 </script>
 </head>
@@ -168,6 +173,7 @@ const sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_
         <button class="mode-pill" data-mode="challenge" onclick="setMode(this)">Challenge me</button>
         <button class="mode-pill" data-mode="munazara" onclick="setMode(this)">Munazara prep</button>
         <button class="mode-pill" data-mode="thread" onclick="setMode(this)">Find threads</button>
+        <button class="mode-pill" data-mode="adab" onclick="setMode(this)">Adab watch</button>
       </div>
     </div>
 
@@ -411,7 +417,7 @@ function setMode(btn){
   document.querySelectorAll('.mode-pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   currentMode=btn.dataset.mode;
-  const subtitles={open:'Open inquiry · reading your sahifa',challenge:'Challenge mode · pushing beyond mastery',munazara:'Munazara prep · the murshid as opponent',thread:'Thread finder · connecting across years'};
+  const subtitles={open:'Open inquiry · reading your sahifa',challenge:'Challenge mode · pushing beyond mastery',munazara:'Munazara prep · the murshid as opponent',thread:'Thread finder · connecting across years',adab:'Adab watch · the murshid as rijāl observer (facilitator area)'};
   document.getElementById('convo-subtitle').textContent=subtitles[currentMode]||'';
   updateQuickActions();
   updateRightPanel();
@@ -442,6 +448,10 @@ function updateQuickActions(){
       {label:'Connect to current week',text:'What from my earliest entries connects to what I\'m studying now?'},
       {label:'Scholar thread',text:'Which scholar appears across the most entries in my sahifa?'},
     ],
+    adab:[
+      {label:'What counts as adab?',text:'What kinds of character and etiquette should I be noticing in my students\' work together?'},
+      {label:'How was it done traditionally?',text:'How did the rijal scholars traditionally assess a narrator\'s character (adalah)?'},
+    ],
   };
   const list=actions[currentMode]||actions.open;
   qa.innerHTML=list.map(a=>`<button class="quick-btn" onclick="insertQuick(${JSON.stringify(a.text)})">${a.label}</button>`).join('');
@@ -454,6 +464,168 @@ function insertQuick(text){
   autoResize(inp);
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// ADAB WATCH — the Murshid as rijāl observer (facilitator area)
+// The Murshid scans the week's cross-student artifacts and NOMINATES
+// instances of good character, each with quoted evidence. Positive only.
+// Nominations stay private to this queue until the facilitator confirms
+// (taʿdīl) — only then do they appear as adab badges on the Isnād Map.
+// ══════════════════════════════════════════════════════════════════════
+function escA(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function getFacName(){ return localStorage.getItem('how_facilitator_name')||''; }
+
+function renderAdabPanel(rp,title){
+  title.textContent='Adab watch · facilitator';
+  const fac=getFacName();
+  rp.innerHTML=`
+  <div style="padding:14px">
+    <p style="font-size:12px;color:var(--ink-3);line-height:1.7;margin-bottom:12px">The murshid reads the week's shared work — halaqa messages, studio contributions, peer reflections — and <strong>nominates</strong> moments of good character, each with quoted evidence. Nothing appears on the Isnād Map until you confirm it. <em>Positive observations only.</em></p>
+    <p style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px">Confirming as (facilitator)</p>
+    <input id="adab-fac-name" value="${escA(fac)}" placeholder="Facilitator name" onchange="localStorage.setItem('how_facilitator_name',this.value.trim())" style="width:100%;box-sizing:border-box;border:1px solid var(--ink-5);border-radius:8px;padding:7px 10px;font-size:12.5px;font-family:inherit;color:var(--ink);background:var(--p1,#fff);margin-bottom:10px">
+    <button class="quick-btn" style="width:100%;justify-content:center;padding:9px" onclick="scanAdab()">🔍 Scan this week's shared work</button>
+    <div id="adab-scan-status" style="margin-top:8px"></div>
+    <div style="margin-top:14px">
+      <p style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4);margin-bottom:8px">Nominations awaiting your confirmation</p>
+      <div id="adab-queue"><p style="font-size:12px;color:var(--ink-4);font-style:italic">Loading…</p></div>
+    </div>
+    <div style="margin-top:14px">
+      <p style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4);margin-bottom:8px">Confirmed this term</p>
+      <div id="adab-confirmed"><p style="font-size:12px;color:var(--ink-4);font-style:italic">Loading…</p></div>
+    </div>
+  </div>`;
+  loadAdabQueue();
+}
+
+async function loadAdabQueue(){
+  const q=document.getElementById('adab-queue');
+  const c=document.getElementById('adab-confirmed');
+  if(!sb || !localStorage.getItem('how_jwt')){
+    if(q) q.innerHTML='<p style="font-size:12px;color:var(--ink-4)">Sign in on the platform to load nominations.</p>';
+    if(c) c.innerHTML='';
+    return;
+  }
+  try{
+    const r=await sb.from('transmission_verification').select('*')
+      .eq('kind','adab').in('status',['nominated','verified'])
+      .order('created_at',{ascending:false}).limit(40);
+    const rows=r.data||[];
+    const noms=rows.filter(x=>x.status==='nominated');
+    const conf=rows.filter(x=>x.status==='verified').slice(0,6);
+    if(q) q.innerHTML=noms.length?noms.map(n=>`
+      <div style="background:var(--p1,#fff);border:1px solid var(--ink-5);border-left:3px solid #e08a8a;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:9px">
+        <p style="font-size:12.5px;font-weight:600;color:var(--ink);margin:0 0 4px">${escA(n.to_name)}</p>
+        <p style="font-size:12px;color:var(--ink-2);line-height:1.6;font-style:italic;margin:0 0 5px">${escA(n.evidence||'')}</p>
+        <p style="font-size:10.5px;color:var(--ink-4);margin:0 0 8px">${escA(n.evidence_ref||'')}</p>
+        <div style="display:flex;gap:6px">
+          <button class="quick-btn" style="background:#E1F5EE;border-color:#5DCAA5;color:#085041" onclick="confirmAdab('${escA(n.id)}')">✓ Confirm</button>
+          <button class="quick-btn" onclick="dismissAdab('${escA(n.id)}')">Dismiss</button>
+        </div>
+      </div>`).join('')
+      :'<p style="font-size:12px;color:var(--ink-4);font-style:italic">No pending nominations — run a scan.</p>';
+    if(c) c.innerHTML=conf.length?conf.map(n=>`
+      <div style="padding:7px 10px;background:var(--gold-pale,#FAEEDA);border-radius:8px;margin-bottom:7px">
+        <p style="font-size:12px;color:var(--ink);margin:0"><strong>${escA(n.to_name)}</strong> <span style="font-size:10.5px;color:var(--ink-4)">· by ${escA(n.verified_by||'facilitator')}</span></p>
+        <p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;font-style:italic;margin:2px 0 0">${escA((n.evidence||'').slice(0,110))}${(n.evidence||'').length>110?'…':''}</p>
+      </div>`).join('')
+      :'<p style="font-size:12px;color:var(--ink-4);font-style:italic">None yet.</p>';
+  }catch(e){
+    if(q) q.innerHTML='<p style="font-size:12px;color:var(--coral,#C4552E)">Could not load: '+escA(e.message||'error')+'</p>';
+  }
+}
+
+async function scanAdab(){
+  const st=document.getElementById('adab-scan-status');
+  if(!sb || !localStorage.getItem('how_jwt')){ if(st) st.innerHTML='<p style="font-size:12px;color:var(--ink-4)">Sign in on the platform first.</p>'; return; }
+  if(st) st.innerHTML='<p style="font-size:12px;color:var(--ink-4)"><em>Gathering the week\'s shared work…</em></p>';
+  const since=new Date(Date.now()-7*24*3600*1000).toISOString();
+  const artifacts=[];
+  try{
+    // Halaqa messages (learning-circle conduct)
+    try{
+      const hm=await sb.from('halaqa_message').select('sender_name,sender_role,text,created_at').gte('created_at',since).order('created_at',{ascending:false}).limit(150);
+      (hm.data||[]).forEach(m=>{ if(m.sender_role!=='ai') artifacts.push('[halaqa] '+m.sender_name+': '+String(m.text||'').slice(0,220)); });
+    }catch(e){}
+    // Studio build-ons and viewer annotations (Tuesday contributions)
+    try{
+      const sp=await sb.from('studio_project').select('student_name,title,build_ons,math_annotations');
+      (sp.data||[]).forEach(p=>{
+        (Array.isArray(p.build_ons)?p.build_ons:[]).forEach(b=>{ if(b.student) artifacts.push('[studio · on '+(p.student_name||'?')+'\'s "'+(p.title||'')+'"] '+b.student+' ('+(b.tag||b.type||'build-on')+'): '+String(b.text||'').slice(0,220)); });
+        (Array.isArray(p.math_annotations)?p.math_annotations:[]).forEach(a=>{ if(a.who) artifacts.push('[studio annotation · on '+(p.student_name||'?')+'\'s "'+(p.title||'')+'"] '+a.who+': '+String(a.text||'').slice(0,220)); });
+      });
+    }catch(e){}
+    // Peer reflections & build-on seals (Wednesday receptions)
+    try{
+      const tv=await sb.from('transmission_verification').select('kind,from_name,to_name,evidence,created_at').in('kind',['reception','buildon']).gte('created_at',since).limit(80);
+      (tv.data||[]).forEach(v=>{ artifacts.push('['+v.kind+' · learned from '+v.from_name+'] '+v.to_name+': '+String(v.evidence||'').slice(0,220)); });
+    }catch(e){}
+  }catch(e){}
+  if(!artifacts.length){ if(st) st.innerHTML='<p style="font-size:12px;color:var(--ink-4)">No shared work found this week.</p>'; return; }
+
+  if(st) st.innerHTML='<p style="font-size:12px;color:var(--ink-4)"><em>The murshid is reading '+artifacts.length+' artifacts…</em></p>';
+  let noms=[];
+  try{
+    const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,
+        system:'You are the Murshid acting as a rijal observer, assessing adab (character and etiquette) shown in students\' shared work. Identify AT MOST 5 clear instances of good character: patience with a struggling peer, crediting someone else\'s idea, helping without being asked, humility about what one does not know, gentle correction, encouraging a younger student, honoring another\'s work while building on it. POSITIVE OBSERVATIONS ONLY — never note bad behavior. Each nomination must quote its evidence verbatim from the artifacts. If nothing clearly qualifies, return an empty array — do not stretch. Respond ONLY with a JSON array: [{"student":"name","quote":"verbatim evidence","why":"one short line on the character shown","source":"which artifact"}]',
+        messages:[{role:'user',content:'This week\'s shared artifacts:\n\n'+artifacts.join('\n')+'\n\nJSON nominations:'}]})
+    });
+    const d=await resp.json();
+    const raw=(d.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
+    noms=JSON.parse(raw);
+    if(!Array.isArray(noms)) noms=[];
+  }catch(e){
+    if(st) st.innerHTML='<p style="font-size:12px;color:var(--coral,#C4552E)">The murshid could not complete the scan — try again shortly.</p>';
+    return;
+  }
+
+  // Dedupe against existing nominations/confirmations
+  let existing=[];
+  try{
+    const ex=await sb.from('transmission_verification').select('to_name,evidence').eq('kind','adab');
+    existing=ex.data||[];
+  }catch(e){}
+  let added=0;
+  for(const n of noms){
+    if(!n || !n.student || !n.quote) continue;
+    const evText='"'+n.quote+'" — '+(n.why||'');
+    const dup=existing.some(x=>x.to_name===n.student && x.evidence && x.evidence.indexOf(String(n.quote).slice(0,60))>-1);
+    if(dup) continue;
+    try{
+      const r=await sb.from('transmission_verification').insert({
+        household_id: localStorage.getItem('how_household_id')||null,
+        kind:'adab', teaching_id:null,
+        from_name:'Community', to_name:n.student,
+        evidence:evText, evidence_ref:n.source||'weekly scan',
+        status:'nominated', verified_by:'murshid'
+      });
+      if(!r.error) added++;
+    }catch(e){}
+  }
+  if(st) st.innerHTML='<p style="font-size:12px;color:var(--ink-3)">'+(added?added+' new nomination'+(added>1?'s await':' awaits')+' your confirmation below.':'Nothing new this scan — either quiet adab or already nominated.')+'</p>';
+  loadAdabQueue();
+}
+
+async function confirmAdab(id){
+  const fac=(document.getElementById('adab-fac-name')?.value||'').trim()||getFacName();
+  if(!fac){ toast('Enter your facilitator name first — the taʿdīl carries your name.'); return; }
+  try{
+    const r=await sb.from('transmission_verification').update({ status:'verified', verified_by:fac }).eq('id',id).eq('kind','adab');
+    if(r.error) throw r.error;
+    toast('Confirmed ✓ adab badge will appear on the Isnād Map');
+  }catch(e){ toast('Confirm failed: '+(e.message||'error')); }
+  loadAdabQueue();
+}
+
+async function dismissAdab(id){
+  try{
+    const r=await sb.from('transmission_verification').update({ status:'rejected' }).eq('id',id).eq('kind','adab');
+    if(r.error) throw r.error;
+    toast('Dismissed — it will not appear anywhere.');
+  }catch(e){ toast('Dismiss failed: '+(e.message||'error')); }
+  loadAdabQueue();
+}
+
 // ── RIGHT PANEL ──────────────────────────────────────────────────
 function updateRightPanel(){
   const rp=document.getElementById('right-panel-content');
@@ -461,6 +633,7 @@ function updateRightPanel(){
   if(currentMode==='open'||currentMode==='thread') renderRulesPanel(rp,title);
   else if(currentMode==='challenge') renderChallengePanel(rp,title);
   else if(currentMode==='munazara') renderMunazaraPanel(rp,title);
+  else if(currentMode==='adab') renderAdabPanel(rp,title);
 }
 
 function renderRulesPanel(rp,title){

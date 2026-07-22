@@ -1056,9 +1056,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <span class="nav-logo">م بَيْتُ الْحِكْمَة</span>
     <div class="nav-tabs">
       <!-- Primary tabs — always visible -->
-      <button class="ntab active" data-p="overview" onclick="SP(this)">Home</button>
-      <!-- Institution (sign in/sign up) page — no visible tab; reached via the Sign in / Sign up button. Hidden button kept so SP() navigation to this page still works. -->
-      <button class="ntab" data-p="institution" onclick="SP(this)" style="display:none">Sign in</button>
+      <button class="ntab" data-p="institution" onclick="SP(this)">Home</button>
       <button class="ntab" data-p="schedule" onclick="SP(this)">📅 Schedule</button>
       <button class="ntab" data-p="generate" onclick="SP(this);syncLG()">⚡ Generate</button>
 
@@ -1088,6 +1086,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
           <button data-p="pedagogy" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Pedagogy</button>
           <button data-p="sacred" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Sacred layer</button>
           <button data-p="assessment" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Assessment</button>
+          <button data-p="overview" onclick="event.stopPropagation();SP(this);closeNavDropdowns()">Overview</button>
         </div>
       </div>
     </div>
@@ -1726,7 +1725,7 @@ function SP(btn){
   // Auto-sync schedule to current grade/week on visit
   if(btn.dataset.p==='schedule'){
     setTimeout(function(){ if(typeof syncScheduleToCurrentWeek==='function') syncScheduleToCurrentWeek();
-      if(typeof setSchedRole==='function') setSchedRole((typeof _schedRole!=='undefined'&&_schedRole)||'facilitator'); },50);
+      if(typeof setSchedRole==='function') setSchedRole(S.mode||'facilitator'); },50);
   }
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -2398,12 +2397,7 @@ function setSchedRole(role){
     var jwt=localStorage.getItem('how_jwt');
     var students=[];
     try{students=JSON.parse(localStorage.getItem('how_students')||'[]');}catch(e){}
-    // If a student has already verified their PIN this session, stay in student mode — don't re-prompt
-    var activeStudent=null;
-    try{activeStudent=JSON.parse(localStorage.getItem('how_active_student')||'null');}catch(e){}
-    if(activeStudent){
-      setRole('student');
-    } else if(jwt&&students.length){
+    if(jwt&&students.length){
       var instBtn=document.querySelector('.ntab[data-p="institution"]');
       if(instBtn) SP(instBtn);
       showStudentPinPanel(true);
@@ -8420,8 +8414,8 @@ async function applyUserToProfile(user, accessToken){
   subscribeToNotifications();
   // First-time migration: offer to upload existing local data
   checkFirstTimeMigration();
-  var homeBtn=document.querySelector('.ntab[data-p="overview"]');
-  if(homeBtn) SP(homeBtn);
+  var schedBtn=document.querySelector('.ntab[data-p="schedule"]');
+  if(schedBtn) SP(schedBtn);
   render();
   if(typeof updateSchedule==='function') updateSchedule();
 }

@@ -313,29 +313,21 @@ button.btn.teal { background: var(--teal-light); border-color: var(--teal); colo
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ── SUPABASE CREDENTIALS — replace before deploying ── */
-const sb = supabase.createClient(
-  'https://apallkuclqcqxnbmjuqu.supabase.co',
-  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-);
+var sb = null;
+try{
+  if(typeof supabase !== 'undefined'){
+    sb = supabase.createClient(
+      'https://apallkuclqcqxnbmjuqu.supabase.co',
+      'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+    );
+  }
+}catch(e){}
 /* ─────────────────────────────────────────────────── */
 </script>
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
-
-<div class="modal-bg" id="api-modal">
-  <div class="modal">
-    <p class="modal-title">Connect your murshid</p>
-    <p class="modal-sub">The murshid reads your sahifa and responds to where you are. To activate it, enter your Anthropic API key. Your key is stored only in this browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="api-key-input" placeholder="sk-ant-..." />
-    <div class="btn-row">
-      <button class="btn primary" onclick="saveApiKey()">Connect murshid</button>
-      <button class="btn" onclick="closeModal()">Continue without murshid</button>
-    </div>
-    <p class="modal-note">Get a key at console.anthropic.com — the murshid uses claude-sonnet-4-6. Without a key, you can still use all sahifa features; the murshid panel will show example responses.</p>
-  </div>
-</div>
 
 <div class="app">
   <!-- SIDEBAR -->
@@ -414,17 +406,26 @@ const S = {
 function getEntries(){ return S.get('entries') || []; }
 function countEntries(){ return getEntries().length; }
 function saveEntries(e){ S.set('entries', e); updateMeta(); }
-function getSettings(){ return S.get('settings') || { name:'Your Name', grade:'7', juz:'8', apiKey:'' }; }
+function getSettings(){ return Object.assign({ name:'', grade:'7', juz:'8' }, S.get('settings') || {}); }
 function saveSettings(s){ S.set('settings', s); }
+
+function getActiveStudentName(){
+  try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); return (a && a.name) || ''; }catch(e){ return ''; }
+}
+function getDisplayName(){
+  var s=getSettings();
+  return s.name || getActiveStudentName() || 'Your Name';
+}
 
 function getRevisions(){ return S.get('revisions') || []; }
 function getOpenQuestions(){ return S.get('questions') || []; }
 
 function updateMeta(){
   const s = getSettings();
-  const initials = s.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || 'YA';
+  const name = getDisplayName();
+  const initials = name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || 'YA';
   document.getElementById('avatar-initials').textContent = initials;
-  document.getElementById('sidebar-student-name').textContent = s.name || 'Your Name';
+  document.getElementById('sidebar-student-name').textContent = name;
   document.getElementById('sidebar-student-meta').textContent = `sahifa · year ${s.grade || 7} of 13 · ${countEntries()} entries`;
   document.getElementById('juz-display').textContent = `Juz ${s.juz || 1}`;
   document.getElementById('entry-count-footer').textContent = `${countEntries()} entries total`;
@@ -561,19 +562,11 @@ function getLatestTeachIt(){
   }catch(e){ return null; }
 }
 
-// ── MURSHID API ───────────────────────────────────────────────────────
+// ── MURSHID API — via Railway proxy (no API key needed) ───────────────
 async function sahifaCallAPI(sys, usr, maxTok){
-  const s = getSettings();
-  const key = s.apiKey||'';
-  if(!key) return '[No Murshid key — connect one in Settings to unlock AI features]';
-  const resp = await fetch('https://api.anthropic.com/v1/messages',{
+  const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': key,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
+    headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens: maxTok||600,
@@ -582,6 +575,7 @@ async function sahifaCallAPI(sys, usr, maxTok){
     })
   });
   const d = await resp.json();
+  if(d.error) throw new Error(d.error.message||'Murshid unavailable');
   return (d.content||[]).map(b=>b.text||'').join('').trim();
 }
 
@@ -863,7 +857,6 @@ function renderMurshid(mc){
   const entries = getEntries();
   const hasEntry = entries.some(e=>e.type==='main' || e.type==='opening');
   const s = getSettings();
-  const hasKey = !!(s.apiKey);
 
   mc.innerHTML = `
   <div class="page-header">
@@ -884,7 +877,6 @@ function renderMurshid(mc){
       <textarea id="murshid-question" rows="4" placeholder="I've been thinking about… My question is…"></textarea>
       <div class="btn-row">
         <button class="btn primary" onclick="askMurshid()">Send to murshid</button>
-        ${!hasKey ? `<button class="btn" onclick="nav(document.querySelector('[data-section=settings]'))">Add API key →</button>` : ''}
       </div>
       <div id="murshid-loading" style="display:none">
         <div class="murshid-thinking">
@@ -909,17 +901,21 @@ function renderMurshid(mc){
   </div>`;
 }
 
-async 
 async function generateChallenge(){
   const s = getSettings();
   const entries = getEntries();
   document.getElementById('challenge-result').innerHTML = `<div class="murshid-thinking"><div class="dot-pulse"><span></span><span></span><span></span></div> Finding a thread in your sahifa…</div>`;
 
-  await new Promise(r=>setTimeout(r,800));
-
-  const challenge = s.apiKey
-    ? 'Challenge generated from your sahifa — (connect API key and try again for a live challenge)'
-    : 'In Grade 5, Week 7, you wrote that Al-Idrisi used circles to map the known world. You now know that circumference ÷ diameter = π. If Al-Idrisi\'s map of the Mediterranean had a circular border with circumference 4,800 km, what was its diameter — and what does that tell you about the scale of his map? This is in your sahifa because you made a connection two years ago. The murshid remembered it.';
+  let challenge;
+  try{
+    const hist = entries.slice(-12).map(e=>'['+(e.type||'entry')+'] '+e.text).join('\n');
+    challenge = await sahifaCallAPI(
+      'You are the Murshid — a wise guide. Read the student\'s sahifa entries and pose ONE challenge question that connects two different things they have written, pushing their thinking further. Grade '+(s.grade||7)+' level. 3-4 sentences. Never give the answer.',
+      'Sahifa entries:\n'+(hist||'(no entries yet — pose a rich starter challenge about mapping, measurement, or how knowledge travels)')+'\n\nPose this week\'s challenge now. Respond with the challenge text only.',
+      400);
+  }catch(e){
+    challenge = 'In Grade 5, Week 7, you wrote that Al-Idrisi used circles to map the known world. You now know that circumference ÷ diameter = π. If Al-Idrisi\'s map of the Mediterranean had a circular border with circumference 4,800 km, what was its diameter — and what does that tell you about the scale of his map? This is in your sahifa because you made a connection two years ago. The murshid remembered it.';
+  }
 
   document.getElementById('challenge-result').innerHTML = `
     <div class="murshid-panel">
@@ -1019,13 +1015,31 @@ function saveRevision(){
 }
 
 // ── ISNAD ──────────────────────────────────────────────────────────
+// Reconciliation with how_isnad.html (the Isnād Map):
+//   · This page  = YOUR personal chain — this week's scholar, what you've
+//     taught, and transmissions you record by hand.
+//   · The Map    = the whole school's network, built from published
+//     teachings and completed debates in Supabase.
+// Transmissions recorded here are saved locally, mirrored to the platform's
+// isnad record (how_isnad_entries) and pushed to Supabase as sahifa entries.
+function getIsnadTransmissions(){ return S.get('isnad_transmissions') || []; }
+
 function renderIsnad(mc){
   const s = getSettings();
+  const myName = getDisplayName();
+  const transmissions = getIsnadTransmissions();
   mc.innerHTML = `
   <div class="page-header">
     <p class="page-kicker">Chain of transmission</p>
     <h1 class="page-title serif">My isnad</h1>
     <p class="page-sub">The unbroken chain of people and scholars whose knowledge reaches you — and through you, reaches forward.</p>
+  </div>
+
+  <div class="entry-card" style="margin-bottom:14px">
+    <div class="entry-card-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <p class="entry-prompt" style="margin:0;flex:1;min-width:200px">This page is <strong>your personal chain</strong>. The whole school's network — every published teaching and completed debate — lives in the Isnād Map.</p>
+      <button class="btn primary" onclick="window.open('how_isnad.html','_blank')">Open the Isnād Map →</button>
+    </div>
   </div>
 
   <p class="section-label">Scholarly lineage — the ideas reaching you this week</p>
@@ -1036,7 +1050,7 @@ function renderIsnad(mc){
       if(!scholar) return `<p style="color:var(--ink-4);font-size:.85rem;font-style:italic">Scholarly lineage will appear once the week's scholar is set in the platform.</p>`;
       return `<div class="isnad-node">${scholar}<small>this week's scholar</small></div>
       <span class="isnad-arrow">→</span>
-      <div class="isnad-node you">${s.name||'You'} · Grade ${s.grade||7}</div>`;
+      <div class="isnad-node you">${myName} · Grade ${s.grade||7}</div>`;
     })()} 
   </div>
 
@@ -1047,18 +1061,46 @@ function renderIsnad(mc){
     if(!teachings.length) return `<p style="color:var(--ink-4);font-size:.85rem;font-style:italic">No teachings recorded yet — complete a Teach It session to build your isnad.</p>`;
     return teachings.slice(0,3).map(t=>`
     <div class="isnad-chain">
-      <div class="isnad-node you">${s.name||'You'}</div>
+      <div class="isnad-node you">${myName}</div>
       <span class="isnad-arrow">→</span>
       <div class="isnad-node"><small>${t.title||t.subject} · ${t.juz||''}</small></div>
     </div>`).join('');
   })()} 
 
   <hr class="divider">
+  <p class="section-label">Recorded transmissions (${transmissions.length})</p>
+  ${transmissions.length === 0
+    ? `<p style="color:var(--ink-4);font-size:.85rem;font-style:italic">Nothing recorded yet — after you teach someone, record it below.</p>`
+    : transmissions.slice(0,8).map(t=>`
+    <div class="entry-card" style="margin-bottom:8px">
+      <div class="entry-card-body">
+        <p style="font-size:11px;color:var(--ink-4);margin:0 0 4px">${t.date} · Grade ${t.grade} · Week ${t.week}</p>
+        <p class="entry-text" style="margin:0">${t.text}</p>
+      </div>
+    </div>`).join('')}
+
+  <hr class="divider">
   <p class="section-label">Record a transmission</p>
   <div class="entry-card">
     <div class="entry-card-body">
       <p class="entry-prompt">After you teach something to a younger student, record it here. What did you teach? What questions did they ask that you couldn't answer?</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <input id="isnad-topic" placeholder="What you taught — short title (e.g. Fractions on a number line)" style="flex:2;min-width:200px;border:1px solid var(--ink-5);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--parchment)">
+        <select id="isnad-subject" style="flex:1;min-width:130px;border:1px solid var(--ink-5);border-radius:var(--r);padding:8px 10px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--parchment)">
+          <option value="">Subject…</option>
+          <option value="quran">Qur'an</option><option value="math">Math</option>
+          <option value="reading">Reading / ELA</option><option value="science">Science</option>
+          <option value="social">Social Studies</option><option value="adab">Adab &amp; Character</option>
+          <option value="studios">Studios</option>
+        </select>
+        <select id="isnad-grade" style="flex:1;min-width:120px;border:1px solid var(--ink-5);border-radius:var(--r);padding:8px 10px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--parchment)">
+          <option value="">Their grade…</option>
+          <option value="0">Kindergarten</option>
+          ${[1,2,3,4,5,6,7,8,9,10,11,12].map(g=>`<option value="${g}">Grade ${g}</option>`).join('')}
+        </select>
+      </div>
       <textarea id="isnad-text" rows="4" placeholder="I taught [name] about [topic]. They asked… I couldn't fully answer…"></textarea>
+      <p style="font-size:11px;color:var(--ink-4);margin:6px 0 0;line-height:1.5">Filling in the topic, subject and grade publishes this transmission as a node on the school's Isnād Map. The written reflection stays in your sahifa.</p>
       <div class="btn-row"><button class="btn primary" onclick="saveIsnad()">Record transmission</button></div>
     </div>
   </div>`;
@@ -1067,8 +1109,65 @@ function renderIsnad(mc){
 function saveIsnad(){
   const t = document.getElementById('isnad-text')?.value?.trim();
   if(!t){ toast('Write the transmission first.'); return; }
+  const s = getSettings();
+  const topic       = document.getElementById('isnad-topic')?.value?.trim() || '';
+  const subject     = document.getElementById('isnad-subject')?.value || '';
+  const taughtGrade = document.getElementById('isnad-grade')?.value ?? '';
+  const rec = { id:'isn'+Date.now(), date:new Date().toLocaleDateString(), grade:s.grade||'7', week:s.juz||'1',
+                text:t, topic:topic, subject:subject, taughtGrade:taughtGrade };
+  // 1) Save in the sahifa
+  const list = getIsnadTransmissions();
+  list.unshift(rec);
+  S.set('isnad_transmissions', list.slice(0,200));
+  // 2) Mirror into the platform's isnad record (same shape as recordIsnadEntry)
+  try{
+    var e=[]; try{ e=JSON.parse(localStorage.getItem('how_isnad_entries')||'[]'); }catch(x){}
+    e.unshift({ id:rec.id, date:rec.date, grade:rec.grade, week:rec.week, teacher:getDisplayName(), concept:topic||t });
+    if(e.length>200) e=e.slice(0,200);
+    localStorage.setItem('how_isnad_entries', JSON.stringify(e));
+  }catch(x){}
+  // 3) Push to Supabase so it persists with the rest of the sahifa
+  try{ pushSahifaEntry({ type:'isnad', text:(topic?topic+' — ':'')+t }); }catch(x){}
+  // 4) Publish as a node on the Isnād Map (teaching table) when fields are filled
+  if(subject && taughtGrade!==''){ pushTransmissionToMap(rec); }
   toast('Transmission recorded in your isnad.');
   document.getElementById('isnad-text').value = '';
+  renderSection('isnad');
+}
+
+async function pushTransmissionToMap(rec){
+  // Inserts a published `teaching` row so this transmission appears as a node
+  // on the whole-school Isnād Map (how_isnad.html). The map dedupes people by
+  // name, so it extends the teacher's existing chain rather than duplicating.
+  var jwt = localStorage.getItem('how_jwt');
+  var hid = localStorage.getItem('how_household_id');
+  if(!jwt || !hid || typeof sb==='undefined' || !sb) return;
+  var active=null; try{ active=JSON.parse(localStorage.getItem('how_active_student')||'null'); }catch(e){}
+  var row = {
+    household_id:  hid,
+    teacher_name:  getDisplayName(),
+    student_id:    active ? active.id : null,
+    taught_grade:  parseInt(rec.taughtGrade,10),
+    subject:       rec.subject || 'math',
+    title:         rec.topic || rec.text.slice(0,60),
+    is_published:  true
+  };
+  try{
+    var r = await sb.from('teaching').insert(row);
+    if(r.error) throw r.error;
+    toast('Published to the Isnād Map ✓');
+  }catch(e1){
+    // Retry without household_id in case the column name differs in this table
+    try{
+      delete row.household_id;
+      var r2 = await sb.from('teaching').insert(row);
+      if(r2.error) throw r2.error;
+      toast('Published to the Isnād Map ✓');
+    }catch(e2){
+      console.warn('Isnād Map publish failed:', (e2&&e2.message)||e2);
+      toast('Saved locally — could not publish to the Map');
+    }
+  }
 }
 
 // ── OPEN QUESTIONS ─────────────────────────────────────────────────
@@ -1142,7 +1241,7 @@ function renderArchive(mc){
   <div class="page-header">
     <p class="page-kicker">The full manuscript</p>
     <h1 class="page-title serif">All entries</h1>
-    <p class="page-sub">${countEntries()} entries across ${grade} years. Every entry preserved, every revision visible, no wrong answer deleted.</p>
+    <p class="page-sub">${countEntries()} entries across ${grade+1} years. Every entry preserved, every revision visible, no wrong answer deleted.</p>
   </div>
 
   <div class="tab-row">
@@ -1151,19 +1250,20 @@ function renderArchive(mc){
     <button class="tab" onclick="this.parentNode.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">By scholar</button>
   </div>
 
-  ${Array.from({length:grade},(_, i)=>{
-    const g = grade-i;
+  ${Array.from({length:grade+1},(_, i)=>{
+    const g = grade-i; // grade … 1, then 0 = Kindergarten
     const isCurrent = g===grade;
+    const yearLabel = g===0 ? 'Kindergarten' : `Grade ${g}`;
     const colors = [
       ['#EEEDFE','#3C3489','#AFA9EC'],['#E1F5EE','#085041','#5DCAA5'],
       ['#FAEEDA','#633806','#EF9F27'],['#E6F1FB','#0C447C','#85B7EB'],
       ['#FAECE7','#712B13','#F5C4B3'],['#EAF3DE','#27500A','#97C459'],
       ['#F1EFE8','#444441','#B4B2A9'],
     ];
-    const [bg,fg,border] = colors[(g-1)%colors.length];
+    const [bg,fg,border] = colors[g%colors.length];
     return `<div class="archive-year" style="background:${bg};border-color:${border}">
       <div style="flex:1">
-        <p style="font-size:13px;font-weight:500;color:${fg};margin:0 0 2px">Grade ${g}${isCurrent?' · current year':''}</p>
+        <p style="font-size:13px;font-weight:500;color:${fg};margin:0 0 2px">${yearLabel}${isCurrent?' · current year':''}</p>
         <p style="font-size:11px;color:${fg};opacity:.75;margin:0">30 weeks · ${isCurrent?'in progress':'complete'}</p>
       </div>
       <p style="font-size:11px;color:${fg};opacity:.65;text-align:right;max-width:180px;line-height:1.4">${isCurrent?getEntries().length+' entries this year':'All entries preserved'}</p>
@@ -1218,17 +1318,6 @@ function renderSettings(mc){
     </div>
   </div>
 
-  <div class="entry-card">
-    <div class="entry-card-header">
-      <span class="entry-card-title">Murshid — Anthropic API key</span>
-    </div>
-    <div class="entry-card-body">
-      <p class="entry-prompt">Your API key is stored only in this browser (localStorage). It is never sent anywhere except directly to Anthropic's API. Get a key at console.anthropic.com.</p>
-      <input type="password" id="s-key" value="${s.apiKey||''}" placeholder="sk-ant-…" style="width:100%;border:1px solid var(--ink-5);border-radius:var(--r);padding:9px 12px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--parchment);margin-bottom:8px">
-      <p style="font-size:11px;color:var(--ink-4);line-height:1.5">Without a key, all sahifa features work but the murshid will respond in demo mode. With a key, the murshid reads your actual entries and responds to your specific thinking.</p>
-    </div>
-  </div>
-
   <div class="btn-row">
     <button class="btn primary" onclick="applySettings()">Save settings</button>
     <button class="btn" style="color:var(--coral);border-color:var(--coral-light)" onclick="if(confirm('Clear all entries? This cannot be undone.')){localStorage.clear();location.reload();}">Clear all data</button>
@@ -1244,7 +1333,6 @@ function applySettings(){
     weekTitle: document.getElementById('s-theme')?.value?.trim() || '',
     openingQ: document.getElementById('s-openingq')?.value?.trim() || (prev&&prev.openingQ) || '',
     scholar: '',
-    apiKey: document.getElementById('s-key')?.value?.trim() || '',
   };
   s.weekSub = s.weekTitle;
   saveSettings(s);
@@ -1252,24 +1340,20 @@ function applySettings(){
   toast('Settings saved.');
 }
 
-function saveApiKey(){
-  const k = document.getElementById('api-key-input')?.value?.trim();
-  const s = getSettings();
-  s.apiKey = k;
-  saveSettings(s);
-  closeModal();
-  toast('Murshid connected.');
-}
-function closeModal(){ document.getElementById('api-modal').classList.remove('open'); }
 
 // ── INIT ──────────────────────────────────────────────────────────
 updateMeta();
 renderSection('weekly');
 
-const s = getSettings();
-if(!s.name || s.name === 'Your Name'){
-  setTimeout(()=> document.getElementById('api-modal').classList.add('open'), 600);
-}
+// If settings has no name yet but a student is signed in on the platform,
+// adopt their name so the sidebar is correct from first load.
+(function(){
+  const st = getSettings();
+  if(!st.name){
+    const an = getActiveStudentName();
+    if(an){ st.name = an; saveSettings(st); updateMeta(); }
+  }
+})();
 
 function sahifaStarter(id, text){
   var el=document.getElementById(id+'-text');
@@ -1318,7 +1402,7 @@ function getSahifaContext(){
 // ── Push a single entry to Supabase ──────────────────────────────────────
 async function pushSahifaEntry(entry){
   var ctx = getSahifaContext();
-  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined') return;
+  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined' || !sb) return;
   try{
     var row = {
       household_id: ctx.hid,
@@ -1343,7 +1427,7 @@ async function pushSahifaEntry(entry){
 // ── Push revision to Supabase ─────────────────────────────────────────────
 async function pushSahifaRevision(revision){
   var ctx = getSahifaContext();
-  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined') return;
+  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined' || !sb) return;
   try{
     var row = {
       household_id:   ctx.hid,
@@ -1365,7 +1449,7 @@ async function pushSahifaRevision(revision){
 // ── Push open question to Supabase ────────────────────────────────────────
 async function pushSahifaQuestion(question){
   var ctx = getSahifaContext();
-  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined') return;
+  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined' || !sb) return;
   try{
     var row = {
       household_id:  ctx.hid,
@@ -1388,7 +1472,7 @@ async function pushSahifaQuestion(question){
 // ── Pull all sahifa data from Supabase on load ────────────────────────────
 async function pullSahifaData(){
   var ctx = getSahifaContext();
-  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined') return;
+  if(!ctx.jwt || !ctx.hid || typeof sb === 'undefined' || !sb) return;
   try{
     // Pull entries
     var entriesResult = await sb
@@ -1529,7 +1613,7 @@ async function checkSahifaMigration(){
 // ── Init: pull on load + check migration ─────────────────────────────────
 (function initSahifa(){
   var jwt = localStorage.getItem('how_jwt');
-  if(jwt && typeof sb !== 'undefined'){
+  if(jwt && typeof sb !== 'undefined' && sb){
     pullSahifaData().then(function(){
       checkSahifaMigration();
     });

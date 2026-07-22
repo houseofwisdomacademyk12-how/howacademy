@@ -234,7 +234,14 @@ async function loadData(){
       sb.from('debate').select('*').eq('is_public',true).eq('status','complete').order('updated_at',{ascending:true}),
       sb.from('transmission_verification').select('*').eq('status','verified').order('created_at',{ascending:true})
     ]);
-    buildGraph(res[0].data||[], res[1].data||[], (res[2]&&res[2].data)||[]);
+    // v2: person + artifact tables. Fetched separately so a pre-migration instance
+    // doesn't break the whole map — they degrade gracefully to name-slug fallback.
+    var persons = [], artifacts = [];
+    try{ var pr=await sb.from('person').select('*'); persons=pr.data||[]; }
+    catch(ex){ console.warn('person table not yet available:', ex.message); }
+    try{ var ar=await sb.from('artifact').select('*'); artifacts=ar.data||[]; }
+    catch(ex){ console.warn('artifact table not yet available:', ex.message); }
+    buildGraph(res[0].data||[], res[1].data||[], (res[2]&&res[2].data)||[], persons, artifacts);
   }catch(e){
     document.getElementById('stage-message').innerHTML = '⚠ '+esc(e.message||'Could not load the network');
     status.textContent = 'Connection error';
@@ -256,10 +263,20 @@ function loadLocalFallback(){
 // ══════════════════════════════════════════════════════════════
 // GRAPH BUILD  (backend records → KTC people cards + links)
 // ══════════════════════════════════════════════════════════════
-function buildGraph(teachings, debates, verifications){
+function buildGraph(teachings, debates, verifications, persons, artifacts){
   loadEdits();
   _people=[]; _links=[]; _map={};
   verifications = verifications||[];
+  persons       = persons||[];
+  artifacts     = artifacts||[];
+
+  // v2: fast lookup tables built from schema v2 tables.
+  // _personById  — uuid → person row (for resolving FK columns like teacher_id, from_person_id)
+  // _artifactById — uuid → artifact row (for creating artifact nodes on buildon TV rows)
+  var _personById = {};
+  persons.forEach(function(p){ _personById[p.id] = p; });
+  var _artifactById = {};
+  artifacts.forEach(function(a){ _artifactById[a.id] = a; });
 
   function person(id, name, grade, band, subject, source){
     if(!_map[id]){
@@ -280,7 +297,9 @@ function buildGraph(teachings, debates, verifications){
 
   teachings.forEach(function(t){
     var tName = t.teacher_name || (t.student_id ? 'Student' : 'Facilitator');
-    var tId   = slug(tName);
+    // v2: prefer the FK UUID so the same person is always the same node,
+    // regardless of name spelling variations across rows.
+    var tId   = (t.teacher_id && _personById[t.teacher_id]) ? t.teacher_id : slug(tName);
     var subj  = normSubj(t.subject);
     var isFac = !t.student_id;
     var g     = t.taught_grade;
@@ -312,22 +331,59 @@ function buildGraph(teachings, debates, verifications){
     // Person-level: confirmed adab (taʿdīl) attaches to the person, not a link
     if(v.kind==='adab'){
       if(!v.to_name) return;
-      var pid=slug(v.to_name);
+      // v2: use UUID when available so adab attaches to the same node as their teachings
+      var pid = (v.to_person_id && _personById[v.to_person_id]) ? v.to_person_id : slug(v.to_name);
       var pn=person(pid, v.to_name, 'Student', 2, 'adab', false);
-      (pn.adab=pn.adab||[]).push({ text:v.evidence||'', by:v.verified_by||'facilitator' });
+      (pn.adab=pn.adab||[]).push({ text:v.evidence||'', by:v.verified_by||'facilitator', level:v.verification_level||'facilitator_confirmed' });
       return;
     }
     if((v.kind!=='reception' && v.kind!=='buildon') || !v.to_name) return;
-    var learnerId = slug(v.to_name);
+    // v2: resolve node IDs — UUID when the FK is set and known, name-slug as fallback
+    var learnerId = (v.to_person_id && _personById[v.to_person_id]) ? v.to_person_id : slug(v.to_name);
     var tl = v.teaching_id ? teachingLink[v.teaching_id] : null;
     var subjKey = tl ? tl.subject : 'math';
     person(learnerId, v.to_name, 'Student', 2, subjKey, false);
+
     function seal(l, ev){
       l.verified = true;
       l.vCount = (l.vCount||0)+1;
+      // v2: track highest verification level so the Map can render three visual tiers
+      var lvl = v.verification_level || 'platform_auto';
+      var ORDER = { platform_auto:0, murshid_checked:1, facilitator_confirmed:2 };
+      if(!l.verificationLevel || (ORDER[lvl]||0) > (ORDER[l.verificationLevel]||0)){
+        l.verificationLevel = lvl;
+      }
       if(ev && !l.evidence) l.evidence = ev;
       if(ev){ (l.evidences=l.evidences||[]).push({ who:v.to_name, text:ev }); }
     }
+
+    // v2: buildon with artifact_id → render contributor → artifact → owner
+    // instead of the ambiguous person → person edge
+    if(v.kind==='buildon' && v.artifact_id && _artifactById[v.artifact_id]){
+      var art = _artifactById[v.artifact_id];
+      var artId = 'art_'+v.artifact_id;
+      if(!_map[artId]){
+        // Artifact node sits in the same band as its owner
+        var ownerBand = (art.owner_id && _personById[art.owner_id])
+          ? bandForGrade(_personById[art.owner_id].grade) : 2;
+        _map[artId] = { id:artId, name:art.title||'Studio project', grade:'Studio project',
+                        band:ownerBand, subject:'studios', isArtifact:true, x:0, y:0 };
+        _people.push(_map[artId]);
+      }
+      // contributor → artifact (sealed)
+      seal(addLink(learnerId, artId, 'peer'), v.evidence);
+      // artifact → owner (structural, not sealed)
+      if(art.owner_id && _personById[art.owner_id]){
+        var ownerId = art.owner_id;
+        if(!_map[ownerId]){
+          var op = _personById[ownerId];
+          person(ownerId, op.name, gradeLabel(op.grade), bandForGrade(op.grade), 'studios', false);
+        }
+        if(artId !== ownerId) addLink(artId, ownerId, 'peer');
+      }
+      return;
+    }
+
     if(tl){
       // Seal teacher → teaching (carrying the attestation), and teaching → learner
       for(var i=0;i<_links.length;i++){
@@ -335,9 +391,10 @@ function buildGraph(teachings, debates, verifications){
       }
       if(learnerId!==tl.teacherId) seal(addLink(tl.subjId, learnerId, 'peer'), v.evidence);
     } else if(v.from_name){
-      // No teaching row to anchor to — seal a direct teacher → learner link
-      var teacherId = slug(v.from_name);
-      person(teacherId, v.from_name, 'Student', 2, subjKey, false);
+      // No teaching row to anchor to — seal a direct person → person link
+      // v2: resolve from_person_id when available
+      var teacherId = (v.from_person_id && _personById[v.from_person_id]) ? v.from_person_id : slug(v.from_name);
+      if(!_map[teacherId]) person(teacherId, v.from_name, 'Student', 2, subjKey, false);
       if(learnerId!==teacherId) seal(addLink(teacherId, learnerId, 'peer'), v.evidence);
     }
   });
@@ -467,13 +524,27 @@ function renderStage(){
       +(isDebate?' stroke-dasharray="7,5"':'')
       +' style="opacity:'+op+';'+glow+'transition:opacity .25s,stroke-width .2s;"></path>';
     if(l.verified){
-      // Gold seal — verified transmission (samāʿ recorded)
+      // v2: three visual tiers based on verificationLevel stored on the link
+      //   platform_auto      → silver outline seal (buildon, platform auto-sealed)
+      //   murshid_checked    → gold filled seal (samāʿ reflection checked by AI Murshid)
+      //   facilitator_confirmed → gold filled + outer ring (adab confirmed by a human)
+      // Old rows that pre-date v2 have no verificationLevel — default to gold.
       var sealOp=dim?0.08:1;
-      h+='<g style="opacity:'+sealOp+';transition:opacity .25s;">'
-        +'<circle cx="'+mx+'" cy="'+mY+'" r="9" fill="#e9c66a" stroke="#0a342a" stroke-width="1.5"'+(hotE?' style="filter:drop-shadow(0 0 6px #e9c66a)"':'')+'></circle>'
-        +'<path d="M '+(mx-3.5)+' '+mY+' l 2.5 2.8 l 4.5 -5.4" fill="none" stroke="#0a342a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>'
-        +(l.vCount>1?'<text x="'+(mx+12)+'" y="'+(mY+3.5)+'" font-family="Baloo 2,sans-serif" font-weight="800" font-size="11" fill="#e9c66a">×'+l.vCount+'</text>':'')
-        +'</g>';
+      var sealLvl=l.verificationLevel||'murshid_checked';
+      var cntClr=sealLvl==='platform_auto'?'#8a8ab0':'#e9c66a';
+      var countTxt=l.vCount>1?'<text x="'+(mx+12)+'" y="'+(mY+3.5)+'" font-family="Baloo 2,sans-serif" font-weight="800" font-size="11" fill="'+cntClr+'">×'+l.vCount+'</text>':'';
+      h+='<g style="opacity:'+sealOp+';transition:opacity .25s;">';
+      if(sealLvl==='platform_auto'){
+        h+='<circle cx="'+mx+'" cy="'+mY+'" r="9" fill="rgba(9,49,40,.7)" stroke="#8a8ab0" stroke-width="1.5"'+(hotE?' style="filter:drop-shadow(0 0 4px #8a8ab0)"':'')+'>'+
+           '</circle><path d="M '+(mx-3.5)+' '+mY+' l 2.5 2.8 l 4.5 -5.4" fill="none" stroke="#8a8ab0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>';
+      } else {
+        if(sealLvl==='facilitator_confirmed'){
+          h+='<circle cx="'+mx+'" cy="'+mY+'" r="13" fill="none" stroke="#e9c66a" stroke-width="1" opacity="0.55"></circle>';
+        }
+        h+='<circle cx="'+mx+'" cy="'+mY+'" r="9" fill="#e9c66a" stroke="#0a342a" stroke-width="1.5"'+(hotE?' style="filter:drop-shadow(0 0 6px #e9c66a)"':'')+'>'+
+           '</circle><path d="M '+(mx-3.5)+' '+mY+' l 2.5 2.8 l 4.5 -5.4" fill="none" stroke="#0a342a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>';
+      }
+      h+=countTxt+'</g>';
     }
   });
   h+='</svg>';
@@ -497,9 +568,13 @@ function renderStage(){
       :p.source?'0 0 18px rgba(233,198,106,.35), 0 6px 16px rgba(0,0,0,.45)'
       :'0 4px 14px rgba(0,0,0,.4)';
 
+    // v2: artifact nodes get a dashed border and square avatar to distinguish from person nodes
+    var cardBorderStyle = p.isArtifact ? '1px dashed' : '1px solid';
+    var cardCornerRadius = p.isArtifact ? '8px' : '14px';
+    var avatarCornerRadius = p.isArtifact ? '6px' : '50%';
     h+='<button onclick="clickNode(event,\''+escJs(p.id)+'\')" onmouseenter="hoverNode(\''+escJs(p.id)+'\')" onmouseleave="unhoverNode(\''+escJs(p.id)+'\')"'
-      +' style="position:absolute;left:'+p.x+'px;top:'+p.y+'px;transform:translate(-50%,-50%);width:164px;box-sizing:border-box;display:flex;align-items:center;gap:9px;padding:8px 11px;background:'+cardBg+';-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border:1px solid '+cardBorder+';border-radius:14px;box-shadow:'+glow+';cursor:pointer;opacity:'+(dim?0.18:1)+';transition:opacity .3s,box-shadow .3s,background .3s;">';
-    h+='<div style="flex:none;width:38px;height:38px;border-radius:50%;background:'+subj.pale+';display:flex;align-items:center;justify-content:center;">'+glyphSvg(sk,20)+'</div>';
+      +' style="position:absolute;left:'+p.x+'px;top:'+p.y+'px;transform:translate(-50%,-50%);width:164px;box-sizing:border-box;display:flex;align-items:center;gap:9px;padding:8px 11px;background:'+cardBg+';-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border:'+cardBorderStyle+' '+cardBorder+';border-radius:'+cardCornerRadius+';box-shadow:'+glow+';cursor:pointer;opacity:'+(dim?0.18:1)+';transition:opacity .3s,box-shadow .3s,background .3s;">';
+    h+='<div style="flex:none;width:38px;height:38px;border-radius:'+avatarCornerRadius+';background:'+subj.pale+';display:flex;align-items:center;justify-content:center;">'+glyphSvg(sk,20)+'</div>';
     h+='<div style="min-width:0;flex:1;text-align:left;">'
       +'<div style="font-family:\'Baloo 2\',sans-serif;font-weight:800;font-size:14.5px;color:#f4ecd9;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(getName(p.id))+'</div>'
       +'<div style="font-size:11px;color:#a7c6b8;font-weight:700;letter-spacing:.02em;white-space:nowrap;">'+esc(p.grade||'')+'</div>'
@@ -563,7 +638,7 @@ function idlePanel(){
     +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="display:flex;gap:3px;"><span style="width:10px;height:10px;border-radius:50%;background:#117a60;"></span><span style="width:10px;height:10px;border-radius:50%;background:#1f7a8c;"></span></span>Corner dots = how that person was taught.</div>'
     +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;">Edge colour = the teaching mode of each link.</div>'
     +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="width:22px;height:0;border-top:2px dashed '+EDGEC.debate+';flex:none;"></span>Purple dashed = a completed debate.</div>'
-    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="width:16px;height:16px;border-radius:50%;background:#e9c66a;border:1.5px solid #7a6428;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0a342a;font-weight:800;flex:none;">✓</span>Gold seal = verified transmission (samāʿ recorded by the learner).</div>'
+    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="display:flex;gap:3px;align-items:center;"><span style="width:16px;height:16px;border-radius:50%;background:#e9c66a;border:1.5px solid #7a6428;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0a342a;font-weight:800;flex:none;">✓</span></span>Gold seal = samāʿ checked by the Murshid AI.</div>'    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="width:16px;height:16px;border-radius:50%;background:rgba(9,49,40,.7);border:1.5px solid #8a8ab0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#8a8ab0;font-weight:800;flex:none;">✓</span>Silver outline seal = platform auto-sealed (studio build-on).</div>'    +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;margin-bottom:7px;"><span style="position:relative;display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex:none;"><span style="position:absolute;width:22px;height:22px;border-radius:50%;border:1px solid #e9c66a;opacity:.55;"></span><span style="width:16px;height:16px;border-radius:50%;background:#e9c66a;border:1.5px solid #7a6428;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0a342a;font-weight:800;">✓</span></span>Gold seal + ring = facilitator confirmed (taʿdīl).</div>'
     +'<div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#5a4a32;"><span style="width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid #eecaca;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="10" height="10" viewBox="0 0 20 20"><path d="M10 16.5s-5.5-3.4-5.5-7.3C4.5 7 6 5.8 7.6 5.8c1.1 0 1.9.6 2.4 1.5.5-.9 1.3-1.5 2.4-1.5 1.6 0 3.1 1.2 3.1 3.4 0 3.9-5.5 7.3-5.5 7.3z" fill="#e08a8a"></path></svg></span>Heart badge = adab confirmed by the facilitator (taʿdīl).</div>'
     +'</div>'
     +'<div style="margin-top:16px;font-size:12px;color:#a08f6a;line-height:1.55;">Only published teachings and completed public debates appear here. Notes you add are saved on this device.</div>'
