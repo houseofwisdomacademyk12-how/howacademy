@@ -432,10 +432,6 @@ const SEED=[
 ];
 
 function getAllProjects(){return[...SEED,...getProjects()]}
-// Seed projects are demonstrations of the format — not real student work.
-// They carry an 'example' badge, and contributions to them are practice-only:
-// saved on this device, never sealed on the Isnād Map, never sent to Supabase.
-SEED.forEach(function(p){ p.isExample=true; });
 
 function updateChips(){
   const all=getAllProjects();
@@ -548,7 +544,6 @@ function projectCard(p){
             <span class="badge badge-grade">G${p.grade}</span>
             ${hasBuild?`<span class="badge badge-built">${p.buildOns.length} built on</span>`:''}
             ${p.openQuestion?`<span class="badge badge-open">open question</span>`:''}
-            ${p.isExample?`<span class="badge" style="background:var(--parchment-2);color:var(--ink-3);border-color:var(--ink-4);border-style:dashed">example</span>`:''}
             ${isNew?`<span class="badge badge-built">new</span>`:''}
           </div>
         </div>
@@ -591,11 +586,6 @@ function openProject(id){
         </div>
       </div>
 
-      ${p.isExample?`
-      <div style="background:var(--parchment-2);border:1px dashed var(--ink-4);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--ink-3);line-height:1.6">
-        📖 <strong style="color:var(--ink-2)">Example project</strong> — included to demonstrate what studio documentation looks like. This is not real student work. You're welcome to practice contributing here: practice contributions stay on this device and are never sealed on the Isnād Map.
-      </div>`:''}
-
       <div class="section-card">
         <span class="section-label">Project summary</span>
         <p style="font-size:13px;color:var(--ink-2);line-height:1.75">${p.summary}</p>
@@ -627,9 +617,8 @@ function openProject(id){
           <p class="annotation-text">${a.text}</p>
         </div>`).join('')}
         <div class="btn-row">
-          <button class="btn" onclick="showAnnForm('${p.id}')">+ Add annotation</button>
+          <button class="btn" onclick="addAnnotation('${p.id}')">+ Add annotation</button>
         </div>
-        <div id="ann-form-wrap"></div>
       </div>
 
       ${p.openQuestion?`
@@ -637,18 +626,16 @@ function openProject(id){
         <span class="section-label" style="color:var(--coral)">Open question — standing invitation</span>
         <div style="background:var(--coral-l);border-left:3px solid var(--coral);padding:12px 14px;border-radius:0 var(--r) var(--r) 0;font-size:13px;color:var(--ink-2);line-height:1.7;margin-bottom:12px">"${p.openQuestion}"</div>
         <p style="font-size:12px;color:var(--ink-4);margin-bottom:10px">This question has been standing since ${p.year}. If you can answer it — partially or fully — build on this project.</p>
-        <button class="btn coral" onclick="showBuildForm('${p.id}','answer')">Answer this question</button>
-        <div id="oq-form-wrap"></div>
+        <button class="btn coral" onclick="buildOn('${p.id}','answer')">Answer this question</button>
       </div>`:''}
 
       <div class="section-card">
         <span class="section-label">Build-on chain — how this project continued</span>
         ${buildOnChain(p)}
         <div class="btn-row" style="margin-top:12px">
-          <button class="btn primary" onclick="showBuildForm('${p.id}','buildon')">Build on this project</button>
-          <button class="btn" onclick="showBuildForm('${p.id}','question')">Add a question</button>
+          <button class="btn primary" onclick="buildOn('${p.id}','buildon')">Build on this project</button>
+          <button class="btn" onclick="buildOn('${p.id}','question')">Add a question</button>
         </div>
-        <div id="bo-form-wrap"></div>
       </div>
     </div>
 
@@ -760,218 +747,43 @@ async function projectMurshid(title,openQ){
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// BUILD-ON VERIFICATION — Tuesday 13:00 studio channel
-// Any real contribution to a PEER's project (annotation, answered question,
-// new question, build-on) is onward transmission — mutābaʿah — and seals a
-// `transmission_verification` row (kind:'buildon'): owner → contributor.
-// ══════════════════════════════════════════════════════════════════════
-function sdtIdentity(){
-  var name='';
-  try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); if(a&&a.name) name=a.name; }catch(e){}
-  if(!name) name=localStorage.getItem('how_active_student_name')||'';
-  if(!name){ try{ var ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); if(ss.name) name=ss.name; }catch(e){} }
-  if(!name){ var s=getSettings(); if(s.name) name=s.name; }
-  var grade='';
-  try{ var ss2=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); grade=ss2.grade||''; }catch(e){}
-  return {
-    name: name.trim(),
-    grade: grade,
-    jwt: localStorage.getItem('how_jwt'),
-    hid: localStorage.getItem('how_household_id'),
-    studentId: (function(){ try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); return a?a.id:null; }catch(e){ return null; } })()
-  };
+function addAnnotation(projectId){
+  const type=prompt('Annotation type: calc / question / discovery')||'note';
+  const label=prompt('Label (e.g. "My calculation" or "What I noticed")')||'Note';
+  const text=prompt('Your annotation:')||'';
+  if(!text.trim()) return;
+  toast('Annotation added. In the full system this would be attached to a specific point on the artifact image.');
 }
 
-async function recordStudioContribution(project, kindLabel, text, contributorName){
-  if(project && project.isExample) return false;  // examples are practice-only, never sealed
-  var me = sdtIdentity();
-  var myName = (contributorName||me.name||'').trim();
-  var owner = (project.student||'').trim();
-  var entryText = kindLabel+' on '+owner+"'s studio project \""+(project.title||'')+'": '+text;
-
-  // 1) Sahifa entry — local (sahifa app + Murshid read this key)
-  try{
-    var entries = JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
-    entries.unshift({ id:'sb'+Date.now(), type:'studio_buildon', text:entryText, date:new Date().toISOString(), projectId:project.id||'' });
-    localStorage.setItem('sahifa_entries', JSON.stringify(entries.slice(0,500)));
-  }catch(e){}
-
-  // 2) Sahifa entry — Supabase (best-effort)
-  if(sb && me.jwt && me.hid){
-    try{
-      await sb.from('sahifa_entry').insert({
-        household_id: me.hid, student_id: me.studentId, type:'studio_buildon',
-        text: entryText, grade: parseInt(me.grade,10)||null,
-        entry_date: new Date().toISOString().split('T')[0]
-      });
-    }catch(e){}
-  }
-
-  // 3) Seal the transmission (only for contributions to SOMEONE ELSE'S project)
-  if(!sb || !me.jwt || !myName || !owner) return false;
-  if(owner.toLowerCase()===myName.toLowerCase()) return false;
-  try{
-    var r = await sb.from('transmission_verification').insert({
-      household_id: me.hid||null,
-      kind: 'buildon',
-      teaching_id: null,
-      from_name: owner,
-      to_name: myName,
-      evidence: '['+kindLabel+'] '+text,
-      evidence_ref: (project.title||'')+(project.id?' · '+project.id:''),
-      status: 'verified',
-      verified_by: 'platform'
-    });
-    if(r.error) throw r.error;
-    return true;
-  }catch(e){ console.warn('buildon seal failed:', e.message||e); return false; }
-}
-
-// Persist a viewer's annotation onto a peer's project (Supabase mirror)
-async function pushAnnotationToSupabase(projectId, ann){
-  if(!sb || !projectId || !projectId.includes('-')) return;
-  if(!localStorage.getItem('how_jwt')) return;
-  try{
-    var r = await sb.from('studio_project').select('math_annotations').eq('id',projectId).single();
-    if(r.error) throw r.error;
-    var anns = Array.isArray(r.data.math_annotations)?r.data.math_annotations:[];
-    anns.push(ann);
-    await sb.from('studio_project').update({ math_annotations:anns, updated_at:new Date().toISOString() }).eq('id',projectId);
-  }catch(e){ console.warn('pushAnnotationToSupabase:', e.message||e); }
-}
-
-// ── Inline contribution forms (samāʿ-panel style) ─────────────────────
-function _contribStatus(elId,msg){
-  var el=document.getElementById(elId);
-  if(el) el.innerHTML='<div style="background:var(--coral-l);border:1px solid var(--coral);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:8px">'+msg+'</div>';
-}
-function _escS(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function _closeContribForms(){
-  ['ann-form-wrap','oq-form-wrap','bo-form-wrap'].forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=''; });
-}
-var _fieldCss='width:100%;box-sizing:border-box;border:1px solid var(--ink-5);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--parchment)';
-
-function showAnnForm(projectId){
-  _closeContribForms();
-  var me=sdtIdentity();
-  var wrap=document.getElementById('ann-form-wrap');
-  if(!wrap) return;
-  wrap.innerHTML=`
-  <div style="background:var(--gold-pale);border:1px solid var(--gold-l);border-radius:var(--r);padding:14px;margin-top:10px">
-    <p style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">🖋 Add your annotation</p>
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <select id="ann-type" style="${_fieldCss};flex:1">
-        <option value="note">Note</option><option value="calc">Calculation</option>
-        <option value="question">Question</option><option value="discovery">Discovery</option>
-      </select>
-      <input id="ann-label" placeholder="Label (e.g. 'My check')" style="${_fieldCss};flex:2">
-    </div>
-    <input id="ann-name" value="${_escS(me.name)}" placeholder="Your name" style="${_fieldCss};margin-bottom:8px">
-    <textarea id="ann-text" rows="3" placeholder="The idea, calculation, or observation itself…" style="${_fieldCss};line-height:1.6"></textarea>
-    <div id="ann-status"></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn primary" onclick="submitAnnForm('${_escS(projectId)}')">Add annotation →</button>
-      <button class="btn" onclick="_closeContribForms()">Cancel</button>
-    </div>
-  </div>`;
-  var ta=document.getElementById('ann-text'); if(ta) ta.focus();
-}
-
-function submitAnnForm(projectId){
-  var type=(document.getElementById('ann-type')?.value)||'note';
-  var label=(document.getElementById('ann-label')?.value||'').trim()||'Note';
-  var name=(document.getElementById('ann-name')?.value||'').trim();
-  var text=(document.getElementById('ann-text')?.value||'').trim();
-  if(!name){ _contribStatus('ann-status','Add your name so the annotation carries its author.'); return; }
-  if(text.length<25){ _contribStatus('ann-status','<strong>Say more</strong> — an annotation should carry the actual idea, calculation, or observation.'); return; }
-  var safeType=['calc','question','discovery'].includes(type)?type:'note';
-  var stored=getProjects();
-  var isStored=stored.find(p=>p.id===projectId);
-  var seedP=SEED.find(p=>p.id===projectId);
-  var target=isStored||seedP;
+function buildOn(projectId,type){
+  const text=prompt(
+    type==='answer'?'Write your answer to the open question:':
+    type==='question'?'Write your new question raised by this project:':
+    'Describe how you built on, extended, or applied this project:'
+  );
+  if(!text||!text.trim()) return;
+  const s=getSettings();
+  const all=getAllProjects();
+  const stored=getProjects();
+  const isStored=stored.find(p=>p.id===projectId);
+  const seedP=SEED.find(p=>p.id===projectId);
+  const target=isStored||seedP;
   if(!target) return;
-  var ann={ type:safeType, label:label+(name?' — '+name:''), text:text, who:name, ts:Date.now() };
-  if(isStored){
-    (isStored.mathAnnotations=isStored.mathAnnotations||[]).push(ann);
-    saveProjects(stored);
-    if(!target.isExample) pushAnnotationToSupabase(projectId, ann);
-  } else if(seedP){
-    var clone={...JSON.parse(JSON.stringify(seedP)),id:projectId,mathAnnotations:[...(seedP.mathAnnotations||[]),ann]};
-    stored.push(clone);
-    seedP.mathAnnotations=[...(seedP.mathAnnotations||[]),ann];
-    saveProjects(stored);
-  }
-  if(target.isExample){
-    toast('Practice annotation saved on this device (example project — not sealed).');
-    openProject(projectId);
-    return;
-  }
-  recordStudioContribution(target,'Annotation',text,name).then(function(sealed){
-    toast(sealed?'Annotation added ✓ transmission sealed on the Isnād Map':'Annotation added to the project.');
-  });
-  openProject(projectId);
-}
-
-function showBuildForm(projectId,type){
-  _closeContribForms();
-  var me=sdtIdentity();
-  var wrapId=type==='answer'?'oq-form-wrap':'bo-form-wrap';
-  var wrap=document.getElementById(wrapId);
-  if(!wrap) return;
-  var title=type==='answer'?'✍ Your answer to the open question':type==='question'?'✍ Your new question':'✍ How you built on this project';
-  var ph=type==='answer'?'My answer: … The reason is…':
-         type==='question'?'What still puzzles me about this project is…':
-         'I extended this by… / I applied this to… / I tested whether…';
-  var accent=type==='answer'?'var(--coral-l);border:1px solid var(--coral)':'var(--gold-pale);border:1px solid var(--gold-l)';
-  wrap.innerHTML=`
-  <div style="background:${accent};border-radius:var(--r);padding:14px;margin-top:10px">
-    <p style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px">${title}</p>
-    <input id="bo-name" value="${_escS(me.name)}" placeholder="Your name" style="${_fieldCss};margin-bottom:8px">
-    <textarea id="bo-text" rows="4" placeholder="${_escS(ph)}" style="${_fieldCss};line-height:1.6"></textarea>
-    <div id="bo-status"></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn primary" onclick="submitBuildForm('${_escS(projectId)}','${type}')">${type==='answer'?'Submit answer →':type==='question'?'Add question →':'Record build-on →'}</button>
-      <button class="btn" onclick="_closeContribForms()">Cancel</button>
-    </div>
-  </div>`;
-  var ta=document.getElementById('bo-text'); if(ta) ta.focus();
-}
-
-function submitBuildForm(projectId,type){
-  var name=(document.getElementById('bo-name')?.value||'').trim();
-  var text=(document.getElementById('bo-text')?.value||'').trim();
-  if(!name){ _contribStatus('bo-status','Add your name so the chain records who contributed.'); return; }
-  if(text.length<25){
-    _contribStatus('bo-status','<strong>Say more</strong> — '+(type==='answer'?'engage the actual question: what is your answer and why?':type==='question'?'a real question names what puzzles you about this project.':'describe what you actually built, extended, or applied.'));
-    return;
-  }
-  var stored=getProjects();
-  var isStored=stored.find(p=>p.id===projectId);
-  var seedP=SEED.find(p=>p.id===projectId);
-  var target=isStored||seedP;
-  if(!target) return;
-  var kindLabel=type==='answer'?'Answered the open question':type==='question'?'New question':'Build-on';
-  var buildon={id:'b'+Date.now(),student:name,grade:sdtIdentity().grade||getSettings().grade||'?',year:new Date().getFullYear().toString(),type:type==='answer'?'answered':type,text:text,tag:type==='answer'?'answered the open question':type==='question'?'new question':'built on this'};
+  const buildon={id:'b'+Date.now(),student:s.name||'You',grade:s.grade||'?',year:new Date().getFullYear().toString(),type:type==='answer'?'answered':type,text:text.trim(),tag:type==='answer'?'answered the open question':type==='question'?'new question':'built on this'};
   if(isStored){
     if(!isStored.buildOns) isStored.buildOns=[];
     isStored.buildOns.push(buildon);
     saveProjects(stored);
-    if(!target.isExample && typeof pushBuildOnToSupabase==='function')pushBuildOnToSupabase(projectId,buildon);
+    if(typeof pushBuildOnToSupabase==='function')pushBuildOnToSupabase(projectId,buildon);
   } else {
-    var clone={...JSON.parse(JSON.stringify(seedP)),id:projectId,buildOns:[...(seedP.buildOns||[]),buildon]};
+    // Clone seed project with new build-on
+    const clone={...JSON.parse(JSON.stringify(seedP)),id:projectId,buildOns:[...(seedP.buildOns||[]),buildon]};
     stored.push(clone);
+    // Remove original seed from display by marking
     SEED.forEach(p=>{if(p.id===projectId) p.buildOns=[...(p.buildOns||[]),buildon]});
     saveProjects(stored);
   }
-  if(target.isExample){
-    toast('Practice contribution saved on this device (example project — not sealed).');
-    openProject(projectId);
-    return;
-  }
-  recordStudioContribution(target, kindLabel, text, name).then(function(sealed){
-    toast(sealed?'Recorded ✓ transmission sealed on the Isnād Map':'Build-on recorded. It\'s now part of the project\'s chain.');
-  });
+  toast('Build-on recorded. It\'s now part of the project\'s chain.');
   openProject(projectId);
 }
 

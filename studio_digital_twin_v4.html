@@ -607,12 +607,12 @@ function openProject(id){
         <div class="artifact-frame">
           <div class="artifact-toolbar">
             <span class="artifact-label">${p.title} · physical documentation</span>
-            <button class="p-btn" style="margin-left:auto" onclick="toast('In a full deployment: student uploads photos, sketches, video, CAD files, or 3D scans here.')">+ Add photo/file</button>
+            <button class="p-btn" style="margin-left:auto;opacity:.55;cursor:not-allowed" title="Photo documentation is planned for a future version">📎 Photos &amp; files — coming soon</button>
           </div>
           <div class="artifact-body">
             <div class="artifact-placeholder">
               <div class="artifact-placeholder-icon">${p.icon}</div>
-              <p class="artifact-placeholder-text">In the full system, this space holds the student's photos, sketches, video walkthroughs, and CAD files of the physical project.<br><br>Click "Add photo/file" to attach documentation.</p>
+              <p class="artifact-placeholder-text">Photo and file documentation is planned for a future version. For now, document the artifact in writing in the "Document a project" tab — describe what it looks like, its key features, and the materials used.</p>
             </div>
           </div>
         </div>
@@ -674,7 +674,7 @@ function openProject(id){
       <div class="section-card">
         <span class="section-label">Add to my sahifa</span>
         <p style="font-size:12px;color:var(--ink-4);margin-bottom:10px;line-height:1.5">Save this project as a thread in your living manuscript — connecting the physical making to your written thinking.</p>
-        <button class="btn teal" onclick="toast('Added as a sahifa thread: '+${JSON.stringify(p.title)})">Add to sahifa threads</button>
+        <button class="btn teal" onclick="studioAddToSahifa(p.id)">Add to sahifa threads</button>
       </div>
 
       <div class="section-card">
@@ -812,26 +812,16 @@ async function recordStudioContribution(project, kindLabel, text, contributorNam
   if(!sb || !me.jwt || !myName || !owner) return false;
   if(owner.toLowerCase()===myName.toLowerCase()) return false;
   try{
-    // v2: resolve person UUIDs and curriculum week
-    var contributorGrade = parseInt(me.grade, 10) || null;
-    var ownerPersonId      = await findOrCreatePerson(owner, null, 'student');
-    var contributorPersonId = await findOrCreatePerson(myName, contributorGrade, 'student');
-    var currentWeek = parseInt(localStorage.getItem('how_week')||'0') || null;
     var r = await sb.from('transmission_verification').insert({
-      household_id:       me.hid||null,
-      kind:               'buildon',
-      teaching_id:        null,
-      from_name:          owner,          // v1: kept
-      to_name:            myName,         // v1: kept
-      from_person_id:     ownerPersonId,  // v2
-      to_person_id:       contributorPersonId, // v2
-      evidence:           '['+kindLabel+'] '+text,
-      evidence_ref:       (project.title||'')+(project.id?' · '+project.id:''),
-      week:               currentWeek,    // v2
-      grade:              contributorGrade, // v2
-      status:             'verified',
-      verified_by:        'platform',
-      verification_level: 'platform_auto' // v2
+      household_id: me.hid||null,
+      kind: 'buildon',
+      teaching_id: null,
+      from_name: owner,
+      to_name: myName,
+      evidence: '['+kindLabel+'] '+text,
+      evidence_ref: (project.title||'')+(project.id?' · '+project.id:''),
+      status: 'verified',
+      verified_by: 'platform'
     });
     if(r.error) throw r.error;
     return true;
@@ -1045,7 +1035,10 @@ function docStep1(c){
       </div>
       <div class="form-field">
         <label class="form-label">Icon (optional)</label>
-        <input class="field" type="text" id="d-icon" placeholder="💧 🔭 🌿 📐" maxlength="2" value="${draftProject.icon||''}">
+        <div id="icon-picker" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+          ${(function(){var _icons=['🏗','💧','🔭','🌿','📐','⚗','🔬','🌱','🏛','📦','🎨','🔧','⚙','🌊','🔥','💡','📏','🧱','🌍','✏','🪨','🌀','🔩','🏺'];var _sel=draftProject.icon||'';return _icons.map(ic=>'<button type="button" onclick="selectIcon(\''+ic+'\')" style="font-size:20px;padding:4px 6px;border-radius:6px;border:1.5px solid '+(ic===_sel?'var(--gold)':'#ddd')+';background:'+(ic===_sel?'#fdf8ec':'white')+';cursor:pointer" title="'+ic+'">'+ic+'<\/button>').join('');})()}
+        </div>
+        <input class="field" type="text" id="d-icon" placeholder="or type any emoji" maxlength="2" value="${draftProject.icon||''}" oninput="refreshIconPicker(this.value)" style="width:120px">
       </div>
     </div>
     <div class="form-field">
@@ -1062,8 +1055,55 @@ function docStep1(c){
   </div>`;
 }
 
+function studioAddToSahifa(id){
+  var p = getAllProjects().find(function(x){ return x.id===id; });
+  if(!p){ toast('Project not found.'); return; }
+  var marked = JSON.parse(localStorage.getItem('sdt_sahifa_threads')||'[]');
+  if(marked.indexOf(id)>-1){ toast('Already added to your Sahifa threads.'); return; }
+  marked.push(id);
+  localStorage.setItem('sdt_sahifa_threads', JSON.stringify(marked));
+  var entry = {
+    id:        'sdt'+Date.now(),
+    grade:     p.grade||'?',
+    topic:     p.title||'Studio project',
+    text:      'Studio project by '+(p.student||'Student')+' ('+p.studioName+'): '+(p.summary||'').slice(0,200),
+    sourceId:  p.id,
+    sourceType:'studio_project',
+    date:      new Date().toISOString()
+  };
+  try{
+    var threads = JSON.parse(localStorage.getItem('sahifa_threads')||'[]');
+    threads.unshift(entry);
+    localStorage.setItem('sahifa_threads', JSON.stringify(threads.slice(0,200)));
+  }catch(e){}
+  try{
+    var entries = JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
+    entries.unshift({ id:entry.id, type:'thread', text:entry.text, topic:entry.topic, date:entry.date });
+    localStorage.setItem('sahifa_entries', JSON.stringify(entries.slice(0,500)));
+  }catch(e){}
+  toast('Added to your Sahifa threads — find it under Threads in your Sahifa.');
+}
+
+function selectIcon(ic){
+  draftProject.icon = ic;
+  document.getElementById('d-icon').value = ic;
+  // Re-highlight picker buttons
+  document.querySelectorAll('#icon-picker button').forEach(function(btn){
+    var selected = btn.textContent === ic;
+    btn.style.borderColor  = selected ? 'var(--gold)' : '#ddd';
+    btn.style.background   = selected ? '#fdf8ec'     : 'white';
+  });
+}
+function refreshIconPicker(val){
+  draftProject.icon = val;
+  document.querySelectorAll('#icon-picker button').forEach(function(btn){
+    var selected = btn.textContent === val;
+    btn.style.borderColor  = selected ? 'var(--gold)' : '#ddd';
+    btn.style.background   = selected ? '#fdf8ec'     : 'white';
+  });
+}
+
 function saveDoc1(){
-  draftProject.title=document.getElementById('d-title').value.trim();
   if(!draftProject.title){toast('Add a title.');return}
   draftProject.studio=document.getElementById('d-studio').value;
   draftProject.grade=document.getElementById('d-grade').value;
@@ -1150,10 +1190,10 @@ async function annMurshid(){
     return;
   }
   try{
-    const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:120,
+      headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:120,
         system:'You are the Murshid. A student is documenting a studio project. Ask them one precise question to help them find the mathematics they actually used — calculation, formula, or measurement. Two sentences maximum.',
         messages:[{role:'user',content:`My project: "${draftProject.title}". Summary: ${draftProject.summary.slice(0,200)}`}]})
     });
@@ -1302,44 +1342,11 @@ function deleteMyProject(id){if(!confirm('Delete this project?'))return;saveProj
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var sb=null;try{if(typeof supabase!=='undefined')sb=supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');}catch(e){}
-
-// ── PERSON HELPER (v2 schema) ──────────────────────────────────────────────
-// Looks up a person row by (household_id, name); creates one if missing.
-// Returns the UUID, or null if Supabase is unavailable.
-async function findOrCreatePerson(name, grade, role) {
-  if (!sb || !localStorage.getItem('how_jwt')) return null;
-  var hid = localStorage.getItem('how_household_id');
-  if (!hid || !name) return null;
-  try {
-    var found = await sb.from('person').select('id').eq('household_id', hid).eq('name', name.trim()).limit(1);
-    if (found.data && found.data.length) return found.data[0].id;
-    var created = await sb.from('person').insert({ household_id: hid, name: name.trim(), grade: grade||null, role: role||'student' }).select('id').single();
-    if (created.data) return created.data.id;
-  } catch(e) {
-    try {
-      var retry = await sb.from('person').select('id').eq('household_id', hid).eq('name', name.trim()).limit(1);
-      if (retry.data && retry.data.length) return retry.data[0].id;
-    } catch(e2) {}
-  }
-  return null;
-}
-
 window._serverProjects=[];
 function _mapSP(sp){return{id:sp.id,_fromServer:true,_isPublished:!!sp.is_published,studio:sp.studio||'eng',studioName:sp.studio_name||'Studio',title:sp.title||'',icon:sp.icon||'🏗',student:sp.student_name||'Student',initials:(sp.student_name||'S').split(' ').map(function(w){return w[0]||''}).join('').slice(0,2).toUpperCase(),grade:String(sp.grade||''),year:sp.year||String(new Date(sp.created_at||Date.now()).getFullYear()),summary:sp.summary||'',materials:sp.materials||'',openQuestion:sp.open_question||'',mathAnnotations:Array.isArray(sp.math_annotations)?sp.math_annotations:[],buildOns:Array.isArray(sp.build_ons)?sp.build_ons:[],household_id:sp.household_id};}
 async function loadMyProjects(){if(!sb)return;var jwt=localStorage.getItem('how_jwt'),hid=localStorage.getItem('how_household_id');if(!jwt||!hid)return;try{var r=await sb.from('studio_project').select('*').eq('household_id',hid).order('created_at',{ascending:false});if(r.error)throw r.error;var local=getProjects(),ids=new Set(local.map(function(p){return p.id}));(r.data||[]).forEach(function(sp){if(!ids.has(sp.id))local.push(_mapSP(sp))});saveProjects(local);}catch(e){console.warn('loadMyProjects:',e.message);}}
 async function loadServerProjects(){if(!sb)return;try{var r=await sb.from('studio_project').select('*').eq('is_published',true).order('created_at',{ascending:false});if(r.error)throw r.error;window._serverProjects=(r.data||[]).map(_mapSP);if(typeof updateChips==='function')updateChips();}catch(e){console.warn('loadServerProjects:',e.message);}}
-async function pushProjectToSupabase(project){if(!sb)return null;var jwt=localStorage.getItem('how_jwt'),hid=localStorage.getItem('how_household_id');if(!jwt||!hid)return null;try{var s=getSettings(),payload={household_id:hid,student_name:project.student||s.name||'Student',studio:project.studio,studio_name:project.studioName,title:project.title,icon:project.icon||'🏗',grade:parseInt(project.grade)||7,week:parseInt(localStorage.getItem('how_week')||'1')||1,year:project.year||String(new Date().getFullYear()),summary:project.summary||'',materials:project.materials||'',open_question:project.openQuestion||'',math_annotations:project.mathAnnotations||[],build_ons:project.buildOns||[],is_published:false,updated_at:new Date().toISOString()};var isServer=project._fromServer||(project.id&&project.id.length>10&&project.id.includes('-'));var r=isServer?await sb.from('studio_project').update(payload).eq('id',project.id).select().single():await sb.from('studio_project').insert(payload).select().single();if(r.error)throw r.error;
-      // v2: upsert an artifact node so the Isnād Map can show this as a first-class node
-      // and buildon links can read: contributor → artifact → owner
-      var spId=r.data.id;
-      var ownerPersonId=await findOrCreatePerson(project.student||s.name||'Student',parseInt(project.grade)||null,'student');
-      if(ownerPersonId){
-        try{
-          await sb.from('artifact').insert({household_id:hid,kind:'studio',title:project.title,owner_id:ownerPersonId,studio_project_id:spId,description:(project.summary||'').slice(0,300)});
-        }catch(e2){ console.warn('artifact insert (non-critical):', e2.message); }
-      }
-      return spId;
-    }catch(e){console.warn('pushProjectToSupabase:',e.message);if(typeof toast==='function')toast('Sync failed: '+e.message);return null;}}
+async function pushProjectToSupabase(project){if(!sb)return null;var jwt=localStorage.getItem('how_jwt'),hid=localStorage.getItem('how_household_id');if(!jwt||!hid)return null;try{var s=getSettings(),payload={household_id:hid,student_name:project.student||s.name||'Student',studio:project.studio,studio_name:project.studioName,title:project.title,icon:project.icon||'🏗',grade:parseInt(project.grade)||7,week:parseInt(localStorage.getItem('how_week')||'1')||1,year:project.year||String(new Date().getFullYear()),summary:project.summary||'',materials:project.materials||'',open_question:project.openQuestion||'',math_annotations:project.mathAnnotations||[],build_ons:project.buildOns||[],is_published:false,updated_at:new Date().toISOString()};var isServer=project._fromServer||(project.id&&project.id.length>10&&project.id.includes('-'));var r=isServer?await sb.from('studio_project').update(payload).eq('id',project.id).select().single():await sb.from('studio_project').insert(payload).select().single();if(r.error)throw r.error;return r.data.id;}catch(e){console.warn('pushProjectToSupabase:',e.message);if(typeof toast==='function')toast('Sync failed: '+e.message);return null;}}
 async function togglePublishProject(projectId){if(!sb){if(typeof toast==='function')toast('Not connected');return;}if(!localStorage.getItem('how_jwt')){if(typeof toast==='function')toast('Sign in to publish');return;}try{var r=await sb.from('studio_project').select('is_published').eq('id',projectId).single();if(r.error)throw r.error;var ns=!r.data.is_published;await sb.from('studio_project').update({is_published:ns}).eq('id',projectId);if(typeof toast==='function')toast(ns?'Published to knowledge commons':'Unpublished');await loadServerProjects();}catch(e){if(typeof toast==='function')toast('Publish failed: '+e.message);}}
 async function pushBuildOnToSupabase(projectId,buildOn){if(!sb||!projectId||!projectId.includes('-'))return;if(!localStorage.getItem('how_jwt'))return;try{var r=await sb.from('studio_project').select('build_ons').eq('id',projectId).single();if(r.error)throw r.error;var bons=Array.isArray(r.data.build_ons)?r.data.build_ons:[];bons.push(buildOn);await sb.from('studio_project').update({build_ons:bons,updated_at:new Date().toISOString()}).eq('id',projectId);}catch(e){console.warn('pushBuildOnToSupabase:',e.message);}}
 var _origGAP=getAllProjects;getAllProjects=function(){var local=_origGAP(),ids=new Set(local.map(function(p){return p.id}));return local.concat((window._serverProjects||[]).filter(function(sp){return!ids.has(sp.id)}));};

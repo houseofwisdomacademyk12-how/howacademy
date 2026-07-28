@@ -309,26 +309,44 @@ async function togglePublish(id, currentState, evt){
 
   // Update Supabase only if id is a real UUID
   var isUUID2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id);
+  var serverOK = false, serverWhy = '';
   if(isUUID2){
     try{
       var jwt = localStorage.getItem('how_jwt');
-      if(jwt && typeof sb !== 'undefined'){
+      if(!sb) serverWhy = 'Supabase client did not load';
+      else if(!jwt) serverWhy = 'not signed in on the platform in this browser';
+      else{
         var { error } = await sb
           .from('teaching')
           .update({ is_published: newState })
           .eq('id', id);
-        if(error) console.warn('Supabase publish toggle failed:', error.message);
-        else console.log('Supabase publish toggle OK:', id, newState);
+        if(error) serverWhy = error.message||'server error';
+        else serverOK = true;
       }
-    }catch(e){ console.warn('togglePublish error:', e); }
+    }catch(e){ serverWhy = e.message||'network error'; }
+  } else if(newState){
+    // Local-only teaching being published for the first time → insert it now
+    var localT = getTeachings().find(function(t){ return t.id===id; });
+    if(localT){
+      var res = await pushTeachingToSupabase(localT);
+      if(res && res.id){
+        var list = getTeachings().map(function(t){ return t.id===id ? Object.assign({},t,{id:res.id, fromSupabase:true}) : t; });
+        saveTeachings(list);
+        serverOK = true;
+      } else serverWhy = (res&&res.reason)||'could not reach the shared table';
+    }
   }
 
   renderTab(currentView||'mine');
-  toast(newState ? '✓ Published to shared library' : 'Unpublished — visible to you only');
+  if(newState){
+    toast(serverOK ? '✓ Published to the shared library' : '⚠ Published on this device only — '+(serverWhy||'no server connection'), serverOK?2600:5000);
+  } else {
+    toast(serverOK||!isUUID2 ? 'Unpublished — visible to you only' : '⚠ Unpublished locally, but the server still shows it: '+serverWhy, 4000);
+  }
 }
 function saveTeachings(t){S.set('teachings',t);updateCounts()}
 function getSettings(){return S.get('settings')||{name:'',grade:'',apiKey:''}}
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function toast(m,ms){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._hid);t._hid=setTimeout(()=>t.classList.remove('show'),ms||2200)}
 
 // ── SEED DATA ─────────────────────────────────────────────────────────
 const SEED = [
@@ -810,7 +828,10 @@ async function submitLearningVerification(teachingId){
       var r = await sb.from('transmission_verification').insert(row);
       if(r.error) throw r.error;
       sealed = true;
-    }catch(e){ console.warn('verification insert failed:', e.message||e); }
+    }catch(e){
+      console.warn('verification insert failed:', e.message||e);
+      toast('⚠ Reflection saved, but the seal did not reach the Isnād Map: '+(e.message||'server error'), 5000);
+    }
   }
 
   const panel = document.getElementById('verify-panel');
@@ -1091,7 +1112,7 @@ function renderRecStep5(c){
   </div>`;
 }
 
-function publishTeaching(){
+async function publishTeaching(){
   const s = getSettings();
   const teachings = getTeachings();
   const name = s.name||'Anonymous';
@@ -1104,11 +1125,53 @@ function publishTeaching(){
     year: new Date().getFullYear().toString(),
     views: 0,
     helpful: 0,
+    is_published: true,
   };
   teachings.push(entry);
   saveTeachings(teachings);
-  toast('Teaching published to the library.');
   switchTab(document.querySelector('[data-tab=browse]'));
+  // Push to the shared table so the Map and other devices can see it.
+  const shared = await pushTeachingToSupabase(entry);
+  if(shared && shared.id){
+    // Adopt the server uuid so future publish-toggles update the real row
+    var list = getTeachings().map(function(t){ return t.id===entry.id ? Object.assign({},t,{id:shared.id, fromSupabase:true}) : t; });
+    saveTeachings(list);
+    toast('✓ Published to the shared library — it can now be verified on the Isnād Map.');
+  } else {
+    toast('⚠ Saved on this device only — NOT shared. '+(shared&&shared.reason?shared.reason:'Check connection and platform sign-in.'), 5000);
+  }
+}
+
+// Insert a locally-recorded teaching into the shared `teaching` table.
+// Returns {id} on success, {reason} on failure — never silent.
+async function pushTeachingToSupabase(t){
+  if(!sb) return { reason:'Supabase client did not load in this tab.' };
+  var jwt = localStorage.getItem('how_jwt');
+  if(!jwt) return { reason:'Not signed in on the platform in this browser.' };
+  var hid = localStorage.getItem('how_household_id');
+  var sid = null;
+  try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); sid=a?a.id:null; }catch(e){}
+  var row = {
+    household_id: hid||null,
+    teacher_name: t.teacherName||'Anonymous',
+    student_id: sid,
+    taught_grade: parseInt(t.grade,10)||parseInt((getSettings()||{}).grade,10)||null,
+    subject: t.subject||'other',
+    title: t.title||'Untitled teaching',
+    is_published: true
+  };
+  try{
+    var r = await sb.from('teaching').insert(row).select().single();
+    if(r.error){
+      // Retry without household_id in case the column/policy differs
+      delete row.household_id;
+      r = await sb.from('teaching').insert(row).select().single();
+    }
+    if(r.error) return { reason:'Server rejected it: '+(r.error.message||'unknown error') };
+    return { id: r.data.id };
+  }catch(e){
+    return { reason:'Network error: '+(e.message||'could not reach Supabase') };
+  }
 }
 
 // ── MY TEACHINGS ──────────────────────────────────────────────────
@@ -1353,8 +1416,20 @@ async function updateIsnadStats(){
   }catch(e){}
 }
 
+// ── Connection status: silent degradation is how bugs hide. Announce it. ──
+function announceConnectionState(){
+  if(!sb){
+    toast('⚠ Offline mode — the Supabase client did not load. Sharing, samāʿ verification and sahifa sync are disabled in this tab.', 6000);
+    return;
+  }
+  if(!localStorage.getItem('how_jwt')){
+    toast('⚠ Not signed in on the platform in this browser — teachings will save locally but will NOT share, seal, or sync until you sign in.', 6000);
+  }
+}
+
 // ── Load on startup: fetch Supabase + merge with local + re-render ────────
 (async function initLibrary(){
+  setTimeout(announceConnectionState, 1200);
   updateIsnadStats();
   var sbTeachings = await fetchSupabaseTeachings();
   var sbDebates   = await fetchSupabaseDebates();

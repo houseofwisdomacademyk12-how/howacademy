@@ -812,7 +812,7 @@ function buildSys(){
       +'Circle members: '+_circleMembers
       +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
       +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
-      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently.\n'
+      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently. If a student argues to prove they are right rather than to understand what is true, redirect back to the question: "Is the question asking who is right, or what is actually true here?"\n'
       +'Phase: '+G.phase+'; Turns: '+G.turnCount+'\n'
       +(G.turnCount>8?'Move toward synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices.');
   }
@@ -820,7 +820,7 @@ function buildSys(){
     +'Circle members: '+_circleMembers
     +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
     +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
-    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n'
+    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n10. Truth-seeking: if a student argues to win rather than understand, name it gently — "The question is not who is right. What do you actually think is true?"\n'
     +'Phase: '+G.phase+'; Turns: '+G.turnCount+'\n'
     +(G.turnCount>8?'Begin synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices — do not converge yet.');
 }
@@ -898,7 +898,11 @@ async function simSpecificPeer(peerName){
     'You are a 14-18 year old student. Thoughtful, 1-2 sentences.'+_ns;
   const peerSys='You are '+peerName+', a student in a halaqa who has just been called on directly by name. '
     +bandInstr+' The facilitator is waiting for YOUR answer specifically. Respond directly. '
-    +'Opening question: "'+G.question+'". Never use asterisks, stage directions, or physical actions like *looks at* or *turns to*. Just speak plainly. Never say you are an AI.';
+    +'Opening question: "'+G.question+'". '
+    +'You are genuinely trying to understand this question — not to perform or impress. '
+    +'If something another student said changes your thinking, say so openly. If you are not sure, say you are not sure. '
+    +'The halaqa is a circle of inquiry — there is no winning, only understanding. '
+    +'Never use asterisks, stage directions, or physical actions like *looks at* or *turns to*. Just speak plainly. Never say you are an AI.';
   setSt(peerName,'typing');
   showHalaqaTyping(peerName,'thinking');
   await delay(getSimDelay(2000,3000));
@@ -950,7 +954,7 @@ async function simPeer(){
     G.band==='68'?'You are an 11-14 year old. Think aloud, 1-2 sentences.':
     'You are a 14-18 year old student. Thoughtful, 1-2 sentences.';
   const peerSys='You are '+p.n+', a student in a halaqa. '+bandInstr
-    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'". RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. (5) The facilitator leads the circle: if their most recent message asks anyone to pause, stop, wait, or give someone else a turn, you have NOTHING to add — respond with silence by writing only \'…\'. (6) If you have already pushed back on an idea once, do not push back on it again — listen or build instead. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
+    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'". RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. (5) The facilitator leads the circle: if their most recent message asks anyone to pause, stop, wait, or give someone else a turn, you have NOTHING to add — respond with silence by writing only \'…\'. (6) If you have already pushed back on an idea once, do not push back on it again — listen or build instead. (7) You are genuinely trying to understand — not to perform or win. If someone else said something that changes your thinking, name it: say who said it and what shifted. If you are not sure, say so. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
 
   // Show thinking indicator
   setSt(p.n,'typing');
@@ -1222,10 +1226,9 @@ async function joinLiveSession(){
     var result = await sb.from('halaqa_session')
       .select('*').eq('code', code.toUpperCase())
       .neq('phase','ended')
-      .order('created_at',{ascending:false})
       .limit(1);
     if(result.error){ toast('Could not look up session: '+(result.error.message||'connection error')); return false; }
-    if(!result.data || !result.data.length){ toast('Session not found — check the code (or the session may have ended)'); return false; }
+    if(!result.data || !result.data.length){ toast('Session not found — check the code'); return false; }
     var session = result.data[0];
     if(session.phase==='ended'){ toast('This session has already ended'); return false; }
     _sessionId   = session.id;

@@ -38,7 +38,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--in
 
 .body-grid{display:grid;grid-template-columns:280px 1fr}
 .sidebar{background:var(--parchment-2);border-right:1px solid var(--ink-5);padding:20px 0;height:calc(100vh - 52px);position:sticky;top:52px;overflow-y:auto}
-.main-area{padding:28px 32px;min-height:calc(100vh - 52px);max-width:860px}
+.main-area{padding:28px 32px;min-height:calc(100vh - 52px)}
 
 /* sidebar */
 .sb-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);padding:0 16px;margin-bottom:6px;display:block}
@@ -252,8 +252,8 @@ textarea.field{resize:vertical;line-height:1.65}
         <span class="sb-label" style="margin-bottom:8px">My stats</span>
         <p style="font-size:12px;color:var(--ink-3);line-height:1.7">
           Teachings recorded: <strong id="my-count">0</strong><br>
-          Students helped: <strong id="my-helped">—</strong><br>
-          Isnad links: <strong id="my-links">—</strong>
+          Students helped: <strong>—</strong><br>
+          Isnad links: <strong>—</strong>
         </p>
       </div>
     </aside>
@@ -309,44 +309,26 @@ async function togglePublish(id, currentState, evt){
 
   // Update Supabase only if id is a real UUID
   var isUUID2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id);
-  var serverOK = false, serverWhy = '';
   if(isUUID2){
     try{
       var jwt = localStorage.getItem('how_jwt');
-      if(!sb) serverWhy = 'Supabase client did not load';
-      else if(!jwt) serverWhy = 'not signed in on the platform in this browser';
-      else{
+      if(jwt && typeof sb !== 'undefined'){
         var { error } = await sb
           .from('teaching')
           .update({ is_published: newState })
           .eq('id', id);
-        if(error) serverWhy = error.message||'server error';
-        else serverOK = true;
+        if(error) console.warn('Supabase publish toggle failed:', error.message);
+        else console.log('Supabase publish toggle OK:', id, newState);
       }
-    }catch(e){ serverWhy = e.message||'network error'; }
-  } else if(newState){
-    // Local-only teaching being published for the first time → insert it now
-    var localT = getTeachings().find(function(t){ return t.id===id; });
-    if(localT){
-      var res = await pushTeachingToSupabase(localT);
-      if(res && res.id){
-        var list = getTeachings().map(function(t){ return t.id===id ? Object.assign({},t,{id:res.id, fromSupabase:true}) : t; });
-        saveTeachings(list);
-        serverOK = true;
-      } else serverWhy = (res&&res.reason)||'could not reach the shared table';
-    }
+    }catch(e){ console.warn('togglePublish error:', e); }
   }
 
   renderTab(currentView||'mine');
-  if(newState){
-    toast(serverOK ? '✓ Published to the shared library' : '⚠ Published on this device only — '+(serverWhy||'no server connection'), serverOK?2600:5000);
-  } else {
-    toast(serverOK||!isUUID2 ? 'Unpublished — visible to you only' : '⚠ Unpublished locally, but the server still shows it: '+serverWhy, 4000);
-  }
+  toast(newState ? '✓ Published to shared library' : 'Unpublished — visible to you only');
 }
 function saveTeachings(t){S.set('teachings',t);updateCounts()}
 function getSettings(){return S.get('settings')||{name:'',grade:'',apiKey:''}}
-function toast(m,ms){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._hid);t._hid=setTimeout(()=>t.classList.remove('show'),ms||2200)}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 
 // ── SEED DATA ─────────────────────────────────────────────────────────
 const SEED = [
@@ -435,11 +417,6 @@ const SEED = [
    tags:['argument writing','Ibn Rushd','Philosophy studio','Grade 9 teaches Grade 6']},
 ];
 
-// Seed teachings are demonstrations of the format — not real student work.
-// They carry an 'example' badge and a banner in the detail view.
-// The samāʿ verification panel is suppressed for example teachings.
-SEED.forEach(function(t){ t.isExample = true; });
-
 function getAllTeachings(){
   const stored = getTeachings();
   return [...SEED, ...stored];
@@ -467,10 +444,7 @@ function switchTab(btn){
   btn.classList.add('active');
   currentView = btn.dataset.tab;
   const sidebar = document.getElementById('sidebar');
-  const body    = document.getElementById('main-body');
-  const hasSidebar = ['browse','mine'].includes(currentView);
-  sidebar.style.display = hasSidebar ? 'block' : 'none';
-  body.style.gridTemplateColumns = hasSidebar ? '280px 1fr' : '1fr';
+  sidebar.style.display = ['browse','mine'].includes(currentView)?'block':'none';
   renderTab(currentView);
 }
 
@@ -615,7 +589,6 @@ function teachingCard(t){
           <span class="badge ${discClass}">${t.subject}</span>
           ${t.scholar?`<span class="badge badge-scholar">${t.scholar}</span>`:''}
           ${t.isTeachIt?`<span class="badge" style="background:#e8edf8;color:#1a3d8a">✏️ Student teaching</span>`:''}
-          ${t.isExample?`<span class="badge" style="background:var(--parchment-2);color:var(--ink-3);border-color:var(--ink-4);border-style:dashed">example</span>`:''}
           ${isNew?`<span class="badge badge-new">new</span>`:''}
         </div>
       </div>
@@ -646,11 +619,6 @@ function openTeaching(id){
   <button class="detail-back" onclick="switchTab(document.querySelector('[data-tab=browse]'))">
     ← back to library
   </button>
-
-  ${t.isExample ? `
-  <div style="background:var(--parchment-2);border:1px dashed var(--ink-4);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--ink-3);line-height:1.6">
-    📖 <strong style="color:var(--ink-2)">Example teaching</strong> — included to show what a peer teaching record looks like. This is not real student work. You are welcome to read it for ideas, but the samāʿ verification panel is disabled for example teachings — only real peer teachings can be attested.
-  </div>` : ''}
 
   <div class="detail-header">
     <div class="detail-avatar" style="background:${abg};color:${afg}">${t.teacherInitials||'?'}</div>
@@ -696,8 +664,6 @@ function openTeaching(id){
     </div>
   </div>`:''}
 
-  ${verifyPanelHtml(t)}
-
   <hr style="border:none;border-top:1px solid var(--ink-5);margin:18px 0">
   <div class="btn-row">
     <button class="btn teal" onclick="markHelpful('${t.id}')">This helped me</button>
@@ -705,248 +671,11 @@ function openTeaching(id){
     <button class="btn primary" onclick="switchTab(document.querySelector('[data-tab=record]'))">Record a related teaching →</button>
   </div>
   <p style="font-size:11px;color:var(--ink-4);margin-top:10px">${t.views||0} views · ${t.helpful||0} found helpful</p>`;
-  checkExistingVerification(t);
 }
 
-function markHelpful(id){
-  var t = getAllTeachings().find(function(x){ return x.id===id; });
-  if(!t){ toast('Teaching not found.'); return; }
-  // Prevent double-marking
-  var marked = JSON.parse(localStorage.getItem('ptl_marked_helpful')||'[]');
-  if(marked.indexOf(id)>-1){ toast('You already marked this as helpful.'); return; }
-  marked.push(id); localStorage.setItem('ptl_marked_helpful', JSON.stringify(marked));
-  // Increment helpful count on local teachings
-  var teachings = getTeachings().map(function(x){
-    return x.id===id ? Object.assign({},x,{helpful:(x.helpful||0)+1}) : x;
-  });
-  saveTeachings(teachings);
-  // Increment in Supabase if it's a server teaching
-  if(sb && t.fromSupabase && /^[0-9a-f-]{36}$/.test(t.id)){
-    sb.from('teaching').update({helpful:(t.helpful||0)+1}).eq('id',t.id).then(function(){});
-  }
-  // Write to sahifa_entries so Murshid scan picks it up
-  try{
-    var me = getLearnerIdentity();
-    var entries = JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
-    entries.unshift({
-      id:    'hlp'+Date.now(),
-      type:  'helpful',
-      text:  (me.name||'Student')+' found "'+t.title+'" by '+t.teacherName+' helpful.',
-      date:  new Date().toISOString()
-    });
-    localStorage.setItem('sahifa_entries', JSON.stringify(entries.slice(0,500)));
-  }catch(e){}
-  toast('Marked as helpful — the count is updated on this teaching.');
-}
-function addToSahifa(id){
-  var t = getAllTeachings().find(function(x){ return x.id===id; });
-  if(!t){ toast('Teaching not found.'); return; }
-  // Build the thread entry
-  var entry = {
-    id:        'th'+Date.now(),
-    grade:     t.teacherGrade||t.taughtGrade||'?',
-    topic:     t.title||'Untitled teaching',
-    text:      'From '+t.teacherName+' ('+t.subject+'): '+(t.summary||t.description||'').slice(0,200)
-               || t.teacherName+' taught this in Grade '+t.taughtGrade,
-    sourceId:  t.id,
-    sourceType:'peer_teaching',
-    date:      new Date().toISOString()
-  };
-  // Save to sahifa_threads (shown in Sahifa → Threads tab)
-  try{
-    var threads = JSON.parse(localStorage.getItem('sahifa_threads')||'[]');
-    threads.unshift(entry);
-    localStorage.setItem('sahifa_threads', JSON.stringify(threads.slice(0,200)));
-  }catch(e){}
-  // Also save to sahifa_entries (so Murshid scan and community views can see it)
-  try{
-    var entries = JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
-    entries.unshift({ id:entry.id, type:'thread', text:entry.text, topic:entry.topic, date:entry.date });
-    localStorage.setItem('sahifa_entries', JSON.stringify(entries.slice(0,500)));
-  }catch(e){}
-  toast('Added to your Sahifa threads — find it under Threads in your Sahifa.');
-}
+function markHelpful(id){toast('Marked as helpful. Added to your isnad.')}
+function addToSahifa(id){toast('Added as a thread in your sahifa.')}
 function startFollowUp(id){switchTab(document.querySelector('[data-tab=record]'));toast('Starting a follow-up teaching...')}
-
-// ══════════════════════════════════════════════════════════════════════
-// VERIFY LEARNING — the digital samāʿ certificate
-// The learner attests reception in writing; the Murshid checks the
-// reflection actually engages the content (ḍabṭ); the platform then
-// seals the transmission in `transmission_verification`.
-// ══════════════════════════════════════════════════════════════════════
-function escV(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
-function getLearnerIdentity(){
-  var name='';
-  try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); if(a&&a.name) name=a.name; }catch(e){}
-  if(!name){ try{ var ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); if(ss.name) name=ss.name; }catch(e){} }
-  if(!name){ var s=getSettings(); if(s.name) name=s.name; }
-  var grade='';
-  try{ var ss2=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); grade=ss2.grade||''; }catch(e){}
-  return {
-    name: name,
-    grade: grade,
-    jwt: localStorage.getItem('how_jwt'),
-    hid: localStorage.getItem('how_household_id'),
-    studentId: (function(){ try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); return a?a.id:null; }catch(e){ return null; } })()
-  };
-}
-
-// Murshid ḍabṭ (precision) check — does the reflection show the content was
-// actually received? Fails open on network error (facilitator retains override).
-async function dabtCheck(t, reflection){
-  try{
-    const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:150,
-        system:'You check whether a student\'s written reflection shows they genuinely received a peer teaching (dabt — precision of retention). PASS if the reflection engages the actual content: names the key idea, explains it in their own words, applies it, or asks a real question about it. FAIL if it is generic praise ("it was good", "I learned a lot") or could have been written without reading the teaching. Be generous with young students — simple language is fine as long as it is specific. Respond ONLY with JSON: {"pass":true|false,"note":"if fail, one short encouraging pointer toward what to add"}',
-        messages:[{role:'user',content:'TEACHING: "'+t.title+'"\nKey idea: '+(t.keyIdea||'')+'\nSummary: '+(t.summary||'')+'\n\nSTUDENT REFLECTION:\n'+reflection+'\n\nJSON verdict:'}]})
-    });
-    const d = await resp.json();
-    const raw = (d.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
-    const v = JSON.parse(raw);
-    return { pass: !!v.pass, note: v.note||'', via:'murshid' };
-  }catch(e){
-    return { pass:true, note:'', via:'platform' };
-  }
-}
-
-function verifyPanelHtml(t){
-  // Example (seed) teachings cannot be attested — no real transmission occurred
-  if(t.isExample) return '';
-  const me = getLearnerIdentity();
-  const isOwn = me.name && t.teacherName && me.name.trim().toLowerCase()===t.teacherName.trim().toLowerCase();
-  if(isOwn) return '';
-  return `
-  <hr style="border:none;border-top:1px solid var(--ink-5);margin:18px 0">
-  <div class="detail-section" id="verify-panel">
-    <span class="detail-section-label">🖋 Verify what you learned — your samāʿ</span>
-    <p style="font-size:12.5px;color:var(--ink-3);line-height:1.7;margin:0 0 10px">In the manuscript tradition, a <em>samāʿ</em> certificate recorded who received a text and attested it in writing. Write what you learned from ${escV(t.teacherName||'this teacher')} — be specific about the idea itself. This becomes an entry in your sahifa and seals the transmission on the Isnād Map.</p>
-    <input id="verify-name" value="${escV(me.name)}" placeholder="Your name" style="width:100%;box-sizing:border-box;border:1px solid var(--ink-5);border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--paper,#fff);margin-bottom:8px">
-    <textarea id="verify-text" rows="4" placeholder="What I learned: … The key insight was… I could now explain it as…" style="width:100%;box-sizing:border-box;border:1px solid var(--ink-5);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--paper,#fff);line-height:1.6"></textarea>
-    <div id="verify-status" style="margin-top:8px"></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn primary" id="verify-btn" onclick="submitLearningVerification('${escV(t.id)}')">Record my learning →</button>
-    </div>
-  </div>`;
-}
-
-async function submitLearningVerification(teachingId){
-  const t = getAllTeachings().find(x=>x.id===teachingId);
-  if(!t) return;
-  const nameEl = document.getElementById('verify-name');
-  const txtEl  = document.getElementById('verify-text');
-  const statusEl = document.getElementById('verify-status');
-  const btn = document.getElementById('verify-btn');
-  const learner = (nameEl?.value||'').trim();
-  const txt = (txtEl?.value||'').trim();
-
-  const coral = m=>`<div style="background:var(--coral-l,#FAECE7);border:1px solid var(--coral,#C4552E);border-radius:8px;padding:9px 12px;font-size:12.5px;color:var(--ink-2);line-height:1.6">${m}</div>`;
-  if(!learner){ statusEl.innerHTML = coral('Add your name so the chain records who received this.'); return; }
-  if(t.teacherName && learner.toLowerCase()===t.teacherName.trim().toLowerCase()){
-    statusEl.innerHTML = coral('A teacher can\'t verify their own transmission — that\'s for the one who received it.'); return;
-  }
-  if(txt.length < 25){
-    statusEl.innerHTML = coral('<strong>Say more about what you learned</strong> — mention the actual idea. What was the key insight? How would you explain it to someone else?'); return;
-  }
-
-  if(btn) btn.disabled = true;
-  statusEl.innerHTML = `<div style="font-size:12.5px;color:var(--ink-4)"><em>The Murshid is reading your reflection…</em></div>`;
-
-  const verdict = await dabtCheck(t, txt);
-  if(!verdict.pass){
-    if(btn) btn.disabled = false;
-    statusEl.innerHTML = coral('<strong>Say more about what you learned.</strong> '+escV(verdict.note||'Mention the specific idea — what was the key insight, and how would you explain it to someone else?'));
-    return;
-  }
-
-  const me = getLearnerIdentity();
-  const entryText = 'What I learned from '+(t.teacherName||'a peer')+' — "'+t.title+'": '+txt;
-
-  // 1) Sahifa entry — local (the sahifa app and Murshid read this key)
-  try{
-    var entries = JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
-    entries.unshift({ id:'pl'+Date.now(), type:'peer_learning', text:entryText, date:new Date().toISOString(),
-                      teachingId:t.id, teacherName:t.teacherName||'' });
-    localStorage.setItem('sahifa_entries', JSON.stringify(entries.slice(0,500)));
-  }catch(e){}
-
-  // 2) Sahifa entry — Supabase (best-effort)
-  if(sb && me.jwt && me.hid){
-    try{
-      await sb.from('sahifa_entry').insert({
-        household_id: me.hid, student_id: me.studentId, type:'peer_learning',
-        text: entryText, grade: parseInt(me.grade,10)||null,
-        entry_date: new Date().toISOString().split('T')[0]
-      });
-    }catch(e){ console.warn('sahifa_entry insert failed:', e.message||e); }
-  }
-
-  // 3) Seal the transmission
-  var sealed = false;
-  if(sb && me.jwt){
-    try{
-      // v2: resolve person UUIDs for authoritative identity on the Isnād Map
-      var learnerGrade = parseInt(me.grade, 10) || null;
-      var fromPersonId = await findOrCreatePerson(t.teacherName||'Unknown teacher', null, 'student');
-      var toPersonId   = await findOrCreatePerson(learner, learnerGrade, 'student');
-      // Curriculum week from sahifa_settings (written by platform on each week view)
-      var currentWeek  = null;
-      try{ var sq=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); currentWeek=parseInt(sq.juz)||null; }catch(e){}
-      var row = {
-        household_id:       me.hid||null,
-        kind:               'reception',
-        teaching_id:        (t.fromSupabase && /^[0-9a-f-]{36}$/.test(t.id)) ? t.id : null,
-        from_name:          t.teacherName||'Unknown teacher',  // v1: kept
-        to_name:            learner,                           // v1: kept
-        from_person_id:     fromPersonId,                      // v2
-        to_person_id:       toPersonId,                        // v2
-        evidence:           txt,
-        evidence_ref:       t.title,
-        week:               currentWeek,                       // v2
-        grade:              learnerGrade,                      // v2
-        status:             'verified',
-        verified_by:        verdict.via,
-        verification_level: verdict.via === 'murshid' ? 'murshid_checked' : 'platform_auto'  // v2
-      };
-      var r = await sb.from('transmission_verification').insert(row);
-      if(r.error) throw r.error;
-      sealed = true;
-    }catch(e){
-      console.warn('verification insert failed:', e.message||e);
-      toast('⚠ Reflection saved, but the seal did not reach the Isnād Map: '+(e.message||'server error'), 5000);
-    }
-  }
-
-  const panel = document.getElementById('verify-panel');
-  if(panel) panel.innerHTML = `
-    <span class="detail-section-label">🖋 Samāʿ recorded</span>
-    <div style="background:var(--gold-pale,#FAEEDA);border:1px solid var(--gold,#B98A2F);border-radius:10px;padding:14px 16px">
-      <p style="font-size:13.5px;font-weight:600;color:var(--ink);margin:0 0 6px">✓ Transmission ${sealed?'verified':'recorded'} — ${escV(t.teacherName||'teacher')} → ${escV(learner)}</p>
-      <p style="font-size:12.5px;color:var(--ink-2);line-height:1.7;margin:0 0 8px">"${escV(txt)}"</p>
-      <p style="font-size:11.5px;color:var(--ink-4);line-height:1.6;margin:0">Saved to your sahifa${sealed?' and sealed on the Isnād Map. This link is now <em>muttaṣil</em> — attested by the one who received it.':'. Sign in on the platform to seal it on the Isnād Map.'}</p>
-    </div>`;
-  toast(sealed ? 'Transmission verified ✓' : 'Learning recorded ✓');
-}
-
-// If this learner already verified this teaching, show that instead of the form
-async function checkExistingVerification(t){
-  const me = getLearnerIdentity();
-  if(!sb || !me.jwt || !me.name || !t.fromSupabase) return;
-  try{
-    var r = await sb.from('transmission_verification').select('created_at,evidence')
-      .eq('teaching_id', t.id).eq('to_name', me.name).eq('kind','reception').limit(1);
-    if(r.data && r.data.length){
-      const panel = document.getElementById('verify-panel');
-      if(panel) panel.innerHTML = `
-        <span class="detail-section-label">🖋 Samāʿ recorded</span>
-        <div style="background:var(--gold-pale,#FAEEDA);border:1px solid var(--gold,#B98A2F);border-radius:10px;padding:12px 16px">
-          <p style="font-size:13px;font-weight:600;color:var(--ink);margin:0 0 4px">✓ You verified this transmission on ${new Date(r.data[0].created_at).toLocaleDateString()}</p>
-          <p style="font-size:12.5px;color:var(--ink-2);line-height:1.6;margin:0">"${escV(r.data[0].evidence||'')}"</p>
-        </div>`;
-    }
-  }catch(e){}
-}
 
 // ── RECORD ────────────────────────────────────────────────────────
 let recStep = 1;
@@ -1083,7 +812,7 @@ async function prepareMurshid(){
   try {
     const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,
         system:'You are the Murshid. A student is about to record a peer teaching. Help them find their key insight. Ask one precise question that will help them articulate the single most important idea. Be brief — two or three sentences maximum.',
         messages:[{role:'user',content:`I am about to record a peer teaching on: "${draftTeaching.title}". I taught this to Grade ${draftTeaching.taughtGrade} students. I am in Grade ${draftTeaching.teacherGrade}.`}]})
     });
@@ -1196,7 +925,7 @@ function renderRecStep5(c){
   </div>`;
 }
 
-async function publishTeaching(){
+function publishTeaching(){
   const s = getSettings();
   const teachings = getTeachings();
   const name = s.name||'Anonymous';
@@ -1209,58 +938,11 @@ async function publishTeaching(){
     year: new Date().getFullYear().toString(),
     views: 0,
     helpful: 0,
-    is_published: true,
   };
   teachings.push(entry);
   saveTeachings(teachings);
+  toast('Teaching published to the library.');
   switchTab(document.querySelector('[data-tab=browse]'));
-  // Push to the shared table so the Map and other devices can see it.
-  const shared = await pushTeachingToSupabase(entry);
-  if(shared && shared.id){
-    // Adopt the server uuid so future publish-toggles update the real row
-    var list = getTeachings().map(function(t){ return t.id===entry.id ? Object.assign({},t,{id:shared.id, fromSupabase:true}) : t; });
-    saveTeachings(list);
-    toast('✓ Published to the shared library — it can now be verified on the Isnād Map.');
-  } else {
-    toast('⚠ Saved on this device only — NOT shared. '+(shared&&shared.reason?shared.reason:'Check connection and platform sign-in.'), 5000);
-  }
-}
-
-// Insert a locally-recorded teaching into the shared `teaching` table.
-// Returns {id} on success, {reason} on failure — never silent.
-async function pushTeachingToSupabase(t){
-  if(!sb) return { reason:'Supabase client did not load in this tab.' };
-  var jwt = localStorage.getItem('how_jwt');
-  if(!jwt) return { reason:'Not signed in on the platform in this browser.' };
-  var hid = localStorage.getItem('how_household_id');
-  var sid = null;
-  try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); sid=a?a.id:null; }catch(e){}
-  // v2: resolve teacher_id from the person table
-  var teacherName = t.teacherName || 'Anonymous';
-  var teacherGrade = parseInt(t.teacherGrade, 10) || null;
-  var teacherId = await findOrCreatePerson(teacherName, teacherGrade, 'student');
-  var row = {
-    household_id: hid||null,
-    teacher_name: teacherName,          // v1: kept for backward compat
-    teacher_id:   teacherId,            // v2: FK to person
-    student_id: sid,
-    taught_grade: parseInt(t.taughtGrade,10)||parseInt(t.grade,10)||parseInt((getSettings()||{}).grade,10)||null,
-    subject: t.subject||'other',
-    title: t.title||'Untitled teaching',
-    is_published: true
-  };
-  try{
-    var r = await sb.from('teaching').insert(row).select().single();
-    if(r.error){
-      // Retry without household_id in case the column/policy differs
-      delete row.household_id;
-      r = await sb.from('teaching').insert(row).select().single();
-    }
-    if(r.error) return { reason:'Server rejected it: '+(r.error.message||'unknown error') };
-    return { id: r.data.id };
-  }catch(e){
-    return { reason:'Network error: '+(e.message||'could not reach Supabase') };
-  }
 }
 
 // ── MY TEACHINGS ──────────────────────────────────────────────────
@@ -1385,55 +1067,11 @@ function libSlideNav(id, dir){
 </script>
 <script>
 /* ── SUPABASE CREDENTIALS — replace before deploying ── */
-var sb = null;
-try{
-  if(typeof supabase !== 'undefined'){
-    sb = supabase.createClient(
-      'https://apallkuclqcqxnbmjuqu.supabase.co',
-      'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
-    );
-  }
-}catch(e){}
+var sb = supabase.createClient(
+  'https://apallkuclqcqxnbmjuqu.supabase.co',
+  'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+);
 /* ─────────────────────────────────────────────────── */
-
-// ── PERSON HELPER (v2 schema) ─────────────────────────────────────────────
-// Looks up a person row by (household_id, name); creates one if missing.
-// Returns the UUID, or null if Supabase is unavailable.
-// Safe to call multiple times — the UNIQUE INDEX on (household_id, name)
-// ensures no duplicates even if two tabs race.
-async function findOrCreatePerson(name, grade, role) {
-  if (!sb || !localStorage.getItem('how_jwt')) return null;
-  var hid = localStorage.getItem('how_household_id');
-  if (!hid || !name) return null;
-  try {
-    // Try to find existing person first
-    var found = await sb.from('person')
-      .select('id')
-      .eq('household_id', hid)
-      .eq('name', name.trim())
-      .limit(1);
-    if (found.data && found.data.length) return found.data[0].id;
-    // Not found — insert
-    var created = await sb.from('person').insert({
-      household_id: hid,
-      name: name.trim(),
-      grade: grade || null,
-      role: role || 'student'
-    }).select('id').single();
-    if (created.data) return created.data.id;
-  } catch(e) {
-    // Conflict on unique index means another tab just inserted — re-fetch
-    try {
-      var retry = await sb.from('person')
-        .select('id')
-        .eq('household_id', hid)
-        .eq('name', name.trim())
-        .limit(1);
-      if (retry.data && retry.data.length) return retry.data[0].id;
-    } catch(e2) {}
-  }
-  return null;
-}
 
 // ── Fetch published teachings from Supabase and merge with local ──────────
 async function fetchSupabaseTeachings(){
@@ -1480,79 +1118,57 @@ async function fetchSupabaseTeachings(){
 
 // ── Fetch public debates from Supabase ───────────────────────────────────
 async function fetchSupabaseDebates(){
-  // Raw fetch instead of Supabase JS client to avoid DataCloneError —
-  // the client's auth module tries to postMessage a Headers object internally,
-  // which browsers reject in sandboxed/iframe contexts.
   try{
-    var SURL='https://apallkuclqcqxnbmjuqu.supabase.co';
-    var SKEY='sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9';
-    var jwt=localStorage.getItem('how_jwt');
-    var resp=await fetch(
-      SURL+'/rest/v1/debate?select=*&is_public=eq.true&status=eq.complete&order=updated_at.desc',
-      {headers:{'apikey':SKEY,'Authorization':'Bearer '+(jwt||SKEY),'Content-Type':'application/json'}}
-    );
-    if(!resp.ok) return [];
-    var data=await resp.json();
-    if(!Array.isArray(data)||!data.length) return [];
+    const { data, error } = await sb
+      .from('debate')
+      .select('*')
+      .eq('is_public', true)
+      .eq('status', 'complete')
+      .order('updated_at', { ascending: false });
+    if(error){ console.warn('fetchSupabaseDebates error:', error.message); return []; }
+    if(!data || !data.length) return [];
     return data.map(function(r){
-      var moves=Array.isArray(r.moves)?r.moves:[];
-      var transcript=moves.map(function(m){
+      var moves = Array.isArray(r.moves)?r.moves:[];
+      var transcript = moves.map(function(m){
         return (m.who==='a'?(r.student_a_name||'Student A'):
-                m.who==='b'?(r.student_b_name||'Student B'):'Ustadh')+': '+m.text;
-      }).join('\n\n');
-      var synth='';
-      try{ var s=JSON.parse(r.synthesis||'{}'); synth=s.verdict||s.summary||s.deepest_insight||''; }catch(e){}
+                m.who==='b'?(r.student_b_name||'Student B'):'Ustadh')
+               +': '+m.text;
+      }).join('
+
+');
+      var synth = '';
+      try{ var s=JSON.parse(r.synthesis||'{}'); synth=s.verdict||s.summary||''; }catch(e){}
       return {
-        id:r.id, title:r.claim,
-        teacherGrade:String(r.grade||''), taughtGrade:String(r.grade||''),
-        subject:'munazara', disc:'hum', juz:'Week '+r.week, scholar:'',
-        keyIdea:r.claim,
-        summary:synth||(moves.length?moves[0].text.slice(0,120)+'\u2026':''),
-        transcript:[{type:'debate',text:transcript}], openQuestion:'',
-        tags:['Munazara','Week '+(r.week||''),'Grade '+(r.grade||'')],
-        teacherName:(r.student_a_name||'')+(r.student_b_name?' vs '+r.student_b_name:''),
-        teacherInitials:'⚖', year:new Date(r.created_at||Date.now()).getFullYear().toString(),
-        views:0, helpful:r.helpful||0, isMunazara:true, fromServer:true
+        id:             r.id,
+        title:          r.claim,
+        teacherGrade:   String(r.grade||''),
+        taughtGrade:    String(r.grade||''),
+        subject:        'munazara',
+        disc:           'hum',
+        juz:            'Week '+r.week,
+        scholar:        '',
+        keyIdea:        r.claim,
+        summary:        synth||(moves.length?moves[0].text.slice(0,120)+'…':''),
+        transcript:     [{type:'debate',text:transcript}],
+        openQuestion:   '',
+        tags:           ['Munazara','Week '+(r.week||''), 'Grade '+(r.grade||'')],
+        teacherName:    (r.student_a_name||'')+(r.student_b_name?' vs '+r.student_b_name:''),
+        teacherInitials:'⚔',
+        year:           new Date(r.created_at||Date.now()).getFullYear().toString(),
+        views:          0,
+        helpful:        r.helpful||0,
+        isMunazara:     true,
+        fromServer:     true
       };
     });
   }catch(e){
-    console.warn('fetchSupabaseDebates error:', e.message||e);
+    console.warn('fetchSupabaseDebates error:', e);
     return [];
-  }
-}
-
-// ── Sidebar stats: who has verified learning from MY teachings ────────────
-async function updateIsnadStats(){
-  const me = getLearnerIdentity();
-  if(!sb || !me.jwt || !me.name) return;
-  try{
-    var r = await sb.from('transmission_verification')
-      .select('to_name').eq('from_name', me.name).eq('kind','reception').eq('status','verified');
-    if(r.data){
-      var learners = {}; r.data.forEach(function(x){ learners[x.to_name]=1; });
-      var helpedEl = document.getElementById('my-helped');
-      var linksEl  = document.getElementById('my-links');
-      if(helpedEl) helpedEl.textContent = Object.keys(learners).length;
-      if(linksEl)  linksEl.textContent  = r.data.length;
-    }
-  }catch(e){}
-}
-
-// ── Connection status: silent degradation is how bugs hide. Announce it. ──
-function announceConnectionState(){
-  if(!sb){
-    toast('⚠ Offline mode — the Supabase client did not load. Sharing, samāʿ verification and sahifa sync are disabled in this tab.', 6000);
-    return;
-  }
-  if(!localStorage.getItem('how_jwt')){
-    toast('⚠ Not signed in on the platform in this browser — teachings will save locally but will NOT share, seal, or sync until you sign in.', 6000);
   }
 }
 
 // ── Load on startup: fetch Supabase + merge with local + re-render ────────
 (async function initLibrary(){
-  setTimeout(announceConnectionState, 1200);
-  updateIsnadStats();
   var sbTeachings = await fetchSupabaseTeachings();
   var sbDebates   = await fetchSupabaseDebates();
   var allServer   = sbTeachings.concat(sbDebates);

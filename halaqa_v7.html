@@ -145,8 +145,6 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--p);padding:8px 16px;border-radius:var(--r);font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
-
-/* peer selection panel */
 .peer-panel{padding:9px 16px 6px;border-top:1px solid var(--ink5);background:var(--p2);display:none}
 .peer-panel-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);margin-bottom:7px}
 .peer-btns{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
@@ -605,23 +603,15 @@ function joinSession(){
 }
 
 function setupPre(){
-  // The question comes from hq_session.q (written by the facilitator on entry).
-  // If it's missing, the facilitator may not have pressed "Enter the halaqa" yet.
-  var qText = G.question || '';
-  var themeText = G.theme || '';
-  var qEl = document.getElementById('pre-q');
-  var wkEl = document.getElementById('pre-wk');
+  var qText=G.question||'';
+  var themeText=G.theme||'';
+  var qEl=document.getElementById('pre-q');
   if(qEl){
-    if(qText){
-      qEl.textContent = '"'+qText+'"';
-    } else {
-      qEl.textContent = '(Waiting for facilitator to open the circle)';
-      qEl.style.fontStyle = 'italic';
-      qEl.style.opacity = '0.5';
-    }
+    if(qText){ qEl.textContent='"'+qText+'"'; }
+    else { qEl.textContent='(Waiting for facilitator to open the circle)'; qEl.style.fontStyle='italic'; qEl.style.opacity='0.5'; }
   }
-  if(wkEl) wkEl.textContent = themeText;
-  document.getElementById('mc-topic').textContent = qText || themeText || 'الحلقة';
+  var wkEl=document.getElementById('pre-wk'); if(wkEl) wkEl.textContent=themeText;
+  document.getElementById('mc-topic').textContent=qText||themeText||'الحلقة';
   let sub=0;const tot=2+Math.floor(Math.random()*3);
   const ti=document.getElementById('pre-timer-txt');
   const iv=setInterval(()=>{if(sub<tot){sub++;ti.textContent=`${sub} other student${sub>1?'s':''} submitted their answer`;}else{clearInterval(iv);ti.textContent='Everyone has written. The circle is ready.';} },3800+Math.random()*1200);
@@ -842,7 +832,7 @@ function buildSys(){
       +'Circle members: '+_circleMembers
       +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
       +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
-      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently. If a student argues to prove they are right rather than to understand what is true, redirect back to the question: "Is the question asking who is right, or what is actually true here?"\n'
+      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently. If a student argues to prove they are right rather than to understand what is true, redirect: "Is the question asking who is right, or what is actually true here?"\n'
       +'Phase: '+G.phase+'; Turns: '+G.turnCount+'\n'
       +(G.turnCount>8?'Move toward synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices.');
   }
@@ -850,7 +840,7 @@ function buildSys(){
     +'Circle members: '+_circleMembers
     +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
     +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
-    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n10. Truth-seeking: if a student argues to win rather than understand, name it gently — "The question is not who is right. What do you actually think is true?"\n'
+    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n10. Truth-seeking: if a student argues to win rather than understand, name it — "The question is not who is right. What do you actually think is true?"\n'
     +'Phase: '+G.phase+'; Turns: '+G.turnCount+'\n'
     +(G.turnCount>8?'Begin synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices — do not converge yet.');
 }
@@ -870,6 +860,8 @@ Open the circle by:
 Tone: scholarly, warm, unhurried. 4–5 sentences maximum.`;
   const r=await callAI([{role:'user',content:prompt}],prompt);
   setSt('الحلقة','on');addAI(r);setPhase('inquiry');
+  // Show peer panel after opening so student can hear from a peer before responding
+  if(!_liveMode && G.role!=='facilitator') setTimeout(showPeerPanel,400);
 }
 
 async function aiRespond(who,text){
@@ -889,10 +881,8 @@ async function aiRespond(who,text){
     },2000);
   }
   addAI(r);G.aiThinking=false;
-  // In solo mode, show the peer selection panel so the student chooses who responds next.
-  // Peers no longer fire automatically — this fixes domination and pacing.
   if(!_liveMode && G.role!=='facilitator' && G.phase!=='close' && G.phase!=='ended'){
-    setTimeout(showPeerPanel, 400);
+    setTimeout(showPeerPanel,400);
   }
 }
 
@@ -1039,10 +1029,8 @@ function addAI(text){
   else{body=`<span class="m-q">${esc(text)}</span>`;}
   d.innerHTML=`<div class="m-av ai">م</div><div class="m-body"><div class="m-hdr"><span class="m-name ai-name">الحلقة · AI facilitator</span><span class="m-time">${ts()}</span></div><div class="m-text ai-text">${body}</div></div>`;
   c.appendChild(d);scrollC();
-  // Band-specific input helpers
   if(G.band==='k2'&&G.role!=='facilitator') generateK2HalaqaChoices(text);
   if(G.band==='35'&&G.role!=='facilitator') showHalaqaStarters();
-  // Peer panel is shown by aiRespond() after the facilitator responds to the student
 }
 
 function addStudent(name,text,role){
@@ -1073,11 +1061,7 @@ function sendMsg(){
   var k2=document.getElementById('k2-hq-choices'); if(k2) k2.style.display='none';
   var st=document.getElementById('hq-starters'); if(st) st.style.display='none';
   addStudent(G.name,t,'self');
-  // Broadcast to live session if active
-  if(_liveMode) broadcastMessage(t);
-  // In live mode — no AI responses, humans only
-  if(_liveMode) return;
-  // Hide peer panel while facilitator is responding
+  if(_liveMode){ broadcastMessage(t); return; }
   hidePeerPanel();
   setTimeout(()=>aiRespond(G.name,t),350+Math.random()*250);
 }
@@ -1586,91 +1570,84 @@ function toggleROEOverlay(){
 }
 
 // ── PEER SELECTION SYSTEM ────────────────────────────────────────────────────
-// Peers no longer fire automatically. After the facilitator speaks, the student
-// sees named buttons and chooses who to hear from. One peer per round maximum
-// (tracked by _peersSpeakenThisRound). "Continue →" resets the round.
-var _peersSpeakenThisRound = {};
-var _awaitingPeerChoice = false;
+var _peersSpeakenThisRound={};
+var _awaitingPeerChoice=false;
 
 function showPeerPanel(){
   if(_liveMode) return;
   if(G.phase==='close'||G.phase==='ended') return;
-  var peers = G.participants.filter(function(p){ return p.role==='peer'; });
+  var peers=G.participants.filter(function(p){return p.role==='peer';});
   if(!peers.length) return;
-  _awaitingPeerChoice = true;
-  var panel = document.getElementById('peer-panel');
-  var btns  = document.getElementById('peer-buttons');
+  _awaitingPeerChoice=true;
+  var panel=document.getElementById('peer-panel');
+  var btns=document.getElementById('peer-buttons');
   if(!panel||!btns) return;
-  btns.innerHTML = peers.map(function(p){
-    var used = !!_peersSpeakenThisRound[p.n];
-    return '<button class="peer-btn" id="pbtn-'+p.n+'"'
-      +(used?' disabled':'  onclick="choosePeer(\''+p.n+'\')"')
-      +'>'+p.n+(used?' ✓':'')+'</button>';
-  }).join('');
-  panel.style.display = 'block';
+    // Build peer buttons using DOM — avoids inline onclick quote-escaping issues
+  btns.innerHTML='';
+  peers.forEach(function(p){
+    var used=!!_peersSpeakenThisRound[p.n];
+    var btn=document.createElement('button');
+    btn.className='peer-btn';
+    btn.id='pbtn-'+p.n;
+    btn.textContent=p.n+(used?' ✓':'');
+    btn.disabled=used;
+    if(!used) btn.addEventListener('click',function(){ choosePeer(p.n); });
+    btns.appendChild(btn);
+  });
+  panel.style.display='block';
 }
 
 function hidePeerPanel(){
-  _awaitingPeerChoice = false;
-  var panel = document.getElementById('peer-panel');
-  if(panel) panel.style.display = 'none';
+  _awaitingPeerChoice=false;
+  var panel=document.getElementById('peer-panel');
+  if(panel) panel.style.display='none';
 }
 
 async function choosePeer(peerName){
   if(_peersSpeakenThisRound[peerName]) return;
-  _peersSpeakenThisRound[peerName] = true;
+  _peersSpeakenThisRound[peerName]=true;
   hidePeerPanel();
-  // Fire the peer silently (no auto-facilitator response after — student drives pace)
   await simSpecificPeerSilent(peerName);
-  // Show updated panel: chosen peer greyed, others still available
   showPeerPanel();
 }
 
-// Like simSpecificPeer but does NOT call aiRespond() at the end.
-// The student advances the circle by clicking "Continue →".
 async function simSpecificPeerSilent(peerName){
-  var p = G.participants.find(function(x){ return x.n===peerName; });
-  if(!p || G.phase==='close' || G.phase==='ended') return;
-  if(G.aiThinking){
-    await new Promise(function(res){ setTimeout(res, 1200); });
-    return simSpecificPeerSilent(peerName);
-  }
-  var hist = G.messages.filter(function(m){ return m.t==='student'||m.t==='ai'; }).slice(-6)
-    .map(function(m){ return {role:m.t==='ai'?'assistant':'user', content:m.n+': '+m.txt}; });
-  var _ns = ' Never use asterisks, stage directions, or physical actions like *looks at* or *turns to*. Just speak.';
-  var bandInstr = G.band==='k2'?'You are a 5-7 year old child. 3-6 words per sentence. One simple concrete thing.'+_ns:
+  var p=G.participants.find(function(x){return x.n===peerName;});
+  if(!p||G.phase==='close'||G.phase==='ended') return;
+  if(G.aiThinking){ await new Promise(function(res){setTimeout(res,1200);}); return simSpecificPeerSilent(peerName); }
+  var hist=G.messages.filter(function(m){return m.t==='student'||m.t==='ai';}).slice(-6)
+    .map(function(m){return {role:m.t==='ai'?'assistant':'user',content:m.n+': '+m.txt};});
+  var _ns=' Never use asterisks, stage directions, or physical actions. Just speak.';
+  var bandInstr=G.band==='k2'?'You are a 5-7 year old child. 3-6 words per sentence. One simple concrete thing.'+_ns:
     G.band==='35'?'You are an 8-11 year old. Simple sentences. 1-2 sentences max.'+_ns:
     G.band==='68'?'You are an 11-14 year old. Think aloud, 1-2 sentences.'+_ns:
     'You are a 14-18 year old student. Thoughtful, 1-2 sentences.'+_ns;
-  var peerSys = 'You are '+peerName+', a student in a halaqa who has just been called on directly by name. '
-    +bandInstr+' The facilitator is waiting for YOUR answer specifically. Respond directly. '
+  var peerSys='You are '+peerName+', a student in a halaqa who has just been called on directly by name. '
+    +bandInstr+' The facilitator is waiting for YOUR answer. Respond directly. '
     +'Opening question: "'+G.question+'". '
     +'You are genuinely trying to understand this question — not to perform or impress. '
-    +'If something another student said changes your thinking, say so openly. If you are not sure, say you are not sure. '
+    +'If something another student said changes your thinking, say so. If you are not sure, say so. '
     +'The halaqa is a circle of inquiry — there is no winning, only understanding. '
-    +'Never use asterisks, stage directions, or physical actions. Just speak plainly. Never say you are an AI.';
+    +'Never say you are an AI.';
   setSt(peerName,'typing');
   showHalaqaTyping(peerName,'thinking');
   await delay(getSimDelay(2000,2500));
   showHalaqaTyping(peerName,'typing');
-  var resp = '';
-  try{
-    resp = await callAI([...hist,{role:'user',content:'('+peerName+' has been called on — they respond)'}], peerSys);
-  }catch(e){}
+  var resp='';
+  try{ resp=await callAI([...hist,{role:'user',content:'('+peerName+' has been called on)'}],peerSys); }catch(e){}
   await delay(getSimDelay(1200,1500));
   hideHalaqaTyping();
   setSt(peerName,'on');
-  if(resp && resp.trim() && resp.trim()!=='…'){
-    _peerSpeakCount[peerName] = (_peerSpeakCount[peerName]||0)+1;
-    addStudent(peerName, resp, 'peer');
+  if(resp&&resp.trim()&&resp.trim()!=='…'){
+    _peerSpeakCount[peerName]=(_peerSpeakCount[peerName]||0)+1;
+    addStudent(peerName,resp,'peer');
   }
 }
 
 function nextRound(){
-  // Student has read what they wanted — reset round, let them type their next message
-  _peersSpeakenThisRound = {};
+  _peersSpeakenThisRound={};
   hidePeerPanel();
-  var inp = document.getElementById('msgi');
+  var inp=document.getElementById('msgi');
   if(inp) inp.focus();
   addSys('Your turn — speak into the circle.');
 }

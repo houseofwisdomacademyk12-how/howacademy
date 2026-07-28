@@ -38,7 +38,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--in
 
 .body-grid{display:grid;grid-template-columns:280px 1fr}
 .sidebar{background:var(--parchment-2);border-right:1px solid var(--ink-5);padding:20px 0;height:calc(100vh - 52px);position:sticky;top:52px;overflow-y:auto}
-.main-area{padding:28px 32px;min-height:calc(100vh - 52px)}
+.main-area{padding:28px 32px;min-height:calc(100vh - 52px);max-width:860px}
 
 /* sidebar */
 .sb-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);padding:0 16px;margin-bottom:6px;display:block}
@@ -435,6 +435,11 @@ const SEED = [
    tags:['argument writing','Ibn Rushd','Philosophy studio','Grade 9 teaches Grade 6']},
 ];
 
+// Seed teachings are demonstrations of the format — not real student work.
+// They carry an 'example' badge and a banner in the detail view.
+// The samāʿ verification panel is suppressed for example teachings.
+SEED.forEach(function(t){ t.isExample = true; });
+
 function getAllTeachings(){
   const stored = getTeachings();
   return [...SEED, ...stored];
@@ -462,7 +467,10 @@ function switchTab(btn){
   btn.classList.add('active');
   currentView = btn.dataset.tab;
   const sidebar = document.getElementById('sidebar');
-  sidebar.style.display = ['browse','mine'].includes(currentView)?'block':'none';
+  const body    = document.getElementById('main-body');
+  const hasSidebar = ['browse','mine'].includes(currentView);
+  sidebar.style.display = hasSidebar ? 'block' : 'none';
+  body.style.gridTemplateColumns = hasSidebar ? '280px 1fr' : '1fr';
   renderTab(currentView);
 }
 
@@ -607,6 +615,7 @@ function teachingCard(t){
           <span class="badge ${discClass}">${t.subject}</span>
           ${t.scholar?`<span class="badge badge-scholar">${t.scholar}</span>`:''}
           ${t.isTeachIt?`<span class="badge" style="background:#e8edf8;color:#1a3d8a">✏️ Student teaching</span>`:''}
+          ${t.isExample?`<span class="badge" style="background:var(--parchment-2);color:var(--ink-3);border-color:var(--ink-4);border-style:dashed">example</span>`:''}
           ${isNew?`<span class="badge badge-new">new</span>`:''}
         </div>
       </div>
@@ -637,6 +646,11 @@ function openTeaching(id){
   <button class="detail-back" onclick="switchTab(document.querySelector('[data-tab=browse]'))">
     ← back to library
   </button>
+
+  ${t.isExample ? `
+  <div style="background:var(--parchment-2);border:1px dashed var(--ink-4);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--ink-3);line-height:1.6">
+    📖 <strong style="color:var(--ink-2)">Example teaching</strong> — included to show what a peer teaching record looks like. This is not real student work. You are welcome to read it for ideas, but the samāʿ verification panel is disabled for example teachings — only real peer teachings can be attested.
+  </div>` : ''}
 
   <div class="detail-header">
     <div class="detail-avatar" style="background:${abg};color:${afg}">${t.teacherInitials||'?'}</div>
@@ -742,6 +756,8 @@ async function dabtCheck(t, reflection){
 }
 
 function verifyPanelHtml(t){
+  // Example (seed) teachings cannot be attested — no real transmission occurred
+  if(t.isExample) return '';
   const me = getLearnerIdentity();
   const isOwn = me.name && t.teacherName && me.name.trim().toLowerCase()===t.teacherName.trim().toLowerCase();
   if(isOwn) return '';
@@ -814,16 +830,28 @@ async function submitLearningVerification(teachingId){
   var sealed = false;
   if(sb && me.jwt){
     try{
+      // v2: resolve person UUIDs for authoritative identity on the Isnād Map
+      var learnerGrade = parseInt(me.grade, 10) || null;
+      var fromPersonId = await findOrCreatePerson(t.teacherName||'Unknown teacher', null, 'student');
+      var toPersonId   = await findOrCreatePerson(learner, learnerGrade, 'student');
+      // Curriculum week from sahifa_settings (written by platform on each week view)
+      var currentWeek  = null;
+      try{ var sq=JSON.parse(localStorage.getItem('sahifa_settings')||'{}'); currentWeek=parseInt(sq.juz)||null; }catch(e){}
       var row = {
-        household_id: me.hid||null,
-        kind: 'reception',
-        teaching_id: (t.fromSupabase && /^[0-9a-f-]{36}$/.test(t.id)) ? t.id : null,
-        from_name: t.teacherName||'Unknown teacher',
-        to_name: learner,
-        evidence: txt,
-        evidence_ref: t.title,
-        status: 'verified',
-        verified_by: verdict.via
+        household_id:       me.hid||null,
+        kind:               'reception',
+        teaching_id:        (t.fromSupabase && /^[0-9a-f-]{36}$/.test(t.id)) ? t.id : null,
+        from_name:          t.teacherName||'Unknown teacher',  // v1: kept
+        to_name:            learner,                           // v1: kept
+        from_person_id:     fromPersonId,                      // v2
+        to_person_id:       toPersonId,                        // v2
+        evidence:           txt,
+        evidence_ref:       t.title,
+        week:               currentWeek,                       // v2
+        grade:              learnerGrade,                      // v2
+        status:             'verified',
+        verified_by:        verdict.via,
+        verification_level: verdict.via === 'murshid' ? 'murshid_checked' : 'platform_auto'  // v2
       };
       var r = await sb.from('transmission_verification').insert(row);
       if(r.error) throw r.error;
@@ -999,7 +1027,7 @@ async function prepareMurshid(){
   try {
     const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,
         system:'You are the Murshid. A student is about to record a peer teaching. Help them find their key insight. Ask one precise question that will help them articulate the single most important idea. Be brief — two or three sentences maximum.',
         messages:[{role:'user',content:`I am about to record a peer teaching on: "${draftTeaching.title}". I taught this to Grade ${draftTeaching.taughtGrade} students. I am in Grade ${draftTeaching.teacherGrade}.`}]})
     });
@@ -1151,11 +1179,16 @@ async function pushTeachingToSupabase(t){
   var hid = localStorage.getItem('how_household_id');
   var sid = null;
   try{ var a=JSON.parse(localStorage.getItem('how_active_student')||'null'); sid=a?a.id:null; }catch(e){}
+  // v2: resolve teacher_id from the person table
+  var teacherName = t.teacherName || 'Anonymous';
+  var teacherGrade = parseInt(t.teacherGrade, 10) || null;
+  var teacherId = await findOrCreatePerson(teacherName, teacherGrade, 'student');
   var row = {
     household_id: hid||null,
-    teacher_name: t.teacherName||'Anonymous',
+    teacher_name: teacherName,          // v1: kept for backward compat
+    teacher_id:   teacherId,            // v2: FK to person
     student_id: sid,
-    taught_grade: parseInt(t.grade,10)||parseInt((getSettings()||{}).grade,10)||null,
+    taught_grade: parseInt(t.taughtGrade,10)||parseInt(t.grade,10)||parseInt((getSettings()||{}).grade,10)||null,
     subject: t.subject||'other',
     title: t.title||'Untitled teaching',
     is_published: true
@@ -1306,6 +1339,45 @@ try{
   }
 }catch(e){}
 /* ─────────────────────────────────────────────────── */
+
+// ── PERSON HELPER (v2 schema) ─────────────────────────────────────────────
+// Looks up a person row by (household_id, name); creates one if missing.
+// Returns the UUID, or null if Supabase is unavailable.
+// Safe to call multiple times — the UNIQUE INDEX on (household_id, name)
+// ensures no duplicates even if two tabs race.
+async function findOrCreatePerson(name, grade, role) {
+  if (!sb || !localStorage.getItem('how_jwt')) return null;
+  var hid = localStorage.getItem('how_household_id');
+  if (!hid || !name) return null;
+  try {
+    // Try to find existing person first
+    var found = await sb.from('person')
+      .select('id')
+      .eq('household_id', hid)
+      .eq('name', name.trim())
+      .limit(1);
+    if (found.data && found.data.length) return found.data[0].id;
+    // Not found — insert
+    var created = await sb.from('person').insert({
+      household_id: hid,
+      name: name.trim(),
+      grade: grade || null,
+      role: role || 'student'
+    }).select('id').single();
+    if (created.data) return created.data.id;
+  } catch(e) {
+    // Conflict on unique index means another tab just inserted — re-fetch
+    try {
+      var retry = await sb.from('person')
+        .select('id')
+        .eq('household_id', hid)
+        .eq('name', name.trim())
+        .limit(1);
+      if (retry.data && retry.data.length) return retry.data[0].id;
+    } catch(e2) {}
+  }
+  return null;
+}
 
 // ── Fetch published teachings from Supabase and merge with local ──────────
 async function fetchSupabaseTeachings(){

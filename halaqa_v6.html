@@ -260,7 +260,7 @@ try{
     </div>
     <div id="fac-fields" style="display:none;margin-top:13px">
       <div class="lob-divider"></div>
-      <span class="lob-label">Opening question</span>
+      <span class="lob-label">Opening question <span style="font-weight:400;opacity:.7">— this is what students see on their pre-session screen</span></span>
       <input class="lob-input" type="text" id="lb-q" placeholder="e.g. Why is π the same for every circle?">
       <span class="lob-label">Week / theme</span>
       <input class="lob-input" type="text" id="lb-theme" placeholder="e.g. Grade 7 · Juz 8 · Circles">
@@ -554,8 +554,10 @@ function joinSession(){
     // Fall back to sahifa_settings
     if(!_platformQ) _platformQ=_ss.openingQ||'';
     if(!_platformTheme) _platformTheme=_ss.weekTitle||'Week '+_week;
-    if(_lbq&&_platformQ&&!_lbq.value) _lbq.value=_platformQ;
     if(_lbt&&_platformTheme&&!_lbt.value) _lbt.value=_platformTheme;
+    // NOTE: lb-q (Opening question) is intentionally NOT pre-filled from platform data.
+    // The facilitator must type the opening question each session so the student
+    // always sees an intentionally chosen question, never a stale or theme-like value.
     // When the facilitator changes the grade dropdown, refresh the question
     // for THAT grade (previously the stale question silently stuck around).
     var _lbgEl=document.getElementById('lb-grade');
@@ -860,8 +862,6 @@ Open the circle by:
 Tone: scholarly, warm, unhurried. 4–5 sentences maximum.`;
   const r=await callAI([{role:'user',content:prompt}],prompt);
   setSt('الحلقة','on');addAI(r);setPhase('inquiry');
-  // Show peer panel after opening so student can hear from a peer before responding
-  if(!_liveMode && G.role!=='facilitator') setTimeout(showPeerPanel,400);
 }
 
 async function aiRespond(who,text){
