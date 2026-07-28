@@ -1482,7 +1482,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <div class="sb-nav-item" id="nav-user" style="display:none">
       <div class="how-avatar" style="width:24px;height:24px;font-size:10px;flex-shrink:0">م</div>
       <span class="sb-nav-label" id="nav-user-name" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--ink3)"></span>
-      <button onclick="howLogout()" style="font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--ink3);cursor:pointer;font-family:inherit;flex-shrink:0">Out</button>
+      <button onclick="howLogout()" style="font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--ink3);cursor:pointer;font-family:inherit;flex-shrink:0">Sign out</button>
     </div>
   </div>
 </aside>
@@ -1773,7 +1773,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 </div>
 <div class="schedule-controls">
   <span class="sch-label">Grade:</span>
-  <select class="sch-select" id="sch-grade" onchange="updateSchedule()">
+  <select class="sch-select" id="sch-grade" onchange="onGradeChange(this)">
     <option value="0">Kindergarten</option>
     <option value="1">Grade 1</option><option value="2">Grade 2</option>
     <option value="3">Grade 3</option><option value="4">Grade 4</option>
@@ -1783,7 +1783,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <option value="11">Grade 11</option><option value="12">Grade 12</option>
   </select>
   <span class="sch-label" style="margin-left:8px">Week:</span>
-  <select class="sch-select" id="sch-week" onchange="updateSchedule()">
+  <select class="sch-select" id="sch-week" onchange="onWeekChange(this)">
     <option value="1">Week 1</option>
     <option value="2">Week 2</option>
     <option value="3">Week 3</option>
@@ -2050,7 +2050,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
   <div class="controls no-print">
     <div class="ctrl">
       <label for="sel-grade">Grade</label>
-      <select id="sel-grade" onchange="onCtrl()">
+      <select id="sel-grade" onchange="S.grade=parseInt(this.value)||7;syncGradeWeekSelectors();onCtrl()">
         <option value="0">Kindergarten</option>
         <option value="1">Grade 1</option><option value="2">Grade 2</option>
         <option value="3">Grade 3</option><option value="4" selected>Grade 4</option>
@@ -2063,7 +2063,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     
     <div class="ctrl">
       <label for="sel-week">Week / Juz</label>
-      <select id="sel-week" onchange="onCtrl()"></select>
+      <select id="sel-week" onchange="S.week=parseInt(this.value)||1;syncGradeWeekSelectors();onCtrl()"></select>
     </div>
     <div class="ctrl">
       <label for="sel-topic">Topic override</label>
@@ -2457,6 +2457,8 @@ function howSP(btn){
   document.body.classList.toggle('lg-active', btn.dataset.p==='generate');
   // Scroll content back to top
   var ca=document.getElementById('how-content-area'); if(ca) ca.scrollTop=0;
+  // Sync grade/week selectors to current student state
+  syncGradeWeekSelectors();
   // Sync pills
   document.querySelectorAll('.how-pill').forEach(p=>p.classList.remove('active'));
   var matchPill=document.querySelector('.how-pill[onclick*="\''+btn.dataset.p+'\'"]');
@@ -3246,7 +3248,7 @@ function schedLaunch(action, opts){
     window.open('murshid_v4.html','_blank');
 
   } else if(action==='isnad'){
-    window.open('Knowledge_Transmission_Chain_v3.html','_blank');
+    window.open('how_isnad.html','_blank');
   }
 }
 
@@ -3565,7 +3567,10 @@ function openWbOverlay(grade, week, subj, sess){
     '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--ink,#1a1a2e);flex-shrink:0">'+
     '  <button id="wb-ov-prev" onclick="wbOvNav(-1)" style="background:rgba(255,255,255,.15);border:none;color:white;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700">← Back</button>'+
     '  <span id="wb-ov-counter" style="font-size:12px;color:rgba(255,255,255,.6)"></span>'+
-    '  <button id="wb-ov-next" onclick="wbOvNav(1)" style="background:rgba(255,255,255,.15);border:none;color:white;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700">Next →</button>'+
+    '  <div style="display:flex;gap:8px">'+
+    '    <button onclick="printWorkbook()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit">🖨 Print</button>'+
+    '    <button id="wb-ov-next" onclick="wbOvNav(1)" style="background:rgba(255,255,255,.15);border:none;color:white;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700">Next →</button>'+
+    '  </div>'+
     '</div>';
   _wbOvLesson=l; // Store for grading
   document.body.appendChild(ov);
@@ -4330,7 +4335,7 @@ function renderScheduleDay(day){
       <span class="studio-arc">Studio arc — Day 2: Observe · Question</span>
       <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; sahifa morning read</p><p class="tb-sub">Murshid's overnight threads surfaced.</p>${btn('Open Murshid','murshid','tl-sacred')}</div></div>
       <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics — deepening${hasS2?'<span class="tb-done">✓ Session 2</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,120):'—'}</p>${hasS2?btn('Open deck','deck','tl-teal',{subj:'math',session:2}):btn('Generate Session 2','gen','tl-gold')}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'math',session:2}):''}</div></div>
-      <div class="trow"><div class="ttime">9:00</div><div class="tblock bstua"><p class="tb-title">Studio — Observe &amp; Question</p><p class="tb-sub">${studioLabel}</p><span class="tb-tag">Day 2 arc: what question does this raise?</span>${btn('Open Studio','studio','tl-studio')}</div></div>
+      <div class="trow"><div class="ttime">9:00</div><div class="tblock bstua"><p class="tb-title">Studio — Observe &amp; Question</p><p class="tb-sub">${studioLabel}</p><span class="tb-tag">Day 2 arc: what question does this raise?</span>${btn('Open Studio','studio-twin','tl-studio')}</div></div>
       <div class="trow"><div class="ttime">10:20</div><div class="tblock bfre"><p class="tb-title">Break — studio remains live</p></div></div>
       <div class="trow"><div class="ttime">10:50</div><div class="tblock bcor"><p class="tb-title">Science${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'sci',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'sci',session:2}):''}</div></div>
       <div class="trow"><div class="ttime">11:40</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'ss',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ss',session:2}):''}</div></div>
@@ -4344,7 +4349,7 @@ function renderScheduleDay(day){
       <span class="studio-arc">Studio arc — Day 3: Make · Document</span>
       <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; morning intention</p><p class="tb-sub">What are you working on in the studio today? One sentence.</p></div></div>
       <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">📝 Tuesday Test — all 5 subjects${hasTest?hasScore?'<span class="tb-done">✓ Scored</span>':'<span class="tb-done">✓ Generated</span>':''}</p><p class="tb-sub">22 minutes per subject · strict timer · no transitions between subjects</p>${hasTest?btn(hasScore?'Review test &amp; scores':'Open test','test','tl-teal'):btn('Generate test first','gen','tl-gold')}</div></div>
-      <div class="trow"><div class="ttime">10:00</div><div class="tblock bstua"><p class="tb-title">Open studio — all grades, all studios, 2 hours</p><p class="tb-sub">${studioDetail||'Every studio open simultaneously. Students choose freely.'}</p><span class="tb-tag">Day 3 arc: make the thing</span>${btn('Open Studio','studio','tl-studio')}</div></div>
+      <div class="trow"><div class="ttime">10:00</div><div class="tblock bstua"><p class="tb-title">Open studio — all grades, all studios, 2 hours</p><p class="tb-sub">${studioDetail||'Every studio open simultaneously. Students choose freely.'}</p><span class="tb-tag">Day 3 arc: make the thing</span>${btn('Open Studio','studio-twin','tl-studio')}</div></div>
       <div class="trow"><div class="ttime">12:00</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch — studios remain open</p></div></div>
       <div class="trow"><div class="ttime">13:00</div><div class="tblock bstua" style="background:#5c4f8a;border-color:#7c6faa;color:white"><p class="tb-title">Documentation block — digital twin updated now</p><p class="tb-sub">Photograph, measure, annotate while fresh. Open questions recorded in the moment.</p><span class="tb-tag">Day 3 arc: document what happened</span>${btn('Open Studio Digital Twin','studio-twin','tl-studio')}</div></div>
       <div class="trow"><div class="ttime">13:50</div><div class="tblock bsah"><p class="tb-title">Sahifa — extended entry · 30 min</p><p class="tb-sub">Prompts: the studio session · the test · this week's scholar · what question am I carrying?</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
@@ -4365,10 +4370,10 @@ function renderScheduleDay(day){
     thu:`<div class="timeline">
       <span class="studio-arc">Studio arc — Day 5: Finish · Transmit</span>
       <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; pre-answer review — re-read Sunday's pre-answer in silence</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bstua" style="background:var(--pl);border-color:#AFA9EC"><p class="tb-title">Studio finishing block — by appointment only</p><p class="tb-sub">Complete and publish the digital twin. The thing is done. The record is made.</p><span class="tb-tag">Day 5 arc: finish &amp; publish</span>${btn('Open Studio Digital Twin','studio','tl-studio')}</div></div>
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bstua" style="background:var(--pl);border-color:#AFA9EC"><p class="tb-title">Studio finishing block — by appointment only</p><p class="tb-sub">Complete and publish the digital twin. The thing is done. The record is made.</p><span class="tb-tag">Day 5 arc: finish &amp; publish</span>${btn('Open Studio Digital Twin','studio-twin','tl-studio')}</div></div>
       <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">All-subjects synthesis${hasThu?'<span class="tb-done">✓ Thu deck</span>':''}</p><p class="tb-sub">${week?'Theme: '+week.theme+'. The week\'s thread made visible.':'—'}</p>${hasThu?btn('Open Thursday synthesis','deck','tl-teal',{subj:'synthesis',session:3}):btn('Generate Thu synthesis','gen','tl-gold')}</div></div>
       <div class="trow"><div class="ttime">10:15</div><div class="tblock bpeer"><p class="tb-title">Isnad recording — 20 min</p><p class="tb-sub">Who did I teach? Who taught me? The transmission is recorded formally.</p><span class="tb-tag">Isnad grows here</span>${btn('Open Isnad','isnad','')}</div></div>
-      <div class="trow"><div class="ttime">10:35</div><div class="tblock bopn"><p class="tb-title">Open work time — curriculum, studio, murshid, or stillness</p><p class="tb-sub">No structure. Student chooses.</p>${btn('Open Murshid','murshid','tl-sacred')}${btn('Open Studio','studio','tl-studio')}</div></div>
+      <div class="trow"><div class="ttime">10:35</div><div class="tblock bopn"><p class="tb-title">Open work time — curriculum, studio, murshid, or stillness</p><p class="tb-sub">No structure. Student chooses.</p>${btn('Open Murshid','murshid','tl-sacred')}${btn('Open Studio','studio-twin','tl-studio')}</div></div>
       <div class="trow"><div class="ttime">12:30</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:15</div><div class="tblock bsah"><p class="tb-title">Week-closing revision entry</p><p class="tb-sub">Re-read Sunday's pre-answer. Write what changed.</p><span class="tb-tag">The most important weekly writing</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
       <div class="trow"><div class="ttime">14:00</div><div class="tblock bMUH"><p class="tb-title">✦ Muhasaba — المُحاسَبَة</p><p class="tb-sub">20 minutes. Prompts: What did I resist this week? What question am I carrying? Who am I becoming?</p><span class="tb-tag">Private · never assessed</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
@@ -5935,6 +5940,7 @@ function wbStarterPick(btn){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+function wbF(lbl,id,ph,type,h){var ta=(type==='textarea');return '<div class="wb-field"><label class="wb-label">'+lbl+'</label><'+(ta?'textarea':'input')+' class="wb-'+(ta?'textarea':'input')+'" id="'+id+'" placeholder="'+ph+'"'+(ta?' style="min-height:'+(h||70)+'px;"':'')+(ta?'></textarea>':'/>') +'</div>';}
 function renderWorkbook(wb){
   var html='';
   var dots=function(active,total){
@@ -10520,6 +10526,36 @@ function toggleProfileMenu(){
 function toggleInputBar(){
   var wrap=document.getElementById('how-input-wrap');
   if(wrap) wrap.classList.toggle('collapsed');
+}
+
+// ── GRADE/WEEK SELECTOR SYNC ─────────────────────────────────────────────────
+// Called on every page navigation — keeps all selectors in sync with S.grade/S.week
+function syncGradeWeekSelectors(){
+  var g = S.grade || 7;
+  var w = S.week  || 1;
+  // Schedule tab selectors
+  var schG = document.getElementById('sch-grade');
+  var schW = document.getElementById('sch-week');
+  if(schG && parseInt(schG.value) !== g){ schG.value = g; }
+  if(schW && parseInt(schW.value) !== w){ schW.value = w; }
+  // Generate tab selectors
+  var genG = document.getElementById('sel-grade');
+  var genW = document.getElementById('sel-week');
+  if(genG && parseInt(genG.value) !== g){ genG.value = g; }
+  if(genW && parseInt(genW.value) !== w){ genW.value = w; }
+}
+
+// Also update S.grade/S.week when the user manually changes a selector
+// (so other tabs stay in sync too)
+function onGradeChange(el){
+  S.grade = parseInt(el.value) || 7;
+  syncGradeWeekSelectors();
+  updateSchedule && updateSchedule();
+}
+function onWeekChange(el){
+  S.week = parseInt(el.value) || 1;
+  syncGradeWeekSelectors();
+  updateSchedule && updateSchedule();
 }
 </script>
 
