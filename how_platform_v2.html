@@ -1394,7 +1394,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 
     <button class="sb-nav-item sb-active" data-p="overview" onclick="howSP(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span class="sb-nav-label">Home</span>
+      <span class="sb-nav-label">Dashboard</span>
     </button>
 
     <button class="sb-nav-item auth-only" data-p="schedule" onclick="howSP(this)">
@@ -1518,6 +1518,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
           <button onclick="openStudentManager();toggleProfileMenu()" style="width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit;display:block">&#x1F9D2; Manage students</button>
           <button onclick="howToggleTheme();toggleProfileMenu()" style="width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit;display:block">&#x1F319; Toggle dark mode</button>
           <div style="height:1px;background:var(--border);margin:4px 0"></div>
+          <button onclick="showRolePicker();toggleProfileMenu()" style="width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit;display:block">&#x21C4; Switch role</button>
           <button onclick="howLogout();toggleProfileMenu()" style="width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:#c0392b;cursor:pointer;font-family:inherit;display:block">&#x2192; Sign out</button>
         </div>
       </div>
@@ -2002,35 +2003,6 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 <!-- ═══ GENERATE ══════════════════════════════════ -->
 <div class="page" id="p-generate">
 <div id="lg-root">
-<!-- Role picker -->
-<div id="role-picker">
-  <div class="rp-header">
-    <div class="rp-ar">أكاديمية بيت الحكمة</div>
-    <h1 class="rp-title">House of Wisdom Academy</h1>
-    <p class="rp-sub">Who are you today?</p>
-  </div>
-  <div class="rp-cards">
-    <div class="rp-card fac" onclick="pickRole('facilitator')">
-      <div class="rp-icon">👨‍🏫</div>
-      <div class="rp-role">Facilitator</div>
-      <div class="rp-desc">Generate lessons, annotate, set up the test and munazara. Full access.</div>
-      <button class="rp-btn fac">Enter →</button>
-    </div>
-    <div class="rp-card par" onclick="pickRole('prep')">
-      <div class="rp-icon">👤</div>
-      <div class="rp-role">Parent</div>
-      <div class="rp-desc">Preview this week's lessons and workbook before your child sees them.</div>
-      <button class="rp-btn par">Enter →</button>
-    </div>
-    <div class="rp-card stu" onclick="pickRole('child')">
-      <div class="rp-icon">🧒</div>
-      <div class="rp-role">Student</div>
-      <div class="rp-desc">Your lesson deck, workbook, test, and munazara debate.</div>
-      <button class="rp-btn stu">Enter →</button>
-    </div>
-  </div>
-  <div class="rp-footer">Your choice is remembered — you can switch roles at any time from the toolbar above.</div>
-</div>
 <div class="app" id="app">
   <div class="app-header no-print">
     <div class="app-eyebrow">House of Wisdom Academy</div>
@@ -2215,136 +2187,223 @@ function lfSwitch(tab, el){
   var err=document.getElementById('lf-err'); if(err) err.style.display='none';
 }
 
-// ═══ HOME DASHBOARD RENDERER ═══════════════════════════
+// ═══ HOME DASHBOARD RENDERER ════════════════════════════
 function renderHomeDashboard(){
-  var root=document.getElementById('how-dashboard-root');
+  var root = document.getElementById('how-dashboard-root');
   if(!root) return;
-  // Pull state from localStorage
-  var name  = localStorage.getItem('how_student_name')||localStorage.getItem('how_name')||'';
-  var grade = localStorage.getItem('how_grade')||'';
-  var week  = parseInt(localStorage.getItem('how_current_week')||'1',10)||1;
-  // Get Juz data
-  var juzEntry = (typeof JUZ!=='undefined'&&JUZ)?JUZ[(week-1)%JUZ.length]:null;
-  // Get scholar for this week/grade
+
+  // ── Resolve grade/week from S first, then localStorage ──────────────────
+  var grade = S.grade || parseInt(localStorage.getItem('how_grade')||'') || 7;
+  var week  = S.week  || parseInt(localStorage.getItem('how_current_week')||'') || 1;
+  var role  = S.role  || localStorage.getItem('how_role') || 'facilitator';
+  var name  = localStorage.getItem('how_student_name') || localStorage.getItem('how_name') || '';
+
+  // ── Persist grade/week back to S so all tabs inherit it ──────────────────
+  S.grade = grade; S.week = week;
+  syncGradeWeekSelectors();
+
+  var gradeLabel = grade === 0 ? 'Kindergarten' : 'Grade ' + grade;
+  var greeting   = name ? 'Assalamualaikum, ' + name.split(' ')[0] : 'Assalamualaikum';
+
+  // ── Juz data ─────────────────────────────────────────────────────────────
+  var juzEntry = (typeof JUZ !== 'undefined' && JUZ) ? JUZ[(week-1) % JUZ.length] : null;
+
+  // ── Scholar ───────────────────────────────────────────────────────────────
   var scholarName = '';
-  try{
-    if(typeof HOW_CURR!=='undefined'&&grade&&HOW_CURR[grade]){
-      var wk=HOW_CURR[grade][String(week)];
-      if(wk&&wk.scholar) scholarName=wk.scholar;
+  try {
+    if(typeof HOW_CURR !== 'undefined' && HOW_CURR[String(grade)]){
+      var wk = HOW_CURR[String(grade)].find(function(d){ return d.w === week; });
+      if(wk && wk.scholar) scholarName = wk.scholar;
     }
-  }catch(e){}
+  } catch(e){}
 
-  var greeting = name ? 'Assalamualaikum, '+name.split(' ')[0] : 'Assalamualaikum';
+  // ── Juz widget ────────────────────────────────────────────────────────────
+  var juzHtml = juzEntry ? '<div class="dash-juz">' +
+    '<div class="dash-juz-label">Juz al-Usbu\' · Week ' + week + ' · ' + (juzEntry.tr||'') + '</div>' +
+    '<div class="dash-juz-ar">' + (juzEntry.ar||'') + '</div>' +
+    '<div class="dash-juz-tr">' + (juzEntry.tr||'') + '</div>' +
+    '<div class="dash-juz-mn">' + (juzEntry.mn||'') + '</div>' +
+    '<div class="dash-juz-q">' + (juzEntry.q||'') + '</div>' +
+    '</div>' : '';
 
-  var juzHtml = juzEntry ? `
-    <div class="dash-juz">
-      <div class="dash-juz-label">Juz al-Usbu' · Week ${week} · ${juzEntry.tr||''}</div>
-      <div class="dash-juz-ar">${juzEntry.ar||''}</div>
-      <div class="dash-juz-tr">${juzEntry.tr||''}</div>
-      <div class="dash-juz-mn">${juzEntry.mn||''}</div>
-      <div class="dash-juz-q">${juzEntry.q||''}</div>
-    </div>` : '';
+  // ── STUDENT DASHBOARD ─────────────────────────────────────────────────────
+  if(role === 'student' || role === 'child'){
+    root.innerHTML =
+      // Header strip — grade locked in
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">' +
+        '<div>' +
+          '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px">Student · ' + gradeLabel + '</div>' +
+          '<div style="font-size:22px;font-weight:800;color:var(--ink)">' + greeting + '</div>' +
+          '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Week ' + week + (scholarName ? ' · Scholar: ' + scholarName : '') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          '<div style="background:var(--gold);color:var(--ink);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:700">' + gradeLabel + '</div>' +
+          '<div style="background:var(--p3);color:var(--ink3);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:600">Week ' + week + '</div>' +
+        '</div>' +
+      '</div>' +
 
-  var statsHtml = `
-    <div class="dash-stats">
-      <div class="dash-stat"><div class="dash-sn">${week}</div><div class="dash-sl">Current week</div></div>
-      <div class="dash-stat"><div class="dash-sn" style="font-size:12px">${scholarName||'—'}</div><div class="dash-sl">Scholar</div></div>
-      <div class="dash-stat"><div class="dash-sn">${grade||'—'}</div><div class="dash-sl">Grade</div></div>
-      <div class="dash-stat"><div class="dash-sn">5</div><div class="dash-sl">Sessions this week</div></div>
-    </div>`;
+      // Juz widget
+      juzHtml +
 
-  var cardsHtml = `
-    <div class="dash-cards">
-      <div class="dash-card" onclick="(function(){var b=document.querySelector('.sb-nav-item[data-p=generate]');if(b)howSP(b);setTimeout(function(){var t=document.getElementById('how-input-ta');if(t){t.value='Generate today\\'s mathematics lesson for Grade ${grade}, Week ${week}, scholar ${scholarName}';t.dispatchEvent(new Event('input'));}},100);})()">
-        <div class="dash-card-title">Generate today's lesson</div>
-        <div class="dash-card-sub">Week ${week} · ${scholarName||'current scholar'}</div>
-        <div class="dash-card-link">Generate →</div>
-      </div>
-      <div class="dash-card" onclick="(function(){var b=document.querySelector('.sb-nav-item[data-p=schedule]');if(b)howSP(b);})()">
-        <div class="dash-card-title">View week schedule</div>
-        <div class="dash-card-sub">Full day-by-day session plan</div>
-        <div class="dash-card-link">Open →</div>
-      </div>
-      <div class="dash-card" onclick="window.open('sahifa_prototype_v3.html','_blank')">
-        <div class="dash-card-title">Write Sahifa entry</div>
-        <div class="dash-card-sub">This week's reflection prompt</div>
-        <div class="dash-card-link">Open Sahifa →</div>
-      </div>
-      <div class="dash-card" onclick="howOpenMunazara()">
-        <div class="dash-card-title">Munazara prompt</div>
-        <div class="dash-card-sub">This week's claim to examine</div>
-        <div class="dash-card-link">Generate →</div>
-      </div>
-    </div>`;
+      // Quick actions
+      '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:18px 0 10px">Today\'s actions</div>' +
+      '<div class="dash-cards">' +
+        '<div class="dash-card" onclick="(function(){var b=document.querySelector(\'.sb-nav-item[data-p=schedule]\');if(b)howSP(b);})()">' +
+          '<div class="dash-card-title">📅 My Schedule</div>' +
+          '<div class="dash-card-sub">' + gradeLabel + ' · Week ' + week + '</div>' +
+          '<div class="dash-card-link">Open →</div>' +
+        '</div>' +
+        '<div class="dash-card" onclick="window.open(\'sahifa_prototype_v3.html\',\'_blank\')">' +
+          '<div class="dash-card-title">📜 My Sahifa</div>' +
+          '<div class="dash-card-sub">This week\'s reflection</div>' +
+          '<div class="dash-card-link">Write →</div>' +
+        '</div>' +
+        '<div class="dash-card" onclick="window.open(\'murshid_v4.html\',\'_blank\')">' +
+          '<div class="dash-card-title">م Murshid</div>' +
+          '<div class="dash-card-sub">Ask your guide</div>' +
+          '<div class="dash-card-link">Open →</div>' +
+        '</div>' +
+        '<div class="dash-card" onclick="window.open(\'halaqa_v6.html\',\'_blank\')">' +
+          '<div class="dash-card-title">🕌 Halaqa</div>' +
+          '<div class="dash-card-sub">Join the learning circle</div>' +
+          '<div class="dash-card-link">Open →</div>' +
+        '</div>' +
+      '</div>' +
 
-  var toolsHtml = `
-    <div class="dash-sec-label">Tools</div>
-    <div class="dash-tools">
-      <a class="dash-tool" href="murshid_v4.html" target="_blank">
-        <div class="dash-tool-icon" style="font-family:'Amiri',serif;color:var(--teal)">م</div>
-        <div class="dash-tool-name">Murshid</div>
-        <div class="dash-tool-desc">AI scholarly guide</div>
-      </a>
-      <a class="dash-tool" href="sahifa_prototype_v3.html" target="_blank">
-        <div class="dash-tool-icon">📜</div>
-        <div class="dash-tool-name">Sahifa</div>
-        <div class="dash-tool-desc">Living manuscript</div>
-      </a>
-      <a class="dash-tool" href="halaqa_v6.html" target="_blank">
-        <div class="dash-tool-icon">🕌</div>
-        <div class="dash-tool-name">Halaqa</div>
-        <div class="dash-tool-desc">Learning circle</div>
-      </a>
-      <a class="dash-tool" href="peer_teaching_library.html" target="_blank">
-        <div class="dash-tool-icon">📚</div>
-        <div class="dash-tool-name">Peer Library</div>
-        <div class="dash-tool-desc">Living textbook</div>
-      </a>
-      <a class="dash-tool" href="how_munazara_v4.html" target="_blank">
-        <div class="dash-tool-icon">⚖</div>
-        <div class="dash-tool-name">Munazara</div>
-        <div class="dash-tool-desc">Debate tool</div>
-      </a>
-      <a class="dash-tool" href="studio_digital_twin_v4.html" target="_blank">
-        <div class="dash-tool-icon">🏗</div>
-        <div class="dash-tool-name">Studio</div>
-        <div class="dash-tool-desc">Digital twin</div>
-      </a>
-    </div>`;
+      // Tools
+      '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">All tools</div>' +
+      '<div class="dash-tools">' +
+        '<a class="dash-tool" href="studio_digital_twin.html" target="_blank"><div class="dash-tool-icon">🏗</div><div class="dash-tool-name">Studio</div><div class="dash-tool-desc">Digital twin</div></a>' +
+        '<a class="dash-tool" href="peer_teaching_library.html" target="_blank"><div class="dash-tool-icon">📚</div><div class="dash-tool-name">Peer Library</div><div class="dash-tool-desc">Teach & learn</div></a>' +
+        '<a class="dash-tool" href="how_munazara_v4.html" target="_blank"><div class="dash-tool-icon">⚖️</div><div class="dash-tool-name">Munazara</div><div class="dash-tool-desc">Structured debate</div></a>' +
+        '<a class="dash-tool" href="how_isnad.html" target="_blank"><div class="dash-tool-icon">🔗</div><div class="dash-tool-name">Isnad</div><div class="dash-tool-desc">Knowledge chain</div></a>' +
+      '</div>';
+    return;
+  }
 
-  root.innerHTML = `
-    <div class="dash-greeting">${greeting}</div>
-    <div class="dash-week-label">Week ${week}${scholarName?' · '+scholarName:''}${grade?' · Grade '+grade:''}</div>
-    ${juzHtml}
-    ${statsHtml}
-    ${cardsHtml}
-    ${toolsHtml}`;
+  // ── PARENT DASHBOARD ──────────────────────────────────────────────────────
+  if(role === 'parent'){
+    var students = [];
+    try { students = JSON.parse(localStorage.getItem('how_students')||'[]'); } catch(e){}
+
+    var studentCardsHtml = students.length ? students.map(function(st){
+      var sg = st.grade || 7; var sw = st.week || week;
+      var sgl = sg === 0 ? 'K' : 'Grade ' + sg;
+      var clickFn = "(function(){S.grade="+sg+";S.week="+sw+";syncGradeWeekSelectors();" +
+        "var b=document.querySelector('.sb-nav-item[data-p=schedule]');if(b)howSP(b);})()";
+      return '<div class="dash-card" onclick="' + clickFn + '">' +
+        '<div style="font-size:22px;margin-bottom:4px">' + (st.emoji||'🧒') + '</div>' +
+        '<div class="dash-card-title">' + (st.name||'Student') + '</div>' +
+        '<div class="dash-card-sub">' + sgl + ' · Week ' + sw + '</div>' +
+        '<div class="dash-card-link">View schedule →</div>' +
+      '</div>';
+    }).join('') :
+    '<div style="padding:16px;color:var(--ink3);font-size:13px">No students added yet.</div>';
+
+    var reportsHtml = buildParentReports(students, week);
+
+    var navTo = function(page){
+      return "(function(){var b=document.querySelector('.sb-nav-item[data-p="+page+"]');if(b)howSP(b);})()";
+    };
+
+    root.innerHTML =
+      '<div style="margin-bottom:20px">' +
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px">Parent · أكاديمية بيت الحكمة</div>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--ink)">' + greeting + '</div>' +
+        '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Week ' + week + (scholarName ? ' · ' + scholarName : '') + '</div>' +
+      '</div>' +
+
+      juzHtml +
+
+      '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:18px 0 10px">Children</div>' +
+      '<div class="dash-cards">' + studentCardsHtml + '</div>' +
+
+      '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:24px 0 10px">Reports</div>' +
+      reportsHtml +
+
+      '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">Quick access</div>' +
+      '<div class="dash-cards">' +
+        '<div class="dash-card" onclick="' + navTo('schedule') + '">' +
+          '<div class="dash-card-title">📅 Weekly Schedule</div><div class="dash-card-sub">Day-by-day plan</div><div class="dash-card-link">Open →</div>' +
+        '</div>' +
+        '<div class="dash-card" onclick="' + navTo('curriculum') + '">' +
+          '<div class="dash-card-title">📖 Curriculum</div><div class="dash-card-sub">Scope & sequence</div><div class="dash-card-link">Open →</div>' +
+        '</div>' +
+        '<div class="dash-card" onclick="' + navTo('assessment') + '">' +
+          '<div class="dash-card-title">📊 Assessment</div><div class="dash-card-sub">Rubrics & frameworks</div><div class="dash-card-link">Open →</div>' +
+        '</div>' +
+      '</div>';
+    return;
+  }
+  // ── FACILITATOR DASHBOARD (default) ──────────────────────────────────────
+  var students = [];
+  try { students = JSON.parse(localStorage.getItem('how_students')||'[]'); } catch(e){}
+
+  var studentRowsHtml = students.length ? '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">' +
+    students.map(function(st){
+      var sg = st.grade || 7; var sw = st.week || week;
+      var sgl = sg === 0 ? 'K' : 'Gr ' + sg;
+      return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--p2);border:1px solid var(--border);border-radius:10px;cursor:pointer" ' +
+        'onclick="S.grade=' + sg + ';S.week=' + sw + ';syncGradeWeekSelectors();var b=document.querySelector(\'.sb-nav-item[data-p=schedule]\');if(b)howSP(b);">' +
+        '<span style="font-size:20px">' + (st.emoji||'🧒') + '</span>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--ink)">' + (st.name||'Student') + '</div>' +
+          '<div style="font-size:11px;color:var(--ink3)">' + sgl + ' · Week ' + sw + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button onclick="event.stopPropagation();S.grade=' + sg + ';S.week=' + sw + ';syncGradeWeekSelectors();var b=document.querySelector(\'.sb-nav-item[data-p=generate]\');if(b)howSP(b);" ' +
+            'style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--gold);color:var(--ink);cursor:pointer;font-family:inherit;font-weight:600">Generate</button>' +
+          '<button onclick="event.stopPropagation();S.grade=' + sg + ';S.week=' + sw + ';syncGradeWeekSelectors();var b=document.querySelector(\'.sb-nav-item[data-p=schedule]\');if(b)howSP(b);" ' +
+            'style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--p3);color:var(--ink);cursor:pointer;font-family:inherit">Schedule</button>' +
+        '</div>' +
+      '</div>';
+    }).join('') + '</div>' : '';
+
+  root.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">' +
+      '<div>' +
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px">Facilitator · أكاديمية بيت الحكمة</div>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--ink)">' + greeting + '</div>' +
+        '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Week ' + week + (scholarName ? ' · ' + scholarName : '') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<div style="background:var(--p3);color:var(--ink3);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:600">Week ' + week + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    juzHtml +
+
+    (students.length ?
+      '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:18px 0 10px">Students</div>' +
+      studentRowsHtml : '') +
+
+    '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:' + (students.length?'0':'18px') + ' 0 10px">Quick actions</div>' +
+    '<div class="dash-cards">' +
+      '<div class="dash-card" onclick="(function(){var b=document.querySelector(\'.sb-nav-item[data-p=generate]\');if(b)howSP(b);})()">' +
+        '<div class="dash-card-title">⚡ Generate lesson</div><div class="dash-card-sub">' + gradeLabel + ' · Week ' + week + '</div><div class="dash-card-link">Generate →</div>' +
+      '</div>' +
+      '<div class="dash-card" onclick="(function(){var b=document.querySelector(\'.sb-nav-item[data-p=schedule]\');if(b)howSP(b);})()">' +
+        '<div class="dash-card-title">📅 Week schedule</div><div class="dash-card-sub">Day-by-day plan</div><div class="dash-card-link">Open →</div>' +
+      '</div>' +
+      '<div class="dash-card" onclick="(function(){var b=document.querySelector(\'.sb-nav-item[data-p=curriculum]\');if(b)howSP(b);})()">' +
+        '<div class="dash-card-title">📖 Curriculum</div><div class="dash-card-sub">Scope & sequence</div><div class="dash-card-link">Browse →</div>' +
+      '</div>' +
+      '<div class="dash-card" onclick="(function(){var b=document.querySelector(\'.sb-nav-item[data-p=sacred]\');if(b)howSP(b);})()">' +
+        '<div class="dash-card-title">✦ Sacred layer</div><div class="dash-card-sub">99 Names · Juz map</div><div class="dash-card-link">Open →</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">Tools</div>' +
+    '<div class="dash-tools">' +
+      '<a class="dash-tool" href="murshid_v4.html" target="_blank"><div class="dash-tool-icon" style="font-family:\'Amiri\',serif;color:var(--teal)">م</div><div class="dash-tool-name">Murshid</div><div class="dash-tool-desc">AI scholarly guide</div></a>' +
+      '<a class="dash-tool" href="sahifa_prototype_v3.html" target="_blank"><div class="dash-tool-icon">📜</div><div class="dash-tool-name">Sahifa</div><div class="dash-tool-desc">Living manuscript</div></a>' +
+      '<a class="dash-tool" href="halaqa_v6.html" target="_blank"><div class="dash-tool-icon">🕌</div><div class="dash-tool-name">Halaqa</div><div class="dash-tool-desc">Learning circle</div></a>' +
+      '<a class="dash-tool" href="studio_digital_twin.html" target="_blank"><div class="dash-tool-icon">🏗</div><div class="dash-tool-name">Studio</div><div class="dash-tool-desc">Digital twin</div></a>' +
+      '<a class="dash-tool" href="peer_teaching_library.html" target="_blank"><div class="dash-tool-icon">📚</div><div class="dash-tool-name">Peer Library</div><div class="dash-tool-desc">Teach & learn</div></a>' +
+      '<a class="dash-tool" href="how_munazara_v4.html" target="_blank"><div class="dash-tool-icon">⚖️</div><div class="dash-tool-name">Munazara</div><div class="dash-tool-desc">Structured debate</div></a>' +
+    '</div>';
 }
 
-
-window.howOpenMunazara=function(){
-  var b=document.querySelector('.sb-nav-item[data-p="generate"]');
-  if(b) howSP(b);
-  setTimeout(function(){
-    var t=document.getElementById('how-input-ta');
-    if(t){ t.value='Generate a munazara debate prompt for this week'; t.dispatchEvent(new Event('input')); }
-  },100);
-};
-
-
-// ── PRINT WORKBOOK ────────────────────────────────────────────
-function printWorkbook(){
-  var l=lesson(); if(!l||!l.workbook) return toast('Generate a workbook first');
-  var win=window.open('','_blank','width=800,height=900');
-  if(!win) return toast('Please allow popups to print');
-  var html=_wbOverlayCss;
-  html+='<style>body{font-family:"DM Sans",sans-serif;background:#fff;padding:20px;max-width:720px;margin:0 auto}</style>';
-  html+='<div class="wb-wrap">';
-  html+=renderWorkbook(l.workbook);
-  html+='</div>';
-  win.document.write(html); win.document.close();
-  setTimeout(function(){ win.focus(); win.print(); },600);
-}
 
 // ═══ SIDEBAR SHELL ════════════════════════════════════
 (function(){
@@ -2459,6 +2518,10 @@ function howSP(btn){
   var ca=document.getElementById('how-content-area'); if(ca) ca.scrollTop=0;
   // Sync grade/week selectors to current student state
   syncGradeWeekSelectors();
+  // Re-render dashboard if navigating to overview
+  if(btn.dataset.p === 'overview'){
+    setTimeout(renderHomeDashboard, 0);
+  }
   // Sync pills
   document.querySelectorAll('.how-pill').forEach(p=>p.classList.remove('active'));
   var matchPill=document.querySelector('.how-pill[onclick*="\''+btn.dataset.p+'\'"]');
@@ -9337,11 +9400,7 @@ function munToast(msg){
   el.textContent=msg; el.classList.add('show');
   setTimeout(function(){ el.classList.remove('show'); },2500);
 }
-function showRolePicker(){
-  try{ localStorage.removeItem('how_lg_role'); }catch(e){}
-  var picker=document.getElementById('role-picker');
-  if(picker) picker.style.display='flex';
-}
+
 
 
 function recordIsnadEntry(data){
@@ -10557,6 +10616,172 @@ function onWeekChange(el){
   syncGradeWeekSelectors();
   updateSchedule && updateSchedule();
 }
+
+// ── PARENT REPORTS BUILDER ──────────────────────────────────────────────────
+function buildParentReports(students, currentWeek){
+  var rows = '';
+  var subjectLabels = typeof SUBJ_LABELS !== 'undefined' ? SUBJ_LABELS : {
+    math:'Mathematics', english:'English', science:'Science',
+    history:'History', arabic:'Arabic', islamic:'Islamic Studies'
+  };
+
+  // ── For each student, look for test scores across recent weeks ────────────
+  students.forEach(function(st){
+    var sg = st.grade || 7;
+    var sw = st.week  || currentWeek;
+    var sname = st.name || 'Student';
+    var semoji = st.emoji || '🧒';
+
+    // Collect test scores (up to 4 weeks back)
+    var scoreRows = '';
+    var hasAnyScore = false;
+    for(var w = sw; w >= Math.max(1, sw-3); w--){
+      var tk = sg + '_' + w + '_test';
+      var sc = S.scores && S.scores[tk];
+      if(!sc) continue;
+      hasAnyScore = true;
+      var pct = sc.grandMax ? Math.round((sc.grandTotal||0)/sc.grandMax*100) : null;
+      var pctLabel = pct !== null ? pct + '%' : '—';
+      var pctColour = pct === null ? 'var(--ink3)' : pct >= 90 ? '#1d6f6f' : pct >= 75 ? '#1a3d8a' : pct >= 60 ? '#b8922a' : '#c0392b';
+      var perfLabel = pct === null ? '' : pct >= 90 ? 'Excellent' : pct >= 75 ? 'Proficient' : pct >= 60 ? 'Developing' : 'Needs support';
+
+      // Per-subject breakdown
+      var subjectCols = '';
+      if(sc.subjects){
+        Object.keys(sc.subjects).forEach(function(subj){
+          var sd = sc.subjects[subj]||{};
+          var earned = 0, total = 0;
+          (sd.details||[]).forEach(function(d){ earned += d.awarded>=0?d.awarded:0; total += d.marks||0; });
+          if(total > 0){
+            var sp = Math.round(earned/total*100);
+            subjectCols += '<span style="font-size:10px;padding:2px 7px;border-radius:5px;background:var(--p3);color:var(--ink3);margin-right:4px">' +
+              (subjectLabels[subj]||subj).split(' ')[0] + ' ' + sp + '%</span>';
+          }
+        });
+      }
+
+      scoreRows += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--p3)">' +
+        '<div style="min-width:60px;font-size:11px;color:var(--ink3)">Week ' + w + '</div>' +
+        '<div style="flex:1;display:flex;flex-wrap:wrap;gap:4px">' + (subjectCols||'<span style="font-size:11px;color:var(--ink3)">No subject breakdown</span>') + '</div>' +
+        '<div style="min-width:56px;text-align:right;font-size:13px;font-weight:700;color:' + pctColour + '">' + pctLabel + '</div>' +
+        '<div style="min-width:80px;text-align:right;font-size:10px;color:' + pctColour + '">' + perfLabel + '</div>' +
+      '</div>';
+    }
+
+    // ── Munazara summaries ──────────────────────────────────────────────────
+    var munRows = '';
+    for(var mw = sw; mw >= Math.max(1, sw-3); mw--){
+      var claim = localStorage.getItem('how_munazara_claim_' + sg + '_' + mw);
+      if(!claim) claim = mw === sw ? localStorage.getItem('how_munazara_claim') : null;
+      if(claim){
+        munRows += '<div style="padding:8px 0;border-bottom:1px solid var(--p3)">' +
+          '<div style="font-size:10px;color:var(--ink3);margin-bottom:3px">Week ' + mw + ' claim</div>' +
+          '<div style="font-size:12px;color:var(--ink);font-style:italic">"' + claim.substring(0,120) + (claim.length>120?'…':'') + '"</div>' +
+        '</div>';
+      }
+    }
+
+    // ── Workbook grades ─────────────────────────────────────────────────────
+    var wbRows = '';
+    var wbGrade = localStorage.getItem('how_pending_grade');
+    if(wbGrade){
+      try {
+        var wbG = JSON.parse(wbGrade);
+        if(wbG && wbG.grade === sg){
+          wbRows = '<div style="padding:8px 0;border-bottom:1px solid var(--p3);display:flex;align-items:center;gap:10px">' +
+            '<div style="font-size:11px;color:var(--ink3);flex:1">Week ' + (wbG.week||sw) + ' workbook</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--teal)">' + (wbG.pct||'?') + '%</div>' +
+            '<div style="font-size:10px;color:var(--ink3)">' + (wbG.label||'') + '</div>' +
+          '</div>';
+        }
+      } catch(e){}
+    }
+
+    var hasAnyMun = munRows.length > 0;
+    var hasAnyWb  = wbRows.length > 0;
+
+    rows += '<div style="background:var(--p2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px">' +
+      // Student header
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
+        '<span style="font-size:20px">' + semoji + '</span>' +
+        '<div>' +
+          '<div style="font-size:14px;font-weight:700;color:var(--ink)">' + sname + '</div>' +
+          '<div style="font-size:11px;color:var(--ink3)">' + (sg===0?'Kindergarten':'Grade '+sg) + ' · Week ' + sw + '</div>' +
+        '</div>' +
+      '</div>' +
+
+      // Test scores section
+      '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📊 Weekly Tests</div>' +
+      (hasAnyScore ? scoreRows : '<div style="font-size:12px;color:var(--ink3);padding:6px 0">No test scores yet — complete the Tuesday test.</div>') +
+
+      // Workbook
+      (hasAnyWb ? ('<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">📝 Workbook</div>' + wbRows) : '') +
+
+      // Munazara
+      '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin:' + (hasAnyScore||hasAnyWb?'12':'0') + 'px 0 6px">⚖️ Munazara Claims</div>' +
+      (hasAnyMun ? munRows : '<div style="font-size:12px;color:var(--ink3);padding:6px 0">No Munazara sessions recorded yet.</div>') +
+
+    '</div>';
+  });
+
+  // ── PTL Teachings (shared across all students in household) ──────────────
+  var ptlHtml = '';
+  try {
+    var teachings = JSON.parse(localStorage.getItem('ptl_teachings')||'[]');
+    if(teachings.length){
+      ptlHtml = '<div style="background:var(--p2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📚 Peer Teaching Library — Recent Submissions</div>';
+      teachings.slice(0,5).forEach(function(t){
+        ptlHtml += '<div style="padding:8px 0;border-bottom:1px solid var(--p3)">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+            '<div style="font-size:12px;font-weight:600;color:var(--ink)">' + (t.lessonTitle||t.summary||'Teaching') + '</div>' +
+            '<div style="font-size:10px;color:var(--ink3);white-space:nowrap">' + (t.tags&&t.tags[1]||'') + '</div>' +
+          '</div>' +
+          '<div style="font-size:11px;color:var(--ink3);margin-top:2px">' +
+            (t.teacherName||'') + (t.subject ? ' · ' + (t.subject) : '') +
+            (t.keyIdea ? ' — <em>' + t.keyIdea.substring(0,80) + (t.keyIdea.length>80?'…':'') + '</em>' : '') +
+          '</div>' +
+        '</div>';
+      });
+      ptlHtml += '</div></div>';
+    }
+  } catch(e){}
+
+  // ── Studio Cards ────────────────────────────────────────────────────────────
+  var studioHtml = '';
+  try {
+    var studioCards = JSON.parse(localStorage.getItem('how_studio_cards')||'{}');
+    var cardKeys = Object.keys(studioCards);
+    if(cardKeys.length){
+      studioHtml = '<div style="background:var(--p2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🏗 Studio — Digital Twin Cards</div>';
+      cardKeys.slice(0,4).forEach(function(wk){
+        var card = studioCards[wk];
+        if(!card) return;
+        studioHtml += '<div style="padding:8px 0;border-bottom:1px solid var(--p3)">' +
+          '<div style="font-size:11px;color:var(--ink3);margin-bottom:2px">Week ' + wk + '</div>' +
+          '<div style="font-size:12px;font-weight:600;color:var(--ink)">' + (card.title||card.name||'Studio project') + '</div>' +
+          (card.description ? '<div style="font-size:11px;color:var(--ink3);margin-top:2px">' + card.description.substring(0,100) + (card.description.length>100?'…':'') + '</div>' : '') +
+        '</div>';
+      });
+      studioHtml += '</div></div>';
+    }
+  } catch(e){}
+
+  // ── Halaqa note ─────────────────────────────────────────────────────────────
+  var halaqaHtml = '<div style="background:var(--p2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px">' +
+    '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🕌 Halaqa</div>' +
+    '<div style="font-size:12px;color:var(--ink3)">Halaqa sessions run in a separate tool. Summaries are not yet synced back to the platform — this is on the roadmap.</div>' +
+  '</div>';
+
+  if(!students.length){
+    return '<div style="padding:16px;color:var(--ink3);font-size:13px;background:var(--p2);border:1px solid var(--border);border-radius:12px">' +
+      'Add students via Manage Students in your profile menu to see their reports.' +
+    '</div>';
+  }
+
+  return rows + ptlHtml + studioHtml + halaqaHtml;
+}
 </script>
 
 
@@ -10593,6 +10818,36 @@ function onWeekChange(el){
     </div>
     <button class="avatar-save-btn" onclick="saveAvatar()">Save avatar</button>
   </div>
+</div>
+
+<!-- Role picker -->
+<div id="role-picker" style="display:none">
+  <div class="rp-header">
+    <div class="rp-ar">أكاديمية بيت الحكمة</div>
+    <h1 class="rp-title">House of Wisdom Academy</h1>
+    <p class="rp-sub">Who are you today?</p>
+  </div>
+  <div class="rp-cards">
+    <div class="rp-card fac" onclick="pickRole('facilitator')">
+      <div class="rp-icon">👨‍🏫</div>
+      <div class="rp-role">Facilitator</div>
+      <div class="rp-desc">Generate lessons, annotate, set up the test and munazara. Full access.</div>
+      <button class="rp-btn fac">Enter →</button>
+    </div>
+    <div class="rp-card par" onclick="pickRole('prep')">
+      <div class="rp-icon">👤</div>
+      <div class="rp-role">Parent</div>
+      <div class="rp-desc">Preview this week's lessons and workbook before your child sees them.</div>
+      <button class="rp-btn par">Enter →</button>
+    </div>
+    <div class="rp-card stu" onclick="pickRole('child')">
+      <div class="rp-icon">🧒</div>
+      <div class="rp-role">Student</div>
+      <div class="rp-desc">Your lesson deck, workbook, test, and munazara debate.</div>
+      <button class="rp-btn stu">Enter →</button>
+    </div>
+  </div>
+  <div class="rp-footer">Your choice is remembered — you can switch roles at any time from the toolbar above.</div>
 </div>
 
 <!-- ── STUDENT PIN MODAL ── -->
