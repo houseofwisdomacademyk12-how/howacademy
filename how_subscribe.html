@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscribe — House of Wisdom Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --night:#0d1a1a;--teal:#1D6F6F;--teal-mid:#2a8a8a;--teal-pale:#e1f0f0;
+  --gold:#d4af37;--cream:#F9F6F0;--cream-deep:#ede7dc;
+  --ink:#1a1a2e;--ink-mid:#3d3d52;--ink-soft:#7a7a8c;
+  --border:#e0d9ce;--error:#c0392b;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── Header ──────────────────────────────────── */
+.header{
+  background:var(--night);padding:1.25rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(201,162,39,.12);
+}
+.header-logo{
+  display:flex;align-items:center;gap:.75rem;text-decoration:none;
+}
+.header-logo img{height:32px;width:auto;background:#fff;border-radius:5px;padding:2px 6px;}
+.header-logo-text{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:300;color:rgba(255,255,255,.4);letter-spacing:.06em;}
+.header-back{
+  font-size:.78rem;color:rgba(255,255,255,.4);text-decoration:none;
+  display:flex;align-items:center;gap:.35rem;transition:color .15s;
+}
+.header-back:hover{color:rgba(255,255,255,.7);}
+
+/* ── Hero strip ──────────────────────────────── */
+.hero-strip{
+  background:var(--night);
+  padding:3rem 2rem 4rem;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.hero-strip::before{
+  content:'بيت الحكمة';
+  position:absolute;font-family:'Amiri',serif;
+  font-size:18vw;color:rgba(29,111,111,.05);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;white-space:nowrap;
+}
+.hero-eyebrow{font-size:.68rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,162,39,.75);margin-bottom:1rem;position:relative;z-index:1;}
+.hero-heading{font-family:'Cormorant Garamond',serif;font-size:clamp(1.75rem,4vw,2.5rem);font-weight:300;color:#fff;margin-bottom:.75rem;position:relative;z-index:1;}
+.hero-sub{font-size:.9rem;font-weight:300;color:rgba(255,255,255,.5);position:relative;z-index:1;}
+
+/* ── Main layout ─────────────────────────────── */
+.main{flex:1;display:grid;grid-template-columns:1fr 340px;gap:2.5rem;max-width:960px;margin:0 auto;padding:3rem 2rem;width:100%;align-items:start;}
+@media(max-width:720px){.main{grid-template-columns:1fr;}}
+
+/* ── Form card ───────────────────────────────── */
+.form-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:2.5rem;}
+.form-section-label{font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:1.25rem;padding-bottom:.6rem;border-bottom:1px solid var(--teal-pale);}
+.field{margin-bottom:1.5rem;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+label{display:block;font-size:.78rem;font-weight:500;color:var(--ink-mid);margin-bottom:.4rem;letter-spacing:.01em;}
+label .req{color:var(--teal);}
+label .opt{color:var(--ink-soft);font-weight:300;}
+input[type=text],input[type=email],select,textarea{
+  width:100%;padding:.6rem .85rem;
+  border:1.5px solid var(--border);border-radius:6px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);
+  background:var(--cream);outline:none;transition:border-color .15s;
+  appearance:none;
+}
+input[type=text]:focus,input[type=email]:focus,select:focus,textarea:focus{border-color:var(--teal);background:#fff;}
+textarea{resize:vertical;min-height:88px;line-height:1.6;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a7a8c' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .85rem center;padding-right:2.25rem;cursor:pointer;}
+
+/* Plan radio cards */
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
+.plan-option{position:relative;}
+.plan-option input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+.plan-label{
+  display:flex;flex-direction:column;gap:.2rem;
+  padding:1rem 1.1rem;border-radius:8px;
+  border:1.5px solid var(--border);background:var(--cream);
+  cursor:pointer;transition:all .15s;
+}
+.plan-option input:checked + .plan-label{border-color:var(--teal);background:#f0f8f8;}
+.plan-label:hover{border-color:var(--teal-mid);}
+.plan-name{font-size:.82rem;font-weight:600;color:var(--ink);}
+.plan-price{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:400;color:var(--teal);}
+.plan-unit{font-size:.7rem;color:var(--ink-soft);font-weight:300;}
+.plan-save{font-size:.68rem;font-weight:600;color:#8a6d00;background:rgba(201,162,39,.12);padding:.1rem .4rem;border-radius:3px;display:inline-block;margin-top:.15rem;}
+
+/* Grade checkboxes */
+.grade-grid{display:flex;flex-wrap:wrap;gap:.5rem;}
+.grade-chip{position:relative;}
+.grade-chip input{position:absolute;opacity:0;width:0;height:0;}
+.grade-chip label{
+  display:block;padding:.3rem .7rem;
+  border:1.5px solid var(--border);border-radius:20px;
+  font-size:.78rem;font-weight:500;color:var(--ink-mid);
+  cursor:pointer;transition:all .15s;background:var(--cream);
+}
+.grade-chip input:checked + label{border-color:var(--teal);background:var(--teal);color:#fff;}
+.grade-chip label:hover{border-color:var(--teal-mid);}
+
+/* Submit */
+.submit-btn{
+  width:100%;padding:.9rem;border:none;border-radius:8px;
+  background:var(--teal);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;
+  letter-spacing:.02em;cursor:pointer;transition:all .2s;margin-top:.5rem;
+}
+.submit-btn:hover{background:var(--teal-mid);transform:translateY(-1px);}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.form-note{font-size:.72rem;color:var(--ink-soft);text-align:center;margin-top:.75rem;line-height:1.6;}
+
+/* Error */
+.field-error{font-size:.72rem;color:var(--error);margin-top:.3rem;display:none;}
+.field.has-error input,.field.has-error select,.field.has-error textarea{border-color:var(--error);}
+.field.has-error .field-error{display:block;}
+
+/* ── Summary sidebar ─────────────────────────── */
+.sidebar{display:flex;flex-direction:column;gap:1.25rem;}
+.summary-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:1.75rem;}
+.summary-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--ink);margin-bottom:1rem;}
+.summary-line{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.65rem;font-size:.82rem;}
+.summary-line::before{content:'✦';color:var(--teal);font-size:.58rem;margin-top:.25rem;flex-shrink:0;}
+.summary-line span{color:var(--ink-mid);font-weight:300;line-height:1.5;}
+.summary-divider{height:1px;background:var(--border);margin:1rem 0;}
+.summary-price-label{font-size:.7rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.3rem;}
+.summary-price{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--ink);}
+.summary-price-sub{font-size:.75rem;color:var(--ink-soft);font-weight:300;margin-top:.15rem;}
+
+.trust-card{background:var(--cream-deep);border-radius:12px;border:1px solid var(--border);padding:1.5rem;}
+.trust-title{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:1rem;}
+.trust-item{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.6rem;font-size:.78rem;color:var(--ink-mid);font-weight:300;line-height:1.5;}
+.trust-item::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0;}
+
+/* ── Success screen ──────────────────────────── */
+.success-screen{
+  display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:4rem 2rem;flex:1;
+}
+.success-screen.show{display:flex;}
+.success-arabic{font-family:'Amiri',serif;font-size:2.25rem;color:var(--teal);margin-bottom:.5rem;}
+.success-heading{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:400;color:var(--ink);margin-bottom:.75rem;}
+.success-body{font-size:.9rem;font-weight:300;color:var(--ink-soft);max-width:420px;line-height:1.75;margin-bottom:2rem;}
+.success-back{color:var(--teal);text-decoration:none;font-size:.85rem;font-weight:500;}
+.success-back:hover{text-decoration:underline;}
+
+/* ── Footer ──────────────────────────────────── */
+.footer{background:#080f0f;padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;border-top:1px solid rgba(255,255,255,.04);}
+.footer-text{font-size:.72rem;color:rgba(255,255,255,.25);}
+.footer-link{font-size:.72rem;color:rgba(255,255,255,.25);text-decoration:none;}
+.footer-link:hover{color:rgba(255,255,255,.5);}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <a href="how_landing_concept.html" class="header-logo">
+    
+    <span class="header-logo-text">House of Wisdom Academy</span>
+  </a>
+  <a href="how_landing_concept.html" class="header-back">← Back to home</a>
+</header>
+
+<!-- Hero strip -->
+<div class="hero-strip">
+  <p class="hero-eyebrow">Subscribe</p>
+  <h1 class="hero-heading">Begin your family's journey</h1>
+  <p class="hero-sub">Fill in the form and we will be in touch within one business day.</p>
+</div>
+
+<!-- Success screen (hidden until submit) -->
+<div class="success-screen" id="success-screen">
+  <div class="success-arabic">أهلاً وسهلاً</div>
+  <h2 class="success-heading">Your form has been received.</h2>
+  <p class="success-body">We will be in touch within one business day to complete your subscription and give you full access to the House of Wisdom Academy.</p>
+  <a href="how_landing_concept.html" class="success-back">← Return to home</a>
+</div>
+
+<!-- Main form + sidebar -->
+<main class="main" id="main-content">
+
+  <!-- Form -->
+  <div class="form-card">
+    <form id="sub-form" action="https://formspree.io/f/xyegzabd" method="POST" novalidate>
+
+      <!-- Hidden fields for Formspree -->
+      <input type="hidden" name="_subject" value="New HOW Academy subscription request">
+      <input type="text" name="_gotcha" style="display:none">
+
+      <!-- Contact -->
+      <p class="form-section-label">Your details</p>
+
+      <div class="field-row">
+        <div class="field" id="f-name">
+          <label for="name">Full name <span class="req">*</span></label>
+          <input type="text" id="name" name="name" placeholder="Fatima Al-Rashidi" autocomplete="name">
+          <p class="field-error">Please enter your name.</p>
+        </div>
+        <div class="field" id="f-email">
+          <label for="email">Email address <span class="req">*</span></label>
+          <input type="email" id="email" name="email" placeholder="fatima@example.com" autocomplete="email">
+          <p class="field-error">Please enter a valid email.</p>
+        </div>
+      </div>
+
+      <div class="field" id="f-household">
+        <label for="household">Household or school name <span class="req">*</span></label>
+        <input type="text" id="household" name="household" placeholder="Al-Rashidi household">
+        <p class="field-error">Please enter your household name.</p>
+      </div>
+
+      <!-- Students -->
+      <p class="form-section-label" style="margin-top:2rem;">Your students</p>
+
+      <div class="field-row">
+        <div class="field" id="f-students">
+          <label for="num-students">Number of students <span class="req">*</span></label>
+          <select id="num-students" name="num_students">
+            <option value="">Select…</option>
+            <option value="1">1 student</option>
+            <option value="2">2 students</option>
+            <option value="3">3 students</option>
+            <option value="4">4 students</option>
+            <option value="5+">5 or more</option>
+          </select>
+          <p class="field-error">Please select number of students.</p>
+        </div>
+        <div class="field">
+          <label for="hear">How did you hear about us? <span class="opt">(optional)</span></label>
+          <select id="hear" name="how_did_you_hear">
+            <option value="">Select…</option>
+            <option>Word of mouth</option>
+            <option>Social media</option>
+            <option>Muslim homeschool community</option>
+            <option>Search engine</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Grade levels <span class="req">*</span> <span class="opt">(select all that apply)</span></label>
+        <div class="grade-grid" id="grade-grid">
+          <div class="grade-chip"><input type="checkbox" id="gK" name="grades[]" value="K"><label for="gK">K</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g1" name="grades[]" value="Grade 1"><label for="g1">1</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g2" name="grades[]" value="Grade 2"><label for="g2">2</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g3" name="grades[]" value="Grade 3"><label for="g3">3</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g4" name="grades[]" value="Grade 4"><label for="g4">4</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g5" name="grades[]" value="Grade 5"><label for="g5">5</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g6" name="grades[]" value="Grade 6"><label for="g6">6</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g7" name="grades[]" value="Grade 7"><label for="g7">7</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g8" name="grades[]" value="Grade 8"><label for="g8">8</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g9" name="grades[]" value="Grade 9"><label for="g9">9</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g10" name="grades[]" value="Grade 10"><label for="g10">10</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g11" name="grades[]" value="Grade 11"><label for="g11">11</label></div>
+          <div class="grade-chip"><input type="checkbox" id="g12" name="grades[]" value="Grade 12"><label for="g12">12</label></div>
+        </div>
+        <p class="field-error" id="grade-error" style="display:none;">Please select at least one grade.</p>
+      </div>
+
+      <!-- Plan -->
+      <p class="form-section-label" style="margin-top:2rem;">Choose your plan</p>
+
+      <div class="field" id="f-plan">
+        <div class="plan-grid">
+          <div class="plan-option">
+            <input type="radio" id="plan-annual" name="plan" value="Annual — $280/year per student">
+            <label class="plan-label" for="plan-annual">
+              <span class="plan-name">Annual</span>
+              <span class="plan-price">$280</span>
+              <span class="plan-unit">per year · per student</span>
+              <span class="plan-save">Saves 2 months</span>
+            </label>
+          </div>
+          <div class="plan-option">
+            <input type="radio" id="plan-monthly" name="plan" value="Monthly — $28/month per student">
+            <label class="plan-label" for="plan-monthly">
+              <span class="plan-name">Monthly</span>
+              <span class="plan-price">$28</span>
+              <span class="plan-unit">per month · per student</span>
+            </label>
+          </div>
+        </div>
+        <p class="field-error" id="plan-error" style="display:none;">Please select a plan.</p>
+      </div>
+
+      <!-- Notes -->
+      <div class="field" style="margin-top:.5rem;">
+        <label for="notes">Anything you'd like us to know? <span class="opt">(optional)</span></label>
+        <textarea id="notes" name="notes" placeholder="Questions, grade details, start date preference…"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">Subscribe</button>
+      <p class="form-note">We will reply within one business day with payment details and account setup.</p>
+
+    </form>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="summary-card">
+      <p class="summary-title">What you get</p>
+      <div class="summary-line"><span>Full schedule · all grades K–12</span></div>
+      <div class="summary-line"><span>30 Islamic scholars · 30 weeks</span></div>
+      <div class="summary-line"><span>30 Juz sacred thread through the year</span></div>
+      <div class="summary-line"><span>Lesson generator · assessment suite</span></div>
+      <div class="summary-line"><span>Sahifa · Munazara · Peer teaching library</span></div>
+      <div class="summary-line"><span>Ustadh AI assistant</span></div>
+      <div class="summary-divider"></div>
+      <p class="summary-price-label">Starting from</p>
+      <p class="summary-price">$280 <span style="font-size:1rem;color:var(--ink-soft);font-weight:300;">/year</span></p>
+      <p class="summary-price-sub">per student · or $28/month</p>
+    </div>
+
+    <div class="trust-card">
+      <p class="trust-title">Good to know</p>
+      <div class="trust-item">Free week included — no charge until you confirm</div>
+      <div class="trust-item">Your card is charged automatically after your free week ends</div>
+      <div class="trust-item">All grades included in one subscription per student</div>
+      <div class="trust-item">Cancel any time by contacting us</div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <span class="footer-text">© House of Wisdom Academy</span>
+  <a href="how_landing_concept.html" class="footer-link">← Back to home</a>
+</footer>
+
+<script>
+var form = document.getElementById('sub-form');
+var btn  = document.getElementById('submit-btn');
+
+function validate(){
+  var ok = true;
+
+  // Name
+  var nameVal = document.getElementById('name').value.trim();
+  document.getElementById('f-name').classList.toggle('has-error', !nameVal);
+  if(!nameVal) ok=false;
+
+  // Email
+  var emailVal = document.getElementById('email').value.trim();
+  var emailOk  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+  document.getElementById('f-email').classList.toggle('has-error', !emailOk);
+  if(!emailOk) ok=false;
+
+  // Household
+  var hhVal = document.getElementById('household').value.trim();
+  document.getElementById('f-household').classList.toggle('has-error', !hhVal);
+  if(!hhVal) ok=false;
+
+  // Students
+  var stVal = document.getElementById('num-students').value;
+  document.getElementById('f-students').classList.toggle('has-error', !stVal);
+  if(!stVal) ok=false;
+
+  // Grades
+  var grades = document.querySelectorAll('input[name="grades[]"]:checked');
+  var gradeErr = document.getElementById('grade-error');
+  if(!grades.length){ gradeErr.style.display='block'; ok=false; }
+  else gradeErr.style.display='none';
+
+  // Plan
+  var plan = document.querySelector('input[name="plan"]:checked');
+  var planErr = document.getElementById('plan-error');
+  if(!plan){ planErr.style.display='block'; ok=false; }
+  else planErr.style.display='none';
+
+  return ok;
+}
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  if(!validate()) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  var planVal = (document.querySelector('input[name="plan"]:checked')||{}).value||'';
+  var stripeAnnual = 'https://buy.stripe.com/aFa28q5Qdd9V5ko1fC5sA00';
+  var stripeMonthly = 'https://buy.stripe.com/4gMaEWguR6Lx28c0by5sA01';
+  var stripeUrl = planVal.indexOf('Annual') !== -1 ? stripeAnnual : stripeMonthly;
+
+  fetch(form.action, {
+    method: 'POST',
+    body: new FormData(form),
+    headers: { 'Accept': 'application/json' }
+  })
+  .then(function(r){
+    if(r.ok){
+      window.location.href = stripeUrl;
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Subscribe';
+      alert('Something went wrong. Please try again or email us directly.');
+    }
+  })
+  .catch(function(){
+    btn.disabled = false;
+    btn.textContent = 'Subscribe';
+    alert('Could not send. Please check your connection and try again.');
+  });
+});
+
+// Live clear errors on input
+['name','email','household','num-students'].forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) el.addEventListener('input', function(){
+    var wrapper = el.closest('.field');
+    if(wrapper) wrapper.classList.remove('has-error');
+  });
+});
+</script>
+</body>
+</html>
