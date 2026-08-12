@@ -396,6 +396,33 @@ body.landing-mode #p-landing{padding:0!important;height:100%}
 .trow{margin-bottom:5px;display:flex;gap:0;align-items:flex-start}
 .ttime{width:96px;flex-shrink:0;padding-top:7px;margin-left:-104px;text-align:right;padding-right:10px;display:flex;flex-direction:column;align-items:flex-end;gap:0}
 .ttime-clock{font-size:10px;font-weight:600;color:var(--ink3);letter-spacing:.02em;line-height:1.2}
+
+/* Mobile responsive (<=767px) */
+@media(max-width:767px){
+  body{overflow:hidden;}
+  .how-sidebar{position:fixed;top:0;left:0;bottom:0;width:252px!important;transform:translateX(-100%);z-index:500;transition:transform .3s cubic-bezier(.4,0,.2,1);}
+  .how-sidebar.mobile-open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.2);}
+  .how-sidebar.collapsed{width:252px!important;}
+  .how-sidebar.collapsed .sb-logo-text{opacity:1;width:auto;}
+  .how-sidebar.collapsed .sb-nav-label{opacity:1;}
+  .how-sidebar.collapsed .sb-sec-label{opacity:1;}
+  #how-toggle-btn{display:none;}
+  #mob-hamburger{display:flex!important;}
+  #mob-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:499;}
+  body.mob-sb-open #mob-sidebar-overlay{display:block;}
+  .how-main{width:100%;min-width:0;}
+  .how-topbar{padding:0 10px;gap:6px;}
+  .page{padding:12px 10px 52px;}
+  #how-grade-label{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
+}
+/* Tablet (768px-1023px) */
+@media(min-width:768px) and (max-width:1023px){
+  .how-sidebar{width:56px;}
+  .how-sidebar .sb-logo-text,.how-sidebar .sb-nav-label,.how-sidebar .sb-sec-label,.how-sidebar .sb-nav-badge{opacity:0;width:0;overflow:hidden;}
+}
+/* Admin-only controls */
+.how-admin-ctrl{display:none!important;}
+body.how-admin .how-admin-ctrl{display:inline-flex!important;}
 .tblock{border-radius:var(--rl);padding:8px 12px;flex:1;position:relative;margin-left:0}
 .tblock::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;border:1.5px solid white;box-shadow:0 0 0 1.5px var(--ink5)}
 .tb-title{font-size:11px;font-weight:500;margin-bottom:1px}
@@ -1572,6 +1599,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 </style>
 </head>
 <body>
+<div id="mob-sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
 <!-- ══════════ SIDEBAR ══════════ -->
 <aside class="how-sidebar" id="how-sidebar">
@@ -1690,6 +1718,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
   <!-- Topbar -->
   <div class="how-topbar">
     <div class="how-topbar-left">
+      <button id="mob-hamburger" onclick="toggleMobileSidebar()" style="display:none;align-items:center;justify-content:center;width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:8px;padding:0;color:var(--ink);flex-shrink:0" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       <div class="how-grade-pill" id="how-grade-pill" onclick="toggleGradePillMenu()" style="cursor:pointer;position:relative">
         <span class="gp-dot"></span>
         <span id="how-grade-label">House of Wisdom Academy</span>
@@ -1784,7 +1813,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
           Sign in
         </button>
         <p style="text-align:center;margin-top:14px;font-size:.78rem;color:var(--ink3);">
-          Don’t have an account? <a href="how_landing_concept.html" style="color:var(--teal);font-weight:600;">Subscribe →</a>
+          Don’t have an account? <a href="https://houseofwisdomacademy.com" style="color:var(--teal);font-weight:600;">Subscribe →</a>
         </p>
       </div>
 
@@ -2259,7 +2288,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <button class="mode-btn"        id="btn-videos" onclick="setView('videos')">▶ Videos</button>
     <button class="mode-btn"        id="btn-test" onclick="setView('test')"  style="display:none">📝 Test</button>
     <button class="mode-btn"        id="btn-munazara" onclick="openMunazara()" style="display:none;background:var(--sacred,#5c2080);color:white">🗣 Munazara</button>
-    <button class="tb-btn" id="btn-gen-panel" onclick="showGenPanel()" style="background:var(--gold,#d4af37);color:#1a1a2e;border-color:var(--gold,#d4af37);font-weight:800">⚙ Saturday Prep</button>
+    <button class="tb-btn how-admin-ctrl" id="btn-gen-panel" onclick="showGenPanel()" style="background:var(--gold,#d4af37);color:#1a1a2e;border-color:var(--gold,#d4af37);font-weight:800">⚙ Saturday Prep</button>
     <div class="mode-sep"></div>
     <!-- Role tabs -->
     <button class="role-tab active" id="rtab-fac"     onclick="setRole('facilitator')">👨‍🏫 Facilitator</button>
@@ -2271,8 +2300,8 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       <button class="tb-btn" onclick="openPres()">🖥 Present</button>
       <button class="tb-btn" onclick="printDeck()">🖨 Print Deck</button>
       <button class="tb-btn" onclick="printWB()">🖨 Print Workbook</button>
-      <button class="tb-btn regen-btn" onclick="regen()">↺ Regenerate</button>
-      <button class="tb-btn" onclick="syncLesson()" style="background:var(--teal,#1d6f6f);color:white;border-color:var(--teal)">☁ Sync to students</button>
+      <button class="tb-btn regen-btn how-admin-ctrl" onclick="regen()">↺ Regenerate</button>
+      <button class="tb-btn how-admin-ctrl" onclick="syncLesson()" style="background:var(--teal,#1d6f6f);color:white;border-color:var(--teal)">☁ Sync to students</button>
     </span>
     <!-- Parent actions -->
     <span class="role-actions" id="acts-parent" style="display:none">
@@ -2285,8 +2314,9 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     </span>
     <button class="tb-btn" id="btn-to-library" onclick="sendToLibrary()" style="display:none;background:var(--teal);color:white;border-color:var(--teal)">📚 Send to peer library</button>
     <button class="tb-btn" id="btn-report" onclick="generateReport()" style="display:none;background:#1a3d8a;color:white;border-color:#1a3d8a">📊 Grade Report</button>
-    <button class="tb-btn" onclick="exportJSON()">⬇ Export</button>
-    <button class="tb-btn" onclick="importJSON()">⬆ Import</button>
+    <button class="tb-btn how-admin-ctrl" onclick="exportJSON()">⬇ Export</button>
+    <button class="tb-btn how-admin-ctrl" onclick="importJSON()">⬆ Import</button>
+  <button class="tb-btn how-admin-ctrl" id="btn-broadcast" onclick="broadcastLessons()" style="background:var(--teal,#1d6f6f);color:white;border-color:var(--teal);font-weight:700">📡 Broadcast to families</button>
   </div>
 
   <!-- Main content -->
@@ -9975,6 +10005,7 @@ async function applyUserToProfile(user, accessToken){
       localStorage.setItem('how_jwt',accessToken||'');
       localStorage.setItem('how_household_id',profile.household_id||'');
       localStorage.setItem('how_profile_role',profile.role||'facilitator');
+      if(profile.role==='admin') document.body.classList.add('how-admin');
       document.getElementById('how-login-panel').style.display='none';
       document.body.classList.remove('landing-mode');
       howShowTrialExpired(); return;
@@ -10080,6 +10111,38 @@ function howShowTrialExpired(){
     +'<p class="how-te-note">Questions? <a href="mailto:contact@houseofwisdomacademy.com" style="color:rgba(255,255,255,.4);">Contact us</a></p>'
     +'</div>';
   document.body.appendChild(o);
+}
+
+// Broadcast admin lessons to all active families
+async function broadcastLessons(){
+  var btn=document.getElementById('btn-broadcast');
+  if(btn){btn.textContent='📡 Broadcasting…';btn.disabled=true;}
+  try{
+    var r=await sb.rpc('broadcast_lessons_to_families');
+    if(r.error) throw r.error;
+    if(typeof toast==='function') toast('✓ Lessons broadcast to all active families');
+    else alert('Lessons broadcast to all active families');
+  }catch(e){
+    console.error('Broadcast failed:',e);
+    if(typeof toast==='function') toast('Broadcast failed: '+e.message);
+    else alert('Broadcast failed: '+e.message);
+  }finally{
+    if(btn){btn.textContent='📡 Broadcast to families';btn.disabled=false;}
+  }
+}
+
+// Mobile sidebar toggle
+function toggleMobileSidebar(){
+  var sb=document.getElementById('how-sidebar');
+  if(sb.classList.contains('mobile-open')){
+    sb.classList.remove('mobile-open');document.body.classList.remove('mob-sb-open');
+  }else{
+    sb.classList.add('mobile-open');document.body.classList.add('mob-sb-open');
+  }
+}
+function closeMobileSidebar(){
+  document.getElementById('how-sidebar').classList.remove('mobile-open');
+  document.body.classList.remove('mob-sb-open');
 }
 
 async function howLogin(email, password){
