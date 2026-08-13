@@ -423,6 +423,8 @@ body.landing-mode #p-landing{padding:0!important;height:100%}
 /* Admin-only controls */
 .how-admin-ctrl{display:none!important;}
 body.how-admin .how-admin-ctrl{display:inline-flex!important;}
+.how-admin-grid{display:none!important;}
+body.how-admin .how-admin-grid{display:grid!important;}
 .tblock{border-radius:var(--rl);padding:8px 12px;flex:1;position:relative;margin-left:0}
 .tblock::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;border:1.5px solid white;box-shadow:0 0 0 1.5px var(--ink5)}
 .tb-title{font-size:11px;font-weight:500;margin-bottom:1px}
@@ -1805,15 +1807,36 @@ body.lg-active #lg-root .toast.show { display:block !important; }
         <div class="land-form-group">
           <input class="land-input" type="email" id="lf-email" placeholder="Email address"
             onkeydown="if(event.key==='Enter') howLogin(this.value, document.getElementById('lf-password').value)">
-          <input class="land-input" type="password" id="lf-password" placeholder="Password"
-            onkeydown="if(event.key==='Enter') howLogin(document.getElementById('lf-email').value, this.value)">
+          <div style="position:relative;">
+            <input class="land-input" type="password" id="lf-password" placeholder="Password"
+              style="padding-right:40px;"
+              onkeydown="if(event.key==='Enter') howLogin(document.getElementById('lf-email').value, this.value)">
+            <button onclick="togglePwVis('lf-password','lf-eye')" type="button"
+              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:var(--ink3);font-size:1rem;line-height:1;"
+              id="lf-eye" title="Show/hide password">👁</button>
+          </div>
         </div>
         <button class="land-btn land-btn-dark"
           onclick="howLogin(document.getElementById('lf-email').value, document.getElementById('lf-password').value)">
           Sign in
         </button>
-        <p style="text-align:center;margin-top:14px;font-size:.78rem;color:var(--ink3);">
+        <p style="text-align:center;margin-top:10px;font-size:.78rem;">
+          <a href="#" onclick="showForgotPw();return false;" style="color:var(--teal);font-weight:600;">Forgot password?</a>
+        </p>
+        <p style="text-align:center;margin-top:6px;font-size:.78rem;color:var(--ink3);">
           Don’t have an account? <a href="https://houseofwisdomacademy.com" style="color:var(--teal);font-weight:600;">Subscribe →</a>
+        </p>
+      </div>
+      <!-- Forgot password panel -->
+      <div id="lf-forgot" style="display:none;">
+        <p style="font-size:.82rem;color:var(--ink2);margin-bottom:12px;line-height:1.5;">Enter your email and we'll send you a link to set a new password.</p>
+        <div class="land-form-group">
+          <input class="land-input" type="email" id="lf-forgot-email" placeholder="Email address"
+            onkeydown="if(event.key==='Enter') sendPwReset()">
+        </div>
+        <button class="land-btn land-btn-teal" onclick="sendPwReset()">Send reset link</button>
+        <p style="text-align:center;margin-top:12px;font-size:.78rem;">
+          <a href="#" onclick="showSignIn();return false;" style="color:var(--teal);">← Back to sign in</a>
         </p>
       </div>
 
@@ -2236,7 +2259,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
   </div>
 
   <!-- Controls -->
-  <div class="controls no-print">
+  <div class="controls no-print how-admin-grid">
     <div class="ctrl">
       <label for="sel-grade">Grade</label>
       <select id="sel-grade" onchange="(function(){var _v=parseInt(this.value);S.grade=isNaN(_v)?7:_v;syncGradeWeekSelectors();onCtrl();}).call(this)">
@@ -5809,7 +5832,8 @@ function render(){
   var printWbBtn2=document.getElementById('btn-print-wb');
   if(printWbBtn2) printWbBtn2.style.display=isFac&&l?'':'none';
   var genPanelBtn=document.getElementById('btn-gen-panel');
-  if(genPanelBtn) genPanelBtn.style.display=isFac?'':'none';
+  if(genPanelBtn && !document.body.classList.contains('how-admin'))
+    genPanelBtn.style.display=isFac?'':'none';
   var reportBtn=document.getElementById('btn-report');
   var reportVisible=S.scores[testKey()]&&(isFac||S.mode==='prep');
   if(reportBtn){
@@ -9974,9 +9998,56 @@ function initRolePicker(){
 
 // ── On page load: check for existing session ──────────────────────────────
 (async function checkSession(){
+  // Detect Supabase password-reset link (contains type=recovery in hash)
+  const hash = window.location.hash;
+  if(hash && hash.includes('type=recovery')){
+    const params = new URLSearchParams(hash.replace(/^#/,''));
+    if(params.get('type') === 'recovery'){
+      const access = params.get('access_token');
+      const refresh = params.get('refresh_token');
+      if(access && refresh){
+        await sb.auth.setSession({ access_token: access, refresh_token: refresh });
+      }
+      history.replaceState(null, '', window.location.pathname);
+      showPwResetOverlay();
+      return;
+    }
+  }
   const { data:{ session } } = await sb.auth.getSession();
   if(session) await applyUserToProfile(session.user, session.access_token);
+  else goToSignIn();
 })();
+
+function showPwResetOverlay(){
+  var el = document.getElementById('pw-reset-overlay');
+  if(el){ el.style.display='flex'; }
+}
+
+async function submitNewPassword(){
+  var np = document.getElementById('pw-reset-new');
+  var cp = document.getElementById('pw-reset-confirm');
+  var er = document.getElementById('pw-reset-err');
+  var pw = (np||{}).value||'';
+  var cf = (cp||{}).value||'';
+  if(er){ er.style.display='none'; er.textContent=''; }
+  if(pw.length < 8){
+    if(er){ er.textContent='Password must be at least 8 characters.'; er.style.display='block'; } return;
+  }
+  if(pw !== cf){
+    if(er){ er.textContent='Passwords do not match.'; er.style.display='block'; } return;
+  }
+  try{
+    var { error } = await sb.auth.updateUser({ password: pw });
+    if(error) throw error;
+    var overlay = document.getElementById('pw-reset-overlay');
+    if(overlay) overlay.style.display='none';
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session) await applyUserToProfile(session.user, session.access_token);
+    else goToSignIn();
+  }catch(e){
+    if(er){ er.textContent = e.message||'Could not set password. Please try again.'; er.style.display='block'; }
+  }
+}
 
 async function applyUserToProfile(user, accessToken){
   // ── 1. Read profile (role comes from here now, not household) ──────────
@@ -10038,6 +10109,7 @@ async function applyUserToProfile(user, accessToken){
   S.grade = firstStudent?((firstStudent.current_grade!=null&&!isNaN(firstStudent.current_grade))?firstStudent.current_grade:(firstStudent.grade_start!=null&&!isNaN(firstStudent.grade_start))?firstStudent.grade_start:7):7;
 
   // ── 6. Apply role to UI ───────────────────────────────────────────────
+  if(profile.role==='admin') document.body.classList.add('how-admin');
   setRole(role);
   localStorage.setItem('how_role', role);
 
@@ -11888,6 +11960,54 @@ function acCloseEdit(){var p=document.getElementById('ac-edit-panel');if(p)p.cla
 
 window.addEventListener('load',function(){setTimeout(function(){if(document.getElementById('ac-panel-year')){var td=new Date();for(var i=AC_MONTHS_1448.length-1;i>=0;i--){if(td>=new Date(AC_MONTHS_1448[i].start)){_acMonthIdx=i;break;}}renderAcYear();}},300);});
 
+
+// ── Password visibility toggle ──────────────────────────────────────────────────────────
+function togglePwVis(inputId, btnId){
+  var inp = document.getElementById(inputId);
+  var btn = document.getElementById(btnId);
+  if(!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  if(btn) btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// ── Forgot password ──────────────────────────────────────────────────────────────────
+function showForgotPw(){
+  var si=document.getElementById('lf-signin');
+  var fp=document.getElementById('lf-forgot');
+  var er=document.getElementById('lf-err');
+  if(si) si.style.display='none';
+  if(fp) fp.style.display='block';
+  if(er){er.style.display='none';er.textContent='';}
+  var email=document.getElementById('lf-email');
+  var fe=document.getElementById('lf-forgot-email');
+  if(email&&fe&&email.value) fe.value=email.value;
+}
+function showSignIn(){
+  var si=document.getElementById('lf-signin');
+  var fp=document.getElementById('lf-forgot');
+  var er=document.getElementById('lf-err');
+  if(si) si.style.display='block';
+  if(fp) fp.style.display='none';
+  if(er){er.style.display='none';er.textContent='';}
+}
+async function sendPwReset(){
+  var email=(document.getElementById('lf-forgot-email')||{}).value||'';
+  var er=document.getElementById('lf-err');
+  email=email.trim();
+  if(!email){if(er){er.textContent='Please enter your email address.';er.style.display='block';}return;}
+  if(er){er.style.display='none';er.textContent='';}
+  if(!sb){if(er){er.textContent='Not connected. Please refresh.';er.style.display='block';}return;}
+  try{
+    var {error}=await sb.auth.resetPasswordForEmail(email,{
+      redirectTo:window.location.origin+window.location.pathname
+    });
+    if(error) throw error;
+    var fp=document.getElementById('lf-forgot');
+    if(fp) fp.innerHTML='<p style="font-size:.85rem;line-height:1.6;color:var(--ink2);text-align:center;padding:1rem 0;">✅ Check your inbox — we sent a link to<br><strong>'+email+'</strong><br><br>Click the link to set your password, then sign in here.</p><p style="text-align:center;margin-top:8px;font-size:.78rem;"><a href="#" onclick="showSignIn();return false;" style="color:var(--teal);">← Back to sign in</a></p>';
+  }catch(e){
+    if(er){er.textContent=e.message||'Something went wrong. Please try again.';er.style.display='block';}
+  }
+}
 </script>
 
 
@@ -11984,5 +12104,38 @@ window.addEventListener('load',function(){setTimeout(function(){if(document.getE
     </button>
     <p id="pin-error" style="display:none;color:#c0522a;font-size:12px;text-align:center;margin-top:8px"></p>
     <button onclick="showStudentPinPanel(false)" style="display:block;margin:10px auto 0;background:none;border:none;font-size:12px;color:#9a9ab0;cursor:pointer">Back</button>
+  </div>
+</div>
+
+<!-- ── Password reset overlay (shown when email link is clicked) ─────────── -->
+<div id="pw-reset-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#f5f0e8;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:14px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.12);margin:16px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-family:'Amiri',serif;font-size:1.8rem;color:#1a1a2e;margin-bottom:4px;">م</div>
+      <div style="font-size:.85rem;color:#6b6459;font-style:italic;">House of Wisdom Academy</div>
+    </div>
+    <h2 style="font-size:1.05rem;font-weight:700;color:#1a1a2e;margin:0 0 6px;">Set your password</h2>
+    <p style="font-size:.8rem;color:#6b6459;margin:0 0 18px;">Choose a password you'll use to sign in to the platform.</p>
+    <div id="pw-reset-err" style="display:none;font-size:.75rem;color:#c0522a;margin-bottom:10px;text-align:center;"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+      <div style="position:relative;">
+        <input id="pw-reset-new" type="password" placeholder="New password (min 8 characters)"
+          style="width:100%;padding:10px 40px 10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:.82rem;color:#1a1a2e;outline:none;box-sizing:border-box;background:#fafaf8;"
+          onkeydown="if(event.key==='Enter') document.getElementById('pw-reset-confirm').focus()">
+        <button onclick="togglePwVis('pw-reset-new','pw-eye1')" type="button" id="pw-eye1"
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;font-size:1rem;line-height:1;">👁</button>
+      </div>
+      <div style="position:relative;">
+        <input id="pw-reset-confirm" type="password" placeholder="Confirm password"
+          style="width:100%;padding:10px 40px 10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:.82rem;color:#1a1a2e;outline:none;box-sizing:border-box;background:#fafaf8;"
+          onkeydown="if(event.key==='Enter') submitNewPassword()">
+        <button onclick="togglePwVis('pw-reset-confirm','pw-eye2')" type="button" id="pw-eye2"
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;font-size:1rem;line-height:1;">👁</button>
+      </div>
+    </div>
+    <button onclick="submitNewPassword()"
+      style="width:100%;background:#1a1a2e;color:white;border:none;border-radius:8px;padding:11px;font-size:.84rem;font-weight:700;cursor:pointer;font-family:inherit;">
+      Set password &amp; sign in
+    </button>
   </div>
 </div>
