@@ -1008,6 +1008,8 @@ function renderDocStep(){
   else if(docStep===5) docStep5(c);
 }
 
+function _studioDocBand(){var g=parseInt(draftProject.grade||99);return g<=2?'k2':g<=4?'34':'512';}
+
 function docStep1(c){
   const studios=[
     ['eng','Civil & water engineering'],['sky','Observatory / Optics & light'],
@@ -1030,7 +1032,7 @@ function docStep1(c){
       <div class="form-field">
         <label class="form-label">Your grade</label>
         <select class="field" id="d-grade">
-          ${[5,6,7,8,9,10,11,12].map(g=>`<option value="${g}" ${draftProject.grade==g?'selected':''}>${g}</option>`).join('')}
+          ${[0,1,2,3,4,5,6,7,8,9,10,11,12].map(g=>`<option value="${g}" ${draftProject.grade==g?'selected':''}>${g===0?'Kindergarten':'Grade '+g}</option>`).join('')}
         </select>
       </div>
       <div class="form-field">
@@ -1142,6 +1144,63 @@ function saveDoc2(){
 }
 
 function docStep3(c){
+  const _b=_studioDocBand();
+  if(_b==='k2'){
+    c.innerHTML=`
+    <div class="section-card">
+      <p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:14px">Tell us what happened when you made your project. Your own words — no right answer.</p>
+      <div class="form-field">
+        <label class="form-label">What I noticed</label>
+        <textarea class="field" id="d-k2obs" rows="4" placeholder="Every time I ___ , ___ happened. The ___ one ___. It broke when ___. It was harder to ___ than I thought.">${(draftProject.mathAnnotations||[])[0]?.text||''}</textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">I wonder why…</label>
+        <textarea class="field" id="d-k2wonder" rows="3" placeholder="I wonder why ___">${draftProject.openQuestion||''}</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" onclick="saveDoc3k2()">Next: review →</button>
+        <button class="btn" onclick="docStep=2;renderDocStep()">← Back</button>
+      </div>
+    </div>`;
+    return;
+  }
+  if(_b==='34'){
+    c.innerHTML=`
+    <div class="section-card">
+      <p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:14px">Record what you measured and what surprised you. Your logbook entry.</p>
+      <div class="form-field">
+        <label class="form-label">What I made and why</label>
+        <textarea class="field" id="d-34why" rows="3" placeholder="I made ___ because I wanted to see if ___.">${draftProject.summary||''}</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:14px">
+        <div class="form-field">
+          <label class="form-label">What I measured</label>
+          <input class="field" id="d-34what" placeholder="e.g. shadow length" value="${(draftProject.mathAnnotations||[])[0]?.label||''}">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Result</label>
+          <input class="field" id="d-34result" placeholder="e.g. 28 cm" value="${(draftProject.mathAnnotations||[])[0]?.text||''}">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Expected</label>
+          <input class="field" id="d-34expect" placeholder="e.g. 20 cm">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">What surprised me</label>
+        <input class="field" id="d-34surprise" placeholder="One thing I did not expect…">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Something I still don't understand</label>
+        <textarea class="field" id="d-34wonder" rows="2" placeholder="I don't understand why ___">${draftProject.openQuestion||''}</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" onclick="saveDoc334()">Next: review →</button>
+        <button class="btn" onclick="docStep=2;renderDocStep()">← Back</button>
+      </div>
+    </div>`;
+    return;
+  }
   const anns=draftProject.mathAnnotations||[];
   c.innerHTML=`
   <div class="section-card">
@@ -1218,6 +1277,33 @@ function removeAnn(i){
 }
 
 function saveDoc3(){docStep=4;renderDocStep()}
+
+function saveDoc3k2(){
+  var obs=(document.getElementById('d-k2obs')?.value||'').trim();
+  var wonder=(document.getElementById('d-k2wonder')?.value||'').trim();
+  if(!obs){toast('Tell us what you noticed first.');return}
+  if(!draftProject.summary) draftProject.summary=obs;
+  draftProject.mathAnnotations=[{type:'discovery',label:'What I noticed',text:obs}];
+  draftProject.openQuestion=wonder||'I wonder why it works this way.';
+  draftProject.format='maker';
+  docStep=5;renderDocStep();
+}
+
+function saveDoc334(){
+  var why=(document.getElementById('d-34why')?.value||'').trim();
+  var what=(document.getElementById('d-34what')?.value||'').trim();
+  var result=(document.getElementById('d-34result')?.value||'').trim();
+  var expect=(document.getElementById('d-34expect')?.value||'').trim();
+  var surprise=(document.getElementById('d-34surprise')?.value||'').trim();
+  var wonder=(document.getElementById('d-34wonder')?.value||'').trim();
+  if(!why){toast('Tell us what you made and why first.');return}
+  if(!draftProject.summary) draftProject.summary=why;
+  draftProject.mathAnnotations=[{type:'calc',label:'What I measured: '+what,text:result+(expect?' (expected: '+expect+')':'')}];
+  if(surprise) draftProject.mathAnnotations.push({type:'discovery',label:'What surprised me',text:surprise});
+  draftProject.openQuestion=wonder||'I still have questions about this project.';
+  draftProject.format='logbook';
+  docStep=5;renderDocStep();
+}
 
 function docStep4(c){
   c.innerHTML=`
@@ -1345,7 +1431,22 @@ var sb=null;try{if(typeof supabase!=='undefined')sb=supabase.createClient('https
 window._serverProjects=[];
 function _mapSP(sp){return{id:sp.id,_fromServer:true,_isPublished:!!sp.is_published,studio:sp.studio||'eng',studioName:sp.studio_name||'Studio',title:sp.title||'',icon:sp.icon||'🏗',student:sp.student_name||'Student',initials:(sp.student_name||'S').split(' ').map(function(w){return w[0]||''}).join('').slice(0,2).toUpperCase(),grade:String(sp.grade||''),year:sp.year||String(new Date(sp.created_at||Date.now()).getFullYear()),summary:sp.summary||'',materials:sp.materials||'',openQuestion:sp.open_question||'',mathAnnotations:Array.isArray(sp.math_annotations)?sp.math_annotations:[],buildOns:Array.isArray(sp.build_ons)?sp.build_ons:[],household_id:sp.household_id};}
 async function loadMyProjects(){if(!sb)return;var jwt=localStorage.getItem('how_jwt'),hid=localStorage.getItem('how_household_id');if(!jwt||!hid)return;try{var r=await sb.from('studio_project').select('*').eq('household_id',hid).order('created_at',{ascending:false});if(r.error)throw r.error;var local=getProjects(),ids=new Set(local.map(function(p){return p.id}));(r.data||[]).forEach(function(sp){if(!ids.has(sp.id))local.push(_mapSP(sp))});saveProjects(local);}catch(e){console.warn('loadMyProjects:',e.message);}}
-async function loadServerProjects(){if(!sb)return;try{var r=await sb.from('studio_project').select('*').eq('is_published',true).order('created_at',{ascending:false});if(r.error)throw r.error;window._serverProjects=(r.data||[]).map(_mapSP);if(typeof updateChips==='function')updateChips();}catch(e){console.warn('loadServerProjects:',e.message);}}
+async function loadServerProjects(){
+  // Raw fetch to avoid DataCloneError — same issue as fetchSupabaseDebates in the PTL.
+  try{
+    var SURL='https://apallkuclqcqxnbmjuqu.supabase.co';
+    var SKEY='sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9';
+    var jwt=localStorage.getItem('how_jwt');
+    var resp=await fetch(
+      SURL+'/rest/v1/studio_project?select=*&is_published=eq.true&order=created_at.desc',
+      {headers:{'apikey':SKEY,'Authorization':'Bearer '+(jwt||SKEY),'Content-Type':'application/json'}}
+    );
+    if(!resp.ok){console.warn('loadServerProjects: HTTP',resp.status);return;}
+    var data=await resp.json();
+    window._serverProjects=(data||[]).map(_mapSP);
+    if(typeof updateChips==='function')updateChips();
+  }catch(e){console.warn('loadServerProjects:',e.message);}
+}
 async function pushProjectToSupabase(project){if(!sb)return null;var jwt=localStorage.getItem('how_jwt'),hid=localStorage.getItem('how_household_id');if(!jwt||!hid)return null;try{var s=getSettings(),payload={household_id:hid,student_name:project.student||s.name||'Student',studio:project.studio,studio_name:project.studioName,title:project.title,icon:project.icon||'🏗',grade:parseInt(project.grade)||7,week:parseInt(localStorage.getItem('how_week')||'1')||1,year:project.year||String(new Date().getFullYear()),summary:project.summary||'',materials:project.materials||'',open_question:project.openQuestion||'',math_annotations:project.mathAnnotations||[],build_ons:project.buildOns||[],is_published:false,updated_at:new Date().toISOString()};var isServer=project._fromServer||(project.id&&project.id.length>10&&project.id.includes('-'));var r=isServer?await sb.from('studio_project').update(payload).eq('id',project.id).select().single():await sb.from('studio_project').insert(payload).select().single();if(r.error)throw r.error;return r.data.id;}catch(e){console.warn('pushProjectToSupabase:',e.message);if(typeof toast==='function')toast('Sync failed: '+e.message);return null;}}
 async function togglePublishProject(projectId){if(!sb){if(typeof toast==='function')toast('Not connected');return;}if(!localStorage.getItem('how_jwt')){if(typeof toast==='function')toast('Sign in to publish');return;}try{var r=await sb.from('studio_project').select('is_published').eq('id',projectId).single();if(r.error)throw r.error;var ns=!r.data.is_published;await sb.from('studio_project').update({is_published:ns}).eq('id',projectId);if(typeof toast==='function')toast(ns?'Published to knowledge commons':'Unpublished');await loadServerProjects();}catch(e){if(typeof toast==='function')toast('Publish failed: '+e.message);}}
 async function pushBuildOnToSupabase(projectId,buildOn){if(!sb||!projectId||!projectId.includes('-'))return;if(!localStorage.getItem('how_jwt'))return;try{var r=await sb.from('studio_project').select('build_ons').eq('id',projectId).single();if(r.error)throw r.error;var bons=Array.isArray(r.data.build_ons)?r.data.build_ons:[];bons.push(buildOn);await sb.from('studio_project').update({build_ons:bons,updated_at:new Date().toISOString()}).eq('id',projectId);}catch(e){console.warn('pushBuildOnToSupabase:',e.message);}}

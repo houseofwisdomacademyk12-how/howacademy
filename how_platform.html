@@ -63,6 +63,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--p);color:var(--ink);font-
 .how-sidebar.collapsed .sb-nav-badge{opacity:0}
 .sb-divider{height:1px;background:var(--border);margin:4px 0}
 .sb-footer-area{border-top:1px solid var(--border);padding:6px 0;flex-shrink:0}
+.how-sidebar.collapsed .how-collapsed-hide{display:none}
 /* ── MAIN WRAPPER ── */
 .how-main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;min-width:0}
 /* ── TOPBAR ── */
@@ -415,6 +416,19 @@ body.landing-mode #p-landing{padding:0!important;height:100%}
   .page{padding:12px 10px 52px;}
   #how-grade-label{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
 }
+
+/* ── Sign-in page mobile ───────────────────────────────────────────── */
+@media(max-width:767px){
+  body.landing-mode .land-topbar{padding:0 14px;}
+  body.landing-mode .land-main{grid-template-columns:1fr;overflow-y:auto;}
+  body.landing-mode .land-signin-col{min-height:100vh;justify-content:flex-start;padding:36px 24px 32px;}
+  body.landing-mode .land-content-col{display:none;}
+  body.landing-mode .land-topbar-tagline{display:none;}
+}
+@media(min-width:768px) and (max-width:1023px){
+  body.landing-mode .land-main{grid-template-columns:360px 1fr;}
+}
+
 /* Tablet (768px-1023px) */
 @media(min-width:768px) and (max-width:1023px){
   .how-sidebar{width:56px;}
@@ -1711,6 +1725,9 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       <span class="sb-nav-label" id="nav-user-name" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--ink3)"></span>
       <button onclick="howLogout()" style="font-size:10px;padding:2px 7px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--ink3);cursor:pointer;font-family:inherit;flex-shrink:0">Sign out</button>
     </div>
+    <div class="how-collapsed-hide" style="padding:8px 14px 4px;border-top:1px solid var(--border);margin-top:4px;">
+      <p style="font-size:.6rem;color:var(--ink5);line-height:1.5;text-align:center;">&copy; 2026 House of Wisdom Academy.<br>All rights reserved.</p>
+    </div>
   </div>
 </aside>
 
@@ -1812,8 +1829,8 @@ body.lg-active #lg-root .toast.show { display:block !important; }
               style="padding-right:40px;"
               onkeydown="if(event.key==='Enter') howLogin(document.getElementById('lf-email').value, this.value)">
             <button onclick="togglePwVis('lf-password','lf-eye')" type="button"
-              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:var(--ink3);font-size:1rem;line-height:1;"
-              id="lf-eye" title="Show/hide password">👁</button>
+              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;font-size:.72rem;font-weight:600;color:var(--ink3);letter-spacing:.03em;"
+              id="lf-eye" title="Show/hide password">Show</button>
           </div>
         </div>
         <button class="land-btn land-btn-dark"
@@ -5549,7 +5566,7 @@ function setRole(role){
   var toLibBtn= document.getElementById('btn-to-library');
 
   var juzBtn = document.getElementById('juz-edit-btn');
-  if(juzBtn) juzBtn.style.display = role==='facilitator'?'':'none';
+  if(juzBtn) juzBtn.style.display = document.body.classList.contains('how-admin')?'':'none';
 
   if(wbBtn)    wbBtn.style.display    = (role==='facilitator'||role==='student'||role==='child')?'':'none';
   if(testBtn)  testBtn.style.display  = ((role==='facilitator'||role==='student'||role==='child')&&testKeyExists())?'':'none';
@@ -6203,13 +6220,12 @@ function attachCanvas(idx){
 
   function end(){ state.drawing=false; saveDrawing(idx); }
 
-  canvas.addEventListener('mousedown',start);
-  canvas.addEventListener('mousemove',move);
-  canvas.addEventListener('mouseup',end);
-  canvas.addEventListener('mouseleave',end);
-  canvas.addEventListener('touchstart',start,{passive:false});
-  canvas.addEventListener('touchmove',move,{passive:false});
-  canvas.addEventListener('touchend',end);
+  // Pointer events handle mouse, touch, and stylus (pen) in one unified API.
+  // setPointerCapture keeps events flowing even if the stylus drifts outside the canvas.
+  canvas.addEventListener('pointerdown',function(e){e.preventDefault();canvas.setPointerCapture(e.pointerId);start(e);});
+  canvas.addEventListener('pointermove',function(e){e.preventDefault();move(e);});
+  canvas.addEventListener('pointerup',end);
+  canvas.addEventListener('pointercancel',end);
   canvas.addEventListener('contextmenu',function(e){e.preventDefault();});
 }
 
@@ -6350,9 +6366,9 @@ function expandCanvas(idx){
   doneBtn.onclick=function(){_shapeSyncToSlide(idx,bgCanvas);ov.remove();document.removeEventListener('keydown',kbHandler);};
   topbar.appendChild(titleEl);topbar.appendChild(hintEl);topbar.appendChild(szWrap);topbar.appendChild(doneBtn);
   // Canvas area
-  var ca=document.createElement('div');ca.style.cssText='flex:1;position:relative;background:#fff;margin-left:52px;overflow:hidden';
+  var ca=document.createElement('div');ca.style.cssText='flex:1;position:relative;background:#fff;margin-left:52px;overflow:hidden;touch-action:none';
   var bgCanvas=document.createElement('canvas');bgCanvas.style.cssText='position:absolute;inset:0';
-  var pvCanvas=document.createElement('canvas');pvCanvas.style.cssText='position:absolute;inset:0;cursor:crosshair';
+  var pvCanvas=document.createElement('canvas');pvCanvas.style.cssText='position:absolute;inset:0;cursor:crosshair;touch-action:none';
   var bgCtx=bgCanvas.getContext('2d'),pvCtx=pvCanvas.getContext('2d');
   var textInput=document.createElement('input');textInput.type='text';textInput.placeholder='Type\u2026 (Enter to place)';
   textInput.style.cssText='display:none;position:absolute;z-index:20;background:transparent;border:1.5px dashed #d4af37;min-width:80px;padding:3px 6px;font-family:DM Sans,sans-serif;font-size:16px;color:#1a1a2e;outline:none';
@@ -6411,8 +6427,9 @@ function expandCanvas(idx){
     if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
     return{x:e.clientX-r.left,y:e.clientY-r.top};
   }
-  ca.addEventListener('mousedown',function(e){
+  ca.addEventListener('pointerdown',function(e){
     if(e.target===textInput)return;
+    e.preventDefault();ca.setPointerCapture(e.pointerId);
     if(textInput.style.display!=='none')commitText();
     if(activeTool==='text'){
       var p=gp(e);textInput.style.left=p.x+'px';textInput.style.top=p.y+'px';
@@ -6422,7 +6439,8 @@ function expandCanvas(idx){
     drawing=true;var p=gp(e);sx=p.x;sy=p.y;
     if(activeTool==='pen')penPoints=[{x:p.x,y:p.y}];
   });
-  ca.addEventListener('mousemove',function(e){
+  ca.addEventListener('pointermove',function(e){
+    e.preventDefault();
     if(!drawing)return;var p=gp(e);
     pvCtx.clearRect(0,0,pvCanvas.width,pvCanvas.height);
     if(activeTool==='pen'){penPoints.push({x:p.x,y:p.y});_shapeDrawOn(pvCtx,{type:'pen',points:penPoints,color:activeColor,lw:activeSize});}
@@ -6436,7 +6454,7 @@ function expandCanvas(idx){
     else _strokes[idx].push({type:activeTool,x1:sx,y1:sy,x2:p.x,y2:p.y,color:activeColor,lw:activeSize});
     _shapeRedraw(bgCtx,_strokes[idx]);_shapeSyncToSlide(idx,bgCanvas);penPoints=[];
   }
-  ca.addEventListener('mouseup',finish);ca.addEventListener('mouseleave',finish);
+  ca.addEventListener('pointerup',finish);ca.addEventListener('pointercancel',finish);
   ca.addEventListener('contextmenu',function(e){e.preventDefault();});
   textInput.addEventListener('keydown',function(e){if(e.key==='Escape'||(e.key==='Enter'&&!e.shiftKey)){e.preventDefault();commitText();}});
   var kbHandler=function(e){
@@ -6618,10 +6636,16 @@ function renderWorkbook(wb){
     });
   }
   if(wb.shortAnswer&&wb.shortAnswer.length){
+    var _saIsK2=(wbBand()==='k2');
     wb.shortAnswer.forEach(function(sa,i){
       p6+='<div class="wb-field"><div style="font-size:.9rem;font-weight:600;margin-bottom:.3rem;color:var(--ink,#1a1a2e)">'+sa.q+'</div>';
       if(sa.stem)p6+='<div style="font-size:.8rem;color:var(--ink3,#5a5a78);font-style:italic;margin-bottom:.25rem">'+sa.stem+'…</div>';
-      p6+='<textarea class="wb-textarea" id="wb-sa-'+i+'" style="min-height:'+((sa.lines||2)*28)+'px"></textarea></div>';
+      if(_saIsK2&&sa.choices&&sa.choices.length){
+        p6+=wbK2Tappable('wb-sa-'+i,sa.choices);
+      }else{
+        p6+='<textarea class="wb-textarea" id="wb-sa-'+i+'" style="min-height:'+((sa.lines||2)*28)+'px"></textarea>';
+      }
+      p6+='</div>';
     });
   }
   html+=wbPg('6','Check for Understanding','✅',false,6,7,p6);
@@ -7721,7 +7745,7 @@ function getDeckSchema(s){
 }
 function getWBSchema(s){
   var c='{\n  "workbook":{\n    "vocab":[{"word":"term","definition":"brief def"}],\n    "discussionQuestion":"...",\n    "discussionStem":"starter",\n    "juzReflection":"connecting question",\n';
-  var q='    "checkQuestions":[{"q":"...","choices":["A","B","C","D"],"a":"B"},{"q":"...","choices":["A","B","C","D"],"a":"C"}],\n    "shortAnswer":[{"q":"...","stem":"starter","lines":3}]\n  }\n}';
+  var q='    "checkQuestions":[{"q":"...","choices":["A","B","C","D"],"a":"B"},{"q":"...","choices":["A","B","C","D"],"a":"C"}],\n    "shortAnswer":[{"q":"...","stem":"starter","lines":3,"choices":["sentence completion 1","sentence completion 2","sentence completion 3"]}]\n  }\n}\n\nK-2 GRADE RULES (apply only when GRADE BAND is K-G1 or G2-G3):\n- checkQuestions choices must reference specific content from this lesson — names, numbers, events, and objects from the passage. No generic emotional or categorical options.\n- K-G1 band: choices 4-6 words, must start with an emoji.\n- G2-G3 band: choices up to 10 words, emoji optional.\n- shortAnswer choices array: 2-3 tappable sentence completions anchored to specific lesson content. The student taps one to complete the stem.';
   if(s==='math')return c+'    "activitySteps":["Step 1","Step 2","Step 3"],\n    "dataTable":[{"label":"Input","field":""},{"label":"Output","field":""}],\n    "conclusionStem":"I found that...",\n'+q;
   if(s==='ela')return c+'    "passage":"Same passage from deck",\n'+q;
   if(s==='writing')return c+'    "passage":"Same mentor text",\n    "activitySteps":["1. Plan","2. Draft","3. Revise"],\n'+q;
@@ -11967,7 +11991,7 @@ function togglePwVis(inputId, btnId){
   var btn = document.getElementById(btnId);
   if(!inp) return;
   inp.type = inp.type === 'password' ? 'text' : 'password';
-  if(btn) btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  if(btn) btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
 }
 
 // ── Forgot password ──────────────────────────────────────────────────────────────────
@@ -12123,14 +12147,14 @@ async function sendPwReset(){
           style="width:100%;padding:10px 40px 10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:.82rem;color:#1a1a2e;outline:none;box-sizing:border-box;background:#fafaf8;"
           onkeydown="if(event.key==='Enter') document.getElementById('pw-reset-confirm').focus()">
         <button onclick="togglePwVis('pw-reset-new','pw-eye1')" type="button" id="pw-eye1"
-          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;font-size:1rem;line-height:1;">👁</button>
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;font-size:.72rem;font-weight:600;color:var(--ink3);letter-spacing:.03em;">Show</button>
       </div>
       <div style="position:relative;">
         <input id="pw-reset-confirm" type="password" placeholder="Confirm password"
           style="width:100%;padding:10px 40px 10px 12px;border:1.5px solid #e4ddd0;border-radius:8px;font-family:inherit;font-size:.82rem;color:#1a1a2e;outline:none;box-sizing:border-box;background:#fafaf8;"
           onkeydown="if(event.key==='Enter') submitNewPassword()">
         <button onclick="togglePwVis('pw-reset-confirm','pw-eye2')" type="button" id="pw-eye2"
-          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;font-size:1rem;line-height:1;">👁</button>
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;font-size:.72rem;font-weight:600;color:var(--ink3);letter-spacing:.03em;">Show</button>
       </div>
     </div>
     <button onclick="submitNewPassword()"

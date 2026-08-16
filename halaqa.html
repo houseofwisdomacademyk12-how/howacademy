@@ -617,6 +617,31 @@ function setupPre(){
   let sub=0;const tot=2+Math.floor(Math.random()*3);
   const ti=document.getElementById('pre-timer-txt');
   const iv=setInterval(()=>{if(sub<tot){sub++;ti.textContent=`${sub} other student${sub>1?'s':''} submitted their answer`;}else{clearInterval(iv);ti.textContent='Everyone has written. The circle is ready.';} },3800+Math.random()*1200);
+  // Pre-fill textarea from Sunday sahifa if already loaded — all grades
+  if(G.preAnswer){var _taP=document.getElementById('pre-ans');if(_taP){_taP.value=G.preAnswer;preChanged();}}
+  // K-2: simplified instruction and tappable pre-session starters
+  if(G.band==='k2'){
+    var _pi=document.querySelector('.pre-instr');
+    if(_pi) _pi.innerHTML='Tap a starter below if you need one — it is optional. Change it or add more if you can. The teacher will hear your thinking before the circle opens.';
+    var _ta=document.getElementById('pre-ans');
+    if(_ta&&!document.getElementById('k2-pre-starters')){
+      var _sd=document.createElement('div');
+      _sd.id='k2-pre-starters';
+      _sd.style.cssText='display:flex;flex-direction:column;gap:8px;margin-bottom:14px';
+      ['I think…','I have seen…','I am not sure, but…','This makes me think of…'].forEach(function(s){
+        var _b=document.createElement('button');
+        _b.textContent=s;
+        _b.style.cssText='text-align:left;background:white;border:1.5px solid var(--ink5,#d0d0e0);border-radius:10px;padding:11px 14px;font-size:1rem;cursor:pointer;color:var(--ink,#1a1a2e);font-family:"DM Serif Display",serif;font-style:italic';
+        _b.onclick=function(){
+          _ta.value=s+' ';_ta.focus();preChanged();
+          _sd.querySelectorAll('button').forEach(function(b){b.style.background='white';b.style.borderColor='var(--ink5,#d0d0e0)';});
+          _b.style.background='var(--gp,#fdf5d0)';_b.style.borderColor='var(--gold,#d4af37)';
+        };
+        _sd.appendChild(_b);
+      });
+      _ta.parentNode.insertBefore(_sd,_ta);
+    }
+  }
 }
 
 function preChanged(){
@@ -817,7 +842,7 @@ function buildSys(){
   return 'You are running a halaqa circle for children aged 5-7.\n'
       +'Circle members: '+_circleMembers
       +'Opening question: "'+G.question+'" ('+G.theme+')\n\n'
-      +'CRITICAL: Every word must be one a 5-year-old knows. No abstract concepts. Maximum 2 sentences. End with yes/no or either/or only.\n'
+      +'CRITICAL: Every word must be one a 5-year-old knows. No abstract concepts. Maximum 2 sentences. End with one simple open question — "What do you think?" or "Did you ever see something like that?" or "Why do you think that happens?" — never a binary yes/no choice.\n'
       +'Rules: draw out ideas, never lecture, no empty praise. Phase: '+G.phase+'; Turns: '+G.turnCount+ctx;
   }
   if(G.band==='35'){
@@ -1116,11 +1141,14 @@ async function sahifaK2HQGen(){
   var list=document.getElementById('k2-choices-list');
   if(!list) return;
   list.innerHTML='<div style="color:#7ecece;font-size:.85rem;padding:6px 0">Thinking of choices…</div>';
+  var _k2Sub=G.grade<=1?'Kindergarten or Grade 1 (age 5-6)':'Grade 2 (age 7)';
+  var _k2Words=G.grade<=1?'4-7':'5-10';
   var last=G.messages.filter(function(m){return m.t==='ai';}).slice(-1)[0];
-  var lastText=last?last.txt.replace(/[^a-zA-Z0-9 .,!?]/g,'').slice(0,120):'';
-  var question=G.question.replace(/[^a-zA-Z0-9 .,!?]/g,'').slice(0,80);
-  var sys='You give a young student (age 5-7) exactly 3 short responses to SAY out loud in a learning discussion. The responses must be SPECIFIC to what was just said and to the discussion question — not generic. Responses are plain spoken words only — no asterisks, no stage directions. CRITICAL: Respond ONLY in English. Each response 4-8 words. Return ONLY valid JSON: {"choices":["choice 1","choice 2","choice 3"]}. No other text.';
-  var usr='The learning circle is discussing: '+question+'. The teacher or a student just said: "'+lastText+'". Write 3 SPECIFIC short responses a 5-year-old could say that directly engage with THIS question and THIS moment. Not generic. Each 4-8 plain English words.';
+  var lastText=last?last.txt.replace(/[^a-zA-Z0-9 .,!?'\-]/g,' ').slice(0,160):'';
+  var question=G.question.replace(/[^a-zA-Z0-9 .,!?'\-]/g,' ').slice(0,120);
+  var _theme=G.theme?'Session theme: '+G.theme+'. ':'';
+  var sys='You give a '+_k2Sub+' student exactly 3 short responses to SAY out loud in a learning circle. The responses must be SPECIFIC to what was just said and to the discussion question — anchor each to a specific idea, name, or object from this session, not a generic opinion. Responses are plain spoken words only — no asterisks, no stage directions. CRITICAL: Respond ONLY in English. Each response '+_k2Words+' words. Return ONLY valid JSON: {"choices":["choice 1","choice 2","choice 3"]}. No other text.';
+  var usr=_theme+'The learning circle is discussing: '+question+'. The teacher just said: "'+lastText+'". Write 3 SPECIFIC responses the student could say out loud that engage with THIS question and THIS moment — anchored to specific words, names, or ideas from this session. Each '+_k2Words+' plain English words.';
   try{
     var raw=await callAI([{role:'user',content:usr}],sys);
     var clean=raw.replace(/^[^{]*/,'').replace(/[^}]*$/,'');

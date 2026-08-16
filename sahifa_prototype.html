@@ -472,7 +472,6 @@ function getSahifaBand(){
 
 // ── DAY HELPERS ──────────────────────────────────────────────────────
 const DAYS = [
-  {id:'sat', label:'Saturday', short:'Sat', emoji:'🌙'},
   {id:'sun', label:'Sunday',   short:'Sun', emoji:'📖'},
   {id:'mon', label:'Monday',   short:'Mon', emoji:'✏️'},
   {id:'tue', label:'Tuesday',  short:'Tue', emoji:'🎓'},
@@ -485,7 +484,7 @@ function todayDayId(){
   return ['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()];
 }
 
-let _sahifaDay = null;
+let _sahifaDay = 'sun'; // default to Sunday (Sat tab removed)
 
 // ── GRADE-DIFFERENTIATED INPUT ────────────────────────────────────────
 function sahifaInput(id, placeholder, rows, starters){
@@ -515,8 +514,19 @@ async function sahifaK2Generate(id){
   const s = getSettings();
   const btn = document.querySelector(`#${id}-k2-choices button`);
   if(btn) btn.textContent = 'Thinking…';
-  const sys = 'You help young students (age 5-7) write in their learning journal. Give exactly 3 short tappable choices (5-8 words each, very simple). Return JSON only: {"choices":["choice 1","choice 2","choice 3"]}';
-  const usr = `Student is in ${s.weekTitle||'this week'} (Week ${s.juz||'?'}). They need to respond to: "${id.replace(/-/g,' ')}". Give 3 simple tappable responses.`;
+  const _k2Sub = parseInt(s.grade)<=1 ? 'Kindergarten or Grade 1 (age 5-6)' : 'Grade 2 (age 7)';
+  const _k2Words = parseInt(s.grade)<=1 ? '4-7' : '5-10';
+  const _entryCtx = id==='opening' ? 'the question: "'+(s.openingQ||s.openingQuestion||'this week\'s opening question')+'"'
+    : id==='scholar'      ? 'what the scholar '+(s.scholar||'this week\'s scholar')+' discovered and why it matters'
+    : id==='main-s1'      ? 'what they learned in today\'s lesson about '+(s.weekTitle||'this week\'s topic')
+    : id==='main-s2'      ? 'what Monday\'s lesson added to their understanding of '+(s.weekTitle||'this week\'s topic')
+    : id==='teach-record' ? 'what they discovered when they tried to teach '+(s.weekTitle||'this week\'s topic')+' to someone else'
+    : id==='thread'       ? 'a connection between this week and something they learned before'
+    : id==='revision'     ? 'something they wrote earlier that they now understand better or know was wrong'
+    : id==='open-q'       ? 'a question this week left unanswered'
+    : id.replace(/-/g,' ');
+  const sys = 'You help a '+_k2Sub+' student write in their learning journal. Give exactly 3 short tappable choices ('+_k2Words+' words each, very simple, plain English). Anchor each choice to the specific topic, scholar, or question named below — no generic responses. Return JSON only: {"choices":["choice 1","choice 2","choice 3"]}';
+  const usr = 'Topic this week: '+(s.weekTitle||'?')+' (Scholar: '+(s.scholar||'—')+', Week '+(s.juz||'?')+'). The student needs to write about '+_entryCtx+'. Write 3 specific tappable responses they could actually say about THIS topic.';
   try{
     const raw = await sahifaCallAPI(sys, usr, 200);
     const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -695,10 +705,12 @@ function renderSahifaDay(dayId, mc){
   const isFri = dayId==='fri';
   const openQ = (s.openingQuestion||'What does this week teach us?');
 
+  const _sch = s.scholar || 'this scholar';
+  const _wk  = s.weekTitle || 'this topic';
   const starters35 = {
     opening: ['I think this is about…','My best guess is…','I already know that…','I wonder if…'],
-    main:    ['The most important thing I learned was…','This connects to…','I was surprised that…','One thing I don\'t understand yet is…'],
-    scholar: ['This scholar was trying to answer…','What they discovered was…','This connects to what we learned because…'],
+    main:    ['The most important thing I learned was…','This connects to '+_wk+'…','I was surprised that…','One thing I don\'t understand yet is…'],
+    scholar: [_sch+' was trying to answer…','What '+_sch+' discovered was…','This connects to what we learned because…'],
     thread:  ['I noticed a connection between…','This reminds me of Week…','The same idea appears in…'],
     revision:['I used to think…but now I know…','I got this wrong:…The correct idea is…'],
     openq:   ['I still don\'t understand why…','I wonder what would happen if…','The question I can\'t answer is…'],
@@ -712,9 +724,9 @@ function renderSahifaDay(dayId, mc){
   html += '</div>';
 
   // Per-day content
-  if(dayId==='sat'){
+  if(dayId==='sun'){
     html += entryCard({
-      type:'opening', icon:'?', title:'Opening question — write before any instruction',
+      type:'opening', icon:'✎', title:'Opening question — write before any instruction?',
       howWhy: 'Al-Kindi wrote his first thoughts before reading other scholars — so he would know which ideas were truly his own.',
       howInstructions: 'Write your best current answer to the week\'s opening question. It does not have to be right — it just has to be yours. Once saved, this entry is locked.',
       prompt: `<strong>${openQ}</strong><br><span style="font-size:.8rem;color:var(--ink-4)">Write your answer now — before Sunday's lesson.</span>`,
@@ -723,9 +735,6 @@ function renderSahifaDay(dayId, mc){
       saveLabel: 'Save & lock my answer',
       locked: true,
     });
-  }
-
-  else if(dayId==='sun'){
     html += entryCard({
       type:'main-s1', icon:'✎', title:'Session 1 entry — what I learned today',
       howWhy:'Ibn Sina kept a daily record — not of facts, but of how his understanding changed.',

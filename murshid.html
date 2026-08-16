@@ -239,6 +239,14 @@ function buildSystemPrompt(mode){
   }catch(e){}
   if(!teachItCtx) teachItCtx='(No Teach It session recorded yet.)';
 
+  // K-2 branch — completely different register for young learners
+  if(parseInt(s.grade)<=2){
+    const k2sahifa=entries.length
+      ? entries.map(e=>`[${e.type||'entry'}]: ${e.text}`).join('\n\n')
+      : '(No entries yet.)';
+    return `You are the Murshid — a warm, patient guide speaking with a young child (${s.grade==='0'||s.grade===0?'Kindergarten':'Grade '+s.grade}, age 5-7). A parent or teacher is likely sitting with the child and may be typing what the child says.\n\nYOUR RULES:\n1. Use only very simple words a young child knows. One short sentence at a time.\n2. Never give the answer directly. Instead ask: "What do you think?" or "What did you notice?"\n3. Always connect to something the child wrote or drew in their sahifa if any entries exist.\n4. End every response with ONE simple question — short, concrete, curious.\n5. No academic language. No more than 2 sentences total per response.\n6. Be warm and encouraging about the thinking, not just the answer.\n\nChild's name: ${s.name||'the student'}\nGrade: ${s.grade==='0'||s.grade===0?'Kindergarten':'Grade '+s.grade}\nThis week's topic: ${s.weekTitle||'not set'}\nThis week's question: ${s.openingQ||'not set'}\n\nChild's sahifa entries:\n${k2sahifa}`;
+  }
+
   const modeInstructions={
     open:`You are the Murshid in open inquiry mode. Respond to whatever the student brings — a question, a confusion, a half-formed idea. Always ask what the student has already tried before answering. Point toward the answer without completing the thought. End every response with a single question.`,
     challenge:`You are the Murshid in challenge mode. The student has asked you to challenge them. Generate a question that goes beyond the current curriculum week — drawing on a connection in their sahifa history, a deeper implication of what they've studied, or a harder version of a concept they've already mastered. Be demanding but not cruel. One challenge at a time.`,
@@ -453,8 +461,19 @@ function updateQuickActions(){
       {label:'How was it done traditionally?',text:'How did the rijal scholars traditionally assess a narrator\'s character (adalah)?'},
     ],
   };
+  const _g=parseInt(getSettings().grade)||99;
+  if(_g<=2){
+    const k2starters=[
+      {label:'I think…',             text:'I think '},
+      {label:'I saw…',               text:'I saw '},
+      {label:'I don\'t understand…', text:'I don\'t understand '},
+      {label:'Can you help me with…',text:'Can you help me with '},
+    ];
+    qa.innerHTML=k2starters.map(a=>`<button class="quick-btn" data-qtext="${a.text.replace(/"/g,'&quot;')}" onclick="insertQuick(this.dataset.qtext)">${a.label}</button>`).join('');
+    return;
+  }
   const list=actions[currentMode]||actions.open;
-  qa.innerHTML=list.map(a=>`<button class="quick-btn" onclick="insertQuick(${JSON.stringify(a.text)})">${a.label}</button>`).join('');
+  qa.innerHTML=list.map(a=>`<button class="quick-btn" data-qtext="${a.text.replace(/"/g,'&quot;')}" onclick="insertQuick(this.dataset.qtext)">${a.label}</button>`).join('');
 }
 
 function insertQuick(text){

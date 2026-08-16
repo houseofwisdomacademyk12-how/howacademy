@@ -1120,16 +1120,23 @@ async function generateK2Choices(){
   var status=document.getElementById('status-text');
   if(status) status.textContent='Preparing picture choices for '+D.studentName+'…';
 
-  var sys='You are generating age-appropriate debate choices for a '+D.grade===0?'Kindergarten':('Grade '+D.grade)+' student (age 5-7) participating in a structured debate.'+
-    ' The student will click buttons to choose their argument — no typing required.'+
+  var _g=parseInt(D.grade)||0;
+  var _gradeLbl=_g===0||D.grade==='0'?'Kindergarten':'Grade '+_g;
+  var _k2Sub=_g<=1?'Kindergarten or Grade 1 (age 5-6)':'Grade 2 (age 7)';
+  var _k2Words=_g<=1?'5-8':'6-12';
+  var _claimCtx='';
+  try{var _cs=localStorage.getItem(PLATFORM_CLAIM_KEY);if(_cs){var _cd=JSON.parse(_cs);_claimCtx=(_cd.scholar?'Scholar: '+_cd.scholar+'. ':'')+(_cd.week?'Week '+_cd.week+'. ':'');}}catch(e){}
+  var sys='You are generating age-appropriate debate choices for a '+_gradeLbl+' student participating in a structured Munazara debate.'+
+    ' The student will tap buttons to choose their argument — no typing required.'+
     ' Return ONLY valid JSON with no markdown.';
 
   var usr='Claim: "'+D.claim+'"\n'+
-    'Student position: '+D.studentPosition+' (arguing '+(D.studentPosition==='for'?'IN FAVOUR of':'AGAINST')+' the claim)\n\n'+
+    (_claimCtx?'Context: '+_claimCtx+'\n':'')+'Student position: '+D.studentPosition+' (arguing '+(D.studentPosition==='for'?'IN FAVOUR of':'AGAINST')+' the claim)\n\n'+
     'Generate choice sets for each of the 3 debate moves. Each choice must be:\n'+
-    '- One short sentence a 5-7 year old can understand\n'+
+    '- One short sentence a '+_k2Sub+' can say out loud\n'+
+    '- '+_k2Words+' words maximum\n'+
     '- Genuinely supporting the student\'s position\n'+
-    '- Concrete and related to everyday life\n\n'+
+    '- Anchored to the specific topic, scholar, or concept in the claim — not generic everyday examples\n\n'+
     'Return this exact JSON structure:\n'+
     '{\n'+
     '  "opening": {\n'+
@@ -1260,6 +1267,7 @@ function closeK2Approval(){
 }
 
 function approveK2Choices(){
+  closeK2Approval();
   // Save any edits the facilitator made
   var c=D.k2Choices;
   if(!c) return;

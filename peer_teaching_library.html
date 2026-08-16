@@ -965,8 +965,15 @@ function renderRecord(mc){
   renderRecordStep();
 }
 
+function _ptlTeacherBand(){var g=parseInt(draftTeaching.teacherGrade||99);return g<=4?'34':'512';}
+
 function renderRecordStep(){
   const body = document.getElementById('record-body');
+  // Grades 3-4: light 3-step recording flow
+  if(_ptlTeacherBand()==='34' && recStep>1){
+    renderRecLightStep();
+    return;
+  }
   const steps = ['Concept','Teaching','Transcript','Open questions','Review'];
   body.innerHTML = `
   <div class="record-steps">
@@ -985,6 +992,75 @@ function renderRecordStep(){
   else if(recStep===5) renderRecStep5(c);
 }
 
+// ── LIGHT RECORDING — Grades 3-4 (3 steps: concept → key insight → review) ──
+var _lightStep=1;
+function renderRecLightStep(){
+  const body=document.getElementById('record-body');
+  const steps=['Concept','Key insight','Review'];
+  body.innerHTML=`
+  <div class="record-steps">
+    ${steps.map((s,i)=>`
+    <div class="rec-step ${i+1===_lightStep?'active-step':i+1<_lightStep?'done-step':''}">
+      <p class="rec-step-n">${i+1}</p><p class="rec-step-l">${s}</p>
+    </div>`).join('')}
+  </div>
+  <div id="rec-step-content"></div>`;
+  const c=document.getElementById('rec-step-content');
+  if(_lightStep===2) renderRecLightStep2(c);
+  else if(_lightStep===3) renderRecLightStep3(c);
+}
+
+function renderRecLightStep2(c){
+  c.innerHTML=`
+  <div style="background:white;border:1px solid var(--ink-5);border-radius:var(--rl);padding:20px">
+    <p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:16px">You just taught something. What made it click for the student?</p>
+    <div class="form-field">
+      <label class="form-label">The thing I said that made it click</label>
+      <textarea class="field" id="rl-click" rows="3" placeholder="The moment it clicked was when I said / showed ___">${draftTeaching.keyIdea||''}</textarea>
+    </div>
+    <div class="form-field">
+      <label class="form-label">What I used to explain it (object, picture, example, story)</label>
+      <textarea class="field" id="rl-example" rows="3" placeholder="I used ___ to show them ___">${draftTeaching.summary||''}</textarea>
+    </div>
+    <div class="form-field">
+      <label class="form-label">A question they asked that I couldn't fully answer (optional)</label>
+      <input class="field" id="rl-openq" placeholder="They asked ___" value="${draftTeaching.openQuestion||''}">
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="saveRecLight2()">Next: review →</button>
+      <button class="btn" onclick="recStep=1;renderRecordStep()">← Back</button>
+    </div>
+  </div>`;
+}
+
+function saveRecLight2(){
+  var click=(document.getElementById('rl-click')?.value||'').trim();
+  var example=(document.getElementById('rl-example')?.value||'').trim();
+  var openq=(document.getElementById('rl-openq')?.value||'').trim();
+  if(!click){toast('Tell us what made it click.');return}
+  draftTeaching.keyIdea=click;
+  draftTeaching.summary=example||click;
+  draftTeaching.openQuestion=openq;
+  draftTeaching.transcript=[];
+  _lightStep=3;renderRecLightStep();
+}
+
+function renderRecLightStep3(c){
+  c.innerHTML=`
+  <div style="background:white;border:1px solid var(--ink-5);border-radius:var(--rl);padding:20px;margin-bottom:14px">
+    <span class="form-label" style="display:block;margin-bottom:10px">Review your teaching record</span>
+    <p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:4px">${draftTeaching.title||'Untitled'}</p>
+    <p style="font-size:12px;color:var(--ink-4);margin-bottom:12px">Grade ${draftTeaching.teacherGrade} → Grade ${draftTeaching.taughtGrade===0||draftTeaching.taughtGrade==='0'?'Kindergarten':'Grade '+draftTeaching.taughtGrade} · ${draftTeaching.subject||''}</p>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.75;margin-bottom:10px"><strong>What made it click:</strong> ${draftTeaching.keyIdea||''}</p>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.75;margin-bottom:10px"><strong>What I used:</strong> ${draftTeaching.summary||''}</p>
+    ${draftTeaching.openQuestion?`<p style="font-size:13px;color:var(--coral);line-height:1.75"><strong>Open question:</strong> ${draftTeaching.openQuestion}</p>`:''}
+  </div>
+  <div class="btn-row">
+    <button class="btn primary" onclick="publishTeaching()">Add to the library →</button>
+    <button class="btn" onclick="_lightStep=2;renderRecLightStep()">← Edit</button>
+  </div>`;
+}
+
 function renderRecStep1(c){
   c.innerHTML = `
   <div style="background:white;border:1px solid var(--ink-5);border-radius:var(--rl);padding:20px">
@@ -996,13 +1072,13 @@ function renderRecStep1(c){
       <div class="form-field">
         <label class="form-label">Your grade</label>
         <select class="field" id="r-tgrade">
-          ${[5,6,7,8,9,10,11,12].map(g=>`<option value="${g}" ${draftTeaching.teacherGrade==g?'selected':''}>Grade ${g}</option>`).join('')}
+          ${[3,4,5,6,7,8,9,10,11,12].map(g=>`<option value="${g}" ${draftTeaching.teacherGrade==g?'selected':''}>Grade ${g}</option>`).join('')}
         </select>
       </div>
       <div class="form-field">
         <label class="form-label">Taught to grade</label>
         <select class="field" id="r-grade">
-          ${[1,2,3,4,5,6,7,8,9,10,11].map(g=>`<option value="${g}" ${draftTeaching.taughtGrade==g?'selected':''}>Grade ${g}</option>`).join('')}
+          ${[0,1,2,3,4,5,6,7,8,9,10,11].map(g=>`<option value="${g}" ${draftTeaching.taughtGrade==g?'selected':''}>${g===0?'Kindergarten':'Grade '+g}</option>`).join('')}
         </select>
       </div>
       <div class="form-field">
@@ -1437,14 +1513,20 @@ async function findOrCreatePerson(name, grade, role) {
 
 // ── Fetch published teachings from Supabase and merge with local ──────────
 async function fetchSupabaseTeachings(){
+  // Raw fetch to avoid DataCloneError — the Supabase JS client's auth module
+  // tries to postMessage a Headers object internally, which browsers reject in
+  // sandboxed/iframe contexts. (Same fix already applied to fetchSupabaseDebates.)
   try{
-    const { data, error } = await sb
-      .from('teaching')
-      .select('*')
-      .eq('is_published', true)
-      .order('created_at', { ascending: false });
+    var SURL='https://apallkuclqcqxnbmjuqu.supabase.co';
+    var SKEY='sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9';
+    var jwt=localStorage.getItem('how_jwt');
+    var resp=await fetch(
+      SURL+'/rest/v1/teaching?select=*&is_published=eq.true&order=created_at.desc',
+      {headers:{'apikey':SKEY,'Authorization':'Bearer '+(jwt||SKEY),'Content-Type':'application/json'}}
+    );
+    if(!resp.ok){console.warn('Supabase fetch failed: HTTP',resp.status);return[];}
+    var data=await resp.json();
 
-    if(error){ console.warn('Supabase fetch failed:', error.message); return []; }
     if(!data || !data.length) return [];
 
     // Map Supabase row format → ptl format
