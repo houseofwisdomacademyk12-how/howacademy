@@ -555,9 +555,10 @@ function joinSession(){
     if(!_platformQ) _platformQ=_ss.openingQ||'';
     if(!_platformTheme) _platformTheme=_ss.weekTitle||'Week '+_week;
     if(_lbt&&_platformTheme&&!_lbt.value) _lbt.value=_platformTheme;
-    // NOTE: lb-q (Opening question) is intentionally NOT pre-filled from platform data.
-    // The facilitator must type the opening question each session so the student
-    // always sees an intentionally chosen question, never a stale or theme-like value.
+    if(_lbq&&_platformQ&&!_lbq.value) _lbq.value=_platformQ;
+    // NOTE: the guard (!_lbq.value) ensures this never overwrites a question the facilitator
+    // has already typed. _platformQ comes from how_week_qs which the platform writes fresh
+    // each session, so it is always the current week's opening question.
     // When the facilitator changes the grade dropdown, refresh the question
     // for THAT grade (previously the stale question silently stuck around).
     var _lbgEl=document.getElementById('lb-grade');

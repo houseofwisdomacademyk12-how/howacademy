@@ -3225,6 +3225,7 @@ let currentGrade='7', currentWeek=null;
 
 function selectGrade(g){
   currentGrade=g; currentWeek=null;
+  localStorage.setItem('how_curr_grade', g);
   if(!document.getElementById('curr-grade-header')) return;
   document.querySelectorAll('.grade-btn').forEach(b=>b.classList.remove('active'));
   var _gb=document.querySelector('[data-grade="'+g+'"]'); if(_gb) _gb.classList.add('active');
@@ -3252,6 +3253,7 @@ function renderWeekStrip(g){
 function selectWeek(w){
   if(!document.getElementById('curr-week-view')) return;
   currentWeek=w;
+  localStorage.setItem('how_curr_week', w);
   document.querySelectorAll('.week-btn').forEach(b=>b.classList.remove('active'));
   const btn=document.getElementById('wb-'+w);
   if(btn) btn.classList.add('active');
@@ -4049,6 +4051,12 @@ function wbOvSnapshotPage(){
   // Update the stored page node with current live DOM (captures .sel classes etc)
   var wrap=document.querySelector('#wb-ov-page .wb-page');
   if(wrap&&_wbOvPages[_wbOvPageIdx]){
+    // Sync live DOM values into HTML attributes/content so cloneNode captures them
+    wrap.querySelectorAll('input').forEach(function(el){
+      if(el.type==='checkbox'){ if(el.checked) el.setAttribute('checked','checked'); else el.removeAttribute('checked'); }
+      else el.setAttribute('value',el.value);
+    });
+    wrap.querySelectorAll('textarea').forEach(function(el){ el.textContent=el.value; });
     // Clone the live node back into our pages array
     _wbOvPages[_wbOvPageIdx]=wrap.cloneNode(true);
   }
@@ -4696,8 +4704,10 @@ async function publishTeaching(){
 }
 // ────────────────────────────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
-  selectGrade('7');
-  renderWeekStrip('7');
+  var _sg=localStorage.getItem('how_curr_grade')||'7';
+  selectGrade(_sg);
+  var _sw=parseInt(localStorage.getItem('how_curr_week'));
+  if(_sw) selectWeek(_sw);
 });
 
 // ═══ SCHEDULE ══════════════════════════════════════════
@@ -6524,6 +6534,39 @@ async function explainSlide(idx){
 }
 
 // ─── Workbook ────────────────────────────────────────
+// ── Persist workbook field values into S.wbData ────────────────────────────
+function saveWBData(){
+  var d=S.wbData[key()]||{};
+  // Collect all named wb- inputs and textareas in the current view
+  ['wb-goal','wb-prior','wb-q','wb-annot','wb-notes','wb-disc','wb-pred','wb-conc','wb-juz','wb-dua'].forEach(function(id){
+    var el=document.getElementById(id); if(el) d[id]=el.value;
+  });
+  // Vocab inputs
+  for(var vi=0;vi<20;vi++){ var ve=document.getElementById('wb-vocab-'+vi); if(!ve) break; d['wb-vocab-'+vi]=ve.value; }
+  // Data table inputs
+  for(var di=0;di<20;di++){ var de=document.getElementById('wb-data-'+di); if(!de) break; d['wb-data-'+di]=de.value; }
+  // Open-ended check questions
+  for(var oi=0;oi<20;oi++){ var oe=document.getElementById('wb-open-'+oi); if(!oe) break; d['wb-open-'+oi]=oe.value; }
+  // Short-answer (text or hidden from k2 tappable)
+  for(var si=0;si<20;si++){ var se=document.getElementById('wb-sa-'+si); if(!se) break; d['wb-sa-'+si]=se.value; }
+  // MC tile selections (store choice index or 'sel')
+  document.querySelectorAll('.wb-mc-tile').forEach(function(t){ if(t.id) d[t.id]=t.classList.contains('sel')?'sel':''; });
+  // Checkboxes
+  document.querySelectorAll('input[type="checkbox"][id^="wb-"]').forEach(function(cb){ if(cb.id) d[cb.id]=cb.checked?'1':''; });
+  S.wbData[key()]=d;
+  autosave();
+}
+function loadWBData(){
+  var d=S.wbData[key()]||{};
+  if(!Object.keys(d).length) return;
+  Object.keys(d).forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el) return;
+    if(el.type==='checkbox') el.checked=!!d[id];
+    else if(el.classList&&el.classList.contains('wb-mc-tile')){ if(d[id]==='sel') el.classList.add('sel'); else el.classList.remove('sel'); }
+    else el.value=d[id]||'';
+  });
+}
 // ── Workbook grade-differentiated helpers ────────────────────────────────────
 function wbBand(){
   var _gp=parseInt(S.grade);var g=isNaN(_gp)?7:_gp;
@@ -10212,8 +10255,21 @@ function howShowTrialExpired(){
 // Broadcast admin lessons to all active families
 async function broadcastLessons(){
   var btn=document.getElementById('btn-broadcast');
-  if(btn){btn.textContent='📡 Broadcasting…';btn.disabled=true;}
+  if(btn){btn.textContent='📡 Syncing…';btn.disabled=true;}
   try{
+    // Push every locally-generated (fromSync===false) lesson to Supabase
+    // before calling the RPC, so the server has all current slides to broadcast.
+    var keyRe=/^(.+)_(\d+)_(.+)_s(\d+)$/;
+    var syncTasks=[];
+    Object.keys(S.lessons||{}).forEach(function(k){
+      var l=S.lessons[k];
+      if(l&&l.slides&&!l.fromSync){
+        var m=k.match(keyRe);
+        if(m) syncTasks.push(silentSyncLesson(m[1],Number(m[2]),m[3],Number(m[4])));
+      }
+    });
+    if(syncTasks.length) await Promise.all(syncTasks);
+    if(btn) btn.textContent='📡 Broadcasting…';
     var r=await sb.rpc('broadcast_lessons_to_families');
     if(r.error) throw r.error;
     if(typeof toast==='function') toast('✓ Lessons broadcast to all active families');
