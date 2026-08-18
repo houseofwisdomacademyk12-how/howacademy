@@ -492,6 +492,9 @@ function joinSession(){
   G.grade=parseInt((document.getElementById('lb-grade')||{}).value||'7')||7;
   G.band=G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
 
+  // Current week — used to validate session and question data against the right week
+  var _sesJuz=(function(){try{return parseInt(JSON.parse(localStorage.getItem('sahifa_settings')||'{}').juz)||1;}catch(e){return 1;}})();
+
   _liveMode = (selRoleVal==='facilitator'&&_facMode==='create') ||
               (selRoleVal==='student'&&_studentMode==='live');
   _isLiveFac = selRoleVal==='facilitator' && _facMode==='create';
@@ -503,12 +506,14 @@ function joinSession(){
     if(_lbqEl&&!_lbqEl.value.trim()){
       try{
         var _wqm=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
-        var _wqe=_wqm[String(G.grade)]||Object.values(_wqm).find(function(v){return v&&v.q;})||null;
+        // Grade-specific first; then same-week entry for any grade; never a different week
+        var _wqe=_wqm[String(G.grade)]
+          ||Object.values(_wqm).find(function(v){return v&&v.q&&v.week==_sesJuz;})||null;
         if(_wqe){_lbqEl.value=_wqe.q||'';if(_lbtEl&&!_lbtEl.value)_lbtEl.value=_wqe.theme||'';}
         if(!_lbqEl.value){
           var _ssFb=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
           var _schFb=JSON.parse(localStorage.getItem('how_sched')||'{}');
-          var _wdFb=(_schFb[String(_ssFb.juz||1)])||{};
+          var _wdFb=(_schFb[String(_sesJuz)])||{};
           _lbqEl.value=_wdFb.openingQ||_wdFb.q||_ssFb.openingQ||'';
           if(_lbtEl&&!_lbtEl.value)_lbtEl.value=_wdFb.theme||_wdFb.weekTitle||_ssFb.weekTitle||'';
         }
@@ -519,10 +524,13 @@ function joinSession(){
     G.question=q;
     G.theme=(_lbtEl||{}).value||'';
     G.sahifaCtx=(document.getElementById('lb-sahifa')||{}).value||'';
-    S.s('hq_session',{q:G.question,theme:G.theme,ctx:G.sahifaCtx,ts:Date.now()});
+    // Save with week number so students can validate it
+    S.s('hq_session',{q:G.question,theme:G.theme,ctx:G.sahifaCtx,week:_sesJuz,ts:Date.now()});
   } else {
     var sv=S.g('hq_session');
-    if(sv&&sv.q){
+    // Valid if question exists AND week matches (or old format without week — allow 7 days)
+    var _svValid=sv&&sv.q&&(sv.week?sv.week==_sesJuz:(Date.now()-sv.ts<604800000));
+    if(_svValid){
       G.question=sv.q||'';G.theme=sv.theme||'';G.sahifaCtx=sv.ctx||'';
     } else {
       try{
@@ -530,11 +538,12 @@ function joinSession(){
         G.question=_sS.openingQ||'';G.theme=_sS.weekTitle||'';G.sahifaCtx='';
       }catch(e){G.question='';G.theme='';G.sahifaCtx='';}
     }
-    // Fallback to per-grade platform store if still empty
+    // Fallback to per-grade + per-week platform store if still empty
     if(!G.question){
       try{
         var _wqm2=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
-        var _wqe2=_wqm2[String(G.grade)]||Object.values(_wqm2).find(function(v){return v&&v.q;})||null;
+        var _wqe2=_wqm2[String(G.grade)]
+          ||Object.values(_wqm2).find(function(v){return v&&v.q&&v.week==_sesJuz;})||null;
         if(_wqe2){G.question=_wqe2.q||'';if(!G.theme)G.theme=_wqe2.theme||'';}
       }catch(e){}
     }
