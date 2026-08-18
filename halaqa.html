@@ -503,7 +503,7 @@ function joinSession(){
     if(_lbqEl&&!_lbqEl.value.trim()){
       try{
         var _wqm=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
-        var _wqe=_wqm[String(G.grade)];
+        var _wqe=_wqm[String(G.grade)]||Object.values(_wqm).find(function(v){return v&&v.q;})||null;
         if(_wqe){_lbqEl.value=_wqe.q||'';if(_lbtEl&&!_lbtEl.value)_lbtEl.value=_wqe.theme||'';}
         if(!_lbqEl.value){
           var _ssFb=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
@@ -522,7 +522,7 @@ function joinSession(){
     S.s('hq_session',{q:G.question,theme:G.theme,ctx:G.sahifaCtx,ts:Date.now()});
   } else {
     var sv=S.g('hq_session');
-    if(sv&&Date.now()-sv.ts<7200000){
+    if(sv&&sv.q){
       G.question=sv.q||'';G.theme=sv.theme||'';G.sahifaCtx=sv.ctx||'';
     } else {
       try{
@@ -534,7 +534,7 @@ function joinSession(){
     if(!G.question){
       try{
         var _wqm2=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
-        var _wqe2=_wqm2[String(G.grade)];
+        var _wqe2=_wqm2[String(G.grade)]||Object.values(_wqm2).find(function(v){return v&&v.q;})||null;
         if(_wqe2){G.question=_wqe2.q||'';if(!G.theme)G.theme=_wqe2.theme||'';}
       }catch(e){}
     }
