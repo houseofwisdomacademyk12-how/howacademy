@@ -497,10 +497,27 @@ function joinSession(){
   _isLiveFac = selRoleVal==='facilitator' && _facMode==='create';
 
   if(selRoleVal==='facilitator'){
-    var q=document.getElementById('lb-q')?document.getElementById('lb-q').value.trim():'';
+    var _lbqEl=document.getElementById('lb-q');
+    var _lbtEl=document.getElementById('lb-theme');
+    // Pre-fill question from per-grade platform store if field is still empty
+    if(_lbqEl&&!_lbqEl.value.trim()){
+      try{
+        var _wqm=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
+        var _wqe=_wqm[String(G.grade)];
+        if(_wqe){_lbqEl.value=_wqe.q||'';if(_lbtEl&&!_lbtEl.value)_lbtEl.value=_wqe.theme||'';}
+        if(!_lbqEl.value){
+          var _ssFb=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
+          var _schFb=JSON.parse(localStorage.getItem('how_sched')||'{}');
+          var _wdFb=(_schFb[String(_ssFb.juz||1)])||{};
+          _lbqEl.value=_wdFb.openingQ||_wdFb.q||_ssFb.openingQ||'';
+          if(_lbtEl&&!_lbtEl.value)_lbtEl.value=_wdFb.theme||_wdFb.weekTitle||_ssFb.weekTitle||'';
+        }
+      }catch(e){}
+    }
+    var q=_lbqEl?_lbqEl.value.trim():'';
     if(_facMode!=='create'&&!q){toast('Enter an opening question.');return;}
     G.question=q;
-    G.theme=(document.getElementById('lb-theme')||{}).value||'';
+    G.theme=(_lbtEl||{}).value||'';
     G.sahifaCtx=(document.getElementById('lb-sahifa')||{}).value||'';
     S.s('hq_session',{q:G.question,theme:G.theme,ctx:G.sahifaCtx,ts:Date.now()});
   } else {
@@ -512,6 +529,14 @@ function joinSession(){
         var _sS=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
         G.question=_sS.openingQ||'';G.theme=_sS.weekTitle||'';G.sahifaCtx='';
       }catch(e){G.question='';G.theme='';G.sahifaCtx='';}
+    }
+    // Fallback to per-grade platform store if still empty
+    if(!G.question){
+      try{
+        var _wqm2=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
+        var _wqe2=_wqm2[String(G.grade)];
+        if(_wqe2){G.question=_wqe2.q||'';if(!G.theme)G.theme=_wqe2.theme||'';}
+      }catch(e){}
     }
   }
 
@@ -555,10 +580,7 @@ function joinSession(){
     if(!_platformQ) _platformQ=_ss.openingQ||'';
     if(!_platformTheme) _platformTheme=_ss.weekTitle||'Week '+_week;
     if(_lbt&&_platformTheme&&!_lbt.value) _lbt.value=_platformTheme;
-    if(_lbq&&_platformQ&&!_lbq.value) _lbq.value=_platformQ;
-    // NOTE: the guard (!_lbq.value) ensures this never overwrites a question the facilitator
-    // has already typed. _platformQ comes from how_week_qs which the platform writes fresh
-    // each session, so it is always the current week's opening question.
+    // lb-q is pre-filled earlier in the facilitator path before G.question is captured
     // When the facilitator changes the grade dropdown, refresh the question
     // for THAT grade (previously the stale question silently stuck around).
     var _lbgEl=document.getElementById('lb-grade');
