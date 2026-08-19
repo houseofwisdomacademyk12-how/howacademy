@@ -3606,7 +3606,7 @@ async function fetchSyncedLessons(){
     var since = localStorage.getItem('how_last_sync')||'1970-01-01';
     var query = sb
       .from('lesson')
-      .select('id, grade, week, subject, session, title, objective, slides, workbook, updated_at')
+      .select('id, grade, week, subject, session, title, objective, slides, updated_at')
       .eq('grade', g)
       .eq('week', w);
     // Only apply delta if we have a real sync timestamp
@@ -3630,7 +3630,6 @@ async function fetchSyncedLessons(){
             title:      l.title||'',
             objective:  l.objective||'',
             slides:     l.slides,
-            workbook:   l.workbook||{},
             updated_at: l.updated_at,
             fromSync:   true
           };
@@ -5915,8 +5914,8 @@ function renderContent(){
     var safeSlides=(l.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
     // In child mode, prepend subject video as slide 1 if a URL has been saved
     if(S.mode==='child'){
-      var _childVid=howVideo(S.grade,S.week,S.subj,S.session||1);
-      var _childPdf=howPdf(S.grade,S.week,S.subj,S.session||1);
+      var _childVid=howVideo(S.grade,S.week,S.subj);
+      var _childPdf=howPdf(S.grade,S.week,S.subj);
       var _childPrefix=[];
       if(_childVid&&_childVid.url) _childPrefix.push({type:'video',heading:_childVid.t||'Video Resource',content:'HOW Curriculum',url:_childVid.url});
       if(_childPdf&&_childPdf.url) _childPrefix.push({type:'pdf',heading:'Worked Examples',content:'',url:_childPdf.url});
@@ -8087,8 +8086,8 @@ function openPres(){
   var info=document.getElementById('pres-info');
   if(info) info.textContent=l.title+' - '+(S.grade===0?'K':'G'+S.grade)+' W'+S.week;
   // Prepend video slide then PDF slide if URLs saved
-  var _vid=howVideo(S.grade,S.week,S.subj,S.session||1);
-  var _pdf=howPdf(S.grade,S.week,S.subj,S.session||1);
+  var _vid=howVideo(S.grade,S.week,S.subj);
+  var _pdf=howPdf(S.grade,S.week,S.subj);
   var _presSlides=l.slides.slice();
   // Order: [video] [pdf] [lesson slides...]
   var _prefix=[];
@@ -8528,30 +8527,20 @@ function syncLG(){
 //  VIDEO SYSTEM
 // ═══════════════════════════════════════════════════
 
-// Lookup: localStorage-saved URL takes priority; workbook embed is the broadcast fallback
-function howVideo(grade, week, subj, ses){
+// Lookup: localStorage-saved URL takes priority over HOW_VIDEOS
+function howVideo(grade, week, subj){
   var tk={math:'math',ela:'ela',writing:'writing',science:'sci',social:'ss'}[subj]||subj;
-  var ses_=ses||S.session||1;
-  var lsKey='how_vid_'+grade+'_'+week+'_'+tk+'_s'+ses_;
+  var lsKey='how_vid_'+grade+'_'+week+'_'+tk;
   var saved=''; try{ saved=localStorage.getItem(lsKey)||''; }catch(e){}
-  if(!saved){ try{ saved=localStorage.getItem('how_vid_'+grade+'_'+week+'_'+tk)||''; }catch(e){} } // legacy key fallback
   if(saved) return {t:'Video Resource', url:saved};
-  // Broadcast fallback — URL embedded in lesson workbook by vidSaveLink
-  var l=S.lessons&&S.lessons[key(grade,week,subj,ses_)];
-  if(l&&l.workbook&&l.workbook.videoUrl) return {t:'Video Resource', url:l.workbook.videoUrl};
-  return null;
+  return null; // HOW_VIDEOS populated when videos are recorded
 }
 
-function howPdf(grade, week, subj, ses){
+function howPdf(grade, week, subj){
   var tk={math:'math',ela:'ela',writing:'writing',science:'sci',social:'ss'}[subj]||subj;
-  var ses_=ses||S.session||1;
-  var lsKey='how_pdf_'+grade+'_'+week+'_'+tk+'_s'+ses_;
+  var lsKey='how_pdf_'+grade+'_'+week+'_'+tk;
   var saved=''; try{ saved=localStorage.getItem(lsKey)||''; }catch(e){}
-  if(!saved){ try{ saved=localStorage.getItem('how_pdf_'+grade+'_'+week+'_'+tk)||''; }catch(e){} } // legacy key fallback
   if(saved) return {t:'Worked Examples', url:saved};
-  // Broadcast fallback — URL embedded in lesson workbook by vidSaveLink
-  var l=S.lessons&&S.lessons[key(grade,week,subj,ses_)];
-  if(l&&l.workbook&&l.workbook.pdfUrl) return {t:'Worked Examples', url:l.workbook.pdfUrl};
   return null;
 }
 
@@ -8563,12 +8552,10 @@ function howOverview(grade, week){
 }
 
 function vidSaveLink(which){
-  var g=S.grade, w=S.week, s=S.subj, ses=S.session||1;
+  var g=S.grade, w=S.week, s=S.subj;
   var tk={math:'math',ela:'ela',writing:'writing',science:'sci',social:'ss'}[s]||s;
   var inputId = which==='ov' ? 'vid-ov-input' : which==='pdf' ? 'vid-pdf-input' : 'vid-subj-input';
-  var lsKey   = which==='ov' ? 'how_vid_'+g+'_'+w+'_overview'
-              : which==='pdf' ? 'how_pdf_'+g+'_'+w+'_'+tk+'_s'+ses
-              :                  'how_vid_'+g+'_'+w+'_'+tk+'_s'+ses;
+  var lsKey   = which==='ov' ? 'how_vid_'+g+'_'+w+'_overview' : which==='pdf' ? 'how_pdf_'+g+'_'+w+'_'+tk : 'how_vid_'+g+'_'+w+'_'+tk;
   var el=document.getElementById(inputId); if(!el) return;
   var url=el.value.trim();
   if(url && !/^https?:\/\//i.test(url)){ toast('URL must start with https://'); return; }
@@ -8576,44 +8563,22 @@ function vidSaveLink(which){
     if(url) localStorage.setItem(lsKey, url);
     else    localStorage.removeItem(lsKey);
   }catch(e){ toast('Could not save'); return; }
-  // Embed URL in lesson workbook so silentSyncLesson broadcasts it to families
-  if(which!=='ov'){
-    var lk=key(g,w,s,ses);
-    if(S.lessons&&S.lessons[lk]){
-      S.lessons[lk].workbook=S.lessons[lk].workbook||{};
-      if(which==='subj') S.lessons[lk].workbook.videoUrl=url||null;
-      else               S.lessons[lk].workbook.pdfUrl  =url||null;
-      autosave();
-      if(typeof silentSyncLesson==='function') silentSyncLesson(g,w,s,ses);
-    }
-  }
   renderVideoPanel();
   toast(url ? '✓ Video link saved' : 'Link cleared');
 }
 
 function vidClearLink(which){
-  var g=S.grade, w=S.week, s=S.subj, ses=S.session||1;
+  var g=S.grade, w=S.week, s=S.subj;
   var tk={math:'math',ela:'ela',writing:'writing',science:'sci',social:'ss'}[s]||s;
-  var lsKey = which==='ov' ? 'how_vid_'+g+'_'+w+'_overview'
-            : which==='pdf' ? 'how_pdf_'+g+'_'+w+'_'+tk+'_s'+ses
-            :                  'how_vid_'+g+'_'+w+'_'+tk+'_s'+ses;
+  var lsKey = which==='ov' ? 'how_vid_'+g+'_'+w+'_overview' : which==='pdf' ? 'how_pdf_'+g+'_'+w+'_'+tk : 'how_vid_'+g+'_'+w+'_'+tk;
   try{ localStorage.removeItem(lsKey); }catch(e){}
-  if(which!=='ov'){
-    var lk=key(g,w,s,ses);
-    if(S.lessons&&S.lessons[lk]&&S.lessons[lk].workbook){
-      if(which==='subj') delete S.lessons[lk].workbook.videoUrl;
-      else               delete S.lessons[lk].workbook.pdfUrl;
-      autosave();
-      if(typeof silentSyncLesson==='function') silentSyncLesson(g,w,s,ses);
-    }
-  }
   renderVideoPanel();
   toast('✓ Link removed');
 }
 
 function renderVideoPanel(){
   var mc=document.getElementById('main-content'); if(!mc) return;
-  var g=S.grade, w=S.week, s=S.subj, ses=S.session||1;
+  var g=S.grade, w=S.week, s=S.subj;
   var subjLabels={math:'Mathematics',ela:'ELA / Reading',writing:'Writing',science:'Science',social:'Social Studies'};
   var subjLabel=subjLabels[s]||s;
   var gradeLabel=g===0?'Kindergarten':'Grade '+g;
@@ -8622,34 +8587,22 @@ function renderVideoPanel(){
   var tk={math:'math',ela:'ela',writing:'writing',science:'sci',social:'ss'}[s]||s;
   var topic=how[tk]||how[s]||LABELS[s]||s;
 
-  var vid=howVideo(g,w,s,ses);
+  var vid=howVideo(g,w,s);
   var overview=howOverview(g,w);
 
   var lsKeyOv  ='how_vid_'+g+'_'+w+'_overview';
-  var lsKeySubj='how_vid_'+g+'_'+w+'_'+tk+'_s'+ses;
-  var lsKeyPdf2='how_pdf_'+g+'_'+w+'_'+tk+'_s'+ses;
+  var lsKeySubj='how_vid_'+g+'_'+w+'_'+tk;
   var savedOv='';   try{ savedOv  =localStorage.getItem(lsKeyOv)||''; }catch(e){}
   var savedSubj=''; try{ savedSubj=localStorage.getItem(lsKeySubj)||''; }catch(e){}
-  var savedPdf='';  try{ savedPdf =localStorage.getItem(lsKeyPdf2)||''; }catch(e){}
-  // Workbook fallback for broadcast (already-saved URLs land here on family devices)
-  var lk=key(g,w,s,ses);
-  var _wb=S.lessons&&S.lessons[lk]&&S.lessons[lk].workbook||{};
-  if(!savedSubj&&_wb.videoUrl) savedSubj=_wb.videoUrl;
-  if(!savedPdf&&_wb.pdfUrl)    savedPdf=_wb.pdfUrl;
 
   var html='<div class="vid-panel">';
   html+='<div class="vid-panel-hd">';
   html+='<div><div class="vid-panel-title">▶ Videos — '+subjLabel+'</div>';
   html+='<div class="vid-panel-sub">'+gradeLabel+' · Week '+w+'</div></div>';
   html+='</div>';
-  // Session switcher
-  html+='<div style="display:flex;gap:6px;margin:.5rem 0 .75rem">'
-    +'<button onclick="S.session=1;renderVideoPanel()" style="padding:4px 14px;border-radius:20px;border:1.5px solid '+(ses===1?'var(--teal,#1d6f6f)':'var(--border,#d4c9b8)')+';background:'+(ses===1?'var(--teal,#1d6f6f)':'transparent')+';color:'+(ses===1?'#fff':'var(--ink2)')+';font-size:.8rem;font-weight:700;cursor:pointer">Session 1</button>'
-    +'<button onclick="S.session=2;renderVideoPanel()" style="padding:4px 14px;border-radius:20px;border:1.5px solid '+(ses===2?'var(--teal,#1d6f6f)':'var(--border,#d4c9b8)')+';background:'+(ses===2?'var(--teal,#1d6f6f)':'transparent')+';color:'+(ses===2?'#fff':'var(--ink2)')+';font-size:.8rem;font-weight:700;cursor:pointer">Session 2</button>'
-    +'</div>';
   html+='<div class="vid-topic"><span class="vid-topic-lbl">Week topic</span>'+topic+'</div>';
 
-  // Week overview (per-week, not per-session)
+  // Week overview
   html+='<div class="vid-section-label" style="margin-top:.25rem">Week overview — Saturday card</div>';
   if(overview&&overview.url){
     html+='<div class="vid-card">'
@@ -8661,8 +8614,8 @@ function renderVideoPanel(){
     html+='<div class="vid-empty">No overview video yet. Add a link below to display it on the Saturday family card.</div>';
   }
 
-  // Subject video (per-session)
-  html+='<div class="vid-section-label" style="margin-top:.75rem">'+subjLabel+' video — Session '+ses+' deck slide 1</div>';
+  // Subject video
+  html+='<div class="vid-section-label" style="margin-top:.75rem">'+subjLabel+' video — student deck slide 1</div>';
   if(vid&&vid.url){
     html+='<div class="vid-card">'
       +'<div class="vid-card-thumb"><div class="vid-play-sm">▶</div></div>'
@@ -8670,12 +8623,12 @@ function renderVideoPanel(){
       +'<div class="vid-card-actions"><a class="vid-preview-a" href="'+vid.url+'" target="_blank" rel="noopener">Preview ↗</a></div>'
       +'</div>';
   } else {
-    html+='<div class="vid-empty">No Session '+ses+' '+subjLabel+' video yet.</div>';
+    html+='<div class="vid-empty">No '+subjLabel+' video yet. Add a link below — it will appear as slide 1 when a child views this lesson.</div>';
   }
 
   // Add your own links
   html+='<div class="vid-add-section">'
-    +'<div class="vid-section-label" style="margin-top:.9rem">Add your own video links — Session '+ses+'</div>'
+    +'<div class="vid-section-label" style="margin-top:.9rem">Add your own video links</div>'
     +'<div class="vid-add-group">'
     +'<div class="vid-add-grouplabel">Week overview — Saturday card</div>'
     +'<div class="vid-add-row">'
@@ -8685,31 +8638,33 @@ function renderVideoPanel(){
     +  (savedOv ? '<button class="vid-clear-btn" onclick="vidClearLink(&apos;ov&apos;)">✕ Remove</button>' : '')
     +'</div></div>'
     +'<div class="vid-add-group" style="margin-top:.5rem">'
-    +'<div class="vid-add-grouplabel">'+subjLabel+' Session '+ses+' — student deck slide 1</div>'
+    +'<div class="vid-add-grouplabel">'+subjLabel+' — student deck slide 1</div>'
     +'<div class="vid-add-row">'
     +  '<input id="vid-subj-input" class="vid-add-input" type="url" placeholder="https://..." value="'+savedSubj.replace(/"/g,'&quot;')+'" />'
     +  '<button class="vid-add-btn" onclick="vidSaveLink(&apos;subj&apos;)">Save</button>'
     +  (savedSubj ? '<a class="vid-preview-a" href="'+savedSubj+'" target="_blank" rel="noopener">Preview ↗</a>' : '')
     +  (savedSubj ? '<button class="vid-clear-btn" onclick="vidClearLink(&apos;subj&apos;)">✕ Remove</button>' : '')
     +'</div></div>'
-    +'<div class="vid-add-note">Links saved here are also broadcast to families when you click "Broadcast to families".</div>'
+    +'<div class="vid-add-note">Links are stored in your browser. Saving a subject video URL will make it appear as Slide 1 when the student opens this lesson.</div>'
     +'</div>';
 
-  // Worked Examples PDF (per-session)
-  var pdf=howPdf(g,w,s,ses);
+  // Worked Examples PDF
+  var pdf=howPdf(g,w,s);
+  var lsKeyPdf='how_pdf_'+g+'_'+w+'_'+tk;
+  var savedPdf=''; try{ savedPdf=localStorage.getItem(lsKeyPdf)||''; }catch(e){}
   html+='<div class="vid-add-section" style="margin-top:1rem;border-top:1px solid var(--border,#e4ddd0);padding-top:1rem">';
-  html+='<div class="vid-panel-title" style="font-size:.85rem;margin-bottom:.5rem">📄 Worked Examples — Session '+ses+'</div>';
+  html+='<div class="vid-panel-title" style="font-size:.85rem;margin-bottom:.5rem">📄 Worked Examples</div>';
   if(pdf&&pdf.url){
     html+='<div class="vid-card">'
       +'<div class="vid-card-thumb" style="background:#f0ebe4;color:var(--ink2,#2e2e44);font-size:1.4rem;display:flex;align-items:center;justify-content:center">📄</div>'
-      +'<div class="vid-card-body"><div class="vid-card-title">'+subjLabel+' Session '+ses+' — Worked Examples</div><div class="vid-card-meta">Appears as extra slide in lesson deck</div></div>'
+      +'<div class="vid-card-body"><div class="vid-card-title">'+subjLabel+' — Worked Examples</div><div class="vid-card-meta">Appears as extra slide in lesson deck</div></div>'
       +'<div class="vid-card-actions"><a class="vid-preview-a" href="'+pdf.url+'" target="_blank" rel="noopener">Open ↗</a></div>'
       +'</div>';
   } else {
-    html+='<div class="vid-empty">No worked examples PDF yet for Session '+ses+'.</div>';
+    html+='<div class="vid-empty">No worked examples PDF yet. Add a URL below — it will appear as an extra slide in the lesson deck.</div>';
   }
   html+='<div class="vid-add-group" style="margin-top:.5rem">';
-  html+='<div class="vid-add-grouplabel">'+subjLabel+' Session '+ses+' worked examples — PDF or Google Drive link</div>';
+  html+='<div class="vid-add-grouplabel">'+subjLabel+' worked examples — PDF or Google Drive link</div>';
   html+='<div class="vid-add-row">'
     +'<input id="vid-pdf-input" class="vid-add-input" type="url" placeholder="https://drive.google.com/..." value="'+savedPdf.replace(/"/g,'&quot;')+'" />'
     +'<button class="vid-add-btn" onclick="vidSaveLink(&apos;pdf&apos;)">Save</button>'

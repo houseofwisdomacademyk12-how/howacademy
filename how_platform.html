@@ -437,6 +437,8 @@ body.landing-mode #p-landing{padding:0!important;height:100%}
 /* Admin-only controls */
 .how-admin-ctrl{display:none!important;}
 body.how-admin .how-admin-ctrl{display:inline-flex!important;}
+body.how-admin .sb-nav-item.how-admin-ctrl{display:flex!important;}
+body.how-admin .how-admin-pill.how-admin-ctrl{display:block!important;}
 .how-admin-grid{display:none!important;}
 body.how-admin .how-admin-grid{display:grid!important;}
 .tblock{border-radius:var(--rl);padding:8px 12px;flex:1;position:relative;margin-left:0}
@@ -1643,7 +1645,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       <span class="sb-nav-label">Academic Calendar</span>
     </button>
 
-    <button class="sb-nav-item auth-only" data-p="generate" onclick="howSP(this);syncLG()">
+    <button class="sb-nav-item auth-only how-admin-ctrl" data-p="generate" onclick="howSP(this);syncLG()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       <span class="sb-nav-label">Generate</span>
     </button>
@@ -1745,7 +1747,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       </div>
       <div id="grade-pill-menu" style="display:none;position:absolute;top:46px;left:18px;background:var(--p2);border:1px solid var(--border);border-radius:10px;padding:6px 0;min-width:170px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:9999">
         <button onclick="howPill(null,'schedule');toggleGradePillMenu()" style="display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit">Schedule</button>
-        <button onclick="howPill(null,'generate');toggleGradePillMenu()" style="display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit">Generate Curriculum</button>
+        <button onclick="howPill(null,'generate');toggleGradePillMenu()" class="how-admin-ctrl how-admin-pill" style="display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit">Generate Curriculum</button>
         <button onclick="howPill(null,'curriculum');toggleGradePillMenu()" style="display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit">Curriculum</button>
         <button onclick="howPill(null,'sacred');toggleGradePillMenu()" style="display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit">Sacred Layer</button>
         <button onclick="howPill(null,'assessment');toggleGradePillMenu()" style="display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit">Assessment</button>
@@ -4814,9 +4816,9 @@ function renderScheduleDay(day){
     var isGen=(action==='gen');
     var isDeck=(action==='deck');
     var isWb=(action==='workbook');
-    // Facilitator: show Generate buttons, hide Open deck / Workbook
-    if(isGen && _schedRole!=='facilitator') return '';
-    if((isDeck||isWb) && _schedRole==='facilitator') return '';
+    // Admin only: Generate buttons; non-admin facilitators see Open deck / Workbook only
+    if(isGen && !document.body.classList.contains('how-admin')) return '';
+    if((isDeck||isWb) && _schedRole==='facilitator' && !document.body.classList.contains('how-admin')) return '';
     var optsStr=opts?JSON.stringify(opts).replace(/"/g,"'"):'{}';
     return '<button class="tb-launch '+cls+'" onclick="schedLaunch(\''+action+'\','+optsStr+')">'+label+'</button>';
   }
@@ -5405,6 +5407,22 @@ function syncGradeWeekSelectors(){
       S.lessons=d.lessons||{}; S.annots=d.annots||{}; S.wbData=d.wbData||{}; S.explanations=d.explanations||{}; S.tests=d.tests||{};
     }
   }catch(e){}
+  // Restore saved grade/week so every new tab opens on the right context
+  (function(){
+    var _rg=parseInt(localStorage.getItem('how_grade'));
+    var _rw=parseInt(localStorage.getItem('how_current_week'));
+    if(!isNaN(_rg)&&_rg>=0&&_rg<=12){ S.grade=_rg; }
+    if(!isNaN(_rw)&&_rw>=1&&_rw<=30){ S.week=_rw; }
+    // Sync dropdowns immediately so sel-grade, sch-grade, sel-week all show the right value
+    var _sge=document.getElementById('sel-grade');
+    var _swe=document.getElementById('sel-week');
+    var _sche=document.getElementById('sch-grade');
+    var _schw=document.getElementById('sch-week');
+    if(_sge) _sge.value=String(S.grade);
+    if(_swe) _swe.value=String(S.week);
+    if(_sche) _sche.value=String(S.grade);
+    if(_schw) _schw.value=String(S.week);
+  })();
   loadJuzEdits();
   loadStudioCards();
   setColour('math'); render();
@@ -5472,6 +5490,7 @@ function onCtrl(){
   } else {
     S.grade = newGrade;
   }
+  try{ localStorage.setItem('how_grade', S.grade); localStorage.setItem('how_current_week', S.week); }catch(e){}
   updateSessionSelector();
   render();
 }
@@ -6018,9 +6037,9 @@ function genPanel(){
     '<div class="gen-title">'+_thuLabel+'</div>'+
     '<div class="gen-sub">'+gl+peerLabel+' · Week '+w+scholarNote+sessionLabel+'<br><em>'+topic+'</em>'+(s!=='synthesis'?'<br>'+(juz.tr||'Juz '+w)+' — '+(juz.theme||''):'')+openQ+'</div>'+
     '<div class="gen-progress" id="gen-prog"><div class="spinner"></div><span id="gen-msg">Starting…</span></div>'+
-    '<button class="gen-btn" id="gen-btn" onclick="generate()" style="'+(s==='synthesis'?'display:none':'')+'">✨ Generate Lesson</button>'+
+    '<button class="gen-btn" id="gen-btn" onclick="generate()" style="'+(s==='synthesis'||!document.body.classList.contains('how-admin')?'display:none':'')+'">✨ Generate Lesson</button>'+
     '<button onclick="importStudioCards()" style="margin-top:8px;width:100%;padding:10px;background:transparent;border:1px solid var(--sc-border,#c8e0e0);border-radius:8px;color:var(--sc,#1d6f6f);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit">📥 Import Studio Cards</button>'+
-    satSection+
+    (document.body.classList.contains('how-admin') ? satSection : '')+
     (isPeer&&g<=2?'<div style="margin-top:16px;padding:14px;background:#fdf5d0;border-radius:8px;border-left:3px solid #d4af37;font-size:13px;color:#1a1a2e">'+'<strong>Peer teaching for younger students</strong><br>For Kindergarten to Grade 2, the best way to record a teaching is through the Peer Library — use the <em>Record a teaching</em> tab to describe what you taught and what your learner understood.</div>':'')+
   '</div>';
 }
@@ -10287,6 +10306,7 @@ async function applyUserToProfile(user, accessToken){
   }
   render();
   if(typeof updateSchedule==='function') updateSchedule();
+  syncAllLessons(); // Pull all lessons for this household — core broadcast receive mechanism
   if(window._howTrialDays!=null){howShowTrialBanner(window._howTrialDays);window._howTrialDays=null;}
 }
 
@@ -10315,6 +10335,64 @@ function howShowTrialExpired(){
 }
 
 // Broadcast admin lessons to all active families
+// ── Startup sync: pull ALL lessons for this household from Supabase ──────────
+// Called on every login / session restore. Filters by household_id so:
+//   • Admin gets their own generated lessons (stored under admin household_id)
+//   • Families get their broadcast copies (copied there by the RPC)
+// No grade/week filter — guarantees families receive all broadcast lessons
+// regardless of which grade/week is selected in the schedule dropdown.
+async function syncAllLessons(){
+  var jwt         = localStorage.getItem('how_jwt');
+  var householdId = localStorage.getItem('how_household_id');
+  if(!jwt || !householdId || typeof sb === 'undefined') return;
+  try{
+    // Delta: only fetch rows newer than last broad sync (first run fetches everything)
+    var since = localStorage.getItem('how_last_broad_sync')||'1970-01-01';
+    var query = sb
+      .from('lesson')
+      .select('id, grade, week, subject, session, title, objective, slides, workbook, updated_at')
+      .eq('household_id', householdId)
+      .order('updated_at', {ascending:false})
+      .limit(1000);
+    if(since !== '1970-01-01') query = query.gt('updated_at', since);
+    var result = await query;
+    if(result.error){ console.warn('syncAllLessons error:', result.error.message); return; }
+    if(!result.data || !result.data.length){
+      localStorage.setItem('how_last_broad_sync', new Date().toISOString());
+      return;
+    }
+    var count = 0;
+    result.data.forEach(function(l){
+      var ses = l.session||1;
+      var lk = key(l.grade, l.week, l.subject, ses);
+      var existing = S.lessons[lk];
+      // Only overwrite when server copy is strictly newer — protects locally-generated
+      // lessons on admin's device (same updated_at means local copy wins)
+      if(!existing || l.updated_at > (existing.updated_at||'')){
+        if(l.slides){
+          S.lessons[lk] = {
+            title:      l.title      || '',
+            objective:  l.objective  || '',
+            slides:     l.slides     || [],
+            workbook:   l.workbook   || {},
+            updated_at: l.updated_at || '',
+            fromSync:   true
+          };
+          count++;
+        }
+      }
+    });
+    localStorage.setItem('how_last_broad_sync', new Date().toISOString());
+    if(count > 0){
+      autosave();
+      var activeDay = document.querySelector('.day-tab.active');
+      if(activeDay) renderScheduleDay(activeDay.dataset.day||'sun');
+    }
+    console.log('syncAllLessons: '+count+' lesson(s) loaded for household '+householdId);
+  }catch(e){
+    console.warn('syncAllLessons failed:', e);
+  }
+}
 async function broadcastLessons(){
   var btn=document.getElementById('btn-broadcast');
   if(btn){btn.textContent='📡 Syncing…';btn.disabled=true;}
@@ -11427,11 +11505,13 @@ function toggleInputBar(){
 // (so other tabs stay in sync too)
 function onGradeChange(el){
   var _gv=parseInt(el.value);S.grade=isNaN(_gv)?7:_gv;
+  try{ localStorage.setItem('how_grade', S.grade); }catch(e){}
   syncGradeWeekSelectors();
   updateSchedule && updateSchedule();
 }
 function onWeekChange(el){
   S.week = parseInt(el.value) || 1;
+  try{ localStorage.setItem('how_current_week', S.week); }catch(e){}
   syncGradeWeekSelectors();
   updateSchedule && updateSchedule();
 }
