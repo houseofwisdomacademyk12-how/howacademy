@@ -2334,7 +2334,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
     <div class="mode-sep"></div>
     <!-- Role tabs -->
     <button class="role-tab active" id="rtab-fac"     onclick="setRole('facilitator')">👨‍🏫 Facilitator</button>
-    <button class="role-tab how-admin-ctrl" id="rtab-parent"  onclick="setRole('parent')">👤 Parent</button>
+    <button class="role-tab"        id="rtab-parent"  onclick="setRole('parent')">👤 Parent</button>
     <button class="role-tab"        id="rtab-student" onclick="onStudentTabClick()">🧒 Student</button>
     <div class="mode-sep"></div>
     <!-- Facilitator actions -->
@@ -3433,7 +3433,7 @@ function showCWV(id, btn){
 function renderTestReview(){
   var mc=document.getElementById('main-content'); if(!mc) return;
   var g=S.grade,w=S.week;
-  var t=S.tests[testKey(g,w)];
+  var t=S.tests[g+'_'+w];
   if(!t){ mc.innerHTML='<div style="text-align:center;padding:60px 24px;color:var(--ink-soft,#9a9ab0)"><div style="font-size:48px;margin-bottom:16px">📝</div><div style="font-size:16px">No test generated yet</div><div style="margin-top:12px;font-size:13px">Generate the test from Saturday Prep</div></div>'; return; }
 
   var sc=S.scores[g+'_'+w];
@@ -5609,7 +5609,7 @@ function setRole(role){
 
   if(wbBtn)    wbBtn.style.display    = (role==='facilitator'||role==='student'||role==='child')?'':'none';
   if(testBtn)  testBtn.style.display  = ((role==='facilitator'||role==='student'||role==='child')&&testKeyExists())?'':'none';
-  if(munBtn)   munBtn.style.display   = document.body.classList.contains('how-admin')?'':'none';
+  if(munBtn)   munBtn.style.display   = (role==='facilitator'||role==='student'||role==='child')?'':'none';
   if(toLibBtn) toLibBtn.style.display = 'none';
 
   var _rh=getHistory(S.grade);
@@ -6155,7 +6155,7 @@ function renderSlide(sl, idx, total){
       :'')+
       '<div class="annot-section">'+
         '<div id="cwrap-'+idx+'" style="border:1.5px solid #e4ddd0;border-radius:10px;overflow:hidden;background:#fafaf8">'+
-          '<canvas class="annot-canvas" id="canvas-'+idx+'" width="600" height="180" style="display:block;width:100%;cursor:crosshair"></canvas>'+
+          '<canvas class="annot-canvas" id="canvas-'+idx+'" width="600" height="180" style="display:block;width:100%;max-height:180px;object-fit:contain"></canvas>'+
           '<div style="padding:10px 12px;background:#f8f5ee;border-top:1px solid #f0ece4;display:flex;align-items:center;justify-content:space-between">'+
             '<span style="font-size:.72rem;color:#9a9ab0" id="canvas-hint-'+idx+'">No drawing yet</span>'+
             '<button onclick="expandCanvas('+idx+')" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#1a1a2e;color:white;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit">'+
@@ -6191,12 +6191,6 @@ function attachCanvas(idx){
   var wrap=document.getElementById('cwrap-'+idx);
   if(wrap){ canvas.width=wrap.offsetWidth||700; }
   canvas.height=260;
-  // Lock CSS display to match bitmap exactly — removes max-height/object-fit
-  // that caused coordinate offsets (strokes appearing shifted from touch/click point)
-  canvas.style.width=canvas.width+'px';
-  canvas.style.height=canvas.height+'px';
-  canvas.style.maxHeight='';
-  canvas.style.objectFit='';
   canvas.style.cursor='crosshair';
 
   var state={
@@ -6301,63 +6295,6 @@ function _shapeDrawOn(ctx,h){
   }else if(h.type==='text'){
     ctx.fillStyle=h.color;ctx.font='bold '+(h.size||16)+'px DM Sans,sans-serif';
     ctx.fillText(h.text,h.x,h.y);
-  }else if(h.type==='erase'){
-    if(!h.points||h.points.length<2){ctx.restore();return;}
-    ctx.globalCompositeOperation='destination-out';
-    ctx.lineWidth=(h.lw||3)*4;ctx.strokeStyle='rgba(0,0,0,1)';
-    ctx.beginPath();ctx.moveTo(h.points[0].x,h.points[0].y);
-    for(var ei=1;ei<h.points.length;ei++){
-      var emx=(h.points[ei-1].x+h.points[ei].x)/2,emy=(h.points[ei-1].y+h.points[ei].y)/2;
-      ctx.quadraticCurveTo(h.points[ei-1].x,h.points[ei-1].y,emx,emy);
-    }
-    ctx.stroke();
-  }else if(h.type==='star'){
-    // 8-point Islamic star
-    ctx.strokeStyle=h.color;ctx.lineWidth=(h.lw||3)+1;
-    var scx=(h.x1+h.x2)/2,scy=(h.y1+h.y2)/2;
-    var sR=Math.min(Math.abs(h.x2-h.x1),Math.abs(h.y2-h.y1))/2;
-    if(sR<5){ctx.restore();return;}
-    var sr=sR*0.38;
-    ctx.beginPath();
-    for(var si=0;si<16;si++){
-      var sa=si*Math.PI/8-Math.PI/2;
-      var srad=(si%2===0)?sR:sr;
-      var spx=scx+srad*Math.cos(sa),spy=scy+srad*Math.sin(sa);
-      if(si===0)ctx.moveTo(spx,spy);else ctx.lineTo(spx,spy);
-    }
-    ctx.closePath();ctx.stroke();
-  }else if(h.type==='crescent'){
-    // Crescent using evenodd fill
-    ctx.fillStyle=h.color;
-    var ccx=(h.x1+h.x2)/2,ccy=(h.y1+h.y2)/2;
-    var cR=Math.min(Math.abs(h.x2-h.x1),Math.abs(h.y2-h.y1))/2;
-    if(cR<5){ctx.restore();return;}
-    ctx.beginPath();
-    ctx.arc(ccx,ccy,cR,0,Math.PI*2,false);
-    ctx.arc(ccx+cR*0.32,ccy-cR*0.08,cR*0.76,0,Math.PI*2,true);
-    ctx.fill('evenodd');
-  }else if(h.type==='arch'){
-    // Pointed Islamic arch
-    ctx.strokeStyle=h.color;ctx.lineWidth=(h.lw||3)+1;
-    var al=Math.min(h.x1,h.x2),at=Math.min(h.y1,h.y2);
-    var ar=Math.max(h.x1,h.x2),ab=Math.max(h.y1,h.y2);
-    var amid=(al+ar)/2,aw=ar-al,ah=ab-at;
-    ctx.beginPath();
-    ctx.moveTo(al,ab);
-    ctx.lineTo(al,at+ah*0.45);
-    ctx.quadraticCurveTo(al,at,amid,at);
-    ctx.quadraticCurveTo(ar,at,ar,at+ah*0.45);
-    ctx.lineTo(ar,ab);
-    ctx.stroke();
-  }else if(h.type==='diamond'){
-    // Arabesque rhombus tile
-    ctx.strokeStyle=h.color;ctx.lineWidth=(h.lw||3)+1;
-    var dcx=(h.x1+h.x2)/2,dcy=(h.y1+h.y2)/2;
-    var dw=Math.abs(h.x2-h.x1)/2,dh=Math.abs(h.y2-h.y1)/2;
-    ctx.beginPath();
-    ctx.moveTo(dcx,dcy-dh);ctx.lineTo(dcx+dw,dcy);
-    ctx.lineTo(dcx,dcy+dh);ctx.lineTo(dcx-dw,dcy);
-    ctx.closePath();ctx.stroke();
   }else if(h.type==='pen'){
     if(!h.points||h.points.length<2){ctx.restore();return;}
     ctx.strokeStyle=h.color;ctx.lineWidth=h.lw||3;
@@ -6415,27 +6352,8 @@ function expandCanvas(idx){
   if(!_strokes[idx])_strokes[idx]=[];
   var cv=_cvs[idx]||{};
   var activeTool=cv.tool||'circle',activeColor=cv.color||'#1d6f6f',activeSize=cv.size||3;
-  // Get slide question for context
-  var sl=lesson()&&lesson().slides&&lesson().slides[idx];
-  var slideQ=sl?(sl.q||sl.heading||sl.body||''):'';
-  if(slideQ.length>130)slideQ=slideQ.slice(0,127)+'\u2026';
-  var TOOLS=[
-    {id:'highlight',icon:'▬',key:'H',hint:'Drag to highlight'},
-    {id:'circle',   icon:'○',key:'C',hint:'Drag to circle'},
-    {id:'arrow',    icon:'↗',key:'A',hint:'Drag for arrow'},
-    {id:'rect',     icon:'□',key:'R',hint:'Drag a box'},
-    {id:'text',     icon:'T',key:'T',hint:'Click to type'},
-    {id:'pen',      icon:'✏',key:'P',hint:'Freehand'},
-    {id:'erase',    icon:'⊘',key:'E',hint:'Drag to erase'},
-    {id:'star',     icon:'★',key:'S',hint:'8-point star'},
-    {id:'crescent', icon:'☽',key:'M',hint:'Crescent'},
-    {id:'arch',     icon:'⌒',key:'N',hint:'Pointed arch'},
-    {id:'diamond',  icon:'◇',key:'D',hint:'Arabesque tile'}
-  ];
-  var COLORS=[
-    '#1d6f6f','#c0522a','#1a1a2e','#d4af37','#6b3fa0','#1a3d8a','#2a7a2a',
-    '#d32f2f','#e65100','#c2185b','#0288d1','#5d4037','#9e9e9e','#ffffff'
-  ];
+  var TOOLS=[{id:'highlight',icon:'▬',key:'H',hint:'Drag to highlight'},{id:'circle',icon:'○',key:'C',hint:'Drag to circle'},{id:'arrow',icon:'↗',key:'A',hint:'Drag for arrow'},{id:'rect',icon:'□',key:'R',hint:'Drag a box'},{id:'text',icon:'T',key:'T',hint:'Click to type'},{id:'pen',icon:'✏',key:'P',hint:'Freehand (Bezier)'}];
+  var COLORS=['#1d6f6f','#c0522a','#1a1a2e','#d4af37','#6b3fa0','#1a3d8a','#2a7a2a'];
   // Build overlay
   var ov=document.createElement('div');
   ov.id='canvas-expand-ov';
@@ -6473,11 +6391,8 @@ function expandCanvas(idx){
   });
   // Topbar
   var topbar=document.createElement('div');
-  topbar.style.cssText='min-height:44px;background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 14px 0 62px;gap:10px;flex-shrink:0';
-  var titleWrap=document.createElement('div');titleWrap.style.cssText='display:flex;flex-direction:column;gap:1px';
+  topbar.style.cssText='height:44px;background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 14px 0 62px;gap:10px;flex-shrink:0';
   var titleEl=document.createElement('span');titleEl.style.cssText='font-size:12px;font-weight:600;color:rgba(255,255,255,.8)';titleEl.textContent='Explain it with a drawing \u00b7 Slide '+(idx+1);
-  titleWrap.appendChild(titleEl);
-  if(slideQ){var qEl=document.createElement('span');qEl.style.cssText='font-size:10px;color:rgba(255,255,255,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:500px';qEl.textContent=slideQ;titleWrap.appendChild(qEl);}
   var hintEl=document.createElement('span');hintEl.id='expand-hint';hintEl.style.cssText='font-size:11px;color:rgba(255,255,255,.3)';
   var szWrap=document.createElement('div');szWrap.style.cssText='display:flex;align-items:center;gap:5px;margin-left:auto';
   var szLbl=document.createElement('span');szLbl.style.cssText='font-size:10px;color:rgba(255,255,255,.4)';szLbl.textContent='Size';
@@ -6488,7 +6403,7 @@ function expandCanvas(idx){
   doneBtn.style.cssText='background:#d4af37;color:#1a1a2e;border:none;border-radius:6px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:10px';
   doneBtn.textContent='Save \u2713';
   doneBtn.onclick=function(){_shapeSyncToSlide(idx,bgCanvas);ov.remove();document.removeEventListener('keydown',kbHandler);};
-  topbar.appendChild(titleWrap);topbar.appendChild(hintEl);topbar.appendChild(szWrap);topbar.appendChild(doneBtn);
+  topbar.appendChild(titleEl);topbar.appendChild(hintEl);topbar.appendChild(szWrap);topbar.appendChild(doneBtn);
   // Canvas area
   var ca=document.createElement('div');ca.style.cssText='flex:1;position:relative;background:#fff;margin-left:52px;overflow:hidden;touch-action:none';
   var bgCanvas=document.createElement('canvas');bgCanvas.style.cssText='position:absolute;inset:0';
@@ -6500,7 +6415,7 @@ function expandCanvas(idx){
   // Status
   var sb=document.createElement('div');sb.style.cssText='height:26px;background:#13101f;display:flex;align-items:center;padding:0 14px 0 62px;flex-shrink:0';
   var st=document.createElement('span');st.style.cssText='font-size:10px;color:rgba(255,255,255,.4)';
-  st.textContent='H highlight \u00b7 C circle \u00b7 A arrow \u00b7 R rect \u00b7 T text \u00b7 P pen \u00b7 E erase \u00b7 S star \u00b7 M crescent \u00b7 N arch \u00b7 D diamond \u00b7 1-9 colour \u00b7 \u2318Z undo \u00b7 Esc close';
+  st.textContent='H highlight \u00b7 C circle \u00b7 A arrow \u00b7 R rect \u00b7 T text \u00b7 P pen \u00b7 1-7 colour \u00b7 \u2318Z undo \u00b7 Esc close';
   sb.appendChild(st);
   // Assemble
   var body=document.createElement('div');body.style.cssText='flex:1;display:flex;flex-direction:column;overflow:hidden';
@@ -6561,20 +6476,20 @@ function expandCanvas(idx){
       requestAnimationFrame(function(){textInput.focus();});return;
     }
     drawing=true;var p=gp(e);sx=p.x;sy=p.y;
-    if(activeTool==='pen'||activeTool==='erase')penPoints=[{x:p.x,y:p.y}];
+    if(activeTool==='pen')penPoints=[{x:p.x,y:p.y}];
   });
   ca.addEventListener('pointermove',function(e){
     e.preventDefault();
     if(!drawing)return;var p=gp(e);
     pvCtx.clearRect(0,0,pvCanvas.width,pvCanvas.height);
-    if(activeTool==='pen'||activeTool==='erase'){penPoints.push({x:p.x,y:p.y});_shapeDrawOn(pvCtx,{type:activeTool,points:penPoints,color:activeColor,lw:activeSize});}
+    if(activeTool==='pen'){penPoints.push({x:p.x,y:p.y});_shapeDrawOn(pvCtx,{type:'pen',points:penPoints,color:activeColor,lw:activeSize});}
     else _shapeDrawOn(pvCtx,{type:activeTool,x1:sx,y1:sy,x2:p.x,y2:p.y,color:activeColor,lw:activeSize});
   });
   function finish(e){
     if(!drawing)return;drawing=false;
     pvCtx.clearRect(0,0,pvCanvas.width,pvCanvas.height);
     var p=e?gp(e):{x:sx,y:sy};
-    if(activeTool==='pen'||activeTool==='erase'){if(penPoints.length>1)_strokes[idx].push({type:activeTool,points:penPoints.slice(),color:activeColor,lw:activeSize});}
+    if(activeTool==='pen'){if(penPoints.length>1)_strokes[idx].push({type:'pen',points:penPoints.slice(),color:activeColor,lw:activeSize});}
     else _strokes[idx].push({type:activeTool,x1:sx,y1:sy,x2:p.x,y2:p.y,color:activeColor,lw:activeSize});
     _shapeRedraw(bgCtx,_strokes[idx]);_shapeSyncToSlide(idx,bgCanvas);penPoints=[];
   }
@@ -6584,9 +6499,9 @@ function expandCanvas(idx){
   var kbHandler=function(e){
     if(textInput===document.activeElement)return;
     if(!document.getElementById('canvas-expand-ov'))return;
-    var map={h:'highlight',c:'circle',a:'arrow',r:'rect',t:'text',p:'pen',e:'erase',s:'star',m:'crescent',n:'arch',d:'diamond'};
+    var map={h:'highlight',c:'circle',a:'arrow',r:'rect',t:'text',p:'pen'};
     if(map[e.key.toLowerCase()])setET(map[e.key.toLowerCase()]);
-    if(e.key>='1'&&e.key<='9')setEC(COLORS[parseInt(e.key)-1]);
+    if(e.key>='1'&&e.key<='7')setEC(COLORS[parseInt(e.key)-1]);
     if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();_strokes[idx].pop();_shapeRedraw(bgCtx,_strokes[idx]);_shapeSyncToSlide(idx,bgCanvas);}
     if(e.key==='Escape'){commitText();ov.remove();document.removeEventListener('keydown',kbHandler);}
   };
@@ -6855,43 +6770,6 @@ function wbPg(n,t,ic,dark,active,total,body){
   '</div>';
 }
 
-async function addToSahifa(){
-  var juzEl=document.getElementById('wb-juz');
-  var duaEl=document.getElementById('wb-dua');
-  var juzText=juzEl?juzEl.value.trim():'';
-  var duaText=duaEl?duaEl.value.trim():'';
-  if(!juzText&&!duaText){ toast('Write your reflection or du\u02bcā first.'); return; }
-  var lines=[];
-  if(juzText) lines.push('Juz reflection:\n'+juzText);
-  if(duaText) lines.push('My du\u02bcā:\n'+duaText);
-  var text=lines.join('\n\n');
-  var jwt=localStorage.getItem('how_jwt');
-  var householdId=localStorage.getItem('how_household_id');
-  var activeStudent=null;
-  try{ activeStudent=JSON.parse(localStorage.getItem('how_active_student')||'null'); }catch(e){}
-  var studentId=activeStudent&&activeStudent.id?activeStudent.id:null;
-  if(!jwt||!householdId||typeof sb==='undefined'){ fallbackCopy(text); return; }
-  try{
-    var entry={
-      household_id: householdId,
-      student_id:   studentId,
-      type:         'workbook',
-      text:         text,
-      grade:        S.grade,
-      week:         S.week,
-      entry_date:   new Date().toISOString().slice(0,10),
-      updated_at:   new Date().toISOString()
-    };
-    var r=await sb.from('sahifa_entry')
-      .upsert(entry,{onConflict:studentId?'student_id,grade,week,type':'household_id,grade,week,type'})
-      .select();
-    if(r.error) throw r.error;
-    showSahifaConfirm();
-  }catch(e){
-    console.warn('addToSahifa failed:',e);
-    fallbackCopy(text);
-  }
-}
 function fallbackCopy(text){
   var ta = document.createElement('textarea');
   ta.value = text;
@@ -6906,10 +6784,10 @@ function fallbackCopy(text){
 function showSahifaConfirm(){
   var el = document.getElementById('sahifa-confirm');
   if(!el) return;
-  el.textContent = '✓ Added to your sahifa';
+  el.textContent = '✓ Copied — paste into your sahifa';
   el.style.opacity = '1';
   setTimeout(function(){ el.style.opacity='0'; }, 3500);
-  toast('✨ Added to your sahifa');
+  toast('✨ Sahifa entry copied to clipboard');
 }
 
 
@@ -8783,7 +8661,6 @@ function renderVideoPanel(){
   if(!savedSubj&&_wb.videoUrl) savedSubj=_wb.videoUrl;
   if(!savedPdf&&_wb.pdfUrl)    savedPdf=_wb.pdfUrl;
 
-  var _isAdmin=document.body.classList.contains('how-admin');
   var html='<div class="vid-panel">';
   html+='<div class="vid-panel-hd">';
   html+='<div><div class="vid-panel-title">▶ Videos — '+subjLabel+'</div>';
@@ -8820,8 +8697,7 @@ function renderVideoPanel(){
     html+='<div class="vid-empty">No Session '+ses+' '+subjLabel+' video yet.</div>';
   }
 
-  // Add your own links (admin only)
-  if(_isAdmin){
+  // Add your own links
   html+='<div class="vid-add-section">'
     +'<div class="vid-section-label" style="margin-top:.9rem">Add your own video links — Session '+ses+'</div>'
     +'<div class="vid-add-group">'
@@ -8842,7 +8718,6 @@ function renderVideoPanel(){
     +'</div></div>'
     +'<div class="vid-add-note">Links saved here are also broadcast to families when you click "Broadcast to families".</div>'
     +'</div>';
-  } // end admin-only add links
 
   // Worked Examples PDF (per-session)
   var pdf=howPdf(g,w,s,ses);
@@ -8857,17 +8732,15 @@ function renderVideoPanel(){
   } else {
     html+='<div class="vid-empty">No worked examples PDF yet for Session '+ses+'.</div>';
   }
-  if(_isAdmin){
-    html+='<div class="vid-add-group" style="margin-top:.5rem">';
-    html+='<div class="vid-add-grouplabel">'+subjLabel+' Session '+ses+' worked examples — PDF or Google Drive link</div>';
-    html+='<div class="vid-add-row">'
-      +'<input id="vid-pdf-input" class="vid-add-input" type="url" placeholder="https://drive.google.com/..." value="'+savedPdf.replace(/"/g,'&quot;')+'" />'
-      +'<button class="vid-add-btn" onclick="vidSaveLink(&apos;pdf&apos;)">Save</button>'
-      +(savedPdf ? '<a class="vid-preview-a" href="'+savedPdf+'" target="_blank" rel="noopener">Open ↗</a>' : '')
-      +(savedPdf ? '<button class="vid-clear-btn" onclick="vidClearLink(&apos;pdf&apos;)">✕ Remove</button>' : '')
-      +'</div></div>';
-    html+='<div class="vid-add-note">Works with Google Drive (set sharing to "Anyone with link"), Dropbox, or any hosted PDF URL.</div>';
-  }
+  html+='<div class="vid-add-group" style="margin-top:.5rem">';
+  html+='<div class="vid-add-grouplabel">'+subjLabel+' Session '+ses+' worked examples — PDF or Google Drive link</div>';
+  html+='<div class="vid-add-row">'
+    +'<input id="vid-pdf-input" class="vid-add-input" type="url" placeholder="https://drive.google.com/..." value="'+savedPdf.replace(/"/g,'&quot;')+'" />'
+    +'<button class="vid-add-btn" onclick="vidSaveLink(&apos;pdf&apos;)">Save</button>'
+    +(savedPdf ? '<a class="vid-preview-a" href="'+savedPdf+'" target="_blank" rel="noopener">Open ↗</a>' : '')
+    +(savedPdf ? '<button class="vid-clear-btn" onclick="vidClearLink(&apos;pdf&apos;)">✕ Remove</button>' : '')
+    +'</div></div>';
+  html+='<div class="vid-add-note">Works with Google Drive (set sharing to "Anyone with link"), Dropbox, or any hosted PDF URL.</div>';
   html+='</div></div>';
 
   mc.innerHTML=html;
