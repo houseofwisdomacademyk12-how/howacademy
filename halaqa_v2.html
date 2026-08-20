@@ -266,8 +266,6 @@ try{
       <input class="lob-input" type="text" id="lb-theme" placeholder="e.g. Grade 7 · Juz 8 · Circles">
       <span class="lob-label">Sahifa context (optional — paste student entries)</span>
       <textarea class="lob-input" id="lb-sahifa" rows="2" placeholder="Paste sahifa entries to help the AI facilitator name specific thinking…"></textarea>
-      <p style="font-size:.75rem;color:rgba(255,255,255,.55);line-height:1.6;margin:12px 0 6px">Before students enter, complete the fields above and click <strong style="color:rgba(255,255,255,.8)">Save session</strong>.</p>
-      <button id="save-session-btn" onclick="saveHalaqaSession()" style="width:100%;background:rgba(29,111,111,.5);border:1.5px solid #1d6f6f;border-radius:10px;padding:10px;color:white;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:4px">💾 Save session</button>
     </div>
     <div class="lob-divider"></div>
     <div style="margin-bottom:8px">
@@ -485,78 +483,6 @@ function generateSessionCode(){
   return code;
 }
 
-function saveHalaqaSession(){
-  var q=(document.getElementById('lb-q')||{}).value.trim();
-  var theme=(document.getElementById('lb-theme')||{}).value.trim();
-  var grade=parseInt((document.getElementById('lb-grade')||{}).value||'7')||7;
-  var _sesJuz=(function(){try{return parseInt(JSON.parse(localStorage.getItem('sahifa_settings')||'{}').juz)||1;}catch(e){return 1;}})();
-  if(!q){toast('Enter an opening question first.');return;}
-  S.s('hq_session',{q:q,theme:theme,ctx:'',week:_sesJuz,grade:grade,ts:Date.now()});
-  var btn=document.getElementById('save-session-btn');
-  if(btn){btn.textContent='✓ Session saved';btn.style.background='rgba(29,111,111,.9)';}
-  toast('Session saved — students can now enter the halaqa.');
-}
-
-// ── LOBBY INITIALISATION ──────────────────────────────────────────────────────
-// Runs on page load and whenever the lobby screen is shown.
-// Reads platform state (how_active_student, sahifa_settings, hq_session_grade_week)
-// and pre-fills the lobby form. Nothing here sets G.* — that happens in joinSession.
-function initLobby(){
-  try{
-    var _ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
-    var _activeS=JSON.parse(localStorage.getItem('how_active_student')||'null');
-    var _lbg=document.getElementById('lb-grade');
-    var _lbq=document.getElementById('lb-q');
-    var _lbt=document.getElementById('lb-theme');
-
-    // 1. Grade — how_active_student is the authoritative source (platform writes it)
-    // Grade — how_active_student only (platform-written). Never sahifa_settings.grade
-    // which belongs to the sahifa tool and may reflect a different student.
-    var _g=(_activeS&&(parseInt(_activeS.current_grade)||parseInt(_activeS.grade_start)))||null;
-    if(_lbg&&_g!=null) _lbg.value=String(_g);
-    var _effectiveGrade=_g!=null?_g:(parseInt((_lbg||{}).value)||7);
-
-    // 2. Week
-    var _w=(_activeS&&parseInt(_activeS.current_week))||parseInt(_ss.juz)||1;
-
-    // 3. Theme
-    var _theme=_ss.weekTitle||'';
-    if(!_theme){
-      try{
-        var _sch=JSON.parse(localStorage.getItem('how_sched')||'{}');
-        _theme=(_sch[String(_w)]||{}).theme||(_sch[String(_w)]||{}).weekTitle||'';
-      }catch(e){}
-    }
-    if(_lbt&&_theme&&!_lbt.value) _lbt.value=_theme;
-
-    // 4. Opening question — from saved session if returning to lobby after saving
-    if(_lbq&&!_lbq.value){
-      var _sv=S.g('hq_session');
-      if(_sv&&_sv.q) _lbq.value=_sv.q;
-      else if(_ss.openingQ) _lbq.value=_ss.openingQ;
-    }
-
-    // 5. Grade change listener — update placeholder when grade changes
-    if(_lbg&&!_lbg._initBound){
-      _lbg._initBound=true;
-      _lbg.addEventListener('change',function(){
-        var qEl=document.getElementById('lb-q');
-        if(qEl&&!qEl.value) qEl.placeholder='Enter the opening question for Grade '+this.value+'…';
-      });
-    }
-
-    // 6. Pre-session answer from Sunday sahifa entry (grade-filtered)
-    try{
-      var _ents=JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
-      var _sun=_ents.find(function(e){
-        return (e.type==='sunday'||e.type==='pre')&&(!e.grade||parseInt(e.grade)===_effectiveGrade);
-      });
-      if(_sun&&_sun.text) G.preAnswer=_sun.text.slice(0,300);
-    }catch(e){}
-
-  }catch(e){ console.warn('initLobby:',e); }
-}
-
 function joinSession(){
   var name=document.getElementById('lb-name').value.trim();
   if(!name){toast('Enter your name.');return;}
@@ -574,19 +500,36 @@ function joinSession(){
   _isLiveFac = selRoleVal==='facilitator' && _facMode==='create';
 
   if(selRoleVal==='facilitator'){
-    var q=(document.getElementById('lb-q')||{}).value.trim();
+    var _lbqEl=document.getElementById('lb-q');
     var _lbtEl=document.getElementById('lb-theme');
+    // Pre-fill question from per-grade platform store if field is still empty
+    if(_lbqEl&&!_lbqEl.value.trim()){
+      try{
+        var _wqm=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
+        // Grade-specific first; then same-week entry for any grade; never a different week
+        var _wqe=_wqm[String(G.grade)]
+          ||Object.values(_wqm).find(function(v){return v&&v.q&&v.week==_sesJuz;})||null;
+        if(_wqe){_lbqEl.value=_wqe.q||'';if(_lbtEl&&!_lbtEl.value)_lbtEl.value=_wqe.theme||'';}
+        if(!_lbqEl.value){
+          var _ssFb=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
+          var _schFb=JSON.parse(localStorage.getItem('how_sched')||'{}');
+          var _wdFb=(_schFb[String(_sesJuz)])||{};
+          _lbqEl.value=_wdFb.openingQ||_wdFb.q||_ssFb.openingQ||'';
+          if(_lbtEl&&!_lbtEl.value)_lbtEl.value=_wdFb.theme||_wdFb.weekTitle||_ssFb.weekTitle||'';
+        }
+      }catch(e){}
+    }
+    var q=_lbqEl?_lbqEl.value.trim():'';
     if(_facMode!=='create'&&!q){toast('Enter an opening question.');return;}
     G.question=q;
     G.theme=(_lbtEl||{}).value||'';
     G.sahifaCtx=(document.getElementById('lb-sahifa')||{}).value||'';
+    // Save with week number so students can validate it
     S.s('hq_session',{q:G.question,theme:G.theme,ctx:G.sahifaCtx,week:_sesJuz,ts:Date.now()});
   } else {
     var sv=S.g('hq_session');
-    // Valid if question exists and week matches (or within 7 days for old format)
-    // No grade filter — facilitator sets one question for all students in the session
-    var _svValid=sv&&sv.q
-      &&(sv.week?sv.week==_sesJuz:(Date.now()-sv.ts<604800000));
+    // Valid if question exists AND week matches (or old format without week — allow 7 days)
+    var _svValid=sv&&sv.q&&(sv.week?sv.week==_sesJuz:(Date.now()-sv.ts<604800000));
     if(_svValid){
       G.question=sv.q||'';G.theme=sv.theme||'';G.sahifaCtx=sv.ctx||'';
     } else {
@@ -599,17 +542,83 @@ function joinSession(){
     if(!G.question){
       try{
         var _wqm2=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
-        // Grade-specific only — never use another grade's question
-        var _wqe2=_wqm2[String(G.grade)]||null;
+        var _wqe2=_wqm2[String(G.grade)]
+          ||Object.values(_wqm2).find(function(v){return v&&v.q&&v.week==_sesJuz;})||null;
         if(_wqe2){G.question=_wqe2.q||'';if(!G.theme)G.theme=_wqe2.theme||'';}
       }catch(e){}
     }
   }
 
+  // Pre-fill from platform state (lesson, schedule, sahifa)
+  try{
+    var _ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
+    var _lbg=document.getElementById('lb-grade');
+    // Grade from active student or sahifa_settings
+    var _activeS=JSON.parse(localStorage.getItem('how_active_student')||'null');
+    if(_lbg){
+      var _grade=(_activeS&&(_activeS.current_grade||_activeS.grade_start))||_ss.grade||7;
+      _lbg.value=String(_grade);
+      G.grade=parseInt(_grade)||7;
+      G.band=G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
+    }
+    // Question + theme from platform lesson (S object) or sahifa_settings
+    var _lbq=document.getElementById('lb-q');
+    var _lbt=document.getElementById('lb-theme');
+    // Try platform S object first (most current)
+    var _week=_ss.juz||(_activeS&&_activeS.current_week)||1;
+    var _platformQ='';var _platformTheme='';
+    // Per-grade question map written by the platform's week view (how_week_qs)
+    function _gradeQ(g){
+      try{
+        var m=JSON.parse(localStorage.getItem('how_week_qs')||'{}');
+        return m[String(g)]||null;
+      }catch(e){ return null; }
+    }
+    var _gq=_gradeQ(G.grade);
+    if(_gq){ _platformQ=_gq.q||''; _platformTheme=_gq.theme||''; if(_gq.week) _week=_gq.week; }
+    try{
+      // Legacy fallback: week-keyed schedule (older platform builds)
+      if(!_platformQ){
+        var _sched=JSON.parse(localStorage.getItem('how_sched')||'{}');
+        var _weekData=_sched[String(_week)]||{};
+        _platformQ=_weekData.openingQ||_weekData.q||'';
+        _platformTheme=_platformTheme||_weekData.theme||_weekData.weekTitle||'';
+      }
+    }catch(e2){}
+    // Fall back to sahifa_settings
+    if(!_platformQ) _platformQ=_ss.openingQ||'';
+    if(!_platformTheme) _platformTheme=_ss.weekTitle||'Week '+_week;
+    if(_lbt&&_platformTheme&&!_lbt.value) _lbt.value=_platformTheme;
+    // lb-q is pre-filled earlier in the facilitator path before G.question is captured
+    // When the facilitator changes the grade dropdown, refresh the question
+    // for THAT grade (previously the stale question silently stuck around).
+    var _lbgEl=document.getElementById('lb-grade');
+    if(_lbgEl && !_lbgEl._howQBound){
+      _lbgEl._howQBound=true;
+      _lbgEl.addEventListener('change', function(){
+        var q2=_gradeQ(this.value);
+        var qEl=document.getElementById('lb-q'), tEl=document.getElementById('lb-theme');
+        if(q2){
+          if(qEl) qEl.value=q2.q||'';
+          if(tEl) tEl.value=q2.theme||'';
+        } else if(qEl && qEl.value){
+          // No stored question for this grade — clear the stale one and say so
+          qEl.value='';
+          qEl.placeholder='No saved question for Grade '+this.value+' — open that grade\'s week on the platform first, or type one here.';
+        }
+      });
+    }
+    // Pre-answer from Sunday Sahifa entry
+    try{
+      var _entries=JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
+      var _sunday=_entries.find(function(e){return e.type==='sunday'||e.type==='pre';});
+      if(_sunday&&_sunday.text) G.preAnswer=_sunday.text.slice(0,300);
+    }catch(e3){}
+  }catch(e){}
+
   var sfe=S.g('sahifa_entries')||[];
-  var _sfeFiltered=sfe.filter(function(e){return !e.grade||parseInt(e.grade)===G.grade;});
-  if(_sfeFiltered.length&&!G.sahifaCtx){
-    G.sahifaCtx=_sfeFiltered.map(function(e){
+  if(sfe.length&&!G.sahifaCtx){
+    G.sahifaCtx=sfe.map(function(e){
       return '['+G.name+' · '+(e.type||'entry')+' · '+(e.date||'recent')+']: '+e.text;
     }).join('\n\n');
   }
@@ -1138,16 +1147,14 @@ function raiseHand(){
 
 // ── SAHIFA PANEL ──────────────────────────────────────────────────
 function renderSahifa(){
+  const entries=S.g('sahifa_entries')||[];
   const sc=document.getElementById('sc-scroll');
-  if(!sc) return;
-  if(G.preAnswer){
-    sc.innerHTML=`<div class="sc-entry hl"><p class="sc-etype">pre-session answer</p><p class="sc-etext">${esc(G.preAnswer)}</p></div>`;
-  } else {
-    sc.innerHTML='<p style="font-size:11px;color:var(--ink4);padding:4px;line-height:1.6">Your pre-session answer will appear here.</p>';
-  }
+  const pre=G.preAnswer?`<div class="sc-entry hl"><p class="sc-etype">pre-session answer</p><p class="sc-etext">${esc(G.preAnswer)}</p></div>`:'';
+  if(!entries.length){sc.innerHTML=pre+`<p style="font-size:11px;color:var(--ink4);padding:4px;line-height:1.6">No sahifa entries. Open the sahifa tool to write entries — they will appear here.</p>`;return;}
+  sc.innerHTML=pre+entries.slice(-8).reverse().map(e=>`<div class="sc-entry" onclick="ins('In my sahifa I wrote: \\\"${esc(e.text.slice(0,40))}…\\\" ')"><p class="sc-etype">${e.type||'entry'} · ${e.date||''}</p><p class="sc-etext">${esc(e.text)}</p></div>`).join('');
 }
 
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='lobby')initLobby();}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
 function nudgeCircle(){ simPeer(); }
 
@@ -1197,8 +1204,8 @@ function k2HQSend(btn){
   if(!choice) return;
   var panel=document.getElementById('k2-hq-choices');
   if(panel) panel.style.display='none';
-  var inp=document.getElementById('msgi');
-  if(inp){inp.value=choice;inp.focus();autoGrow&&autoGrow(inp);}
+  addStudent(G.name,choice,'self');
+  setTimeout(function(){aiRespond(G.name,choice);},300+Math.random()*200);
 }
 
 function showHalaqaStarters(){
@@ -1760,7 +1767,6 @@ function getSimDelay(base, range){
   var mult=_slowMode?4.5:1; // slow mode = 4.5x longer
   return (base + Math.random()*range) * mult;
 }
-document.addEventListener('DOMContentLoaded',initLobby);
 </script>
 <div id="roe-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(10,10,20,.85);display:none;align-items:center;justify-content:center">
   <div style="background:#1a1a2e;border:1px solid rgba(212,175,55,.3);border-radius:14px;padding:28px 24px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto">

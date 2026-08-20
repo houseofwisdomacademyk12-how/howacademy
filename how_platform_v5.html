@@ -7706,7 +7706,7 @@ async function generate(){
     var dRaw=await callAPI(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(s)+'\n\nJSON only.');
     var deck=JSON.parse(dRaw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim());
     if(msg)msg.textContent='Generating student workbook… (2/2)';
-    var wRaw=await callAPI(sys,gp+'Generate the student workbook:\n\n'+ctx+'\nLesson: '+(deck.title||topic)+'\n\n'+getWBSchema(s,g)+'\n\nJSON only — return object with single "workbook" key.');
+    var wRaw=await callAPI(sys,gp+'Generate the student workbook:\n\n'+ctx+'\nLesson: '+(deck.title||topic)+'\n\n'+getWBSchema(s)+'\n\nJSON only — return object with single "workbook" key.');
     var wb=JSON.parse(wRaw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim());
     var rawSlides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
     // Overwrite juz slide fields with exact platform data — never trust AI to get these right
@@ -7823,14 +7823,9 @@ function getDeckSchema(s){
   if(s==='science')return b+'    {"type":"phenomenon","heading":"The Phenomenon","content":"Observable thing","question":"What do you observe?","parentNote":"Tip"},\n    {"type":"discussion","heading":"Our Question","question":"Investigation question","parentNote":"Tip"},\n    {"type":"content","heading":"The Science","content":"2-3 sentences","example":"example","scholarNote":"Islamic scholar","parentNote":"Misconception"},\n    {"type":"activity","heading":"Investigation","materials":["item1","item2"],"steps":["Step 1","Step 2","Step 3"],"parentNote":"Expected result"},\n    {"type":"content","heading":"What We Found","content":"Conclusion","parentNote":"Tip"},\n'+j;
   return b+'    {"type":"content","heading":"Setting the Scene","content":"Context","parentNote":"Background"},\n    {"type":"source","heading":"The Story","passage":"3-5 sentence story","parentNote":"Grade notes"},\n    {"type":"content","heading":"Key People","content":"Who and role","scholarNote":"Islamic figure","parentNote":"Tip"},\n    {"type":"content","heading":"What and Why","content":"Events and causes","parentNote":"Tip"},\n    {"type":"discussion","heading":"Discussion","question":"Evidence-based question","parentNote":"Listen for"},\n'+j;
 }
-function getWBSchema(s, g){
-  var band=(g!=null)?(g<=1?'K-G1':g<=3?'G2-G3':g<=5?'G4-G5':g<=8?'G6-G8':'G9-G12'):'G6-G8';
-  var isK2=(band==='K-G1'||band==='G2-G3');
+function getWBSchema(s){
   var c='{\n  "workbook":{\n    "vocab":[{"word":"term","definition":"brief def"}],\n    "discussionQuestion":"...",\n    "discussionStem":"starter",\n    "juzReflection":"connecting question",\n';
-  // shortAnswer choices only shown in example for K-2 bands — removes AI ambiguity
-  var saK2='    "shortAnswer":[{"q":"...","stem":"starter","choices":["🌙 sentence completion 1","⭐ sentence completion 2","☀️ sentence completion 3"]}]\n  }\n}\n\nK-2 GRADE RULES (GRADE BAND '+band+'):\n- checkQuestions choices must reference specific names, numbers, events or objects from this lesson. No generic options.\n- K-G1 band: choices 4-6 words, must start with an emoji.\n- G2-G3 band: choices up to 10 words, emoji optional.\n- shortAnswer MUST include choices array: 2-3 tappable sentence completions the student taps to complete the stem. This is required — do not omit.';
-  var saHigh='    "shortAnswer":[{"q":"...","stem":"starter","lines":3}]\n  }\n}\n\nDo NOT include a choices array in shortAnswer items for this grade band — students write their own responses.';
-  var q='    "checkQuestions":[{"q":"...","choices":["A","B","C","D"],"a":"B"},{"q":"...","choices":["A","B","C","D"],"a":"C"}],\n'+(isK2?saK2:saHigh);
+  var q='    "checkQuestions":[{"q":"...","choices":["A","B","C","D"],"a":"B"},{"q":"...","choices":["A","B","C","D"],"a":"C"}],\n    "shortAnswer":[{"q":"...","stem":"starter","lines":3,"choices":["sentence completion 1","sentence completion 2","sentence completion 3"]}]\n  }\n}\n\nK-2 GRADE RULES (apply only when GRADE BAND is K-G1 or G2-G3):\n- checkQuestions choices must reference specific content from this lesson — names, numbers, events, and objects from the passage. No generic emotional or categorical options.\n- K-G1 band: choices 4-6 words, must start with an emoji.\n- G2-G3 band: choices up to 10 words, emoji optional.\n- shortAnswer choices array: 2-3 tappable sentence completions anchored to specific lesson content. The student taps one to complete the stem.';
   if(s==='math')return c+'    "activitySteps":["Step 1","Step 2","Step 3"],\n    "dataTable":[{"label":"Input","field":""},{"label":"Output","field":""}],\n    "conclusionStem":"I found that...",\n'+q;
   if(s==='ela')return c+'    "passage":"Same passage from deck",\n'+q;
   if(s==='writing')return c+'    "passage":"Same mentor text",\n    "activitySteps":["1. Plan","2. Draft","3. Revise"],\n'+q;
@@ -10417,8 +10412,6 @@ async function broadcastLessons(){
     if(btn) btn.textContent='📡 Broadcasting…';
     var r=await sb.rpc('broadcast_lessons_to_families');
     if(r.error) throw r.error;
-    var rt=await sb.rpc('broadcast_tests_to_families');
-    if(rt.error) throw rt.error;
     if(typeof toast==='function') toast('✓ Lessons broadcast to all active families');
     else alert('Lessons broadcast to all active families');
   }catch(e){
@@ -12266,10 +12259,10 @@ async function sendPwReset(){
       <div class="avatar-opt" data-av="🛠️">🛠️</div>
       <div class="avatar-opt" data-av="🕌">🕌</div>
       <div class="avatar-opt" data-av="📿">📿</div>
-      <div class="avatar-opt" data-av="🏮">🏮</div>
+      <div class="avatar-opt" data-av="🪬">🪬</div>
       <div class="avatar-opt" data-av="🏺">🏺</div>
       <div class="avatar-opt" data-av="🪔">🪔</div>
-      <div class="avatar-opt" data-av="🤲">🤲</div>
+      <div class="avatar-opt" data-av="🧿">🧿</div>
     </div>
     <button class="avatar-save-btn" onclick="saveAvatar()">Save avatar</button>
   </div>
