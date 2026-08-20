@@ -10312,7 +10312,6 @@ async function applyUserToProfile(user, accessToken){
   render();
   if(typeof updateSchedule==='function') updateSchedule();
   syncAllLessons(); // Pull all lessons for this household — core broadcast receive mechanism
-  syncAllTests();  // Pull all tests for this household
   if(window._howTrialDays!=null){howShowTrialBanner(window._howTrialDays);window._howTrialDays=null;}
 }
 
@@ -10399,38 +10398,6 @@ async function syncAllLessons(){
     console.warn('syncAllLessons failed:', e);
   }
 }
-// ── Startup sync: pull ALL tests for this household ─────────────────────────
-async function syncAllTests(){
-  var jwt         = localStorage.getItem('how_jwt');
-  var householdId = localStorage.getItem('how_household_id');
-  if(!jwt || !householdId || typeof sb === 'undefined') return;
-  try{
-    var result = await sb
-      .from('test')
-      .select('grade, week, generated_at, locked, subjects, updated_at')
-      .eq('household_id', householdId);
-    if(result.error){ console.warn('syncAllTests error:', result.error.message); return; }
-    if(!result.data || !result.data.length) return;
-    result.data.forEach(function(row){
-      var tk = row.grade+'_'+row.week+'_test';
-      var existing = S.tests[tk];
-      if(!existing || row.updated_at > (existing.updated_at||'')){
-        S.tests[tk] = {
-          grade:     row.grade,
-          week:      row.week,
-          generated: new Date(row.generated_at).getTime(),
-          locked:    row.locked || false,
-          subjects:  row.subjects || {},
-          updated_at: row.updated_at || ''
-        };
-      }
-    });
-    autosave();
-    console.log('syncAllTests: '+result.data.length+' test(s) loaded for household '+householdId);
-  }catch(e){
-    console.warn('syncAllTests failed:', e);
-  }
-}
 async function broadcastLessons(){
   var btn=document.getElementById('btn-broadcast');
   if(btn){btn.textContent='📡 Syncing…';btn.disabled=true;}
@@ -10450,14 +10417,6 @@ async function broadcastLessons(){
     if(btn) btn.textContent='📡 Broadcasting…';
     var r=await sb.rpc('broadcast_lessons_to_families');
     if(r.error) throw r.error;
-    // Push all locally-generated tests to Supabase before the test RPC runs
-    var testRe=/^(\d+)_(\d+)_test$/;
-    var testTasks=[];
-    Object.keys(S.tests||{}).forEach(function(k){
-      var tm=k.match(testRe);
-      if(tm) testTasks.push(pushTest(Number(tm[1]),Number(tm[2]),S.tests[k]));
-    });
-    if(testTasks.length) await Promise.all(testTasks);
     var rt=await sb.rpc('broadcast_tests_to_families');
     if(rt.error) throw rt.error;
     if(typeof toast==='function') toast('✓ Lessons broadcast to all active families');
