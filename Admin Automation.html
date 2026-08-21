@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HOW Weekly Batch Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="curriculum-data.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0d1e;color:#e8e4f8;font-family:'DM Sans',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2e2a4a;border-radius:3px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+#header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:50px;background:#14112a;border-bottom:1px solid #2e2a4a;flex-shrink:0}
+#controls{display:flex;align-items:center;gap:14px;padding:8px 20px;background:#1a1630;border-bottom:1px solid #2e2a4a;flex-shrink:0;flex-wrap:wrap}
+#progress-row{display:flex;align-items:center;gap:14px;padding:7px 20px;background:#0f0d1e;border-bottom:1px solid #2e2a4a;flex-shrink:0}
+#progress-outer{flex:1;height:3px;background:#2e2a4a;border-radius:2px;overflow:hidden}
+#progress-inner{height:100%;width:0%;background:#7c3aed;border-radius:2px;transition:width .4s}
+#main{display:flex;flex:1;overflow:hidden}
+#grade-wrap{flex:1;overflow-y:auto}
+#grid-header{display:grid;grid-template-columns:52px 1fr 1fr 1fr 32px 1fr 1fr 1fr 90px;gap:0;padding:6px 20px;border-bottom:1px solid #2e2a4a;position:sticky;top:0;background:#0f0d1e;z-index:1}
+#grid-header div{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+#grade-body{}
+.grade-row{display:grid;grid-template-columns:52px 1fr 1fr 1fr 32px 1fr 1fr 1fr 90px;align-items:center;padding:9px 20px;border-bottom:1px solid #1a1630}
+.grade-label{font-size:14px;font-weight:700;color:#c8a96e}
+.dots-cell{display:flex;align-items:center;gap:5px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#2e2a4a;flex-shrink:0;transition:background .3s}
+.dot.running{animation:pulse 1s ease-in-out infinite}
+.dot.done-reg{background:#1d6f6f}
+.dot.done-qalam{background:#2dd4bf}
+.dot.done-hey{background:#9d4edd}
+.dot.error{background:#c0392b}
+.dot.running{background:#c8a96e}
+.status-cell{font-size:11px;font-weight:600}
+.status-idle{color:#3a3860}.status-running{color:#c8a96e}.status-done{color:#2dd4bf}.status-error{color:#f87171}
+#log-panel{width:300px;border-left:1px solid #2e2a4a;display:flex;flex-direction:column;flex-shrink:0}
+#log-header{padding:8px 14px;border-bottom:1px solid #2e2a4a;font-size:9px;color:#3a3860;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+#log-body{flex:1;overflow-y:auto;padding:8px 0}
+.log-entry{display:flex;align-items:flex-start;padding:3px 14px;font-size:10px;line-height:1.5}
+.log-time{color:#3a3860;font-size:9px;margin-right:6px;flex-shrink:0;padding-top:1px}
+.lc-ok{color:#2dd4bf}.lc-err{color:#f87171}.lc-warn{color:#c8a96e}.lc-start{color:#c8a96e}.lc-done{color:#2dd4bf}.lc-grade{color:#a78bfa}.lc-info{color:#6a6890}
+#bottom{border-top:2px solid #2e2a4a;flex-shrink:0;background:#14112a}
+#tab-btns{display:flex;border-bottom:1px solid #2e2a4a}
+.tab-btn{padding:8px 16px;border:none;background:none;color:#4a4870;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:400;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab-btn.active{color:#c8a96e;font-weight:700;border-bottom-color:#c8a96e}
+.tab-panel{display:none;padding:10px 20px}
+.tab-panel.active{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto}
+.sep{width:1px;height:20px;background:#2e2a4a}
+.ctrl-label{font-size:10px;color:#6a6890;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.gen-btn{padding:5px 11px;border-radius:6px;border:1px solid #2e2a4a;background:none;color:#4a4870;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:600;transition:all .15s}
+.gen-btn.active{background:rgba(124,58,237,.2);border-color:#7c3aed;color:#a78bfa}
+input[type=range]{width:72px;accent-color:#7c3aed;cursor:pointer}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-icon{width:26px;height:26px;background:linear-gradient(135deg,#7c3aed,#c8a96e);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
+select{background:#0f0d1e;border:1px solid #2e2a4a;border-radius:6px;color:#e8e4f8;font-size:11px;padding:5px 8px;font-family:'DM Sans',sans-serif;cursor:pointer;max-width:260px}
+input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4a;border-radius:6px;color:#e8e4f8;font-size:11px;padding:5px 8px;font-family:'DM Sans',sans-serif;outline:none}
+.heygen-grid{display:grid;grid-template-columns:72px 1fr 1fr 1fr;gap:5px;align-items:center}
+.heygen-grid input{width:100%;font-size:10px;padding:4px 7px;font-family:'DM Mono',monospace;border-radius:5px}
+.heygen-grid-lbl{font-size:9px;color:#3a3860;font-weight:700}
+.heygen-subj-lbl{font-size:10px;color:#c8a96e;font-weight:600}
+.action-btn{padding:6px 14px;border-radius:6px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:600}
+.btn-teal{border:1px solid #1d6f6f;background:rgba(29,111,111,.2);color:#2dd4bf}
+.btn-purple{border:1px solid #9d4edd;background:rgba(157,78,221,.2);color:#c084fc}
+.btn-violet{border:none;background:#7c3aed;color:#fff;padding:7px 16px;border-radius:7px;font-weight:700;font-size:12px;letter-spacing:.02em;font-family:'DM Sans',sans-serif;cursor:pointer}
+.btn-gray{border:1px solid #2e2a4a;background:none;color:#4a4870;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;padding:7px 16px;border-radius:7px;font-weight:600}
+.btn-dark{border:1px solid #1d6f6f;background:none;color:#1d6f6f;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;padding:6px 12px;border-radius:6px}
+.wed-btn{padding:4px 10px;border-radius:6px;border:1px solid #4a4870;background:none;color:#4a4870;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:600}
+.mun-item{display:flex;flex-direction:column;gap:2px;min-width:140px;max-width:200px}
+.mun-label{font-size:10px;font-weight:700;color:#c8a96e}
+.mun-claim{font-size:9px;color:#6a6890;line-height:1.4}
+#auth-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.03em}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="logo-wrap">
+    <div class="logo-icon">⚡</div>
+    <span style="font-weight:700;font-size:13px;letter-spacing:.02em">HOW Weekly Batch Generator</span>
+  </div>
+  <div id="auth-badge">Checking…</div>
+</div>
+
+<div id="controls">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="ctrl-label">Week</span>
+    <select id="week-sel"></select>
+  </div>
+  <div class="sep"></div>
+  <div style="display:flex;align-items:center;gap:5px">
+    <span class="ctrl-label" style="margin-right:3px">Generate</span>
+    <button class="gen-btn active" id="btn-s1" onclick="toggleGen('genS1','btn-s1')">Session 1</button>
+    <button class="gen-btn active" id="btn-s2" onclick="toggleGen('genS2','btn-s2')">Session 2</button>
+    <button class="gen-btn active" id="btn-test" onclick="toggleGen('genTest','btn-test')">Test</button>
+    <button class="gen-btn active" id="btn-thu" onclick="toggleGen('genThursday','btn-thu')" style="border-color:#9d4edd;background:rgba(157,78,221,.2);color:#c084fc">Thu Synthesis</button>
+  </div>
+  <div class="sep"></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="ctrl-label">Delay</span>
+    <input type="range" id="delay-range" min="0" max="3000" step="200" value="800" oninput="STATE.delay=parseInt(this.value);document.getElementById('delay-label').textContent=STATE.delay+'ms'">
+    <span id="delay-label" style="font-size:10px;color:#6a6890;width:38px">800ms</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <input type="checkbox" id="bc-chk" checked onchange="STATE.broadcastAfter=this.checked" style="accent-color:#1d6f6f;cursor:pointer;width:14px;height:14px">
+    <label for="bc-chk" style="font-size:11px;color:#9a98b8;cursor:pointer">Broadcast after</label>
+  </div>
+  <button class="btn-violet" id="run-btn" onclick="handleRun()">▶ Run All Grades</button>
+  <button class="btn-gray" id="studio-btn" onclick="importStudioCards()">📥 Import Studio Cards</button>
+  <button class="btn-dark" onclick="broadcast()" style="margin-left:auto">📡 Broadcast now</button>
+</div>
+
+<div id="progress-row">
+  <div id="progress-outer"><div id="progress-inner"></div></div>
+  <span id="stats-label" style="font-size:10px;color:#6a6890;white-space:nowrap">Ready</span>
+  <span id="eta-label" style="font-size:10px;color:#6a6890;margin-left:auto;white-space:nowrap"></span>
+</div>
+
+<div id="main">
+  <div id="grade-wrap">
+    <div id="grid-header">
+      <div style="color:#3a3860">Grade</div>
+      <div style="color:#3a3860">Session 1</div>
+      <div style="color:#3a3860">Session 2</div>
+      <div style="color:#3a3860">Test</div>
+      <div style="color:#5c2080">Thu</div>
+      <div style="color:#1d6f6f">Qalam S1</div>
+      <div style="color:#1d6f6f">Qalam S2</div>
+      <div style="color:#9d4edd">🎬</div>
+      <div style="color:#3a3860">Status</div>
+    </div>
+    <div id="grade-body"></div>
+  </div>
+  <div id="log-panel">
+    <div id="log-header">Activity Log</div>
+    <div id="log-body"><div style="padding:20px 14px;text-align:center;color:#2e2a4a;font-size:11px">No activity yet</div></div>
+  </div>
+</div>
+
+<div id="bottom">
+  <div id="tab-btns">
+    <button class="tab-btn active" onclick="setTab('wed',this)">📝 Wednesday Review</button>
+    <button class="tab-btn" onclick="setTab('mun',this)">🗣 Munazara</button>
+    <button class="tab-btn" onclick="setTab('hey',this)">🎬 Heygen</button>
+  </div>
+  <div id="tab-wed" class="tab-panel active">
+    <p style="font-size:11px;color:#6a6890;margin:0">Run after Tuesday test — pulls scores from Supabase per grade. Cannot be batch-generated on Saturday.</p>
+    <div id="wed-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <div id="tab-mun" class="tab-panel">
+    <div style="display:flex;align-items:center;gap:12px">
+      <p style="font-size:11px;color:#6a6890;margin:0;flex:1">Claims from HOW_CURR — seed to localStorage for the Munazara tool.</p>
+      <button class="action-btn" style="border:1px solid #5c2080;background:rgba(92,32,128,.2);color:#b48fd4" onclick="seedMunazara()">💾 Seed to localStorage</button>
+    </div>
+    <div id="mun-grid" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+  </div>
+  <div id="tab-hey" class="tab-panel">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="ctrl-label" style="min-width:60px">API Key</span>
+      <input type="password" id="hey-key" placeholder="Heygen API key…" style="flex:1" oninput="STATE.heygenKey=this.value;saveHeygenCfg({key:this.value})">
+    </div>
+    <div class="heygen-grid" id="hey-avatar-grid">
+      <span class="heygen-grid-lbl">Subject</span>
+      <span class="heygen-grid-lbl">Avatar ID</span>
+      <span class="heygen-grid-lbl">Voice ID</span>
+      <span class="heygen-grid-lbl">Avatar Look ID</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="action-btn btn-teal" onclick="runSlideGenBatch()">📄 Generate Slides (All Grades)</button>
+      <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen (All Grades)</button>
+    </div>
+    <p style="font-size:10px;color:#4a4870;margin:0">Slides download as HTML — upload to Google Drive and paste URL in HOW platform. Videos submit to Heygen Video Agent.</p>
+  </div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────────────────
+var STATE = {
+  week:1, genS1:true, genS2:true, genTest:true, genThursday:true,
+  broadcastAfter:true, delay:800, isRunning:false,
+  authStatus:'checking', householdId:null, studioCardCount:0,
+  heygenKey:'', heygenAvatars:{
+    math:{avatarId:'',voiceId:'',lookId:''},science:{avatarId:'',voiceId:'',lookId:''},
+    ela:{avatarId:'',voiceId:'',lookId:''},writing:{avatarId:'',voiceId:'',lookId:''},
+    social:{avatarId:'',voiceId:'',lookId:''},
+  },
+  grades: Array.from({length:13},function(_,i){return{label:i===0?'K':String(i),s1:Array(5).fill('idle'),s2:Array(5).fill('idle'),test:Array(5).fill('idle'),thu:'idle',qalamS1:Array(5).fill('idle'),qalamS2:Array(5).fill('idle'),heygen:Array(5).fill('idle'),status:'idle'};}),
+  wedGrades:Array(13).fill('idle'), log:[], stats:{total:0,done:0,errors:0,startTime:null}
+};
+var sb=null, abortFlag=false;
+
+// ── DOM HELPERS ──────────────────────────────────────────────────────────────
+function qs(sel){return document.querySelector(sel);}
+function el(tag,attrs,text){var e=document.createElement(tag);if(attrs)Object.entries(attrs).forEach(function(kv){if(kv[0]==='style'&&typeof kv[1]==='object'){Object.assign(e.style,kv[1]);}else{e.setAttribute(kv[0],kv[1]);}});if(text)e.textContent=text;return e;}
+
+function dotId(sess,gi,si){return 'dot-'+sess+'-'+gi+'-'+si;}
+function thuId(gi){return 'thu-'+gi;}
+function statusId(gi){return 'st-'+gi;}
+
+function updateDot(id, status, doneClass){
+  var d=document.getElementById(id); if(!d) return;
+  d.className='dot';
+  if(status==='running') d.classList.add('running');
+  else if(status==='done') d.classList.add(doneClass||'done-reg');
+  else if(status==='error') d.classList.add('error');
+}
+function updateGradeRow(gi){
+  var gr=STATE.grades[gi];
+  var sessions=['s1','s2','test'];
+  sessions.forEach(function(sess){
+    var arr=gr[sess];
+    arr.forEach(function(st,si){updateDot(dotId(sess,gi,si),st,'done-reg');});
+  });
+  updateDot(thuId(gi),gr.thu,'done-reg');
+  gr.qalamS1.forEach(function(st,si){updateDot(dotId('qs1',gi,si),st,'done-qalam');});
+  gr.qalamS2.forEach(function(st,si){updateDot(dotId('qs2',gi,si),st,'done-qalam');});
+  gr.heygen.forEach(function(st,si){updateDot(dotId('hey',gi,si),st,'done-hey');});
+  var sc=document.getElementById(statusId(gi));
+  if(sc){sc.textContent={idle:'—',running:'Running…',done:'✓ Done',error:'⚠ Error'}[gr.status]||'—';sc.className='status-cell status-'+gr.status;}
+}
+
+function updateProgress(){
+  var s=STATE.stats, t=s.total, d=s.done, e=s.errors;
+  var pct=t>0?Math.min(100,Math.round(d/t*100)):0;
+  qs('#progress-inner').style.width=pct+'%';
+  qs('#progress-inner').style.background=e>0?'#c8a96e':'#7c3aed';
+  var sl=t>0?(d+'/'+t+' items · '+e+' errors · '+pct+'%'):'Ready · '+(STATE.genS1?'S1 ':'')+(STATE.genS2?'S2 ':'')+(STATE.genTest?'Test ':'')+(STATE.genThursday?'Thu ':'')+'· 13 grades';
+  qs('#stats-label').textContent=sl;
+  var eta='';
+  if(STATE.isRunning&&s.startTime&&d>0){var el=(Date.now()-s.startTime)/1000;var rem=(t-d)*(el/d);eta=rem>60?'~'+Math.ceil(rem/60)+'min remaining':'~'+Math.round(rem)+'s remaining';}
+  qs('#eta-label').textContent=eta;
+  var runBtn=qs('#run-btn');
+  if(STATE.isRunning){runBtn.textContent='⏹ Cancel';runBtn.style.background='rgba(192,57,43,.25)';runBtn.style.color='#f87171';}
+  else{runBtn.textContent='▶ Run All Grades';runBtn.style.background=STATE.authStatus==='ok'?'#7c3aed':'#2e2a4a';runBtn.style.color=STATE.authStatus==='ok'?'#fff':'#4a4870';}
+}
+
+function updateAuthBadge(){
+  var b=qs('#auth-badge');
+  var ok=STATE.authStatus==='ok';
+  b.textContent=ok?'● Connected':(STATE.authStatus==='noauth'?'⚠ Not logged in — open the platform first':'Checking…');
+  b.style.background=ok?'rgba(29,111,111,.2)':'rgba(192,57,43,.15)';
+  b.style.color=ok?'#2dd4bf':'#f87171';
+  b.style.border='1px solid '+(ok?'#1d6f6f':'#c0392b');
+}
+
+function updateLog(){
+  var body=qs('#log-body');
+  if(!STATE.log.length){body.innerHTML='<div style="padding:20px 14px;text-align:center;color:#2e2a4a;font-size:11px">No activity yet</div>';return;}
+  var LC={ok:'#2dd4bf',err:'#f87171',grade:'#a78bfa',start:'#c8a96e',done:'#2dd4bf',warn:'#c8a96e',info:'#6a6890'};
+  body.innerHTML=STATE.log.slice(0,100).map(function(e){
+    return '<div class="log-entry" style="color:'+(LC[e.type]||LC.info)+'"><span class="log-time">'+e.t+'</span><span>'+escHtml(e.msg)+'</span></div>';
+  }).join('');
+}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── INIT GRID ─────────────────────────────────────────────────────────────────
+function initGrid(){
+  var body=qs('#grade-body');
+  STATE.grades.forEach(function(gr,gi){
+    var row=document.createElement('div'); row.className='grade-row'; row.id='row-'+gi;
+    // Label
+    var lbl=document.createElement('div'); lbl.className='grade-label'; lbl.textContent=gr.label; row.appendChild(lbl);
+    // S1 S2 Test dots
+    ['s1','s2','test'].forEach(function(sess){
+      var cell=document.createElement('div'); cell.className='dots-cell';
+      for(var si=0;si<5;si++){var d=document.createElement('span');d.className='dot';d.id=dotId(sess,gi,si);d.title=['Math','Sci','ELA','Writ','SS'][si]+' '+sess.toUpperCase()+': idle';cell.appendChild(d);}
+      row.appendChild(cell);
+    });
+    // Thu dot
+    var thuCell=document.createElement('div'); thuCell.className='dots-cell';
+    var thuDot=document.createElement('span'); thuDot.className='dot'; thuDot.id=thuId(gi); thuDot.style.width='14px'; thuDot.style.height='14px'; thuDot.title='Thu: idle';
+    thuCell.appendChild(thuDot); row.appendChild(thuCell);
+    // QalamS1 QalamS2 dots
+    ['qs1','qs2'].forEach(function(sess){
+      var cell=document.createElement('div'); cell.className='dots-cell';
+      for(var si=0;si<5;si++){var d=document.createElement('span');d.className='dot';d.id=dotId(sess,gi,si);d.title=['Math','Sci','ELA','Writ','SS'][si]+' Qalam '+sess.slice(1).toUpperCase()+': idle';cell.appendChild(d);}
+      row.appendChild(cell);
+    });
+    // Heygen dots
+    var heyCell=document.createElement('div'); heyCell.className='dots-cell';
+    for(var si=0;si<5;si++){var hd=document.createElement('span');hd.className='dot';hd.id=dotId('hey',gi,si);hd.title=['Math','Sci','ELA','Writ','SS'][si]+' Video: idle';heyCell.appendChild(hd);}
+    row.appendChild(heyCell);
+    // Status
+    var st=document.createElement('div'); st.className='status-cell status-idle'; st.id=statusId(gi); st.textContent='—'; row.appendChild(st);
+    body.appendChild(row);
+  });
+}
+
+function initWedBtns(){
+  var wrap=qs('#wed-btns');
+  STATE.grades.forEach(function(gr,gi){
+    var btn=document.createElement('button'); btn.className='wed-btn'; btn.id='wed-btn-'+gi;
+    btn.textContent=(gi===0?'K':'G'+gi);
+    btn.onclick=function(){generateWedReview(gi,gi);};
+    wrap.appendChild(btn);
+  });
+}
+
+function initMunGrid(){
+  var grid=qs('#mun-grid'); grid.innerHTML='';
+  STATE.grades.forEach(function(gr,gi){
+    var how=(typeof HOW_CURR!=='undefined'&&HOW_CURR[gi]||{})[STATE.week]||{};
+    var item=document.createElement('div'); item.className='mun-item';
+    item.innerHTML='<span class="mun-label">'+(gi===0?'K':'G'+gi)+'</span><span class="mun-claim">'+escHtml(how.munazaraClaim||'(no claim for this week)')+'</span>';
+    grid.appendChild(item);
+  });
+}
+
+function initHeygenAvatarRows(){
+  var grid=qs('#hey-avatar-grid');
+  // remove old rows (keep header row = first 4 children)
+  while(grid.children.length>4) grid.removeChild(grid.lastChild);
+  var SUBJS=['math','science','ela','writing','social'];
+  var LBLS={math:'Math',science:'Science',ela:'ELA',writing:'Writing',social:'Social St.'};
+  SUBJS.forEach(function(sk){
+    var cfg=STATE.heygenAvatars[sk]||{};
+    var lbl=document.createElement('span'); lbl.className='heygen-subj-lbl'; lbl.textContent=LBLS[sk];
+    var ai=document.createElement('input'); ai.value=cfg.avatarId||''; ai.placeholder='avatar_id…';
+    ai.oninput=function(){var av=Object.assign({},STATE.heygenAvatars);av[sk]=Object.assign({},av[sk],{avatarId:ai.value});STATE.heygenAvatars=av;saveHeygenCfg({avatars:av});};
+    var vi=document.createElement('input'); vi.value=cfg.voiceId||''; vi.placeholder='voice_id…';
+    vi.oninput=function(){var av=Object.assign({},STATE.heygenAvatars);av[sk]=Object.assign({},av[sk],{voiceId:vi.value});STATE.heygenAvatars=av;saveHeygenCfg({avatars:av});};
+    var li=document.createElement('input'); li.value=cfg.lookId||''; li.placeholder='look_id…';
+    li.oninput=function(){var av=Object.assign({},STATE.heygenAvatars);av[sk]=Object.assign({},av[sk],{lookId:li.value});STATE.heygenAvatars=av;saveHeygenCfg({avatars:av});};
+    [lbl,ai,vi,li].forEach(function(n){grid.appendChild(n);});
+  });
+}
+
+function initWeekSelect(){
+  var sel=qs('#week-sel'); sel.innerHTML='';
+  for(var i=0;i<30;i++){
+    var w=i+1; var juz=(typeof JUZ!=='undefined'&&JUZ[i])||{};
+    var opt=document.createElement('option'); opt.value=String(w);
+    opt.textContent='Wk '+w+' · '+(juz.tr||'')+(juz.theme?' — '+juz.theme:'');
+    if(w===STATE.week) opt.selected=true;
+    sel.appendChild(opt);
+  }
+  sel.onchange=function(){STATE.week=parseInt(this.value);initMunGrid();};
+}
+
+function setTab(id, btn){
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  qs('#tab-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='mun') initMunGrid();
+}
+
+function toggleGen(key, btnId){
+  STATE[key]=!STATE[key];
+  var btn=qs('#'+btnId);
+  if(key==='genThursday'){
+    btn.style.borderColor=STATE[key]?'#9d4edd':'#2e2a4a';
+    btn.style.background=STATE[key]?'rgba(157,78,221,.2)':'none';
+    btn.style.color=STATE[key]?'#c084fc':'#4a4870';
+  } else {
+    btn.classList.toggle('active',STATE[key]);
+  }
+}
+
+// ── STATE SETTERS ────────────────────────────────────────────────────────────
+function setSubjStatus(gi,session,si,status){
+  STATE.grades[gi][session]=STATE.grades[gi][session].slice();
+  STATE.grades[gi][session][si]=status;
+  updateGradeRow(gi);
+}
+function setGradeStatus(gi,status){STATE.grades[gi].status=status;updateGradeRow(gi);}
+function setThuStatus(gi,status){STATE.grades[gi].thu=status;updateGradeRow(gi);}
+function setWedStatus(gi,status){
+  STATE.wedGrades[gi]=status;
+  var btn=qs('#wed-btn-'+gi);
+  if(btn){var C={idle:'#4a4870',running:'#c8a96e',done:'#1d6f6f',error:'#c0392b'};btn.style.color=C[status]||C.idle;btn.style.borderColor=C[status]||C.idle;btn.textContent=(gi===0?'K':'G'+gi)+(status==='done'?' ✓':status==='error'?' ✗':'');}
+}
+function setQalamStatus(gi,si,sess,status){
+  var key=sess===1?'qalamS1':'qalamS2';
+  STATE.grades[gi][key]=STATE.grades[gi][key].slice();
+  STATE.grades[gi][key][si]=status;
+  updateGradeRow(gi);
+}
+function setHeygenStatus(gi,si,status){
+  STATE.grades[gi].heygen=STATE.grades[gi].heygen.slice();
+  STATE.grades[gi].heygen[si]=status;
+  updateGradeRow(gi);
+}
+function bumpDone(){STATE.stats.done++;updateProgress();}
+function bumpError(){STATE.stats.errors++;updateProgress();}
+
+function addLog(msg,type){
+  var t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  STATE.log.unshift({msg:msg,type:type||'info',t:t});
+  if(STATE.log.length>300) STATE.log.pop();
+  updateLog();
+}
+
+// ── BUSINESS LOGIC ───────────────────────────────────────────────────────────
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+async function callAPI(sys,usr,maxTok){
+  var r=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTok||3000,system:sys,messages:[{role:'user',content:usr}]})
+  });
+  if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error((e.error&&e.error.message)||'API '+r.status);}
+  var d=await r.json();
+  return (d.content||[]).map(function(b){return b.text||'';}).join('');
+}
+
+function parseJSON(raw){return JSON.parse(raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim());}
+function getGradeBand(g){var n=parseInt(g);if(n<=2)return 'k2';if(n<=5)return '35';if(n<=8)return '68';return '912';}
+function getGradePrefix(g){
+  var b=g<=1?'K-G1':g<=3?'G2-G3':g<=5?'G4-G5':g<=8?'G6-G8':'G9-G12';
+  var n={'K-G1':'Very short sentences. Parent reads aloud. Simple words.','G2-G3':'Short paragraphs. Sentence stems. 3-step activities max.','G4-G5':'Full paragraphs. Guided inquiry. Moderate vocabulary.','G6-G8':'Academic vocabulary. Evidence-based reasoning.','G9-G12':'Sophisticated analysis. Primary sources. Essay-level responses.'};
+  return 'GRADE BAND: '+b+'\n'+(n[b]||'')+'\n\n';
+}
+
+function getSysPrompt(s,sessionNum){
+  var base='You are an expert Islamic education curriculum designer for the House of Wisdom (Bayt al-Hikmah) K-12 platform. This platform treats Islamic scholars as the actual history of every subject — not as cultural additions but as the origin of the concepts students are learning.\n\nCRITICAL RULES:\n1. Use ONLY the specific scholar named in the context.\n2. Use ONLY the Name of the week and its story as provided.\n3. The opening question appears on the PROVOCATION slide (slide 2), not the title slide.\n4. Islamic names in word problems: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha, Sara, Tariq.\n5. UNITS: Use US customary units (inches, feet, miles, ounces, pounds, gallons, °F). NEVER metric unless the lesson is explicitly about metric. US spelling throughout.\n';
+  var p={math:base+'SUBJECT: Mathematics. Worked Example format. Show historical context — the scholar invented or advanced this area of math.',ela:base+'SUBJECT: ELA / Reading. Original short passages featuring Islamic scholars. Passage connects to the week Juz theme.',writing:base+'SUBJECT: Writing. Mentor text using the specific scholar voice. Writing technique emerges from the mentor text.',science:base+'SUBJECT: Science. Inquiry cycle: phenomenon → question → investigation → conclusion. Scholar appears as discoverer of this phenomenon.',social:base+'SUBJECT: Social Studies. Feature the specific Islamic historical figures. Apply historical thinking: perspective, evidence, causation.'};
+  var prompt=p[s]||p.science;
+  if(sessionNum===2) prompt+=' SESSION 2 DEEPENING: Do not re-introduce the concept. Push further. Harder problems. End with a Munazara Prep slide: one contestable claim the student must defend.';
+  return prompt;
+}
+
+function getDeckSchema(s){
+  var b='{\n  "title":"string",\n  "objective":"string",\n  "slides":[\n    {"type":"title","heading":"...","objective":"...","juzTheme":"...","juzArabic":"..."},\n    {"type":"provocation","heading":"Opening Question","question":"The exact openingQ from context","parentNote":"Do not answer this yet."},\n';
+  var j='    {"type":"juz","arabic":"Arabic text of the Name","name":"Name transliteration and meaning","story":"The story paragraph exactly as provided","reflection":"The carrying question exactly as provided"}\n  ]\n}';
+  if(s==='math') return b+'    {"type":"content","heading":"Concept","content":"2-3 sentences","parentNote":"Tip"},\n    {"type":"worked","heading":"Worked Example 1","steps":["Step 1","Step 2","Step 3"],"parentNote":"Common error"},\n    {"type":"worked","heading":"Worked Example 2","steps":["Step 1","Step 2"],"parentNote":"Mastery looks like"},\n    {"type":"activity","heading":"Your Turn","question":"Practice problem","parentNote":"Expected answer"},\n    {"type":"content","heading":"Real-World Connection","content":"2 sentences","scholarNote":"Islamic connection"},\n'+j;
+  if(s==='ela') return b+'    {"type":"content","heading":"Vocabulary","content":"4 words with definitions","parentNote":"Tip"},\n    {"type":"passage","heading":"The Text","passage":"Original 4-6 sentence Islamic passage","parentNote":"Reading notes"},\n    {"type":"discussion","heading":"First Read","question":"Literal question","parentNote":"Listen for"},\n    {"type":"discussion","heading":"Second Read","question":"Craft question","parentNote":"Tip"},\n    {"type":"discussion","heading":"Discussion","question":"Rich open question","parentNote":"Facilitate"},\n'+j;
+  if(s==='writing') return b+'    {"type":"mentor","heading":"Mentor Text","passage":"Short 3-5 sentence exemplar","parentNote":"Notice"},\n    {"type":"content","heading":"Notice It","content":"What writer does","parentNote":"Tip"},\n    {"type":"content","heading":"Name the Technique","content":"Name and define","parentNote":"Tip"},\n    {"type":"activity","heading":"Your Turn","question":"Writing prompt","parentNote":"Strong attempt looks like"},\n    {"type":"content","heading":"Revision Focus","content":"One strategy","parentNote":"Revision language"},\n'+j;
+  if(s==='science') return b+'    {"type":"phenomenon","heading":"The Phenomenon","content":"Observable thing","question":"What do you observe?","parentNote":"Tip"},\n    {"type":"discussion","heading":"Our Question","question":"Investigation question","parentNote":"Tip"},\n    {"type":"content","heading":"The Science","content":"2-3 sentences","scholarNote":"Islamic scholar","parentNote":"Misconception"},\n    {"type":"activity","heading":"Investigation","materials":["item1","item2"],"steps":["Step 1","Step 2","Step 3"],"parentNote":"Expected result"},\n    {"type":"content","heading":"What We Found","content":"Conclusion","parentNote":"Tip"},\n'+j;
+  return b+'    {"type":"content","heading":"Setting the Scene","content":"Context","parentNote":"Background"},\n    {"type":"source","heading":"The Story","passage":"3-5 sentence story","parentNote":"Grade notes"},\n    {"type":"content","heading":"Key People","content":"Who and role","scholarNote":"Islamic figure","parentNote":"Tip"},\n    {"type":"content","heading":"What and Why","content":"Events and causes","parentNote":"Tip"},\n    {"type":"discussion","heading":"Discussion","question":"Evidence-based question","parentNote":"Listen for"},\n'+j;
+}
+
+function getWBSchema(s,g){
+  var band=g<=1?'K-G1':g<=3?'G2-G3':g<=5?'G4-G5':g<=8?'G6-G8':'G9-G12';
+  var isK2=band==='K-G1'||band==='G2-G3';
+  var c='{\n  "workbook":{\n    "vocab":[{"word":"term","definition":"brief def"}],\n    "discussionQuestion":"...",\n    "discussionStem":"starter",\n    "juzReflection":"connecting question",\n';
+  var saK2='    "shortAnswer":[{"q":"...","stem":"starter","choices":["🌙 option 1","⭐ option 2","☀️ option 3"]}]\n  }\n}\n\nK-2 GRADE RULES ('+band+'): choices 4-6 words starting with emoji. shortAnswer MUST include choices array.';
+  var saHigh='    "shortAnswer":[{"q":"...","stem":"starter","lines":3}]\n  }\n}\n\nDo NOT include choices array in shortAnswer for this grade band.';
+  var q='    "checkQuestions":[{"q":"...","choices":["A","B","C","D"],"a":"B"},{"q":"...","choices":["A","B","C","D"],"a":"C"}],\n'+(isK2?saK2:saHigh);
+  if(s==='math') return c+'    "activitySteps":["Step 1","Step 2","Step 3"],\n    "dataTable":[{"label":"Input","field":""},{"label":"Output","field":""}],\n    "conclusionStem":"I found that...",\n'+q;
+  if(s==='ela') return c+'    "passage":"Same passage from deck",\n'+q;
+  if(s==='writing') return c+'    "passage":"Same mentor text",\n    "activitySteps":["1. Plan","2. Draft","3. Revise"],\n'+q;
+  if(s==='science') return c+'    "activityMaterials":["item1","item2","item3"],\n    "activitySteps":["Step 1","Step 2","Step 3"],\n    "prediction":"I predict...",\n    "dataTable":[{"label":"Before","field":""},{"label":"After","field":""}],\n    "conclusionStem":"I found that...",\n'+q;
+  return c+'    "passage":"Same story text",\n    "dataTable":[{"label":"Who","field":""},{"label":"What","field":""},{"label":"Why","field":""}],\n'+q;
+}
+
+function getTestSchema(subj,grade){
+  var band=getGradeBand(grade);
+  if(band==='k2'){var k2={math:'Return JSON with key "questions" — exactly 3 items. All type:"mcq". Simple words for 5-7 year olds. Each: {id,type:"mcq",question,readAloud:true,options(4 choices, each starting with emoji),answer,marks:1}. Total: 3 marks.',sci:'Return JSON with key "questions" — exactly 3 items. All type:"mcq". Concrete observations. Each: {id,type:"mcq",question,readAloud:true,options(4 emoji-prefixed choices),answer,marks:1}. Total: 3 marks.',ela:'Return JSON with key "questions" — exactly 3 items. All type:"mcq". Each: {id,type:"mcq",question,readAloud:true,options(4 emoji-prefixed choices),answer,marks:1}. Total: 3 marks.',writing:'Return JSON with key "questions" — exactly 3 items. All type:"mcq". Which sentence sounds right? Each: {id,type:"mcq",question,readAloud:true,options(4 choices),answer,marks:1}. Total: 3 marks.',ss:'Return JSON with key "questions" — exactly 3 items. All type:"mcq". Simple who/what about this week\'s scholar. Each: {id,type:"mcq",question,readAloud:true,options(4 emoji-prefixed choices),answer,marks:1}. Total: 3 marks.'};return k2[subj]||k2.math;}
+  if(band==='35'){var g35={math:'Return JSON with key "questions" — exactly 4 items. Mix: 2 type:"mcq"(4 options), 1 type:"wordbank"({question with [___],wordbank:["w1","w2","w3","w4","w5"],answer,marks:1}), 1 type:"short"(1-2 sentences,marks:2,rubric). Total: 6 marks.',sci:'Return JSON with key "questions" — exactly 4 items. Mix: 2 type:"mcq", 1 type:"wordbank"({question with [___],wordbank,answer,marks:1}), 1 type:"short"(1-2 sentences,marks:2,rubric). Total: 6 marks.',ela:'Return JSON with key "questions" — exactly 4 items. Mix: 2 type:"mcq", 1 type:"wordbank", 1 type:"short"(1-2 sentences,marks:2,rubric). Total: 6 marks.',writing:'Return JSON with key "questions" — exactly 3 items. 1 type:"mcq"(grammar), 1 type:"wordbank", 1 type:"short"(2-3 sentences,marks:3,rubric). Total: 6 marks.',ss:'Return JSON with key "questions" — exactly 4 items. Mix: 2 type:"mcq", 1 type:"wordbank", 1 type:"short"(1-2 sentences,marks:2,rubric). Total: 6 marks.'};return g35[subj]||g35.math;}
+  if(band==='912'){var g912={math:'Return JSON with key "questions" — exactly 4 items. Mix: 1 type:"mcq"(marks:1), 2 type:"short"(show working,3 marks each,rubric), 1 type:"extended"(multi-step,marks:4,rubric). Total: 11 marks.',sci:'Return JSON with key "questions" — exactly 4 items. Mix: 1 type:"mcq"(marks:1), 1 type:"short"(marks:3,rubric), 1 type:"extended"(marks:4,rubric), 1 type:"source"({question,sourceText:"...",marks:3,rubric}). Total: 11 marks.',ela:'Return JSON with key "questions" — exactly 4 items. Mix: 1 type:"mcq"(marks:1), 1 type:"short"(close reading,marks:3,rubric), 1 type:"source"({question,sourceText:"...",marks:3,rubric}), 1 type:"extended"(analytical,marks:4,rubric). Total: 11 marks.',writing:'Return JSON with key "questions" — exactly 3 items. 1 type:"editing"({paragraph with 4 errors,errors:[],answer,marks:4}), 1 type:"short"(marks:3,rubric), 1 type:"extended"(essay paragraph,marks:5,rubric). Total: 12 marks.',ss:'Return JSON with key "questions" — exactly 4 items. Mix: 1 type:"mcq"(marks:1), 1 type:"source"({question,sourceText:"...",marks:3,rubric}), 1 type:"short"(marks:3,rubric), 1 type:"extended"(structured argument,marks:4,rubric). Total: 11 marks.'};return g912[subj]||g912.math;}
+  var g68={math:'Return JSON with key "questions" — exactly 4 items. Each:{id,type("short"|"mcq"),question,options(4 strings,mcq only),answer,marks,rubric}. Mix: 2 short procedural(2 marks each)+1 MCQ(1 mark)+1 short explanation(2 marks). Total: 7 marks.',sci:'Return JSON with key "questions" — exactly 3 items. Each:{id,type,question,options(mcq only),answer,marks,rubric}. Mix: 1 MCQ(1 mark)+1 short explanation(2 marks)+1 analysis(2 marks). Total: 5 marks.',ela:'Return JSON with key "questions" — exactly 3 items. Mix: 1 MCQ comprehension(1 mark)+1 short with evidence(2 marks)+1 inference/analysis(2 marks). Total: 5 marks.',writing:'Return JSON with key "questions" — exactly 2 items. Item 1: type:"editing"(paragraph with 3 errors,errors:[],answer,marks:3). Item 2: type:"prompt"(question,constraint,marks:4,rubric). Total: 7 marks.',ss:'Return JSON with key "questions" — exactly 3 items. Mix: 1 MCQ(1 mark)+1 source/evidence analysis(2 marks)+1 structured argument(3 marks). Total: 6 marks.'};
+  return g68[subj]||g68.math;
+}
+
+function buildCtx(g,w,subj,sessionNum){
+  var how=(HOW_CURR[g]||{})[w]||{};
+  var juz=JUZ[w-1]||{};
+  var gl=g===0?'Kindergarten':'Grade '+g;
+  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
+  var subjKey=subj==='social'?'ss':subj==='science'?'sci':subj;
+  var topic=how[subjKey]||LABELS[subj]||subj;
+  var ctx='GRADE: '+gl+'\nSUBJECT: '+(LABELS[subj]||subj)+'\n';
+  ctx+='\n── JUZ & SACRED LAYER ──\n';
+  ctx+='Juz '+w+' theme: '+(juz.theme||'')+'\nName of the week: '+(juz.tr||juz.arabic||'')+' ('+(juz.meaning||'')+')\nName story: '+(juz.story||'')+'\nName carrying question: '+(juz.q||'')+'\nHadith: '+(juz.hadithTr||'')+' — '+(juz.hadithSrc||'')+'\n';
+  if(juz.quranTheme){ctx+='\n── QURANIC JUZ ──\nQuranic Juz '+w+' covers: '+(juz.quranSurahs||'')+'\nQuranic theme: '+(juz.quranTheme||'')+'\nKey reference: '+(juz.quranRef||'')+'\nQuranic reflection question: '+(juz.quranQuestion||'')+'\n';var ga=g===0?'Kindergarten — one simple sentence, something the child can touch or see.':g<=2?'Grades 1-2 — one concrete question.':g<=5?'Grades 3-5 — a choice or pattern, accessible but thoughtful.':g<=8?'Grades 6-8 — a tension or unanswered question.':'Grades 9-12 — use as written or deepen philosophically.';ctx+='Adapt the Quranic reflection for: '+ga+'\n';}
+  ctx+='\n── CURRICULUM CONTENT ──\nOpening question: '+(how.openingQ||'')+'\nTopic this session: '+topic+'\n';
+  if(how.math&&subj==='math') ctx+='Math content: '+how.math+'\n';
+  if(how.sci&&subj==='science') ctx+='Science content: '+how.sci+'\n';
+  if(how.ela&&subj==='ela') ctx+='ELA content: '+how.ela+'\n';
+  if(how.writing&&subj==='writing') ctx+='Writing content: '+how.writing+'\n';
+  if(how.ss&&subj==='social') ctx+='Social Studies content: '+how.ss+'\n';
+  ctx+='\n── SCHOLAR ──\nScholar: '+(how.scholar||'Al-Biruni')+'\nUse ONLY this scholar.\n';
+  if(how.studioCard){var sc=how.studioCard;ctx+='\n── STUDIO SESSION ──\nStudio discipline: '+(sc.discipline||'')+'\nStudio title: '+(sc.title||'')+'\nStudio prompt: '+(sc.prompt||'')+'\n';if(sc.materials&&sc.materials.essential) ctx+='Essential materials: '+sc.materials.essential.join(', ')+'\n';var d=sc.differentiation||{};if(g<=4&&d.k4) ctx+='Studio K-4 approach: '+d.k4+'\n';else if(g<=8&&d.m58) ctx+='Studio 5-8 approach: '+d.m58+'\n';else if(g>=9&&d.h912) ctx+='Studio 9-12 approach: '+d.h912+'\n';}
+  else if(how.studioActivation){ctx+='\nStudio activation this week: '+how.studioActivation+'\n';}
+  ctx+='\n-- SESSION INSTRUCTIONS --\n';
+  if(sessionNum===1){ctx+='COMPLETE, SELF-CONTAINED SESSION 1. Title slide = lesson topic (not opening question). Slide 2 = type:provocation, use opening question EXACTLY: \''+how.openingQ+'\'. Final slide = type:juz with arabic:'+(juz.arabic||juz.tr||'')+', name:'+(juz.tr||'')+' = '+(juz.meaning||'')+', story, carrying question.\n';}
+  else{ctx+='COMPLETE, SELF-CONTAINED SESSION 2. Deepens — do not re-teach Session 1. Final slide = Juz reflection.';if(how.munazaraClaim) ctx+=' Munazara claim: \''+how.munazaraClaim+'\'. Reference naturally.';ctx+='\n';}
+  ctx+='Word problems: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha.\nAim 5-8 slides. Keep concise.\n';
+  return ctx;
+}
+
+async function generateLesson(g,w,subj,sessionNum){
+  var how=(HOW_CURR[g]||{})[w]||{};
+  var juz=JUZ[w-1]||{};
+  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
+  var topic=how[subj==='social'?'ss':subj==='science'?'sci':subj]||LABELS[subj]||subj;
+  var ctx=buildCtx(g,w,subj,sessionNum);
+  var sys=getSysPrompt(subj,sessionNum)+'\n\nRespond with ONLY valid JSON. No markdown. No backticks.';
+  var gp=getGradePrefix(g);
+  var dRaw=await callAPI(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(subj)+'\n\nJSON only.');
+  var deck=parseJSON(dRaw);
+  var wRaw=await callAPI(sys,gp+'Generate the student workbook:\n\n'+ctx+'\nLesson: '+(deck.title||topic)+'\n\n'+getWBSchema(subj,g)+'\n\nJSON only — return object with single "workbook" key.');
+  var wb=parseJSON(wRaw);
+  var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
+  if(sessionNum===1){
+    slides.forEach(function(sl){if(sl.type==='juz'){sl.arabic=juz.arabic||juz.tr||'';sl.name=(juz.tr||'')+(juz.meaning?' — '+juz.meaning:'');sl.story=juz.story||'';sl.reflection=juz.q||'';delete sl.theme;}});
+    if(!slides.some(function(sl){return sl.type==='juz';})) slides.push({type:'juz',arabic:juz.arabic||juz.tr||'',name:(juz.tr||'')+(juz.meaning?' — '+juz.meaning:''),story:juz.story||'',reflection:juz.q||''});
+  }
+  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:subj,session:sessionNum,title:deck.title||topic,objective:deck.objective||'',slides:slides,workbook:wb.workbook||wb,generated_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+  var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
+  if(r.error) throw new Error(r.error.message);
+}
+
+async function generateTestSubject(g,w,subj){
+  var how=(HOW_CURR[g]||{})[w]||{};
+  var juz=JUZ[w-1]||{};
+  var gl=g===0?'Kindergarten':'Grade '+g;
+  var SLABELS={math:'Mathematics',sci:'Science',ela:'ELA / Reading',writing:'Writing',ss:'Social Studies'};
+  var objectives=how[subj==='ss'?'ss':subj]||'';
+  var band=getGradeBand(g);
+  var bandDesc=band==='k2'?'K-2: ALL questions must be type:"mcq" only.':band==='35'?'Grades 3-5: clear language, familiar contexts.':band==='68'?'Grades 6-8: analytical thinking, evidence-based.':'Grades 9-12: sophisticated analysis.';
+  var sys='You are generating a mastery assessment for a K-12 Islamic education platform.\nUS customary units. US spelling. Tests ONLY Session 1 + Session 2 content.\nGrade band: '+bandDesc+'\n'+(band==='k2'?'CRITICAL: Return ONLY type:"mcq" questions.\n':'')+'Return ONLY valid JSON. No markdown.';
+  var usr='Grade: '+gl+'\nWeek: '+w+'\nScholar: '+(how.scholar||'')+'\nJuz theme: '+(juz.theme||'')+'\nOpening question: '+(how.openingQ||'')+'\nSubject: '+(SLABELS[subj]||subj)+'\nLearning objectives: '+objectives+'\n\n'+getTestSchema(subj,g);
+  var raw=await callAPI(sys,usr,1200);
+  var parsed=parseJSON(raw);
+  var qs=parsed.questions||[];
+  if(band==='k2') qs=qs.filter(function(q){return q.type==='mcq';});
+  return {questions:qs,subjLabel:SLABELS[subj]||subj,totalMarks:qs.reduce(function(a,q){return a+(q.marks||1);},0)};
+}
+
+async function pushTest(g,w,subjects){
+  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,generated_at:new Date().toISOString(),locked:false,subjects:subjects,updated_at:new Date().toISOString()};
+  var r=await sb.from('test').upsert(entry,{onConflict:'household_id,grade,week'}).select();
+  if(r.error) throw new Error(r.error.message);
+}
+
+async function generateThursday(g,w){
+  var how=(HOW_CURR[g]||{})[w]||{};
+  var juz=JUZ[w-1]||{};
+  var gl=g===0?'Kindergarten':'Grade '+g;
+  var gp=getGradePrefix(g);
+  var ctx='GRADE: '+gl+'\nWEEK: '+w+' of 30\n\n── JUZ & SACRED LAYER ──\nJuz '+w+' theme: '+(juz.theme||'')+'\nName of the week: '+(juz.tr||'')+' ('+(juz.meaning||'')+')\nName story: '+(juz.story||'')+'\nName carrying question: '+(juz.q||'')+'\nHadith: '+(juz.hadithTr||'')+' — '+(juz.hadithSrc||'')+'\n';
+  if(juz.quranTheme) ctx+='\n── QURANIC JUZ ──\nQuranic Juz '+w+' covers: '+(juz.quranSurahs||'')+'\nQuranic theme: '+(juz.quranTheme||'')+'\nQuranic reflection question: '+(juz.quranQuestion||'')+'\n';
+  ctx+='\n── ALL FIVE SUBJECTS THIS WEEK ──\nOpening question: '+(how.openingQ||'')+'\nScholar: '+(how.scholar||'')+'\nMathematics: '+(how.math||'')+'\nScience: '+(how.sci||'')+'\nELA / Reading: '+(how.ela||'')+'\nWriting: '+(how.writing||'')+'\nSocial Studies: '+(how.ss||'')+'\n';
+  if(how.studioActivation) ctx+='Studio activation: '+how.studioActivation+'\n';
+  if(how.munazaraClaim) ctx+='Munazara claim: '+how.munazaraClaim+'\n';
+  ctx+='\n── THURSDAY SYNTHESIS INSTRUCTIONS ──\nFACILITATOR-LED all-subjects synthesis for Thursday. Purpose: make the week\'s thread visible — show how each subject expressed the same Juz theme and Name of Allah.\nGrade level: '+gl+'. Calibrate all language to this grade.\nNames: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha.\nSLIDE STRUCTURE (9 slides total):\n1. THREAD QUESTION (type:title) — one surprising question that runs through all five subjects.\n2-6. CONNECTION slides (type:concept, one per subject) — how that subject\'s content expressed the Juz theme.\n7. CAPSTONE QUESTION (type:practice) — can ONLY be answered by connecting two or more subjects.\n8. MUHASABA (type:concept) — one-sentence self-examination prompt.\n9. JUZ REFLECTION (type:juz) — Name, hadith, carrying question exactly as provided.\n';
+  var sys='You are generating a Thursday all-subjects synthesis deck for the Bayt al-Hikmah K-12 platform.\nUS customary units. US spelling.\nFacilitator-led — return ONLY valid JSON, no markdown.\nSchema: {"title":"string","objective":"string","slides":[{"type":"title"|"concept"|"practice"|"juz","heading":"string","content":"string","bullets":["string"],"example":"string","scholarNote":"string"}]}';
+  var raw=await callAPI(sys,gp+'Generate the Thursday synthesis deck:\n\n'+ctx+'\n\nJSON only.');
+  var deck=parseJSON(raw);
+  var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
+  slides.forEach(function(sl){if(sl.body&&!sl.content) sl.content=sl.body;if(sl.teacherNote&&!sl.scholarNote) sl.scholarNote=sl.teacherNote;if(sl.type==='juz'){sl.arabic=juz.arabic||juz.tr||'';sl.name=(juz.tr||'')+(juz.meaning?' — '+juz.meaning:'');sl.story=juz.story||'';sl.reflection=juz.q||'';delete sl.theme;}});
+  if(!slides.some(function(sl){return sl.type==='juz';})) slides.push({type:'juz',arabic:juz.arabic||juz.tr||'',name:(juz.tr||'')+(juz.meaning?' — '+juz.meaning:''),story:juz.story||'',reflection:juz.q||''});
+  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:'synthesis',session:3,title:deck.title||'Thursday Synthesis — Week '+w,objective:deck.objective||'',slides:slides,workbook:{},generated_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+  var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
+  if(r.error) throw new Error(r.error.message);
+}
+
+async function generateWedReview(gi,g){
+  var w=STATE.week;
+  var hid=localStorage.getItem('how_household_id');
+  setWedStatus(gi,'running');
+  addLog((g===0?'K':'G'+g)+' Wed Review — pulling scores…','start');
+  try{
+    var sr=await sb.from('score').select('subjects').eq('household_id',hid).eq('grade',g).eq('week',w).maybeSingle();
+    if(!sr.data||!sr.data.subjects) throw new Error('No scores found — complete Tuesday test first');
+    var sc=sr.data.subjects;
+    var how=(HOW_CURR[g]||{})[w]||{};
+    var juz=JUZ[w-1]||{};
+    var gl=g===0?'Kindergarten':'Grade '+g;
+    var SLABELS={math:'Mathematics',sci:'Science',ela:'ELA / Reading',writing:'Writing',ss:'Social Studies'};
+    var scoreCtx='';
+    ['math','sci','ela','writing','ss'].forEach(function(subj){
+      var sd=sc[subj]||{};
+      var earned=sd.details?sd.details.reduce(function(a,d){return a+(d.awarded>=0?d.awarded:0);},0):(sd.score||0);
+      var total=sd.details?sd.details.reduce(function(a,d){return a+d.marks;},0):(sd.total||0);
+      var wrongs=sd.details?sd.details.filter(function(d){return d.awarded===0||d.awarded===-1;}).map(function(d){return '  - Q: '+d.question+' [answered: '+(d.answer||'blank')+', correct: '+(d.correct||'?')+']';}).join('\n'):'';
+      scoreCtx+='\n'+(SLABELS[subj]||subj)+': '+earned+'/'+total;
+      if(wrongs) scoreCtx+='\n  Missed:\n'+wrongs;
+    });
+    var sys='You are generating a Wednesday review lesson deck for a K-12 Islamic homeschool platform. US customary units. US spelling.\nThe deck targets ONLY misconceptions from wrong answers. RULES:\n- One slide per subject with errors (max 5 subjects)\n- Name the SPECIFIC misconception, then ask ONE correcting question\n- Do NOT re-teach the whole concept — target the exact error\n- Connect one slide to the week\'s scholar, one to the Juz theme\n- Final slide: muhasaba — what does understanding this correctly change?\nReturn ONLY valid JSON. Schema: {"title":"string","objective":"string","slides":[{"type":"string","heading":"string","content":"string","question":"string","parentNote":"string"}]}';
+    var usr=gl+' · Week '+w+' · Scholar: '+(how.scholar||'')+'\nJuz: '+(juz.tr||'')+' — '+(juz.meaning||'')+'\nCarrying question: '+(how.openingQ||'')+'\n\nTest results:'+scoreCtx;
+    var raw=await callAPI(sys,usr,2000);
+    var deck=parseJSON(raw);
+    var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
+    var entry={household_id:hid,grade:g,week:w,subject:'review',session:4,title:deck.title||'Wednesday Review',objective:deck.objective||'',slides:slides,workbook:{},generated_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+    var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
+    if(r.error) throw new Error(r.error.message);
+    setWedStatus(gi,'done');
+    addLog((g===0?'K':'G'+g)+' Wed Review ✓','ok');
+  }catch(e){setWedStatus(gi,'error');addLog((g===0?'K':'G'+g)+' Wed Review ✗ '+e.message,'err');}
+}
+
+function seedMunazara(){
+  var w=STATE.week; var seeded=0;
+  for(var g=0;g<=12;g++){
+    var how=(HOW_CURR[g]||{})[w]||{};
+    if(how.munazaraClaim){var obj={claim:how.munazaraClaim,grade:g,week:w,scholar:how.scholar||'',generatedAt:new Date().toISOString()};try{localStorage.setItem('how_munazara_claim_'+g+'_'+w,JSON.stringify(obj));seeded++;}catch(e){}}
+  }
+  var latest=(HOW_CURR[7]||{})[w]||{};
+  if(latest.munazaraClaim) try{localStorage.setItem('how_munazara_claim',JSON.stringify({claim:latest.munazaraClaim,grade:7,week:w,scholar:latest.scholar||'',generatedAt:new Date().toISOString()}));}catch(e){}
+  addLog('Seeded '+seeded+' munazara claims to localStorage (Week '+w+')','ok');
+}
+
+async function broadcast(){
+  addLog('Broadcasting to all families…','start');
+  try{var r=await sb.rpc('broadcast_lessons_to_families');if(r.error) throw new Error(r.error.message);addLog('✓ Broadcast complete — all families updated','ok');}
+  catch(e){addLog('✗ Broadcast failed: '+e.message,'err');}
+}
+
+async function runAll(){
+  var week=STATE.week;
+  if(!STATE.genS1&&!STATE.genS2&&!STATE.genTest&&!STATE.genThursday){addLog('Select at least one thing to generate','warn');return;}
+  if(!sb){addLog('Not connected to Supabase','err');return;}
+  abortFlag=false;
+  var total=13*((STATE.genS1?10:0)+(STATE.genS2?10:0)+(STATE.genTest?5:0)+(STATE.genThursday?1:0));
+  STATE.isRunning=true;
+  STATE.stats={total:total,done:0,errors:0,startTime:Date.now()};
+  STATE.grades.forEach(function(gr){gr.s1=Array(5).fill('idle');gr.s2=Array(5).fill('idle');gr.test=Array(5).fill('idle');gr.thu='idle';gr.status='idle';});
+  STATE.log=[];
+  for(var gi=0;gi<13;gi++) updateGradeRow(gi);
+  updateLog(); updateProgress();
+  addLog('Week '+week+' — '+total+' items across 13 grades','start');
+  var LS=['math','science','ela','writing','social'];
+  var TS=['math','sci','ela','writing','ss'];
+  for(var gi=0;gi<13;gi++){
+    if(abortFlag){addLog('Run cancelled','warn');break;}
+    var g=gi, gl=g===0?'K':'G'+g;
+    setGradeStatus(gi,'running');
+    addLog('── '+(g===0?'Kindergarten':'Grade '+g)+' ──','grade');
+    var errs=0;
+    if(STATE.genS1){
+      for(var si=0;si<5;si++){
+        if(abortFlag) break;
+        setSubjStatus(gi,'s1',si,'running');
+        try{await generateLesson(g,week,LS[si],1);setSubjStatus(gi,'s1',si,'done');bumpDone();bumpDone();addLog(gl+' · S1 · '+LS[si]+' ✓','ok');}
+        catch(e){setSubjStatus(gi,'s1',si,'error');errs++;bumpError();addLog(gl+' · S1 · '+LS[si]+' ✗ '+e.message,'err');}
+        if(STATE.delay&&si<4) await sleep(STATE.delay);
+      }
+    }
+    if(STATE.genS2){
+      for(var si=0;si<5;si++){
+        if(abortFlag) break;
+        setSubjStatus(gi,'s2',si,'running');
+        try{await generateLesson(g,week,LS[si],2);setSubjStatus(gi,'s2',si,'done');bumpDone();bumpDone();addLog(gl+' · S2 · '+LS[si]+' ✓','ok');}
+        catch(e){setSubjStatus(gi,'s2',si,'error');errs++;bumpError();addLog(gl+' · S2 · '+LS[si]+' ✗ '+e.message,'err');}
+        if(STATE.delay&&si<4) await sleep(STATE.delay);
+      }
+    }
+    if(STATE.genTest){
+      var testSubjs={};
+      for(var si=0;si<5;si++){
+        if(abortFlag) break;
+        setSubjStatus(gi,'test',si,'running');
+        try{testSubjs[TS[si]]=await generateTestSubject(g,week,TS[si]);setSubjStatus(gi,'test',si,'done');bumpDone();addLog(gl+' · Test · '+TS[si]+' ✓','ok');}
+        catch(e){setSubjStatus(gi,'test',si,'error');errs++;bumpError();addLog(gl+' · Test · '+TS[si]+' ✗ '+e.message,'err');}
+        if(STATE.delay&&si<4) await sleep(STATE.delay);
+      }
+      if(Object.keys(testSubjs).length>0){try{await pushTest(g,week,testSubjs);}catch(e){addLog(gl+' Test push ✗ '+e.message,'err');}}
+    }
+    if(STATE.genThursday){
+      if(abortFlag) break;
+      setThuStatus(gi,'running');
+      try{await generateThursday(g,week);setThuStatus(gi,'done');bumpDone();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✓','ok');}
+      catch(e){setThuStatus(gi,'error');errs++;bumpError();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✗ '+e.message,'err');}
+      if(STATE.delay) await sleep(STATE.delay);
+    }
+    setGradeStatus(gi,errs?'error':'done');
+  }
+  STATE.isRunning=false; updateProgress();
+  var s=STATE.stats;
+  addLog('Done — '+s.done+' items, '+s.errors+' errors',s.errors?'warn':'done');
+  if(STATE.broadcastAfter&&!abortFlag) await broadcast();
+}
+
+function handleRun(){if(STATE.isRunning){abortFlag=true;addLog('Cancelling…','warn');STATE.isRunning=false;updateProgress();}else{runAll();}}
+
+// ── STUDIO CARDS ─────────────────────────────────────────────────────────────
+function loadStudioCards(){
+  try{var stored=localStorage.getItem('how_studio_cards');if(!stored) return 0;var cards=JSON.parse(stored);if(typeof HOW_CURR==='undefined') return 0;Object.keys(cards).forEach(function(week){var card=cards[week];Object.keys(HOW_CURR).forEach(function(grade){if(HOW_CURR[grade][week]) HOW_CURR[grade][week].studioCard=card;if(HOW_CURR[grade][String(week)]) HOW_CURR[grade][String(week)].studioCard=card;});});return Object.keys(cards).length;}catch(e){return 0;}
+}
+function importStudioCards(){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
+  inp.onchange=async function(e){var file=e.target.files[0];if(!file) return;try{var text=await file.text();var cards=JSON.parse(text);if(cards.cards) cards=cards.cards;localStorage.setItem('how_studio_cards',JSON.stringify(cards));var count=loadStudioCards();qs('#studio-btn').textContent='📥 Studio Cards ('+count+')';addLog('✓ '+count+' studio cards imported','ok');}catch(err){addLog('✗ Studio cards import failed: '+err.message,'err');}};
+  inp.click();
+}
+
+// ── HEYGEN ───────────────────────────────────────────────────────────────────
+function loadHeygenCfg(){
+  try{var d=JSON.parse(localStorage.getItem('how_heygen_cfg')||'{}');if(d.key){STATE.heygenKey=d.key;qs('#hey-key').value=d.key;}if(d.avatars) Object.assign(STATE.heygenAvatars,d.avatars);}catch(e){}
+}
+function saveHeygenCfg(patch){
+  try{var d=JSON.parse(localStorage.getItem('how_heygen_cfg')||'{}');Object.assign(d,patch);localStorage.setItem('how_heygen_cfg',JSON.stringify(d));}catch(e){}
+}
+
+function buildHeygenVideoPrompt(g,w,subjKey){
+  var how=(HOW_CURR[g]||{})[w]||{};
+  var juz=JUZ[w-1]||{};
+  var gl=g===0?'Kindergarten':'Grade '+g;
+  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
+  var HOW_KEY={math:'math',science:'sci',ela:'ela',writing:'writing',social:'ss'};
+  var topic=how[HOW_KEY[subjKey]]||LABELS[subjKey]||subjKey;
+  var STYLES={math:'Deep navy background (#1B2A4A), gold accents (#F5C842), white text. Clean geometric marker-drawn style.',science:'Dark green background (#1A3A2A), cyan accents (#3DD9C5), white text. Scientific diagram marker-drawn style.',ela:'Warm burgundy background (#3A1A2A), rose accents (#F5A0B0), cream text. Literary manuscript marker-drawn style.',writing:'Slate background (#2A2A3A), lavender accents (#B0A0F5), white text. Handwritten notebook marker-drawn style.',social:'Cream parchment background (#F5EBDD), charcoal text (#3A2A22), emerald green accents (#1FB997). Scholarly map-inspired marker-drawn style.'};
+  return ['Create a 1-minute educational introduction video for '+gl+' '+LABELS[subjKey]+': "'+topic+'".','The presenter is a human teacher avatar — NOT the historical scholar. The scholar of the week is referenced in the content only.','Scholar of the week: '+(how.scholar||'')+(juz.tr?' — '+juz.tr+' ('+juz.meaning+')':''),'Overarching theme: '+(juz.theme||'')+'. Overarching question: '+(how.openingQ||''),'This is an INTRODUCTION ONLY — organic, unhurried pedagogical tone. End with a question that invites curiosity.','Style: marker-drawn educational, editorial serif typography. No background music. No dramatic pauses or filler sounds. '+(STYLES[subjKey]||''),].filter(Boolean).join(' ');
+}
+
+async function submitOneHeygenVideo(gi,si,g,w,subjKey){
+  var cfg=STATE.heygenAvatars[subjKey]||{};
+  if(!STATE.heygenKey) throw new Error('No Heygen API key — set it in the Heygen tab');
+  if(!cfg.avatarId) throw new Error('No avatar ID for '+subjKey);
+  setHeygenStatus(gi,si,'running');
+  var prompt=buildHeygenVideoPrompt(g,w,subjKey);
+  var body={agent:{input:prompt,type:'VIDEO_AGENT'},test:false};
+  if(cfg.avatarId) body.avatar_id=cfg.avatarId;
+  if(cfg.voiceId) body.voice_id=cfg.voiceId;
+  if(cfg.lookId) body.look_id=cfg.lookId;
+  var r=await fetch('https://api.heygen.com/v3/video-agents',{method:'POST',headers:{'X-Api-Key':STATE.heygenKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('Heygen API '+r.status);
+  var d=await r.json();
+  var vid=d.data&&d.data.video_id||d.video_id;
+  if(!vid) throw new Error('No video_id returned');
+  addLog((g===0?'K':'G'+g)+' '+subjKey+' submitted ('+vid.slice(0,8)+'…)','ok');
+  setHeygenStatus(gi,si,'done');
+}
+
+async function runHeygenBatch(){
+  if(!STATE.heygenKey){addLog('Set Heygen API key in the Heygen tab first','err');return;}
+  var SUBJS=['math','science','ela','writing','social'];
+  addLog('Heygen video batch — Week '+STATE.week+' — all grades','start');
+  for(var gi=0;gi<13;gi++){
+    if(abortFlag) break;
+    for(var si=0;si<5;si++){
+      if(abortFlag) break;
+      try{await submitOneHeygenVideo(gi,si,gi,STATE.week,SUBJS[si]);}
+      catch(e){setHeygenStatus(gi,si,'error');addLog((gi===0?'K':'G'+gi)+' '+SUBJS[si]+' ✗ '+e.message,'err');}
+      await sleep(400);
+    }
+  }
+  addLog('Heygen batch submitted — check your Heygen dashboard for video status','done');
+}
+
+function renderSlideHTML(grade,subject,session,deck,juz,how){
+  var COLORS={Mathematics:'#1B2A4A',Science:'#1A3A2A','ELA / Reading':'#3A1A2A',Writing:'#2A2A3A','Social Studies':'#2A1F0A'};
+  var ACCENTS={Mathematics:'#F5C842',Science:'#3DD9C5','ELA / Reading':'#F5A0B0',Writing:'#B0A0F5','Social Studies':'#1FB997'};
+  var bg=COLORS[subject]||'#1B2A4A', acc=ACCENTS[subject]||'#c8a96e';
+  var slides=deck.slides||[];
+  var slideHtml=slides.map(function(sl,i){
+    var body=sl.content||sl.question||sl.passage||sl.story||'';
+    var steps=sl.steps?'<ol>'+sl.steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol>':'';
+    return '<div class="slide" id="s'+i+'"><div class="sn">'+(i+1)+'/'+slides.length+'</div><h2>'+(sl.heading||sl.type||'')+'</h2>'+(body?'<p>'+body+'</p>':'')+steps+(sl.parentNote?'<div class="pn">\ud83d\udc64 '+sl.parentNote+'</div>':'')+'</div>';
+  }).join('');
+  return '<!DOCTYPE html><html><head><meta charset=utf-8><title>'+grade+' \xb7 '+subject+' \xb7 Session '+session+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:'+bg+';color:#fff;font-family:Georgia,serif;height:100vh;overflow:hidden}.slide{display:none;height:100vh;padding:60px 80px;flex-direction:column;justify-content:center;position:relative}.slide.active{display:flex}.sn{position:absolute;top:18px;right:24px;font-size:12px;opacity:.4}h2{font-size:34px;line-height:1.2;color:'+acc+';margin-bottom:18px}p{font-size:21px;line-height:1.65;max-width:880px}ol{font-size:19px;line-height:1.8;max-width:880px;padding-left:22px}.pn{margin-top:18px;font-size:14px;opacity:.55;font-style:italic;border-top:1px solid rgba(255,255,255,.12);padding-top:10px}.bar{position:fixed;top:0;left:0;right:0;height:46px;background:rgba(0,0,0,.35);display:flex;align-items:center;padding:0 22px;font-size:12px;opacity:.65;gap:8px}.nav{position:fixed;bottom:20px;right:22px;display:flex;gap:8px}.nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;padding:7px 18px;border-radius:18px;cursor:pointer;font-size:13px}</style></head><body><div class=bar><span style="color:'+acc+'">'+grade+'</span><span style="opacity:.4">\xb7</span>'+subject+'<span style="opacity:.4">\xb7</span>Session '+session+'<span style="opacity:.4">\xb7</span>'+(how.scholar||'')+'</div>'+slideHtml+'<div class=nav><button onclick="prev()">\u2190</button><button onclick="next()">\u2192</button></div><script>var c=0,ss=document.querySelectorAll(".slide");function show(n){ss.forEach(function(s,i){s.classList.toggle("active",i===n);});}function next(){if(c<ss.length-1){c++;show(c);}}function prev(){if(c>0){c--;show(c);}}document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")next();if(e.key==="ArrowLeft")prev();});show(0);<\/script></body></html>';
+}
+
+async function generateAndExportSlides(g,w,subjKey,sessionNum){
+  var how=(HOW_CURR[g]||{})[w]||{};
+  var juz=JUZ[w-1]||{};
+  var gl=g===0?'Kindergarten':'Grade '+g;
+  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
+  var ctx=buildCtx(g,w,subjKey,sessionNum);
+  var sys=getSysPrompt(subjKey,sessionNum)+'\n\nReturn ONLY valid JSON. No markdown.';
+  var raw=await callAPI(sys,getGradePrefix(g)+'Generate slides:\n\n'+ctx+'\n\n'+getDeckSchema(subjKey)+'\n\nJSON only.',3000);
+  var deck=parseJSON(raw);
+  var html=renderSlideHTML(gl,LABELS[subjKey],'Session '+sessionNum,deck,juz,how);
+  var fname=(g===0?'K':'Grade_'+g)+'_'+LABELS[subjKey].replace(/ \//g,'').replace(/ /g,'_')+'_Session_'+sessionNum+'.html';
+  var blob=new Blob([html],{type:'text/html'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=fname; a.click(); URL.revokeObjectURL(url);
+}
+
+async function runSlideGenBatch(){
+  var week=STATE.week;
+  var SUBJS=['math','science','ela','writing','social'];
+  addLog('Qalam slide generation — Week '+week+' — all grades × 5 subjects × 2 sessions','start');
+  var count=0,errs=0;
+  for(var gi=0;gi<=12;gi++){
+    if(abortFlag) break;
+    var gl=gi===0?'K':'G'+gi;
+    for(var si=0;si<5;si++){
+      for(var sess=1;sess<=2;sess++){
+        if(abortFlag) break;
+        setQalamStatus(gi,si,sess,'running');
+        try{
+          await generateAndExportSlides(gi,week,SUBJS[si],sess);
+          setQalamStatus(gi,si,sess,'done'); count++;
+          addLog(gl+' '+SUBJS[si]+' S'+sess+' ✓','ok');
+          await sleep(300);
+        }catch(e){setQalamStatus(gi,si,sess,'error');errs++;addLog(gl+' '+SUBJS[si]+' S'+sess+' ✗ '+e.message,'err');}
+      }
+    }
+  }
+  addLog('Qalam slides done — '+count+' files downloaded, '+errs+' errors. Upload HTML files to Google Drive.','done');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function(){
+  // Supabase
+  if(typeof supabase !== 'undefined'){
+    sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+    try{var stored=JSON.parse(localStorage.getItem('sb-apallkuclqcqxnbmjuqu-auth-token')||'null');if(stored&&stored.access_token) sb.auth.setSession({access_token:stored.access_token,refresh_token:stored.refresh_token});}catch(e){}
+  }
+  // Auth
+  var jwt=localStorage.getItem('how_jwt');
+  var hid=localStorage.getItem('how_household_id');
+  if(jwt&&hid){STATE.authStatus='ok';STATE.householdId=hid;}else{STATE.authStatus='noauth';}
+  updateAuthBadge();
+  // Saved week
+  try{var d=JSON.parse(localStorage.getItem('how_lg2')||'{}');if(d.week&&d.week>=1&&d.week<=30) STATE.week=d.week;}catch(e){}
+  // Init UI
+  initWeekSelect();
+  initGrid();
+  initWedBtns();
+  initMunGrid();
+  initHeygenAvatarRows();
+  loadHeygenCfg();
+  // Studio cards
+  var sc=loadStudioCards();
+  if(sc>0) qs('#studio-btn').textContent='📥 Studio Cards ('+sc+')';
+  updateProgress();
+});
+</script>
+</body>
+</html>

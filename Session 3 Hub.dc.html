@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  @keyframes doorin { from { transform:translateY(16px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+  @keyframes risein { from { transform:translateY(12px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+  @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.45} }
+  a { color:#117a60; } a:hover { color:#0c5a47; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;background:#f3e7c9;font-family:'Nunito',system-ui,sans-serif;">
+
+  <!-- TOP BAR -->
+  <div style="height:62px;flex:none;background:#0c5a47;display:flex;align-items:center;justify-content:space-between;padding:0 20px;box-shadow:0 2px 12px rgba(0,0,0,.18);z-index:50;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <sc-if value="{{ notHome }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:none;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;padding:8px 16px;border-radius:999px;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back
+        </button>
+      </sc-if>
+      <div style="display:flex;align-items:center;gap:9px;color:#fbe7b8;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;letter-spacing:.05em;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 5.6L20 8.2l-4 4.1.9 5.7L12 15.4 7.1 18l.9-5.7-4-4.1 5.6-.6z" fill="#f2c14e"/></svg>
+        {{ barTitle }}
+      </div>
+    </div>
+    <div style="background:rgba(242,193,78,.9);border-radius:999px;padding:5px 14px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13px;color:#3c2a08;">Session 3</div>
+  </div>
+
+  <!-- HOME — SUBJECT CARDS -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;overflow-y:auto;padding:36px 24px 60px;">
+      <div style="max-width:1040px;margin:0 auto;text-align:center;">
+
+        <!-- Scholar banner -->
+        <div style="display:inline-flex;align-items:center;gap:14px;background:#0c5a47;border-radius:20px;padding:16px 24px;margin-bottom:28px;max-width:700px;width:100%;text-align:left;animation:risein .4s ease;">
+          <div style="flex:none;width:52px;height:52px;border-radius:50%;background:#117a60;display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 5.6L20 8.2l-4 4.1.9 5.7L12 15.4 7.1 18l.9-5.7-4-4.1 5.6-.6z" fill="#f2c14e"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;color:#fbe7b8;">{{ scholarName }}{{ scholarDatesBadge }}</div>
+            <div style="font-size:13px;line-height:1.5;color:#bfe6da;margin-top:2px;max-width:540px;text-wrap:pretty;">{{ scholarBio }}</div>
+          </div>
+        </div>
+
+        <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:38px;color:#2f2110;line-height:1.1;margin-bottom:10px;text-wrap:pretty;">{{ lessonTitle }}</div>
+        <div style="font-size:16px;color:#8a7350;margin-bottom:10px;">{{ gradeLabel }}</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #e6d8ba;border-radius:999px;padding:8px 18px;font-size:14px;color:#8a7350;margin-bottom:36px;font-style:italic;">{{ themeQ }}</div>
+
+        <!-- Subject cards -->
+        <div style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;">
+          <sc-for list="{{ subjectCards }}" as="card" hint-placeholder-count="5">
+            <button onClick="{{ card.onClick }}" style="{{ card.style }}">
+              <div style="{{ card.iconWrap }}">
+                <svg viewBox="0 0 24 24" fill="none" width="30" height="30">{{ card.iconPath }}</svg>
+              </div>
+              <div style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:21px;color:#2f2110;margin-top:13px;">{{ card.label }}</div>
+              <div style="font-size:13.5px;line-height:1.4;color:#7a6a4f;margin-top:3px;">{{ card.sub }}</div>
+              <sc-if value="{{ card.isActive }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px;background:#0c5a47;color:#fff;border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;font-family:'Baloo 2',sans-serif;">This lesson</div>
+              </sc-if>
+              <sc-if value="{{ card.isLocked }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px;color:#a39580;font-size:12px;font-weight:700;font-family:'Baloo 2',sans-serif;">🔒 Generate lesson to unlock</div>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ACTIVITY PANEL -->
+  <sc-if value="{{ isActivity }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+      <sc-if value="{{ actIsMath }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="Session 3 Math" grade="{{ actGrade }}" subject="{{ activeSubject }}" lesson-title="{{ actTitle }}" scholar-name="{{ actScholarName }}" scholar-dates="{{ actScholarDates }}" scholar-bio="{{ actScholarBio }}" theme="{{ actTheme }}" theme-q="{{ actThemeQ }}" session1-text="{{ actS1 }}" session2-text="{{ actS2 }}" hint-size="100%,100%"></dc-import>
+      </sc-if>
+      <sc-if value="{{ actIsScience }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="Session 3 Science" grade="{{ actGrade }}" subject="{{ activeSubject }}" lesson-title="{{ actTitle }}" scholar-name="{{ actScholarName }}" scholar-dates="{{ actScholarDates }}" scholar-bio="{{ actScholarBio }}" theme="{{ actTheme }}" theme-q="{{ actThemeQ }}" session1-text="{{ actS1 }}" session2-text="{{ actS2 }}" hint-size="100%,100%"></dc-import>
+      </sc-if>
+      <sc-if value="{{ actIsELA }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="Session 3 ELA" grade="{{ actGrade }}" subject="{{ activeSubject }}" lesson-title="{{ actTitle }}" scholar-name="{{ actScholarName }}" scholar-dates="{{ actScholarDates }}" scholar-bio="{{ actScholarBio }}" theme="{{ actTheme }}" theme-q="{{ actThemeQ }}" session1-text="{{ actS1 }}" session2-text="{{ actS2 }}" hint-size="100%,100%"></dc-import>
+      </sc-if>
+      <sc-if value="{{ actIsWriting }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="Session 3 Writing" grade="{{ actGrade }}" subject="{{ activeSubject }}" lesson-title="{{ actTitle }}" scholar-name="{{ actScholarName }}" scholar-dates="{{ actScholarDates }}" scholar-bio="{{ actScholarBio }}" theme="{{ actTheme }}" theme-q="{{ actThemeQ }}" session1-text="{{ actS1 }}" session2-text="{{ actS2 }}" hint-size="100%,100%"></dc-import>
+      </sc-if>
+      <sc-if value="{{ actIsSocial }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="Session 3 Social Studies" grade="{{ actGrade }}" subject="{{ activeSubject }}" lesson-title="{{ actTitle }}" scholar-name="{{ actScholarName }}" scholar-dates="{{ actScholarDates }}" scholar-bio="{{ actScholarBio }}" theme="{{ actTheme }}" theme-q="{{ actThemeQ }}" session1-text="{{ actS1 }}" session2-text="{{ actS2 }}" hint-size="100%,100%"></dc-import>
+      </sc-if>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 1000, &quot;height&quot;: 700},
+  &quot;grade&quot;:        {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Grade 8&quot;,  &quot;tsType&quot;: &quot;string&quot;},
+  &quot;subject&quot;:      {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Math&quot;,     &quot;tsType&quot;: &quot;string&quot;},
+  &quot;lessonTitle&quot;:  {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;},
+  &quot;scholarName&quot;:  {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;},
+  &quot;scholarDates&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;},
+  &quot;scholarBio&quot;:   {&quot;editor&quot;: null,   &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;},
+  &quot;theme&quot;:        {&quot;editor&quot;: null,   &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;},
+  &quot;themeQ&quot;:       {&quot;editor&quot;: null,   &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;},
+  &quot;session1Text&quot;: {&quot;editor&quot;: null,   &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;},
+  &quot;session2Text&quot;: {&quot;editor&quot;: null,   &quot;default&quot;: &quot;&quot;,         &quot;tsType&quot;: &quot;string&quot;}
+}">
+class Component extends DCLogic {
+  defaultProps = {
+    grade: 'Grade 8', lessonTitle: 'Functions — Al-Idrisi\'s maps as functional relationships',
+    scholarName: 'Muhammad al-Idrisi', scholarDates: '1100–1165 CE',
+    scholarBio: 'Created the most accurate world map of the medieval period, encoding geographic functions.',
+    theme: 'Creation & beginnings', themeQ: 'What does it mean to create something that did not exist before?',
+    session1Text: '', session2Text: '', subject: 'Math',
+  };
+
+  state = { screen: 'home', activeSubject: '', unlocked: {} };
+
+  componentDidMount() { this.loadUnlocked(); }
+
+  loadUnlocked() {
+    const subjects = ['Math','Science','ELA','Writing','Social Studies'];
+    const unlocked = {};
+    subjects.forEach(s => {
+      try {
+        const d = localStorage.getItem('qalam_s3_' + s);
+        if (d) unlocked[s] = JSON.parse(d);
+      } catch(e) {}
+    });
+    this.setState({ unlocked });
+  }
+
+  getSubjectData(subject) {
+    const stored = this.state.unlocked[subject];
+    if (stored) return stored;
+    // Fall back to current props if it matches
+    const p = this.p;
+    if (this.normalize(p.subject) === subject) {
+      return { grade: p.grade, lessonTitle: p.lessonTitle, scholarName: p.scholarName, scholarDates: p.scholarDates, scholarBio: p.scholarBio, theme: p.theme, themeQ: p.themeQ, session1Text: p.session1Text, session2Text: p.session2Text };
+    }
+    return null;
+  }
+
+  get p() {
+    const d = this.defaultProps;
+    return {
+      grade: this.props.grade ?? d.grade, lessonTitle: this.props.lessonTitle ?? d.lessonTitle,
+      scholarName: this.props.scholarName ?? d.scholarName, scholarDates: this.props.scholarDates ?? d.scholarDates,
+      scholarBio: this.props.scholarBio ?? d.scholarBio, theme: this.props.theme ?? d.theme,
+      themeQ: this.props.themeQ ?? d.themeQ, session1Text: this.props.session1Text ?? d.session1Text,
+      session2Text: this.props.session2Text ?? d.session2Text, subject: this.props.subject ?? d.subject,
+    };
+  }
+
+  normalize(s) {
+    const l = (s || '').toLowerCase();
+    if (l.includes('math')) return 'Math';
+    if (l.includes('sci')) return 'Science';
+    if (l.includes('ela') || l.includes('english') || l.includes('reading') || l.includes('language')) return 'ELA';
+    if (l.includes('writ')) return 'Writing';
+    return 'Social Studies';
+  }
+
+  open(subject) {
+    const data = this.getSubjectData(subject);
+    if (!data) return;
+    this.setState({ screen: 'activity', activeSubject: subject, activeData: data });
+  }
+  goHome() { this.setState({ screen: 'home', activeSubject: '' }); }
+
+  renderVals() {
+    const s = this.state; const p = this.p;
+    const currentSubj = this.normalize(p.subject);
+
+    const SUBJECTS = [
+      { key: 'Math',           color: '#117a60', label: 'Math',          sub: 'Practice the lesson concept',
+        iconPath: '<circle cx="7" cy="8" r="3" fill="currentColor"/><circle cx="16" cy="8" r="3" fill="currentColor"/><circle cx="11" cy="16" r="3" fill="currentColor"/>' },
+      { key: 'Science',        color: '#2e6b3f', label: 'Science',       sub: 'Observation & classification',
+        iconPath: '<path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>' },
+      { key: 'ELA',            color: '#1f7a8c', label: 'ELA',           sub: 'Vocabulary & comprehension',
+        iconPath: '<path d="M12 6c-2-1.4-5-1.4-7 0v12c2-1.4 5-1.4 7 0 2-1.4 5-1.4 7 0V6c-2-1.4-5-1.4-7 0z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 6v12" stroke="currentColor" stroke-width="2"/>' },
+      { key: 'Writing',        color: '#cf982a', label: 'Writing',       sub: 'Structure & craft',
+        iconPath: '<path d="M5 19l1-4L16 5l3 3L9 18l-4 1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 7l3 3" stroke="currentColor" stroke-width="2"/>' },
+      { key: 'Social Studies', color: '#c25a34', label: 'Social Studies',sub: 'History & geography',
+        iconPath: '<path d="M9 18l-5-2V5l5 2 6-2 5 2v11l-5-2-6 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 5v11M15 7v11" stroke="currentColor" stroke-width="2"/>' },
+    ];
+
+    const subjectCards = SUBJECTS.map((subj, i) => {
+      const data = this.getSubjectData(subj.key);
+      const isUnlocked = !!data;
+      const isCurrentLesson = subj.key === currentSubj;
+      return {
+        label: subj.label,
+        sub: isUnlocked ? (data.lessonTitle ? data.lessonTitle.substring(0, 50) + (data.lessonTitle.length > 50 ? '…' : '') : subj.sub) : subj.sub,
+        iconPath: subj.iconPath,
+        isActive: isCurrentLesson,
+        isUnlocked,
+        isLocked: !isUnlocked,
+        onClick: isUnlocked ? () => this.open(subj.key) : () => {},
+        iconWrap: `width:62px;height:62px;border-radius:50%;background:${isUnlocked ? subj.color : '#c9bda3'};color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 rgba(0,0,0,.14);`,
+        style: `width:210px;padding:24px 18px 22px;background:${isUnlocked ? '#fffefb' : '#f0ece4'};border:1px solid ${isUnlocked ? '#ece1c8' : '#d9d0c0'};border-top:6px solid ${isUnlocked ? subj.color : '#c9bda3'};border-radius:22px;box-shadow:0 10px 26px rgba(60,40,10,.08);cursor:${isUnlocked ? 'pointer' : 'not-allowed'};text-align:center;display:flex;flex-direction:column;align-items:center;animation:doorin .4s ease ${(i * 0.06).toFixed(2)}s both;opacity:${isUnlocked ? '1' : '0.55'};`,
+      };
+    });
+
+    const active = s.activeSubject;
+    return {
+      barTitle: s.screen === 'home' ? (p.grade + ' · Session 3 Synthesis') : (p.grade + ' · ' + active + ' · Session 3'),
+      notHome: s.screen !== 'home',
+      goHome: () => this.goHome(),
+      isHome: s.screen === 'home',
+      isActivity: s.screen === 'activity',
+
+      grade: p.grade,
+      lessonTitle: p.lessonTitle,
+      gradeLabel: p.grade + ' · ' + p.subject,
+      scholarName: p.scholarName,
+      scholarDatesBadge: p.scholarDates ? ' · ' + p.scholarDates : '',
+      scholarDates: p.scholarDates,
+      scholarBio: p.scholarBio,
+      theme: p.theme,
+      themeQ: p.themeQ,
+      session1Text: p.session1Text,
+      session2Text: p.session2Text,
+      activeSubject: active,
+
+      // active data (from localStorage or props)
+      activeData: s.activeData || {},
+      actGrade:        (s.activeData || {}).grade        || p.grade,
+      actTitle:        (s.activeData || {}).lessonTitle  || p.lessonTitle,
+      actScholarName:  (s.activeData || {}).scholarName  || p.scholarName,
+      actScholarDates: (s.activeData || {}).scholarDates || p.scholarDates,
+      actScholarBio:   (s.activeData || {}).scholarBio   || p.scholarBio,
+      actTheme:        (s.activeData || {}).theme        || p.theme,
+      actThemeQ:       (s.activeData || {}).themeQ       || p.themeQ,
+      actS1:           (s.activeData || {}).session1Text || p.session1Text,
+      actS2:           (s.activeData || {}).session2Text || p.session2Text,
+
+      subjectCards,
+
+      actIsMath:    active === 'Math',
+      actIsScience: active === 'Science',
+      actIsELA:     active === 'ELA',
+      actIsWriting: active === 'Writing',
+      actIsSocial:  active === 'Social Studies',
+    };
+  }
+}
+</script>
+</body>
+</html>

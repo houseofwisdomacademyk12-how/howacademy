@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; }
+  a { color: #0d5c3a; } a:hover { color: #0b4d33; }
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  select, input, textarea { font-family: 'Inter', sans-serif; }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #f4f2ee; color: #1a1a1a;">
+
+  <!-- Notification toast -->
+  <sc-if value="{{ hasNotification }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; top: 16px; right: 16px; z-index: 2000; border-radius: 10px; padding: 12px 20px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.15); animation: fadeSlide 0.2s ease;" style="{{ notificationStyle }}">{{ notification.message }}</div>
+  </sc-if>
+
+  <!-- Header -->
+  <header style="background: #0d5c3a; color: #fff; height: 54px; display: flex; align-items: center; padding: 0 24px; gap: 6px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+    <span style="font-size: 17px; margin-right: 6px;">🎬</span>
+    <span style="font-weight: 700; font-size: 15px; letter-spacing: -0.3px; flex: 1;">Heygen Batch Studio</span>
+    <button onClick="{{ goToQueue }}" style="{{ queueTabStyle }}">Queue <span style="{{ countBadgeStyle }}">{{ stats.total }}</span></button>
+    <button onClick="{{ goToSettings }}" style="{{ settingsTabStyle }}">⚙ Settings</button>
+  </header>
+
+  <!-- ── QUEUE VIEW ── -->
+  <sc-if value="{{ isQueueView }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width: 920px; margin: 0 auto; padding: 28px 20px;">
+
+      <!-- Stats strip -->
+      <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
+        <div style="background: #fff; border-radius: 10px; padding: 12px 18px; border: 1px solid #e5e2db; min-width: 90px;">
+          <div style="font-size: 24px; font-weight: 700; color: #374151; line-height: 1;">{{ stats.queued }}</div>
+          <div style="font-size: 11px; color: #9ca3af; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em;">Queued</div>
+        </div>
+        <div style="background: #fff; border-radius: 10px; padding: 12px 18px; border: 1px solid #e5e2db; min-width: 90px;">
+          <div style="font-size: 24px; font-weight: 700; color: #2563eb; line-height: 1;">{{ stats.scriptReady }}</div>
+          <div style="font-size: 11px; color: #9ca3af; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em;">Script Ready</div>
+        </div>
+        <div style="background: #fff; border-radius: 10px; padding: 12px 18px; border: 1px solid #e5e2db; min-width: 90px;">
+          <div style="font-size: 24px; font-weight: 700; color: #d97706; line-height: 1;">{{ stats.processing }}</div>
+          <div style="font-size: 11px; color: #9ca3af; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em;">Processing</div>
+        </div>
+        <div style="background: #fff; border-radius: 10px; padding: 12px 18px; border: 1px solid #e5e2db; min-width: 90px;">
+          <div style="font-size: 24px; font-weight: 700; color: #059669; line-height: 1;">{{ stats.completed }}</div>
+          <div style="font-size: 11px; color: #9ca3af; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em;">Done</div>
+        </div>
+      </div>
+
+      <!-- Action bar -->
+      <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+        <button onClick="{{ openAddModal }}" style="background: #0d5c3a; color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer;" style-hover="background: #0a4b2e;">+ Add Video</button>
+        <sc-if value="{{ stats.canGenerateAll }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ generateAllScripts }}" style="background: #fff; color: #0d5c3a; border: 1.5px solid #0d5c3a; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background: #f0faf5;">Generate All Scripts ({{ stats.queued }})</button>
+        </sc-if>
+        <sc-if value="{{ stats.canSubmitAll }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ submitAll }}" style="background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background: #1d4ed8;">Submit All to Heygen ({{ stats.scriptReady }})</button>
+        </sc-if>
+      </div>
+
+      <!-- Empty state -->
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align: center; padding: 80px 24px; background: #fff; border-radius: 16px; border: 2px dashed #ddd9d2;">
+          <div style="font-size: 44px; margin-bottom: 16px;">🎥</div>
+          <div style="font-weight: 600; font-size: 17px; margin-bottom: 8px; color: #374151;">No videos in queue</div>
+          <div style="color: #9ca3af; font-size: 14px; margin-bottom: 24px;">Add a lesson — Claude writes the script, Heygen makes the video.</div>
+          <button onClick="{{ openAddModal }}" style="background: #0d5c3a; color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 600; cursor: pointer;">+ Add First Video</button>
+        </div>
+      </sc-if>
+
+      <!-- Video list -->
+      <sc-if value="{{ hasVideos }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <sc-for list="{{ videos }}" as="video" hint-placeholder-count="2">
+            <div style="{{ video.cardStyle }}">
+              <div style="display: flex; gap: 16px; align-items: flex-start;">
+
+                <!-- Info column -->
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <span style="{{ video.subjectBadgeStyle }}">{{ video.subject }}</span>
+                    <span style="color: #6b7280; font-size: 12px; font-weight: 500;">{{ video.grade }}</span>
+                    <div style="flex: 1;"></div>
+                    <span style="{{ video.statusBadgeStyle }}">{{ video.statusLabel }}</span>
+                  </div>
+                  <div style="font-weight: 600; font-size: 15px; color: #111827; margin-bottom: 5px;">{{ video.lessonTitle }}</div>
+                  <div style="color: #aaa; font-size: 12px; line-height: 1.6; font-style: italic;">{{ video.truncatedPrompt }}</div>
+                  <sc-if value="{{ video.hasError }}" hint-placeholder-val="{{ false }}">
+                    <div style="color: #dc2626; font-size: 12px; margin-top: 7px; background: #fef2f2; padding: 7px 10px; border-radius: 6px; line-height: 1.5;">⚠ {{ video.errorMessage }}</div>
+                  </sc-if>
+                </div>
+
+                <!-- Action column -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 150px; flex-shrink: 0;">
+                  <sc-if value="{{ video.canGenerate }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ video.onGenerate }}" style="{{ video.generateBtnStyle }}">{{ video.generateLabel }}</button>
+                  </sc-if>
+                  <sc-if value="{{ video.hasScript }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ video.onViewScript }}" style="background: #f3f4f6; color: #374151; border: none; border-radius: 6px; padding: 7px 10px; font-size: 12px; font-weight: 500; cursor: pointer; width: 100%;" style-hover="background: #e5e7eb;">View / Edit Script</button>
+                  </sc-if>
+                  <sc-if value="{{ video.canSubmit }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ video.onSubmit }}" style="{{ video.submitBtnStyle }}">{{ video.submitLabel }}</button>
+                  </sc-if>
+                  <sc-if value="{{ video.canCheck }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ video.onCheck }}" style="background: #fff7ed; color: #d97706; border: 1px solid #fde68a; border-radius: 6px; padding: 7px 10px; font-size: 12px; font-weight: 500; cursor: pointer; width: 100%;">↻ Check Status</button>
+                  </sc-if>
+                  <sc-if value="{{ video.canDownload }}" hint-placeholder-val="{{ false }}">
+                    <a href="{{ video.downloadUrl }}" target="_blank" style="background: #d1fae5; color: #059669; border-radius: 6px; padding: 7px 10px; font-size: 12px; font-weight: 600; cursor: pointer; width: 100%; text-align: center; text-decoration: none; display: block;">↓ Download</a>
+                  </sc-if>
+                  <button onClick="{{ video.onRemove }}" style="background: transparent; color: #d1d5db; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; width: 100%; text-align: left;" style-hover="color: #dc2626; background: #fff1f2;">Remove</button>
+                </div>
+
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </sc-if>
+
+  <!-- ── SETTINGS VIEW ── -->
+  <sc-if value="{{ isSettingsView }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width: 680px; margin: 0 auto; padding: 28px 20px;">
+
+      <!-- API Key -->
+      <div style="background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 14px; border: 1px solid #e5e2db;">
+        <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Heygen API Key</div>
+        <div style="font-size: 13px; color: #9ca3af; margin-bottom: 14px;">Heygen account → Settings → API</div>
+        <input type="password" value="{{ heygenApiKey }}" onChange="{{ onApiKeyChange }}" placeholder="Paste your Heygen API key here" style="width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; color: #111827;" style-focus="border-color: #0d5c3a;" />
+      </div>
+
+      <!-- Avatar config -->
+      <div style="background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #e5e2db;">
+        <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Brand Kit ID</div>
+        <div style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">Heygen → Brand → Brand Kit → copy the ID. Applied to all videos.</div>
+        <input value="{{ brandKitId }}" onChange="{{ onBrandKitIdChange }}" placeholder="brand_kit_id_..." style="width:100%;border:1.5px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:13px;font-family:monospace;outline:none;color:#111827;margin-bottom:20px;" style-focus="border-color: #0d5c3a;" />
+
+        <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Avatar &amp; Voice IDs</div>
+        <div style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">One avatar per subject. Find IDs in Heygen → My Avatars, and via the API endpoints below.</div>
+        <div style="background: #f0faf5; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #0d5c3a; margin-bottom: 20px; line-height: 1.7; font-family: monospace;">
+          GET https://api.heygen.com/v2/avatars<br />
+          GET https://api.heygen.com/v2/voices<br />
+          <span style="font-family: 'Inter', sans-serif; color: #374151;">— call these with your API key (X-Api-Key header) to list your IDs</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 130px 1fr 1fr 1fr; gap: 8px; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #f0ede8; margin-bottom: 10px;">
+          <div style="font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">Subject</div>
+          <div style="font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">Avatar ID</div>
+          <div style="font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">Avatar Look ID</div>
+          <div style="font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em;">Voice ID</div>
+        </div>
+
+        <sc-for list="{{ avatarConfigRows }}" as="row" hint-placeholder-count="5">
+          <div style="display: grid; grid-template-columns: 130px 1fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 10px;">
+            <span style="{{ row.subjectTagStyle }}">{{ row.subject }}</span>
+            <input value="{{ row.avatarId }}" onChange="{{ row.onAvatarIdChange }}" placeholder="avatar_id_..." style="border: 1.5px solid #e5e7eb; border-radius: 7px; padding: 8px 10px; font-size: 12px; font-family: monospace; outline: none; color: #111827; width: 100%;" style-focus="border-color: #0d5c3a;" />
+            <input value="{{ row.lookId }}" onChange="{{ row.onLookIdChange }}" placeholder="avatar_look_id_..." style="border: 1.5px solid #e5e7eb; border-radius: 7px; padding: 8px 10px; font-size: 12px; font-family: monospace; outline: none; color: #111827; width: 100%;" style-focus="border-color: #0d5c3a;" />
+            <input value="{{ row.voiceId }}" onChange="{{ row.onVoiceIdChange }}" placeholder="voice_id_..." style="border: 1.5px solid #e5e7eb; border-radius: 7px; padding: 8px 10px; font-size: 12px; font-family: monospace; outline: none; color: #111827; width: 100%;" style-focus="border-color: #0d5c3a;" />
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+  </sc-if>
+
+  <!-- ── ADD VIDEO MODAL ── -->
+  <sc-if value="{{ showAddModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px;" onClick="{{ closeAddModalOverlay }}">
+      <div style="background: #fff; border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; padding: 28px;" onClick="{{ stopPropagation }}">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+          <div style="font-weight: 700; font-size: 18px;">Add Video to Queue</div>
+          <button onClick="{{ closeAddModal }}" style="background: #f3f4f6; border: none; border-radius: 6px; width: 30px; height: 30px; font-size: 16px; cursor: pointer; color: #6b7280;" style-hover="background: #e5e7eb;">✕</button>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">Grade Level</label>
+            <select onChange="{{ onGradeChange }}" value="{{ addForm.grade }}" style="width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 9px 12px; font-size: 14px; background: #fff; color: #111827; outline: none; cursor: pointer;">
+              <sc-for list="{{ gradeOptions }}" as="opt" hint-placeholder-count="5">
+                <option value="{{ opt.value }}">{{ opt.label }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">Subject</label>
+            <select onChange="{{ onSubjectChange }}" value="{{ addForm.subject }}" style="width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 9px 12px; font-size: 14px; background: #fff; color: #111827; outline: none; cursor: pointer;">
+              <sc-for list="{{ subjectOptions }}" as="opt" hint-placeholder-count="5">
+                <option value="{{ opt.value }}">{{ opt.label }}</option>
+              </sc-for>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">Lesson Title</label>
+          <input value="{{ addForm.lessonTitle }}" onChange="{{ onTitleChange }}" placeholder="e.g. Functions — What is a function?" style="width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 9px 14px; font-size: 14px; outline: none; color: #111827;" style-focus="border-color: #0d5c3a;" />
+        </div>
+
+        <div style="margin-bottom: 22px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">Lesson Prompt</label>
+          <textarea onChange="{{ onPromptChange }}" placeholder="Paste your full lesson content — the scholar of the week, overarching theme, lesson sections. Claude will distill this into a 1-minute pedagogical intro script." rows="10" style="width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; font-size: 13px; resize: vertical; outline: none; color: #111827; line-height: 1.6;" style-focus="border-color: #0d5c3a;"></textarea>
+          <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Claude generates a ~130 word pedagogical intro (≈1 min). You can edit before submitting.</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button onClick="{{ closeAddModal }}" style="background: #f3f4f6; color: #374151; border: none; border-radius: 8px; padding: 10px 18px; font-size: 14px; font-weight: 500; cursor: pointer;" style-hover="background: #e5e7eb;">Cancel</button>
+          <button onClick="{{ addVideo }}" style="background: #0d5c3a; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer;" style-hover="background: #0a4b2e;">Add to Queue</button>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ── SCRIPT MODAL ── -->
+  <sc-if value="{{ showScriptModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div style="background: #fff; border-radius: 16px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; padding: 28px;">
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px;">
+          <div>
+            <div style="font-weight: 700; font-size: 17px; margin-bottom: 4px;">Script Review</div>
+            <div style="font-size: 13px; color: #9ca3af;">{{ scriptModalVideo.grade }} · {{ scriptModalVideo.subject }} · {{ scriptModalVideo.lessonTitle }}</div>
+          </div>
+          <button onClick="{{ closeScriptModal }}" style="background: #f3f4f6; border: none; border-radius: 6px; width: 30px; height: 30px; font-size: 16px; cursor: pointer; color: #6b7280;" style-hover="background: #e5e7eb;">✕</button>
+        </div>
+
+        <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Edit before submitting to Heygen:</div>
+        <textarea value="{{ scriptModalVideo.scriptText }}" onChange="{{ onScriptEdit }}" rows="14" style="width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 14px; font-size: 14px; line-height: 1.8; resize: vertical; outline: none; color: #111827;" style-focus="border-color: #0d5c3a;"></textarea>
+        <div style="font-size: 12px; color: #9ca3af; margin-top: 6px;">{{ scriptModalVideo.wordCount }} words · ~{{ scriptModalVideo.estimatedSeconds }}s</div>
+
+        <div style="display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; flex-wrap: wrap;">
+          <button onClick="{{ regenScript }}" style="background: #f3f4f6; color: #374151; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 500; cursor: pointer;" style-hover="background: #e5e7eb;">↺ Regenerate</button>
+          <button onClick="{{ closeScriptModal }}" style="background: #f3f4f6; color: #374151; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 500; cursor: pointer;" style-hover="background: #e5e7eb;">Close</button>
+          <button onClick="{{ submitFromModal }}" style="background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer;" style-hover="background: #1d4ed8;">Submit to Heygen →</button>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+
+  SUBJECT_CONFIG = {
+    'Math':           { color: '#2563eb', bg: '#dbeafe' },
+    'Science':        { color: '#059669', bg: '#d1fae5' },
+    'ELA':            { color: '#7c3aed', bg: '#ede9fe' },
+    'Writing':        { color: '#d97706', bg: '#fef3c7' },
+    'Social Studies': { color: '#dc2626', bg: '#fee2e2' },
+  };
+
+  STATUS_CONFIG = {
+    'queued':       { label: 'Queued',       color: '#374151', bg: '#f3f4f6' },
+    'generating':   { label: 'Generating…',  color: '#d97706', bg: '#fff7ed' },
+    'script_ready': { label: 'Script Ready', color: '#2563eb', bg: '#dbeafe' },
+    'submitting':   { label: 'Submitting…',  color: '#7c3aed', bg: '#ede9fe' },
+    'processing':   { label: 'Processing',   color: '#d97706', bg: '#fff7ed' },
+    'completed':    { label: 'Completed ✓',  color: '#059669', bg: '#d1fae5' },
+    'error':        { label: 'Error',        color: '#dc2626', bg: '#fee2e2' },
+  };
+
+  state = {
+    view: 'queue',
+    videos: [],
+    heygenApiKey: '',
+    brandKitId: '',
+    avatarConfig: {
+      'Math':           { avatarId: '', lookId: '', voiceId: '' },
+      'Science':        { avatarId: '', lookId: '', voiceId: '' },
+      'ELA':            { avatarId: '', lookId: '', voiceId: '' },
+      'Writing':        { avatarId: '', lookId: '', voiceId: '' },
+      'Social Studies': { avatarId: '', lookId: '', voiceId: '' },
+    },
+    showAddModal: false,
+    scriptModalVideoId: null,
+    addForm: { grade: 'Grade 8', subject: 'Math', lessonTitle: '', prompt: '' },
+    generatingSet: {},
+    submittingSet: {},
+    notification: null,
+  };
+
+  componentDidMount() {
+    try {
+      const saved = localStorage.getItem('hbs_v1');
+      if (saved) {
+        const { heygenApiKey, brandKitId, avatarConfig, videos } = JSON.parse(saved);
+        if (brandKitId) this.setState({ brandKitId });
+        const cleanVideos = (videos || []).map(v =>
+          (v.status === 'submitting' || v.status === 'generating')
+            ? { ...v, status: 'queued' } : v
+        );
+        this.setState({ heygenApiKey: heygenApiKey || '', avatarConfig: avatarConfig || this.state.avatarConfig, videos: cleanVideos });
+      }
+    } catch(e) {}
+    this._poll = setInterval(() => this.pollProcessing(), 15000);
+  }
+
+  componentWillUnmount() { clearInterval(this._poll); clearTimeout(this._notifT); }
+
+  componentDidUpdate() {
+    try {
+      const { heygenApiKey, brandKitId, avatarConfig, videos } = this.state;
+      localStorage.setItem('hbs_v1', JSON.stringify({ heygenApiKey, brandKitId, avatarConfig, videos }));
+    } catch(e) {}
+  }
+
+  uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+
+  updateVideo(id, updates) {
+    this.setState(s => ({ videos: s.videos.map(v => v.id === id ? { ...v, ...updates } : v) }));
+  }
+
+  notify(type, message) {
+    this.setState({ notification: { type, message } });
+    clearTimeout(this._notifT);
+    this._notifT = setTimeout(() => this.setState({ notification: null }), 3500);
+  }
+
+  addVideo() {
+    const { addForm, videos } = this.state;
+    if (!addForm.prompt.trim()) { this.notify('error', 'Please enter a lesson prompt'); return; }
+    this.setState({
+      videos: [...videos, {
+        id: this.uid(),
+        grade: addForm.grade,
+        subject: addForm.subject,
+        lessonTitle: addForm.lessonTitle.trim() || `${addForm.subject} — ${addForm.grade}`,
+        prompt: addForm.prompt,
+        script: null,
+        status: 'queued',
+        heygenVideoId: null,
+        downloadUrl: null,
+        errorMessage: null,
+        createdAt: Date.now(),
+      }],
+      showAddModal: false,
+      addForm: { grade: addForm.grade, subject: addForm.subject, lessonTitle: '', prompt: '' },
+    });
+  }
+
+  removeVideo(id) { this.setState(s => ({ videos: s.videos.filter(v => v.id !== id) })); }
+
+  async generateScript(videoId) {
+    if (this.state.generatingSet[videoId]) return;
+    const video = this.state.videos.find(v => v.id === videoId);
+    if (!video) return;
+
+    this.setState(s => ({ generatingSet: { ...s.generatingSet, [videoId]: true } }));
+    this.updateVideo(videoId, { status: 'generating', errorMessage: null });
+
+    try {
+      const script = await window.claude.complete({
+        system: `You write prompts for Heygen's Video Agent API that generates 1-minute educational introduction videos for an Islamic school curriculum (grades K–12).
+
+The prompt you write will be sent directly to the Heygen Video Agent. Write a single cohesive paragraph prompt — do NOT output JSON, scene tables, or structured data.
+
+EVERY PROMPT MUST INCLUDE THIS EXACT STYLE DESCRIPTION:
+"Marker-drawn scholarly educational style. Hand-drawn slides with a cream parchment background (#F5EBDD), charcoal text (#3A2A22), and emerald green accents (#1FB997). Editorial serif typography. No background music. No dramatic pauses or filler sounds."
+
+CONTENT REQUIREMENTS:
+- Duration: exactly 1 minute
+- INTRODUCTION only — overview of the lesson concept
+- Weave in the Islamic scholar of the week naturally as a bridge to the concept
+- Touch on the overarching theme as a subtle lens
+- Tone: organic, unhurried, pedagogical — calm and knowledgeable, NOT rushed
+- Do NOT include worked examples, activities, or problem sets
+- End with a question or observation that invites curiosity`,
+        messages: [{ role: 'user', content: `Write the 1-minute intro script for this ${video.grade} ${video.subject} lesson:\n\n${video.prompt}` }],
+        max_tokens: 500,
+      });
+      this.updateVideo(videoId, { script: script.trim(), status: 'script_ready' });
+      this.notify('success', 'Script generated — review before submitting.');
+    } catch(err) {
+      this.updateVideo(videoId, { status: 'error', errorMessage: 'Script generation failed: ' + err.message });
+      this.notify('error', 'Script generation failed');
+    } finally {
+      this.setState(s => { const g = { ...s.generatingSet }; delete g[videoId]; return { generatingSet: g }; });
+    }
+  }
+
+  async submitToHeygen(videoId) {
+    const { heygenApiKey, avatarConfig } = this.state;
+    const video = this.state.videos.find(v => v.id === videoId);
+
+    if (!heygenApiKey.trim()) { this.notify('error', 'Add your Heygen API key in Settings'); return; }
+    if (!video?.script?.trim()) { this.notify('error', 'Generate a prompt first'); return; }
+    if (this.state.submittingSet[videoId]) return;
+
+    this.setState(s => ({ submittingSet: { ...s.submittingSet, [videoId]: true } }));
+    this.updateVideo(videoId, { status: 'submitting', errorMessage: null });
+
+    try {
+      const res = await fetch('https://api.heygen.com/v3/video-agents', {
+        method: 'POST',
+        headers: { 'X-Api-Key': heygenApiKey.trim(), 'Content-Type': 'application/json' },
+        body: JSON.stringify((() => {
+          const payload = { prompt: video.script };
+          if (heygenApiKey && this.state.brandKitId?.trim()) payload.brand_kit_id = this.state.brandKitId.trim();
+          const cfg = this.state.avatarConfig[video.subject] || {};
+          if (cfg.avatarId?.trim()) payload.avatar_id = cfg.avatarId.trim();
+          if (cfg.voiceId?.trim()) payload.voice_id = cfg.voiceId.trim();
+          return payload;
+        })()),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error || !data.data?.video_id) throw new Error(data.error?.message || data.message || `HTTP ${res.status}`);
+      this.updateVideo(videoId, { status: 'processing', heygenVideoId: data.data.video_id });
+      this.notify('success', 'Submitted! Heygen Video Agent is generating — auto-checking every 15s.');
+    } catch(err) {
+      const msg = err.message.includes('fetch') ? 'Network/CORS error — verify API key and try again' : err.message;
+      this.updateVideo(videoId, { status: 'error', errorMessage: msg });
+      this.notify('error', 'Submission failed: ' + msg);
+    } finally {
+      this.setState(s => { const sub = { ...s.submittingSet }; delete sub[videoId]; return { submittingSet: sub }; });
+    }
+  }
+
+  async checkStatus(videoId) {
+    const { heygenApiKey } = this.state;
+    const video = this.state.videos.find(v => v.id === videoId);
+    if (!video?.heygenVideoId || !heygenApiKey.trim()) return;
+    try {
+      const res = await fetch(`https://api.heygen.com/v3/videos/${video.heygenVideoId}`, {
+        headers: { 'X-Api-Key': heygenApiKey.trim() },
+      });
+      const data = await res.json();
+      const st = data.data?.status;
+      if (st === 'completed') {
+        this.updateVideo(videoId, { status: 'completed', downloadUrl: data.data.video_url });
+        this.notify('success', `✓ Video ready: ${video.lessonTitle}`);
+      } else if (st === 'failed') {
+        this.updateVideo(videoId, { status: 'error', errorMessage: 'Heygen processing failed' });
+      }
+    } catch(e) {}
+  }
+
+  pollProcessing() {
+    this.state.videos.filter(v => v.status === 'processing').forEach(v => this.checkStatus(v.id));
+  }
+
+  generateAllScripts() {
+    this.state.videos.filter(v => v.status === 'queued' || v.status === 'error').forEach(v => this.generateScript(v.id));
+  }
+
+  submitAll() {
+    this.state.videos.filter(v => v.status === 'script_ready').forEach(v => this.submitToHeygen(v.id));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const SC = this.SUBJECT_CONFIG;
+    const ST = this.STATUS_CONFIG;
+
+    const videos = s.videos.map(v => {
+      const sc = SC[v.subject] || { color: '#6b7280', bg: '#f3f4f6' };
+      const st = ST[v.status] || { label: v.status, color: '#6b7280', bg: '#f3f4f6' };
+      const isGen = !!s.generatingSet[v.id];
+      const isSub = !!s.submittingSet[v.id];
+      const wc = v.script ? v.script.split(/\s+/).filter(Boolean).length : 0;
+      return {
+        ...v,
+        scriptText: v.script || '',
+        wordCount: wc,
+        estimatedSeconds: Math.round(wc / 2.3),
+        statusLabel: st.label,
+        hasScript: !!v.script,
+        hasError: v.status === 'error' && !!v.errorMessage,
+        canGenerate: (v.status === 'queued' || v.status === 'error') && !isGen,
+        canSubmit: v.status === 'script_ready' && !isSub,
+        canCheck: v.status === 'processing',
+        canDownload: v.status === 'completed' && !!v.downloadUrl,
+        generateLabel: isGen ? 'Generating…' : 'Generate Script',
+        submitLabel: isSub ? 'Submitting…' : 'Submit to Heygen',
+        truncatedPrompt: v.prompt.length > 160 ? v.prompt.substring(0, 160) + '…' : v.prompt,
+        cardStyle: { background: '#fff', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', borderTop: '1px solid #eae8e3', borderRight: '1px solid #eae8e3', borderBottom: '1px solid #eae8e3', borderLeft: `4px solid ${sc.color}` },
+        subjectBadgeStyle: { background: sc.bg, color: sc.color, borderRadius: '4px', padding: '2px 9px', fontSize: '12px', fontWeight: '600' },
+        statusBadgeStyle: { background: st.bg, color: st.color, borderRadius: '4px', padding: '3px 9px', fontSize: '12px', fontWeight: '500' },
+        generateBtnStyle: { background: isGen ? '#e5e7eb' : '#0d5c3a', color: isGen ? '#9ca3af' : '#fff', border: 'none', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: isGen ? 'default' : 'pointer', width: '100%' },
+        submitBtnStyle: { background: isSub ? '#e5e7eb' : '#2563eb', color: isSub ? '#9ca3af' : '#fff', border: 'none', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: isSub ? 'default' : 'pointer', width: '100%' },
+        onGenerate: () => this.generateScript(v.id),
+        onSubmit: () => this.submitToHeygen(v.id),
+        onCheck: () => this.checkStatus(v.id),
+        onRemove: () => this.removeVideo(v.id),
+        onViewScript: () => this.setState({ scriptModalVideoId: v.id }),
+      };
+    });
+
+    const stats = {
+      total: s.videos.length,
+      queued: s.videos.filter(v => v.status === 'queued').length,
+      scriptReady: s.videos.filter(v => v.status === 'script_ready').length,
+      processing: s.videos.filter(v => v.status === 'processing' || v.status === 'submitting').length,
+      completed: s.videos.filter(v => v.status === 'completed').length,
+      canGenerateAll: s.videos.some(v => v.status === 'queued' || v.status === 'error'),
+      canSubmitAll: s.videos.some(v => v.status === 'script_ready'),
+    };
+
+    const isQ = s.view === 'queue';
+    const tabBase = { color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer' };
+    const activeTab = { ...tabBase, background: 'rgba(255,255,255,0.22)', fontWeight: '600' };
+    const inactiveTab = { ...tabBase, background: 'transparent', fontWeight: '400' };
+
+    const smv = s.scriptModalVideoId ? videos.find(v => v.id === s.scriptModalVideoId) : null;
+
+    const avatarConfigRows = ['Math', 'Science', 'ELA', 'Writing', 'Social Studies'].map(subject => {
+      const sc = SC[subject] || { color: '#6b7280', bg: '#f3f4f6' };
+      return {
+        subject,
+        avatarId: s.avatarConfig[subject]?.avatarId || '',
+        lookId: s.avatarConfig[subject]?.lookId || '',
+        voiceId: s.avatarConfig[subject]?.voiceId || '',
+        subjectTagStyle: { background: sc.bg, color: sc.color, borderRadius: '5px', padding: '4px 10px', fontSize: '12px', fontWeight: '600', display: 'inline-block' },
+        onAvatarIdChange: (e) => this.setState(st => ({ avatarConfig: { ...st.avatarConfig, [subject]: { ...st.avatarConfig[subject], avatarId: e.target.value } } })),
+        onLookIdChange: (e) => this.setState(st => ({ avatarConfig: { ...st.avatarConfig, [subject]: { ...st.avatarConfig[subject], lookId: e.target.value } } })),
+        onVoiceIdChange: (e) => this.setState(st => ({ avatarConfig: { ...st.avatarConfig, [subject]: { ...st.avatarConfig[subject], voiceId: e.target.value } } })),
+      };
+    });
+
+    return {
+      isQueueView: isQ,
+      isSettingsView: !isQ,
+      goToQueue: () => this.setState({ view: 'queue' }),
+      goToSettings: () => this.setState({ view: 'settings' }),
+      queueTabStyle: isQ ? activeTab : inactiveTab,
+      settingsTabStyle: !isQ ? activeTab : inactiveTab,
+      countBadgeStyle: { background: 'rgba(255,255,255,0.25)', borderRadius: '10px', padding: '1px 7px', fontSize: '12px', marginLeft: '4px' },
+
+      videos,
+      hasVideos: s.videos.length > 0,
+      isEmpty: s.videos.length === 0,
+      stats,
+
+      openAddModal: () => this.setState({ showAddModal: true }),
+      generateAllScripts: () => this.generateAllScripts(),
+      submitAll: () => this.submitAll(),
+
+      showAddModal: s.showAddModal,
+      closeAddModal: () => this.setState({ showAddModal: false }),
+      closeAddModalOverlay: (e) => { if (e.target === e.currentTarget) this.setState({ showAddModal: false }); },
+      stopPropagation: (e) => e.stopPropagation(),
+      addForm: s.addForm,
+      gradeOptions: ['K','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(g => ({ value: g, label: g })),
+      subjectOptions: ['Math','Science','ELA','Writing','Social Studies'].map(s => ({ value: s, label: s })),
+      onGradeChange: (e) => this.setState(st => ({ addForm: { ...st.addForm, grade: e.target.value } })),
+      onSubjectChange: (e) => this.setState(st => ({ addForm: { ...st.addForm, subject: e.target.value } })),
+      onTitleChange: (e) => this.setState(st => ({ addForm: { ...st.addForm, lessonTitle: e.target.value } })),
+      onPromptChange: (e) => this.setState(st => ({ addForm: { ...st.addForm, prompt: e.target.value } })),
+      addVideo: () => this.addVideo(),
+
+      showScriptModal: !!s.scriptModalVideoId,
+      closeScriptModal: () => this.setState({ scriptModalVideoId: null }),
+      scriptModalVideo: smv || { scriptText: '', lessonTitle: '', grade: '', subject: '', wordCount: 0, estimatedSeconds: 0 },
+      onScriptEdit: (e) => { if (s.scriptModalVideoId) this.updateVideo(s.scriptModalVideoId, { script: e.target.value, status: 'script_ready' }); },
+      regenScript: () => { const id = s.scriptModalVideoId; if (id) { this.setState({ scriptModalVideoId: null }); this.generateScript(id); } },
+      submitFromModal: () => { const id = s.scriptModalVideoId; if (id) { this.setState({ scriptModalVideoId: null }); this.submitToHeygen(id); } },
+
+      heygenApiKey: s.heygenApiKey,
+      onApiKeyChange: (e) => this.setState({ heygenApiKey: e.target.value }),
+      brandKitId: s.brandKitId,
+      onBrandKitIdChange: (e) => this.setState({ brandKitId: e.target.value }),
+      avatarConfigRows,
+
+      hasNotification: !!s.notification,
+      notification: s.notification || { message: '', type: 'success' },
+      notificationStyle: s.notification ? {
+        background: s.notification.type === 'success' ? '#d1fae5' : '#fee2e2',
+        color: s.notification.type === 'success' ? '#059669' : '#dc2626',
+        padding: '12px 20px', borderRadius: '10px', fontSize: '13px', fontWeight: '500',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+      } : {},
+    };
+  }
+}
+</script>
+</body>
+</html>

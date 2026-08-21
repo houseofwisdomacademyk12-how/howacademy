@@ -9232,31 +9232,6 @@ function loadStudioCards(){
     });
   }catch(e){}
 }
-async function syncStudioCards(){
-  // Pull studio cards from Supabase on login so families always have latest
-  var jwt=localStorage.getItem('how_jwt');
-  if(!jwt||typeof sb==='undefined') return;
-  try{
-    var result=await sb.from('studio_cards').select('week,discipline,scholar,title,prompt,updated_at').order('week');
-    if(result.error||!result.data||!result.data.length) return;
-    var cards={};
-    result.data.forEach(function(row){
-      cards[String(row.week)]={
-        week:       row.week,
-        discipline: row.discipline||'',
-        scholar:    row.scholar||'',
-        title:      row.title||'',
-        prompt:     row.prompt||'',
-        updated_at: row.updated_at||''
-      };
-    });
-    localStorage.setItem('how_studio_cards',JSON.stringify(cards));
-    loadStudioCards();
-    console.log('syncStudioCards: '+result.data.length+' cards loaded');
-  }catch(e){
-    console.warn('syncStudioCards failed:',e);
-  }
-}
 
 function importStudioCards(){
   var inp=document.createElement('input');
@@ -9264,36 +9239,15 @@ function importStudioCards(){
   inp.onchange=function(e){
     var file=e.target.files[0]; if(!file) return;
     var reader=new FileReader();
-    reader.onload=async function(ev){
+    reader.onload=function(ev){
       try{
         var cards=JSON.parse(ev.target.result);
+        // Accept either {week: card} or {cards: {week: card}} format
         if(cards.cards) cards=cards.cards;
         var count=Object.keys(cards).length;
         localStorage.setItem('how_studio_cards', JSON.stringify(cards));
         loadStudioCards();
         toast('✓ '+count+' studio cards imported and active');
-        // Push to Supabase so families receive them on next login
-        if(typeof sb!=='undefined' && localStorage.getItem('how_jwt')){
-          try{
-            var rows=Object.keys(cards).map(function(wk){
-              var c=cards[wk];
-              return {
-                week:       parseInt(wk)||parseInt(c.week)||0,
-                discipline: c.discipline||'',
-                scholar:    c.scholar||'',
-                title:      c.title||c.name||'',
-                prompt:     c.prompt||c.studioActivation||c.detail||'',
-                updated_at: new Date().toISOString()
-              };
-            }).filter(function(r){ return r.week>0; });
-            var r=await sb.from('studio_cards').upsert(rows,{onConflict:'week'});
-            if(r.error) throw r.error;
-            toast('✓ Studio cards synced to Supabase — families will receive them on next login');
-          }catch(err){
-            console.warn('Studio cards Supabase push failed:',err);
-            toast('⚠ Saved locally but Supabase sync failed: '+err.message);
-          }
-        }
       }catch(err){
         toast('⚠ Could not read JSON: '+err.message);
       }
@@ -10486,7 +10440,6 @@ async function applyUserToProfile(user, accessToken){
   if(typeof updateSchedule==='function') updateSchedule();
   syncAllLessons(); // Pull all lessons for this household — core broadcast receive mechanism
   syncAllTests();  // Pull all tests for this household
-  syncStudioCards(); // Pull studio cards so families see the latest curriculum cards
   if(window._howTrialDays!=null){howShowTrialBanner(window._howTrialDays);window._howTrialDays=null;}
 }
 

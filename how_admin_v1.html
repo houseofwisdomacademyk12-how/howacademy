@@ -239,9 +239,6 @@ tr:hover td{background:var(--cream);}
         <span class="nav-icon">📊</span> Dashboard
       </button>
       <div class="sidenav-section">Content</div>
-      <button class="sidenav-btn" onclick="showPanel('batch',this)">
-        <span class="nav-icon">⚡</span> Batch Generator
-      </button>
       <button class="sidenav-btn" onclick="showPanel('content',this)">
         <span class="nav-icon">📚</span> Lesson status
       </button>
@@ -296,20 +293,11 @@ tr:hover td{background:var(--cream);}
             <button class="action-btn teal" id="dash-broadcast-btn" onclick="doBroadcast()">Broadcast to families</button>
           </div>
           <div class="action-card">
-            <div class="action-card-title">⚡ Batch Generator</div>
-            <div class="action-card-sub">Generate Session 1, Session 2, tests, and Thursday synthesis for all 13 grades at once. Run every Saturday before the week begins.</div>
-            <button class="action-btn gold" onclick="showPanel('batch',document.querySelector('.sidenav-btn:nth-child(4)'))" style="border:none">Open Batch Generator →</button>
+            <div class="action-card-title">⚙ Generate content</div>
+            <div class="action-card-sub">Open the platform's lesson generator to create and sync new content. Use Saturday Prep to generate the full week.</div>
+            <a href="how_platform.html" target="_blank" class="action-btn gold" style="text-decoration:none;display:inline-block">Open platform generator →</a>
           </div>
         </div>
-      </div>
-
-      <!-- Batch Generator panel -->
-      <div class="panel" id="panel-batch">
-        <div class="page-header">
-          <div class="page-title">Batch Generator</div>
-          <div class="page-sub">Generate all lessons, tests, and synthesis decks for all 13 grades in one run</div>
-        </div>
-        <iframe src="Admin Automation.html" style="width:100%;height:calc(100vh - 140px);border:1px solid var(--border);border-radius:var(--radius);background:#0f0d1e;" allowfullscreen></iframe>
       </div>
 
       <!-- Content / lesson status panel -->
