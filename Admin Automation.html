@@ -498,7 +498,7 @@ async function generateLesson(g,w,subj,sessionNum){
     slides.forEach(function(sl){if(sl.type==='juz'){sl.arabic=juz.arabic||juz.tr||'';sl.name=(juz.tr||'')+(juz.meaning?' — '+juz.meaning:'');sl.story=juz.story||'';sl.reflection=juz.q||'';delete sl.theme;}});
     if(!slides.some(function(sl){return sl.type==='juz';})) slides.push({type:'juz',arabic:juz.arabic||juz.tr||'',name:(juz.tr||'')+(juz.meaning?' — '+juz.meaning:''),story:juz.story||'',reflection:juz.q||''});
   }
-  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:subj,session:sessionNum,title:deck.title||topic,objective:deck.objective||'',slides:slides,workbook:wb.workbook||wb,generated_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:subj,session:sessionNum,title:deck.title||topic,objective:deck.objective||'',slides:slides,workbook:wb.workbook||wb,created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
   var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
   if(r.error) throw new Error(r.error.message);
 }
@@ -521,7 +521,7 @@ async function generateTestSubject(g,w,subj){
 }
 
 async function pushTest(g,w,subjects){
-  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,generated_at:new Date().toISOString(),locked:false,subjects:subjects,updated_at:new Date().toISOString()};
+  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,created_at:new Date().toISOString(),locked:false,subjects:subjects,updated_at:new Date().toISOString()};
   var r=await sb.from('test').upsert(entry,{onConflict:'household_id,grade,week'}).select();
   if(r.error) throw new Error(r.error.message);
 }
@@ -543,7 +543,7 @@ async function generateThursday(g,w){
   var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
   slides.forEach(function(sl){if(sl.body&&!sl.content) sl.content=sl.body;if(sl.teacherNote&&!sl.scholarNote) sl.scholarNote=sl.teacherNote;if(sl.type==='juz'){sl.arabic=juz.arabic||juz.tr||'';sl.name=(juz.tr||'')+(juz.meaning?' — '+juz.meaning:'');sl.story=juz.story||'';sl.reflection=juz.q||'';delete sl.theme;}});
   if(!slides.some(function(sl){return sl.type==='juz';})) slides.push({type:'juz',arabic:juz.arabic||juz.tr||'',name:(juz.tr||'')+(juz.meaning?' — '+juz.meaning:''),story:juz.story||'',reflection:juz.q||''});
-  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:'synthesis',session:3,title:deck.title||'Thursday Synthesis — Week '+w,objective:deck.objective||'',slides:slides,workbook:{},generated_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:'synthesis',session:3,title:deck.title||'Thursday Synthesis — Week '+w,objective:deck.objective||'',slides:slides,workbook:{},created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
   var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
   if(r.error) throw new Error(r.error.message);
 }
@@ -575,7 +575,7 @@ async function generateWedReview(gi,g){
     var raw=await callAPI(sys,usr,2000);
     var deck=parseJSON(raw);
     var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
-    var entry={household_id:hid,grade:g,week:w,subject:'review',session:4,title:deck.title||'Wednesday Review',objective:deck.objective||'',slides:slides,workbook:{},generated_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+    var entry={household_id:hid,grade:g,week:w,subject:'review',session:4,title:deck.title||'Wednesday Review',objective:deck.objective||'',slides:slides,workbook:{},created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
     var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
     if(r.error) throw new Error(r.error.message);
     setWedStatus(gi,'done');
