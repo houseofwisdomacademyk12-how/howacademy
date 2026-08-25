@@ -795,9 +795,11 @@ function getLearnerIdentity(){
 // Murshid ḍabṭ (precision) check — does the reflection show the content was
 // actually received? Fails open on network error (facilitator retains override).
 async function dabtCheck(t, reflection){
+  const _dJwt=localStorage.getItem('how_jwt');
+  if(!_dJwt) return {ok:false};
   try{
     const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_dJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:150,
         system:'You check whether a student\'s written reflection shows they genuinely received a peer teaching (dabt — precision of retention). PASS if the reflection engages the actual content: names the key idea, explains it in their own words, applies it, or asks a real question about it. FAIL if it is generic praise ("it was good", "I learned a lot") or could have been written without reading the teaching. Be generous with young students — simple language is fine as long as it is specific. Respond ONLY with JSON: {"pass":true|false,"note":"if fail, one short encouraging pointer toward what to add"}',
         messages:[{role:'user',content:'TEACHING: "'+t.title+'"\nKey idea: '+(t.keyIdea||'')+'\nSummary: '+(t.summary||'')+'\n\nSTUDENT REFLECTION:\n'+reflection+'\n\nJSON verdict:'}]})
@@ -1156,9 +1158,11 @@ async function prepareMurshid(){
     }, 800);
     return;
   }
+  const _pJwt=localStorage.getItem('how_jwt');
+  if(!_pJwt) return;
   try {
     const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_pJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,
         system:'You are the Murshid. A student is about to record a peer teaching. Help them find their key insight. Ask one precise question that will help them articulate the single most important idea. Be brief — two or three sentences maximum.',
         messages:[{role:'user',content:`I am about to record a peer teaching on: "${draftTeaching.title}". I taught this to Grade ${draftTeaching.taughtGrade} students. I am in Grade ${draftTeaching.teacherGrade}.`}]})

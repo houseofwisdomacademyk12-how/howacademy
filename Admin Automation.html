@@ -6,6 +6,7 @@
 <title>HOW Weekly Batch Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="curriculum-data.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -19,13 +20,13 @@ body{background:#0f0d1e;color:#e8e4f8;font-family:'DM Sans',sans-serif;height:10
 #progress-inner{height:100%;width:0%;background:#7c3aed;border-radius:2px;transition:width .4s}
 #main{display:flex;flex:1;overflow:hidden}
 #grade-wrap{flex:1;overflow-y:auto}
-#grid-header{display:grid;grid-template-columns:52px 1fr 1fr 1fr 32px 1fr 1fr 1fr 90px;gap:0;padding:6px 20px;border-bottom:1px solid #2e2a4a;position:sticky;top:0;background:#0f0d1e;z-index:1}
+#grid-header{display:grid;grid-template-columns:44px 68px 68px 68px 26px 68px 68px 68px 1fr;gap:0;padding:6px 20px;border-bottom:1px solid #2e2a4a;position:sticky;top:0;background:#0f0d1e;z-index:1}
 #grid-header div{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 #grade-body{}
-.grade-row{display:grid;grid-template-columns:52px 1fr 1fr 1fr 32px 1fr 1fr 1fr 90px;align-items:center;padding:9px 20px;border-bottom:1px solid #1a1630}
+.grade-row{display:grid;grid-template-columns:44px 68px 68px 68px 26px 68px 68px 68px 1fr;align-items:center;padding:9px 20px;border-bottom:1px solid #1a1630}
 .grade-label{font-size:14px;font-weight:700;color:#c8a96e}
-.dots-cell{display:flex;align-items:center;gap:5px}
-.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#2e2a4a;flex-shrink:0;transition:background .3s}
+.dots-cell{display:flex;align-items:center;gap:4px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#2e2a4a;flex-shrink:0;transition:background .3s}
 .dot.running{animation:pulse 1s ease-in-out infinite}
 .dot.done-reg{background:#1d6f6f}
 .dot.done-qalam{background:#2dd4bf}
@@ -34,7 +35,7 @@ body{background:#0f0d1e;color:#e8e4f8;font-family:'DM Sans',sans-serif;height:10
 .dot.running{background:#c8a96e}
 .status-cell{font-size:11px;font-weight:600}
 .status-idle{color:#3a3860}.status-running{color:#c8a96e}.status-done{color:#2dd4bf}.status-error{color:#f87171}
-#log-panel{width:300px;border-left:1px solid #2e2a4a;display:flex;flex-direction:column;flex-shrink:0}
+#log-panel{width:260px;border-left:1px solid #2e2a4a;display:flex;flex-direction:column;flex-shrink:0}
 #log-header{padding:8px 14px;border-bottom:1px solid #2e2a4a;font-size:9px;color:#3a3860;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 #log-body{flex:1;overflow-y:auto;padding:8px 0}
 .log-entry{display:flex;align-items:flex-start;padding:3px 14px;font-size:10px;line-height:1.5}
@@ -94,6 +95,8 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
     <button class="gen-btn active" id="btn-s2" onclick="toggleGen('genS2','btn-s2')">Session 2</button>
     <button class="gen-btn active" id="btn-test" onclick="toggleGen('genTest','btn-test')">Test</button>
     <button class="gen-btn active" id="btn-thu" onclick="toggleGen('genThursday','btn-thu')" style="border-color:#9d4edd;background:rgba(157,78,221,.2);color:#c084fc">Thu Synthesis</button>
+    <button class="gen-btn" id="btn-qs1" onclick="toggleGen('genQalamS1','btn-qs1')" style="border-color:#1d6f6f;color:#1d6f6f">Qalam S1</button>
+    <button class="gen-btn" id="btn-qs2" onclick="toggleGen('genQalamS2','btn-qs2')" style="border-color:#1d6f6f;color:#1d6f6f">Qalam S2</button>
   </div>
   <div class="sep"></div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -165,8 +168,26 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
       <span class="heygen-grid-lbl">Voice ID</span>
       <span class="heygen-grid-lbl">Avatar Look ID</span>
     </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="ctrl-label" style="min-width:60px">Scope</span>
+      <select id="slide-grade-sel" style="max-width:150px"></select>
+      <select id="slide-subj-sel" style="max-width:150px">
+        <option value="all">All subjects</option>
+        <option value="math">Mathematics</option>
+        <option value="science">Science</option>
+        <option value="ela">ELA / Reading</option>
+        <option value="writing">Writing</option>
+        <option value="social">Social Studies</option>
+      </select>
+      <select id="slide-sess-sel" style="max-width:130px">
+        <option value="all">Both sessions</option>
+        <option value="1">Session 1 only</option>
+        <option value="2">Session 2 only</option>
+      </select>
+    </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="action-btn btn-teal" onclick="runSlideGenBatch()">📄 Generate Slides (All Grades)</button>
+      <button class="action-btn btn-teal" onclick="runSlideGenBatch(false)">📄 Generate Slides (download each)</button>
+      <button class="action-btn btn-teal" onclick="runSlideGenBatch(true)">🗜 Generate + Download as ZIP</button>
       <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen (All Grades)</button>
     </div>
     <p style="font-size:10px;color:#4a4870;margin:0">Slides download as HTML — upload to Google Drive and paste URL in HOW platform. Videos submit to Heygen Video Agent.</p>
@@ -176,7 +197,7 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
 <script>
 // ── STATE ────────────────────────────────────────────────────────────────────
 var STATE = {
-  week:1, genS1:true, genS2:true, genTest:true, genThursday:true,
+  week:1, genS1:true, genS2:true, genTest:true, genThursday:true, genQalamS1:false, genQalamS2:false,
   broadcastAfter:true, delay:800, isRunning:false,
   authStatus:'checking', householdId:null, studioCardCount:0,
   heygenKey:'', heygenAvatars:{
@@ -224,7 +245,7 @@ function updateProgress(){
   var pct=t>0?Math.min(100,Math.round(d/t*100)):0;
   qs('#progress-inner').style.width=pct+'%';
   qs('#progress-inner').style.background=e>0?'#c8a96e':'#7c3aed';
-  var sl=t>0?(d+'/'+t+' items · '+e+' errors · '+pct+'%'):'Ready · '+(STATE.genS1?'S1 ':'')+(STATE.genS2?'S2 ':'')+(STATE.genTest?'Test ':'')+(STATE.genThursday?'Thu ':'')+'· 13 grades';
+  var sl=t>0?(d+'/'+t+' items · '+e+' errors · '+pct+'%'):'Ready · '+(STATE.genS1?'S1 ':'')+(STATE.genS2?'S2 ':'')+(STATE.genTest?'Test ':'')+(STATE.genThursday?'Thu ':'')+(STATE.genQalamS1?'QS1 ':'')+(STATE.genQalamS2?'QS2 ':'')+'· 13 grades';
   qs('#stats-label').textContent=sl;
   var eta='';
   if(STATE.isRunning&&s.startTime&&d>0){var el=(Date.now()-s.startTime)/1000;var rem=(t-d)*(el/d);eta=rem>60?'~'+Math.ceil(rem/60)+'min remaining':'~'+Math.round(rem)+'s remaining';}
@@ -269,7 +290,7 @@ function initGrid(){
     });
     // Thu dot
     var thuCell=document.createElement('div'); thuCell.className='dots-cell';
-    var thuDot=document.createElement('span'); thuDot.className='dot'; thuDot.id=thuId(gi); thuDot.style.width='14px'; thuDot.style.height='14px'; thuDot.title='Thu: idle';
+    var thuDot=document.createElement('span'); thuDot.className='dot'; thuDot.id=thuId(gi); thuDot.style.width='12px'; thuDot.style.height='12px'; thuDot.title='Thu: idle';
     thuCell.appendChild(thuDot); row.appendChild(thuCell);
     // QalamS1 QalamS2 dots
     ['qs1','qs2'].forEach(function(sess){
@@ -349,7 +370,12 @@ function setTab(id, btn){
 function toggleGen(key, btnId){
   STATE[key]=!STATE[key];
   var btn=qs('#'+btnId);
-  if(key==='genThursday'){
+  if(key==='genQalamS1'||key==='genQalamS2'){
+    btn.style.background=STATE[key]?'rgba(29,111,111,.3)':'none';
+    btn.style.color=STATE[key]?'#2dd4bf':'#1d6f6f';
+    btn.style.fontWeight=STATE[key]?'700':'600';
+    btn.style.borderColor='#1d6f6f';
+  } else if(key==='genThursday'){
     btn.style.borderColor=STATE[key]?'#9d4edd':'#2e2a4a';
     btn.style.background=STATE[key]?'rgba(157,78,221,.2)':'none';
     btn.style.color=STATE[key]?'#c084fc':'#4a4870';
@@ -398,14 +424,44 @@ function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
 async function callAPI(sys,usr,maxTok){
   var r=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTok||3000,system:sys,messages:[{role:'user',content:usr}]})
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxTok||6000,system:sys,messages:[{role:'user',content:usr}]})
   });
   if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error((e.error&&e.error.message)||'API '+r.status);}
   var d=await r.json();
   return (d.content||[]).map(function(b){return b.text||'';}).join('');
 }
 
-function parseJSON(raw){return JSON.parse(raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim());}
+function parseJSON(raw){
+  var t=String(raw||'').replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+  try{return JSON.parse(t);}catch(e){}
+  // repair: cut at last complete structure and close open brackets/strings
+  var inStr=false,esc=false,stack=[],lastSafe=-1;
+  for(var i=0;i<t.length;i++){
+    var c=t[i];
+    if(esc){esc=false;continue;}
+    if(c==='\\'){esc=true;continue;}
+    if(c==='"'){inStr=!inStr;continue;}
+    if(inStr)continue;
+    if(c==='{'||c==='['){stack.push(c==='{'?'}':']');}
+    else if(c==='}'||c===']'){stack.pop();}
+    else if(c===','&&stack.length){lastSafe=i;}
+  }
+  var body=lastSafe>0?t.slice(0,lastSafe):t;
+  // recompute stack for the trimmed body
+  inStr=false;esc=false;stack=[];
+  for(var j=0;j<body.length;j++){
+    var ch=body[j];
+    if(esc){esc=false;continue;}
+    if(ch==='\\'){esc=true;continue;}
+    if(ch==='"'){inStr=!inStr;continue;}
+    if(inStr)continue;
+    if(ch==='{'||ch==='['){stack.push(ch==='{'?'}':']');}
+    else if(ch==='}'||ch===']'){stack.pop();}
+  }
+  if(inStr)body+='"';
+  while(stack.length)body+=stack.pop();
+  return JSON.parse(body);
+}
 function getGradeBand(g){var n=parseInt(g);if(n<=2)return 'k2';if(n<=5)return '35';if(n<=8)return '68';return '912';}
 function getGradePrefix(g){
   var b=g<=1?'K-G1':g<=3?'G2-G3':g<=5?'G4-G5':g<=8?'G6-G8':'G9-G12';
@@ -513,7 +569,7 @@ async function generateTestSubject(g,w,subj){
   var bandDesc=band==='k2'?'K-2: ALL questions must be type:"mcq" only.':band==='35'?'Grades 3-5: clear language, familiar contexts.':band==='68'?'Grades 6-8: analytical thinking, evidence-based.':'Grades 9-12: sophisticated analysis.';
   var sys='You are generating a mastery assessment for a K-12 Islamic education platform.\nUS customary units. US spelling. Tests ONLY Session 1 + Session 2 content.\nGrade band: '+bandDesc+'\n'+(band==='k2'?'CRITICAL: Return ONLY type:"mcq" questions.\n':'')+'Return ONLY valid JSON. No markdown.';
   var usr='Grade: '+gl+'\nWeek: '+w+'\nScholar: '+(how.scholar||'')+'\nJuz theme: '+(juz.theme||'')+'\nOpening question: '+(how.openingQ||'')+'\nSubject: '+(SLABELS[subj]||subj)+'\nLearning objectives: '+objectives+'\n\n'+getTestSchema(subj,g);
-  var raw=await callAPI(sys,usr,1200);
+  var raw=await callAPI(sys,usr,3000);
   var parsed=parseJSON(raw);
   var qs=parsed.questions||[];
   if(band==='k2') qs=qs.filter(function(q){return q.type==='mcq';});
@@ -521,7 +577,7 @@ async function generateTestSubject(g,w,subj){
 }
 
 async function pushTest(g,w,subjects){
-  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,created_at:new Date().toISOString(),locked:false,subjects:subjects,updated_at:new Date().toISOString()};
+  var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,generated_at:new Date().toISOString(),locked:false,subjects:subjects,updated_at:new Date().toISOString()};
   var r=await sb.from('test').upsert(entry,{onConflict:'household_id,grade,week'}).select();
   if(r.error) throw new Error(r.error.message);
 }
@@ -572,7 +628,7 @@ async function generateWedReview(gi,g){
     });
     var sys='You are generating a Wednesday review lesson deck for a K-12 Islamic homeschool platform. US customary units. US spelling.\nThe deck targets ONLY misconceptions from wrong answers. RULES:\n- One slide per subject with errors (max 5 subjects)\n- Name the SPECIFIC misconception, then ask ONE correcting question\n- Do NOT re-teach the whole concept — target the exact error\n- Connect one slide to the week\'s scholar, one to the Juz theme\n- Final slide: muhasaba — what does understanding this correctly change?\nReturn ONLY valid JSON. Schema: {"title":"string","objective":"string","slides":[{"type":"string","heading":"string","content":"string","question":"string","parentNote":"string"}]}';
     var usr=gl+' · Week '+w+' · Scholar: '+(how.scholar||'')+'\nJuz: '+(juz.tr||'')+' — '+(juz.meaning||'')+'\nCarrying question: '+(how.openingQ||'')+'\n\nTest results:'+scoreCtx;
-    var raw=await callAPI(sys,usr,2000);
+    var raw=await callAPI(sys,usr,4000);
     var deck=parseJSON(raw);
     var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
     var entry={household_id:hid,grade:g,week:w,subject:'review',session:4,title:deck.title||'Wednesday Review',objective:deck.objective||'',slides:slides,workbook:{},created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
@@ -602,10 +658,10 @@ async function broadcast(){
 
 async function runAll(){
   var week=STATE.week;
-  if(!STATE.genS1&&!STATE.genS2&&!STATE.genTest&&!STATE.genThursday){addLog('Select at least one thing to generate','warn');return;}
+  if(!STATE.genS1&&!STATE.genS2&&!STATE.genTest&&!STATE.genThursday&&!STATE.genQalamS1&&!STATE.genQalamS2){addLog('Select at least one thing to generate','warn');return;}
   if(!sb){addLog('Not connected to Supabase','err');return;}
   abortFlag=false;
-  var total=13*((STATE.genS1?10:0)+(STATE.genS2?10:0)+(STATE.genTest?5:0)+(STATE.genThursday?1:0));
+  var total=13*((STATE.genS1?10:0)+(STATE.genS2?10:0)+(STATE.genTest?5:0)+(STATE.genThursday?1:0)+(STATE.genQalamS1?5:0)+(STATE.genQalamS2?5:0));
   STATE.isRunning=true;
   STATE.stats={total:total,done:0,errors:0,startTime:Date.now()};
   STATE.grades.forEach(function(gr){gr.s1=Array(5).fill('idle');gr.s2=Array(5).fill('idle');gr.test=Array(5).fill('idle');gr.thu='idle';gr.status='idle';});
@@ -656,6 +712,16 @@ async function runAll(){
       try{await generateThursday(g,week);setThuStatus(gi,'done');bumpDone();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✓','ok');}
       catch(e){setThuStatus(gi,'error');errs++;bumpError();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✗ '+e.message,'err');}
       if(STATE.delay) await sleep(STATE.delay);
+    }
+    for(var qs=1;qs<=2;qs++){
+      if(!(qs===1?STATE.genQalamS1:STATE.genQalamS2)) continue;
+      for(var si=0;si<5;si++){
+        if(abortFlag) break;
+        setQalamStatus(gi,si,qs,'running');
+        try{await generateAndExportSlides(g,week,LS[si],qs);setQalamStatus(gi,si,qs,'done');bumpDone();addLog(gl+' · Qalam S'+qs+' · '+LS[si]+' \u2713','ok');}
+        catch(e){setQalamStatus(gi,si,qs,'error');errs++;bumpError();addLog(gl+' · Qalam S'+qs+' · '+LS[si]+' \u2717 '+e.message,'err');}
+        if(STATE.delay&&si<4) await sleep(STATE.delay);
+      }
     }
     setGradeStatus(gi,errs?'error':'done');
   }
@@ -744,7 +810,7 @@ function renderSlideHTML(grade,subject,session,deck,juz,how){
   return '<!DOCTYPE html><html><head><meta charset=utf-8><title>'+grade+' \xb7 '+subject+' \xb7 Session '+session+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:'+bg+';color:#fff;font-family:Georgia,serif;height:100vh;overflow:hidden}.slide{display:none;height:100vh;padding:60px 80px;flex-direction:column;justify-content:center;position:relative}.slide.active{display:flex}.sn{position:absolute;top:18px;right:24px;font-size:12px;opacity:.4}h2{font-size:34px;line-height:1.2;color:'+acc+';margin-bottom:18px}p{font-size:21px;line-height:1.65;max-width:880px}ol{font-size:19px;line-height:1.8;max-width:880px;padding-left:22px}.pn{margin-top:18px;font-size:14px;opacity:.55;font-style:italic;border-top:1px solid rgba(255,255,255,.12);padding-top:10px}.bar{position:fixed;top:0;left:0;right:0;height:46px;background:rgba(0,0,0,.35);display:flex;align-items:center;padding:0 22px;font-size:12px;opacity:.65;gap:8px}.nav{position:fixed;bottom:20px;right:22px;display:flex;gap:8px}.nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;padding:7px 18px;border-radius:18px;cursor:pointer;font-size:13px}</style></head><body><div class=bar><span style="color:'+acc+'">'+grade+'</span><span style="opacity:.4">\xb7</span>'+subject+'<span style="opacity:.4">\xb7</span>Session '+session+'<span style="opacity:.4">\xb7</span>'+(how.scholar||'')+'</div>'+slideHtml+'<div class=nav><button onclick="prev()">\u2190</button><button onclick="next()">\u2192</button></div><script>var c=0,ss=document.querySelectorAll(".slide");function show(n){ss.forEach(function(s,i){s.classList.toggle("active",i===n);});}function next(){if(c<ss.length-1){c++;show(c);}}function prev(){if(c>0){c--;show(c);}}document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")next();if(e.key==="ArrowLeft")prev();});show(0);<\/script></body></html>';
 }
 
-async function generateAndExportSlides(g,w,subjKey,sessionNum){
+async function generateAndExportSlides(g,w,subjKey,sessionNum,collectOnly){
   var how=(HOW_CURR[g]||{})[w]||{};
   var juz=JUZ[w-1]||{};
   var gl=g===0?'Kindergarten':'Grade '+g;
@@ -755,33 +821,59 @@ async function generateAndExportSlides(g,w,subjKey,sessionNum){
   var deck=parseJSON(raw);
   var html=renderSlideHTML(gl,LABELS[subjKey],'Session '+sessionNum,deck,juz,how);
   var fname=(g===0?'K':'Grade_'+g)+'_'+LABELS[subjKey].replace(/ \//g,'').replace(/ /g,'_')+'_Session_'+sessionNum+'.html';
-  var blob=new Blob([html],{type:'text/html'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a'); a.href=url; a.download=fname; a.click(); URL.revokeObjectURL(url);
+  if(!collectOnly){
+    var blob=new Blob([html],{type:'text/html'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=fname; a.click(); URL.revokeObjectURL(url);
+  }
+  return {name:fname,html:html};
 }
 
-async function runSlideGenBatch(){
+async function runSlideGenBatch(asZip){
   var week=STATE.week;
-  var SUBJS=['math','science','ela','writing','social'];
-  addLog('Qalam slide generation — Week '+week+' — all grades × 5 subjects × 2 sessions','start');
+  var ALL=['math','science','ela','writing','social'];
+  var gSel=qs('#slide-grade-sel'), sSel=qs('#slide-subj-sel'), sesSel=qs('#slide-sess-sel');
+  var gradeScope=gSel?gSel.value:'all';
+  var subjScope=sSel?sSel.value:'all';
+  var sessScope=sesSel?sesSel.value:'all';
+  var grades=gradeScope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gradeScope)];
+  var subjs=subjScope==='all'?ALL:[subjScope];
+  var sessions=sessScope==='all'?[1,2]:[parseInt(sessScope)];
+  var zip=asZip&&typeof JSZip!=='undefined'?new JSZip():null;
+  if(asZip&&!zip){addLog('ZIP library unavailable — falling back to individual downloads','warn');}
+  abortFlag=false;
+  addLog('Qalam slides — Week '+week+' — '+grades.length+' grade(s) × '+subjs.length+' subject(s) × '+sessions.length+' session(s)'+(zip?' → ZIP':''),'start');
   var count=0,errs=0;
-  for(var gi=0;gi<=12;gi++){
+  for(var k=0;k<grades.length;k++){
     if(abortFlag) break;
-    var gl=gi===0?'K':'G'+gi;
-    for(var si=0;si<5;si++){
-      for(var sess=1;sess<=2;sess++){
+    var gi=grades[k], gl=gi===0?'K':'G'+gi;
+    for(var m=0;m<subjs.length;m++){
+      var si=ALL.indexOf(subjs[m]);
+      for(var n=0;n<sessions.length;n++){
         if(abortFlag) break;
+        var sess=sessions[n];
         setQalamStatus(gi,si,sess,'running');
         try{
-          await generateAndExportSlides(gi,week,SUBJS[si],sess);
+          var out=await generateAndExportSlides(gi,week,subjs[m],sess,!!zip);
+          if(zip) zip.file(out.name,out.html);
           setQalamStatus(gi,si,sess,'done'); count++;
-          addLog(gl+' '+SUBJS[si]+' S'+sess+' ✓','ok');
+          addLog(gl+' '+subjs[m]+' S'+sess+' \u2713','ok');
           await sleep(300);
-        }catch(e){setQalamStatus(gi,si,sess,'error');errs++;addLog(gl+' '+SUBJS[si]+' S'+sess+' ✗ '+e.message,'err');}
+        }catch(e){setQalamStatus(gi,si,sess,'error');errs++;addLog(gl+' '+subjs[m]+' S'+sess+' \u2717 '+e.message,'err');}
       }
     }
   }
-  addLog('Qalam slides done — '+count+' files downloaded, '+errs+' errors. Upload HTML files to Google Drive.','done');
+  if(zip&&count>0){
+    addLog('Bundling '+count+' files into ZIP…','info');
+    var blob=await zip.generateAsync({type:'blob'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download='Qalam_Slides_Week'+week+'.zip'; a.click();
+    URL.revokeObjectURL(url);
+    addLog('ZIP downloaded — '+count+' decks, '+errs+' errors. Upload to Google Drive.','done');
+  } else {
+    addLog('Qalam slides done — '+count+' files, '+errs+' errors.','done');
+  }
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
@@ -804,6 +896,11 @@ window.addEventListener('DOMContentLoaded', function(){
   initWedBtns();
   initMunGrid();
   initHeygenAvatarRows();
+  (function(){
+    var gs=qs('#slide-grade-sel'); if(!gs) return;
+    gs.innerHTML='<option value="all">All grades</option>';
+    for(var i=0;i<13;i++){var o=document.createElement('option');o.value=String(i);o.textContent=i===0?'Kindergarten':'Grade '+i;gs.appendChild(o);}
+  })();
   loadHeygenCfg();
   // Studio cards
   var sc=loadStudioCards();

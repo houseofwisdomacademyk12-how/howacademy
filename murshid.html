@@ -41,7 +41,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--in
 .ctx-grade{font-size:10px;color:var(--ink-4);margin-bottom:2px}
 .ctx-text{font-size:12px;color:var(--ink-2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ctx-type-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
-.dot-opening{background:#534AB7}.dot-main{background:var(--teal)}.dot-scholar{background:var(--gold)}.dot-revision{background:var(--green)}
+.dot-opening{background:#534AB7}.dot-main{background:var(--teal)}.dot-scholar{background:var(--gold)}.dot-revision{background:var(--green)}.dot-halaqa{background:#C47B2A}.dot-arabic{background:#6B4A8A}.dot-munazara{background:var(--coral)}.dot-test{background:#3A5C8B}
 
 /* ── CENTRE: CONVERSATION ── */
 .centre{display:flex;flex-direction:column;background:var(--parchment);overflow:hidden}
@@ -274,6 +274,13 @@ Current Juz / week: ${s.juz||'unknown'}
 This week's subject / scholar: ${s.weekTitle||'unknown'}
 This week's opening question: ${s.openingQ||'not set'}
 
+The HOW week — what each entry type marks:
+Sunday opens: pre-answer before the Halaqa, then halaqa reflection, then Arabic reflection, then scholar entry
+Monday deepens: Session 1 entries across five subjects (main-s1)
+Tuesday refines: Session 2 entries across five subjects (main-s2) + peer teaching record
+Wednesday reveals: test reflection + thread search across subjects
+Thursday closes: Munazara record + week-closing revision (re-reads Sunday's pre-answer)
+
 Student's sahifa (living manuscript — all entries):
 ${sahifaText}
 
@@ -397,8 +404,14 @@ async function getMurshidResponse(userMessage){
       // already added
     }
 
+    const _jwt=localStorage.getItem('how_jwt');
+    if(!_jwt){
+      typingEl.remove();
+      pushHistory('assistant','Please sign in through the HOW platform to use the Murshid.');
+      renderConvo(); isWaiting=false; return;
+    }
     const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_jwt},
       body:JSON.stringify({
         model:'claude-sonnet-4-6',
         max_tokens:400,
@@ -461,19 +474,8 @@ function updateQuickActions(){
       {label:'How was it done traditionally?',text:'How did the rijal scholars traditionally assess a narrator\'s character (adalah)?'},
     ],
   };
-  const _g=parseInt(getSettings().grade)||99;
-  if(_g<=2){
-    const k2starters=[
-      {label:'I think…',             text:'I think '},
-      {label:'I saw…',               text:'I saw '},
-      {label:'I don\'t understand…', text:'I don\'t understand '},
-      {label:'Can you help me with…',text:'Can you help me with '},
-    ];
-    qa.innerHTML=k2starters.map(a=>`<button class="quick-btn" data-qtext="${a.text.replace(/"/g,'&quot;')}" onclick="insertQuick(this.dataset.qtext)">${a.label}</button>`).join('');
-    return;
-  }
   const list=actions[currentMode]||actions.open;
-  qa.innerHTML=list.map(a=>`<button class="quick-btn" data-qtext="${a.text.replace(/"/g,'&quot;')}" onclick="insertQuick(this.dataset.qtext)">${a.label}</button>`).join('');
+  qa.innerHTML=list.map(a=>`<button class="quick-btn" onclick="insertQuick(${JSON.stringify(a.text)})">${a.label}</button>`).join('');
 }
 
 function insertQuick(text){
@@ -585,7 +587,7 @@ async function scanAdab(){
       const hm=await sb.from('halaqa_message').select('sender_name,sender_role,text,created_at').gte('created_at',since).order('created_at',{ascending:false}).limit(150);
       (hm.data||[]).forEach(m=>{ if(m.sender_role!=='ai') artifacts.push('[halaqa] '+m.sender_name+': '+String(m.text||'').slice(0,220)); });
     }catch(e){}
-    // Studio build-ons and viewer annotations (Tuesday contributions)
+    // Studio build-ons and viewer annotations (Sunday open studio + Thursday finishing)
     try{
       const sp=await sb.from('studio_project').select('student_name,title,build_ons,math_annotations');
       (sp.data||[]).forEach(p=>{
@@ -622,8 +624,10 @@ async function scanAdab(){
   if(st) st.innerHTML='<p style="font-size:12px;color:var(--ink-4)"><em>The murshid is reading '+artifacts.length+' artifacts…</em></p>';
   let noms=[];
   try{
+    const _adabJwt=localStorage.getItem('how_jwt');
+    if(!_adabJwt) return;
     const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_adabJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,
         system:'You are the Murshid acting as a rijal observer, assessing adab (character and etiquette) shown in students\' shared work this week. The four intellectual virtues to look for in munazara and halaqa exchanges are: insaf (conceding a better argument — giving the other side what it is owed), tawadu (intellectual humility — acknowledging what one does not know), amana (scholarly faithfulness — crediting another\'s idea rather than absorbing it silently), and sidq (truthfulness — honestly changing a stated position when the evidence demands it). Also look for: patience with a struggling peer, encouraging a younger student, helping without being asked, honoring another\'s work while building on it. POSITIVE OBSERVATIONS ONLY — never note bad behavior. Each nomination must quote its evidence verbatim from the artifacts. If nothing clearly qualifies, return an empty array — do not stretch. Respond ONLY with a JSON array: [{"student":"name","quote":"verbatim evidence","why":"one short line on the character shown — name the virtue if it is one of the four","source":"which artifact"}]',
         messages:[{role:'user',content:'This week\'s shared artifacts:\n\n'+artifacts.join('\n')+'\n\nJSON nominations:'}]})
@@ -806,7 +810,7 @@ function renderSahifaCtx(){
 }
 
 function ctxEntryHtml(e,selectable){
-  const typeColors={opening:'dot-opening',main:'dot-main',scholar:'dot-scholar',revision:'dot-revision'};
+  const typeColors={opening:'dot-opening',main:'dot-main',scholar:'dot-scholar',revision:'dot-revision',halaqa:'dot-halaqa',arabic:'dot-arabic',munazara:'dot-munazara','test-reflection':'dot-test'};
   const dc=typeColors[e.type]||'dot-main';
   return`<div class="ctx-entry ${selectable?'':''}">
     <p class="ctx-grade"><span class="ctx-type-dot ${dc}"></span>${e.type||'entry'} · ${e.date||'recent'}</p>
@@ -826,7 +830,7 @@ function demoEntries(){
 
 function isRecent(dateStr){
   if(!dateStr) return false;
-  return dateStr.toLowerCase().includes('this week')||dateStr.toLowerCase().includes('today')||dateStr.toLowerCase().includes('monday')||dateStr.toLowerCase().includes('tuesday')||dateStr.toLowerCase().includes('wednesday')||dateStr.toLowerCase().includes('thursday')||dateStr.toLowerCase().includes('friday');
+  return dateStr.toLowerCase().includes('this week')||dateStr.toLowerCase().includes('today')||dateStr.toLowerCase().includes('sunday')||dateStr.toLowerCase().includes('monday')||dateStr.toLowerCase().includes('tuesday')||dateStr.toLowerCase().includes('wednesday')||dateStr.toLowerCase().includes('thursday')||dateStr.toLowerCase().includes('friday');
 }
 
 

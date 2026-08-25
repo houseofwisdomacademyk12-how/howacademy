@@ -549,7 +549,7 @@ function initLobby(){
     try{
       var _ents=JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
       var _sun=_ents.find(function(e){
-        return (e.type==='sunday'||e.type==='pre')&&(!e.grade||parseInt(e.grade)===_effectiveGrade);
+        return (e.type==='sunday'||e.type==='pre'||e.type==='opening')&&(!e.grade||parseInt(e.grade)===_effectiveGrade);
       });
       if(_sun&&_sun.text) G.preAnswer=_sun.text.slice(0,300);
     }catch(e){}
@@ -745,7 +745,7 @@ async function _buildLiveParticipants(){
           return '['+G.name+' · '+e.type+' · '+e.entry_date+']: '+e.text;
         }).join('\n\n');
         // Also grab pre-answer
-        var pre=sRes.data.find(function(e){return e.type==='sunday'||e.type==='pre';});
+        var pre=sRes.data.find(function(e){return e.type==='sunday'||e.type==='pre'||e.type==='opening';});
         if(pre&&!G.preAnswer) G.preAnswer=pre.text.slice(0,300);
       }
     }catch(e){ console.warn('Sahifa pull for halaqa failed:',e); }
@@ -935,9 +935,11 @@ async function aiRespond(who,text){
 }
 
 async function callAI(msgs,sys){
+  const _hJwt=localStorage.getItem('how_jwt');
+  if(!_hJwt) return null;
   try{
     const r=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_hJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:280,system:sys,messages:msgs.slice(-10)})});
     const d=await r.json();if(d.error)throw new Error(d.error.message);
     return d.content?.[0]?.text||'…';

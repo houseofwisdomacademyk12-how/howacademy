@@ -1896,7 +1896,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
             <div class="land-lc-bar" style="background:linear-gradient(90deg,#6b3fa0,#8b5cc0)"></div>
             <div class="land-lc-inner">
               <div><div class="land-lc-num">Layer 2</div><div class="land-lc-title">Studios</div><div class="land-lc-ar">المشغل</div></div>
-              <div><div class="land-lc-body">10 enrichment studios with peak tasks and prerequisite maps. Tuesday open studio — all ages, all studios simultaneously.</div><div class="land-lc-tags"><span class="land-lc-tag">10 studios</span><span class="land-lc-tag">Peer teaching</span></div></div>
+              <div><div class="land-lc-body">10 enrichment studios with peak tasks and prerequisite maps. Sunday open studio — all ages, all studios simultaneously.</div><div class="land-lc-tags"><span class="land-lc-tag">10 studios</span><span class="land-lc-tag">Peer teaching</span></div></div>
             </div>
           </div>
           <div class="land-lc">
@@ -2110,13 +2110,13 @@ body.lg-active #lg-root .toast.show { display:block !important; }
 <div class="pull"><p>"The Thursday revision proves that knowledge changed. The muhasaba asks whether the person changed. These are different questions. Only one can be assessed. Both need asking."</p></div>
 <div class="assess-two">
   <div class="ac ac-form">
-    <div class="ac ac-sum" style="border-top:3px solid var(--teal);margin-bottom:18px;padding:14px;background:var(--teal-pale,#d0eaea);border-radius:8px"><p class="aclbl" style="color:var(--teal)">Summative — Tuesday weekly test · AI-generated · auto-marked · graded</p><p class="actit">Mastery of Sunday and Monday learning objectives</p><div class="acitem"><strong>5 subjects · 22 minutes each · 2-hour continuous block</strong> — strict timer per subject; student reviews if finished early; no transitions.</div><div class="acitem"><strong>AI-generated questions</strong> — calibrated to grade level; includes MCQ, short answer, editing tasks, writing prompts, and source analysis.</div><div class="acitem"><strong>Auto-marking</strong> — MCQ and editing tasks auto-marked immediately; short answers and written responses marked by facilitator on Wednesday using AI-generated rubric.</div><div class="acitem"><strong>Wednesday review</strong> — test results drive the murshid session; misconceptions corrected; Maths & Science first, then ELA, Writing & Social Studies.</div><div class="acitem"><strong>Weekly grade report</strong> — AI-generated per-subject comments with sacred layer framing; printable; visible to facilitator and parent.</div></div><p class="aclbl">Formative — weekly, ongoing, never graded as a number</p>
+    <div class="ac ac-sum" style="border-top:3px solid var(--teal);margin-bottom:18px;padding:14px;background:var(--teal-pale,#d0eaea);border-radius:8px"><p class="aclbl" style="color:var(--teal)">Summative — Wednesday weekly test · AI-generated · auto-marked · graded</p><p class="actit">Mastery of Monday and Tuesday learning objectives</p><div class="acitem"><strong>5 subjects · 22 minutes each · 2-hour continuous block</strong> — strict timer per subject; student reviews if finished early; no transitions.</div><div class="acitem"><strong>AI-generated questions</strong> — calibrated to grade level; includes MCQ, short answer, editing tasks, writing prompts, and source analysis.</div><div class="acitem"><strong>Auto-marking</strong> — MCQ and editing tasks auto-marked immediately; short answers and written responses marked by facilitator on Wednesday using AI-generated rubric.</div><div class="acitem"><strong>Wednesday review</strong> — test results drive the murshid session; misconceptions corrected; Maths & Science first, then ELA, Writing & Social Studies.</div><div class="acitem"><strong>Weekly grade report</strong> — AI-generated per-subject comments with sacred layer framing; printable; visible to facilitator and parent.</div></div><p class="aclbl">Formative — weekly, ongoing, never graded as a number</p>
     <p class="actit">What is measured as learning happens</p>
     <div class="acitem"><strong>Sahifa revision entry (Thursday)</strong> — depth of learning, self-assessment of what changed.</div>
     <div class="acitem"><strong>Opening question pre-answer (Sunday)</strong> — baseline and misconception capture. Compared to Thursday's revision to show the week's distance.</div>
     <div class="acitem"><strong>Teach It — lesson annotation (Sunday &amp; Monday)</strong> — every lesson ends with the student teaching it back. Drawing on each slide, writing explanations in their own words, asking the Ustadh where they are stuck. In the tradition of Bayt al-Hikmah, where scholars were evaluated not by examinations but by their ability to transmit: <em>the student who can teach has understood; the student who cannot has only memorised.</em> The annotated deck is published to the Peer Teaching Library as a permanent record of transmission.</div>
     <div class="acitem"><strong>Peer teaching library record</strong> — mastery evidence stronger than any test. The unanswered question is the most valuable data point. Ibn Khaldun observed that teaching is the most reliable test of knowledge — this library is the school's living evidence of that principle in practice.</div>
-    <div class="acitem"><strong>Munazara record (Wednesday)</strong> — reasoning quality, intellectual honesty, ability to defend under pressure.</div>
+    <div class="acitem"><strong>Munazara record (Thursday)</strong> — reasoning quality, intellectual honesty, ability to defend under pressure.</div>
     <div class="acitem"><strong>Studio annotation</strong> — mathematical annotation connecting physical making to curriculum concepts.</div>
     <div class="acitem"><strong>Murshid conversation log</strong> — what questions the student asked, what they tried, where understanding stopped.</div>
   </div>
@@ -3442,7 +3442,7 @@ function renderTestReview(){
 
   // Header
   html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--p3,#e4ddd0)">';
-  html+='<div><h2 style="font-family:Spectral,serif;font-size:20px;margin-bottom:4px">Tuesday Test — Review</h2>';
+  html+='<div><h2 style="font-family:Spectral,serif;font-size:20px;margin-bottom:4px">Wednesday Test — Review</h2>';
   html+='<p style="font-size:12px;color:var(--ink3,#5a5a78)">Grade '+g+' · Week '+w+(t.generated?' · Generated '+new Date(t.generated).toLocaleDateString():'')+'</p></div>';
   html+='<div style="display:flex;gap:8px">';
   html+='<button onclick="toggleTestLock()" style="padding:8px 16px;border-radius:6px;border:none;font-weight:700;cursor:pointer;font-family:inherit;background:'+(locked?'#c0522a':'#1d6f6f')+';color:white">'+(locked?'🔒 Locked — unlock':'🔓 Unlocked — lock for student')+'</button>';
@@ -4267,7 +4267,7 @@ function openTestOverlay(g, w){
   ov.innerHTML=
     _testOverlayCss+
     '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--ink,#1a1a2e);color:white;flex-shrink:0">'+
-    '  <span style="font-size:13px;font-weight:700">📝 Tuesday Test — '+(g===0?'K':'Grade '+g)+' Week '+w+'</span>'+
+    '  <span style="font-size:13px;font-weight:700">📝 Wednesday Test — '+(g===0?'K':'Grade '+g)+' Week '+w+'</span>'+
     '  <button onclick="closeTestOverlay()" style="background:rgba(255,255,255,.1);border:none;color:white;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">✕ Close</button>'+
     '</div>'+
     '<div id="test-ov-body" style="flex:1;overflow-y:auto;padding:0"></div>';
@@ -4830,66 +4830,59 @@ function renderScheduleDay(day){
 
   const days={
     sun:`<div class="timeline">
+      <span class="studio-arc">يوم العربية — Arabic Day · Week opening</span>
       <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">✦ Week opening</p><p class="tb-sub">The week opened Saturday night. This is where it steps into motion.</p><button class="tb-launch tl-gold" onclick="openWeekCard()">✦ Week card</button>${btn('Open Sacred Layer','sacred','tl-sacred')}${btn('Open Sahifa','sahifa-sun','tl-sahifa')}</div></div>
       <div class="trow"><div class="ttime">8:00</div><div class="tblock bhal"><p class="tb-title">الحلقة — The halaqa opens</p><p class="tb-sub"><em>Opening question: "${week?week.q:'—'}"</em></p><span class="tb-tag">Both tracks</span>${btn('Open Halaqa','halaqa','tl-teal')}</div></div>
-      <div class="trow"><div class="ttime">8:50</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS1?'<span class="tb-done">✓ Session 1</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','tl-teal',{subj:'math',session:1}):btn('Generate Session 1','gen','tl-gold')}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'math',session:1}):''}</div></div>
-      <div class="trow"><div class="ttime">9:45</div><div class="tblock bcor"><p class="tb-title">Science${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'sci',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'sci',session:1}):''}</div></div>
-      <div class="trow"><div class="ttime">10:40</div><div class="tblock bfre"><p class="tb-title">Break — studios open, unstructured</p></div></div>
-      <div class="trow"><div class="ttime">11:10</div><div class="tblock bcor"><p class="tb-title">ELA / Reading${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ela?week.ela.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'ela',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ela',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">9:00</div><div class="tblock bhal"><p class="tb-title">اللغة العربية — Arabic curriculum</p><p class="tb-sub">Open each student's Arabic dashboard. Work through the scheduled session at their level and mode.</p><span class="tb-tag">All levels · personalised</span><button class="tb-launch tl-teal" onclick="window.open('how_arabic.html','_blank')">↗ Open Arabic</button></div></div>
+      <div class="trow"><div class="ttime">11:00</div><div class="tblock bstua"><p class="tb-title">Open Studio — all grades, all studios, 2 hours</p><p class="tb-sub">${studioDetail||'Every studio open simultaneously. Students choose freely.'}</p><span class="tb-tag">No arc today — pure making</span>${btn('Open Studio','studio','tl-studio')}</div></div>
+      <div class="trow"><div class="ttime">13:00</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch — studios remain open</p></div></div>
+      <div class="trow" data-eod="1"><div class="ttime">14:00</div><div class="tblock bsah"><p class="tb-title">Sahifa — Arabic reflection entry</p><p class="tb-sub">What word or phrase from today's Arabic session stayed with you? Write it in both scripts.</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+    </div>`,
+
+    mon:`<div class="timeline">
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS1?'<span class="tb-done">✓ Session 1</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','tl-teal',{subj:'math',session:1}):btn('Generate Session 1','gen','tl-gold')}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'math',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">Science${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'sci',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'sci',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">10:00</div><div class="tblock bfre"><p class="tb-title">Break — studios open, unstructured</p></div></div>
+      <div class="trow"><div class="ttime">10:30</div><div class="tblock bcor"><p class="tb-title">ELA / Reading${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ela?week.ela.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'ela',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ela',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:15</div><div class="tblock bcor"><p class="tb-title">Writing${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'writing',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'writing',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">14:00</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'ss',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ss',session:1}):''}</div></div>
       <div class="trow" data-eod="1"><div class="ttime">14:45</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
     </div>`,
 
-    mon:`<div class="timeline">
-      <span class="studio-arc">Studio arc — Day 2: Observe · Question</span>
-      <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; sahifa morning read</p><p class="tb-sub">Murshid's overnight threads surfaced.</p>${btn('Open Murshid','murshid','tl-sacred')}</div></div>
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics — deepening${hasS2?'<span class="tb-done">✓ Session 2</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,120):'—'}</p>${hasS2?btn('Open deck','deck','tl-teal',{subj:'math',session:2}):btn('Generate Session 2','gen','tl-gold')}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'math',session:2}):''}</div></div>
-      <div class="trow"><div class="ttime">9:00</div><div class="tblock bstua"><p class="tb-title">Studio — Observe &amp; Question</p><p class="tb-sub">${studioLabel}</p><span class="tb-tag">Day 2 arc: what question does this raise?</span>${btn('Open Studio','studio-twin','tl-studio')}</div></div>
-      <div class="trow"><div class="ttime">10:20</div><div class="tblock bfre"><p class="tb-title">Break — studio remains live</p></div></div>
-      <div class="trow"><div class="ttime">10:50</div><div class="tblock bcor"><p class="tb-title">Science${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'sci',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'sci',session:2}):''}</div></div>
-      <div class="trow"><div class="ttime">11:40</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'ss',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ss',session:2}):''}</div></div>
-      <div class="trow"><div class="ttime">12:30</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
-      <div class="trow"><div class="ttime">13:00</div><div class="tblock bpeer"><p class="tb-title">Peer teaching preparation &amp; recording</p><span class="tb-tag">Library grows here</span>${btn('Open Peer Library','peer','tl-peer')}</div></div>
-      <div class="trow"><div class="ttime">13:50</div><div class="tblock bcor"><p class="tb-title">Writing workshop${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'writing',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'writing',session:2}):''}</div></div>
-      <div class="trow" data-eod="1"><div class="ttime">14:35</div><div class="tblock bsah"><p class="tb-title">Sahifa — studio connection entry</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
-    </div>`,
-
     tue:`<div class="timeline">
-      <span class="studio-arc">Studio arc — Day 3: Make · Document</span>
-      <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; morning intention</p><p class="tb-sub">What are you working on in the studio today? One sentence.</p></div></div>
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">📝 Tuesday Test — all 5 subjects${hasTest?hasScore?'<span class="tb-done">✓ Scored</span>':'<span class="tb-done">✓ Generated</span>':''}</p><p class="tb-sub">22 minutes per subject · strict timer · no transitions between subjects</p>${hasTest?btn(hasScore?'Review test &amp; scores':'Open test','test','tl-teal'):btn('Generate test first','gen','tl-gold')}</div></div>
-      <div class="trow"><div class="ttime">10:00</div><div class="tblock bstua"><p class="tb-title">Open studio — all grades, all studios, 2 hours</p><p class="tb-sub">${studioDetail||'Every studio open simultaneously. Students choose freely.'}</p><span class="tb-tag">Day 3 arc: make the thing</span>${btn('Open Studio','studio-twin','tl-studio')}</div></div>
-      <div class="trow"><div class="ttime">12:00</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch — studios remain open</p></div></div>
-      <div class="trow"><div class="ttime">13:00</div><div class="tblock bstua" style="background:#5c4f8a;border-color:#7c6faa;color:white"><p class="tb-title">Documentation block — digital twin updated now</p><p class="tb-sub">Photograph, measure, annotate while fresh. Open questions recorded in the moment.</p><span class="tb-tag">Day 3 arc: document what happened</span>${btn('Open Studio Digital Twin','studio-twin','tl-studio')}</div></div>
-      <div class="trow" data-eod="1"><div class="ttime">13:50</div><div class="tblock bsah"><p class="tb-title">Sahifa — extended entry · 30 min</p><p class="tb-sub">Prompts: the studio session · the test · this week's scholar · what question am I carrying?</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS2?'<span class="tb-done">✓ Session 2</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','tl-teal',{subj:'math',session:2}):btn('Generate Session 2','gen','tl-gold')}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'math',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">Science${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'sci',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'sci',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">10:00</div><div class="tblock bfre"><p class="tb-title">Break — studios open, unstructured</p></div></div>
+      <div class="trow"><div class="ttime">10:30</div><div class="tblock bcor"><p class="tb-title">ELA / Reading${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ela?week.ela.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'ela',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ela',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
+      <div class="trow"><div class="ttime">13:00</div><div class="tblock bcor"><p class="tb-title">Writing${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'writing',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'writing',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">13:45</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'ss',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ss',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">14:30</div><div class="tblock bpeer"><p class="tb-title">Peer teaching preparation &amp; recording</p><span class="tb-tag">Library grows here</span>${btn('Open Peer Library','peer','tl-peer')}</div></div>
+      <div class="trow" data-eod="1"><div class="ttime">14:50</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
     </div>`,
 
     wed:`<div class="timeline">
-      <span class="studio-arc">Studio arc — Day 4: Iterate · Reflect</span>
-      <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; murshid review</p>${btn('Open Murshid','murshid','tl-sacred')}</div></div>
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics &amp; Science — test review${hasWed?'<span class="tb-done">✓ Wed deck</span>':''}</p><p class="tb-sub">Go over Tuesday test results · targeted re-teaching where needed</p>${hasWed?btn('Open Wednesday review','deck','tl-teal',{subj:'review',session:4}):btn('Generate Wed review','gen','tl-gold')}</div></div>
-      <div class="trow"><div class="ttime">9:00</div><div class="tblock bHAD"><p class="tb-title">✦ Hadith of the week</p><p class="tb-sub" style="font-family:'Amiri',serif;font-size:13px;direction:rtl;text-align:right;margin-bottom:3px">${hadith.ar||''}</p><p class="tb-sub"><em>"${hadith.tr||''}"</em></p><p class="tb-sub">Carrying question: ${hadith.q||''}</p><span class="tb-tag">Read 3× · one sentence in sahifa · no debrief</span>${btn('Open Sacred Layer','sacred','tl-sacred')}</div></div>
-      <div class="trow"><div class="ttime">9:20</div><div class="tblock bpeer"><p class="tb-title">Peer teaching sessions</p><span class="tb-tag">Both tracks</span>${btn('Open Peer Library','peer','tl-peer')}</div></div>
-      <div class="trow"><div class="ttime">10:50</div><div class="tblock bhal"><p class="tb-title">المنازرة — Mid-week munazara</p><p class="tb-sub">Structured debate on the week's claim. Facilitator holds the ring.</p><span class="tb-tag">Primary assessment mode</span>${btn('Open Munazara','munazara','tl-sacred')}</div></div>
+      <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; morning intention</p><p class="tb-sub">What are you working on in the studio today? One sentence.</p></div></div>
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">📝 Wednesday Test — all 5 subjects${hasTest?hasScore?'<span class="tb-done">✓ Scored</span>':'<span class="tb-done">✓ Generated</span>':''}</p><p class="tb-sub">22 minutes per subject · strict timer · no transitions between subjects</p>${hasTest?btn(hasScore?'Review test &amp; scores':'Open test','test','tl-teal'):btn('Generate test first','gen','tl-gold')}</div></div>
+      <div class="trow"><div class="ttime">10:00</div><div class="tblock bHAD"><p class="tb-title">✦ Hadith of the week</p><p class="tb-sub" style="font-family:'Amiri',serif;font-size:13px;direction:rtl;text-align:right;margin-bottom:3px">${hadith.ar||''}</p><p class="tb-sub"><em>"${hadith.tr||''}"</em></p><p class="tb-sub">Carrying question: ${hadith.q||''}</p><span class="tb-tag">Read 3× · one sentence in sahifa · no debrief</span>${btn('Open Sacred Layer','sacred','tl-sacred')}</div></div>
+      <div class="trow"><div class="ttime">10:20</div><div class="tblock bcor"><p class="tb-title">Mathematics &amp; Science — test review${hasWed?'<span class="tb-done">✓ Wed deck</span>':''}</p><p class="tb-sub">Go over Wednesday test results · targeted re-teaching where needed</p>${hasWed?btn('Open Wednesday review','deck','tl-teal',{subj:'review',session:4}):btn('Generate Wed review','gen','tl-gold')}</div></div>
       <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:00</div><div class="tblock bcor"><p class="tb-title">ELA, Writing &amp; Social Studies — test review</p>${hasWed?btn('Open Wednesday review','deck','tl-teal',{subj:'review',session:4}):btn('Generate Wed review','gen','tl-gold')}</div></div>
-      <div class="trow" data-eod="1"><div class="ttime">14:10</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry + thread search</p><p class="tb-sub">Iterate on what the studio showed you. Look for the thread connecting subjects.</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow" data-eod="1"><div class="ttime">14:10</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry + thread search</p><p class="tb-sub">What did the test reveal? Look for the thread connecting subjects.</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
     </div>`,
 
     thu:`<div class="timeline">
-      <span class="studio-arc">Studio arc — Day 5: Finish · Transmit</span>
+      <span class="studio-arc">Studio arc — Day 4: Finish · Transmit</span>
       <div class="trow"><div class="ttime">7:30</div><div class="tblock bsal"><p class="tb-title">Fajr &amp; pre-answer review — re-read Sunday's pre-answer in silence</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bstua" style="background:var(--pl);border-color:#AFA9EC"><p class="tb-title">Studio finishing block — by appointment only</p><p class="tb-sub">Complete and publish the digital twin. The thing is done. The record is made.</p><span class="tb-tag">Day 5 arc: finish &amp; publish</span>${btn('Open Studio Digital Twin','studio-twin','tl-studio')}</div></div>
-      <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">All-subjects synthesis${hasThu?'<span class="tb-done">✓ Thu deck</span>':''}</p><p class="tb-sub">${week?'Theme: '+week.theme+'. The week\'s thread made visible.':'—'}</p>${hasThu?btn('Open Thursday synthesis','deck','tl-teal',{subj:'synthesis',session:3}):btn('Generate Thu synthesis','gen','tl-gold')}</div></div>
-      <div class="trow"><div class="ttime">10:15</div><div class="tblock bpeer"><p class="tb-title">Isnad recording — 20 min</p><p class="tb-sub">Who did I teach? Who taught me? The transmission is recorded formally.</p><span class="tb-tag">Isnad grows here</span>${btn('Open Isnad','isnad','')}</div></div>
-      <div class="trow"><div class="ttime">10:35</div><div class="tblock bopn"><p class="tb-title">Open work time — curriculum, studio, murshid, or stillness</p><p class="tb-sub">No structure. Student chooses.</p>${btn('Open Murshid','murshid','tl-sacred')}${btn('Open Studio','studio-twin','tl-studio')}</div></div>
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bstua" style="background:var(--pl);border-color:#AFA9EC"><p class="tb-title">Studio finishing &amp; Documentation block</p><p class="tb-sub">Complete and publish the digital twin. Photograph, measure, annotate while fresh. Open questions recorded in the moment.</p><span class="tb-tag">Finish · publish · document</span>${btn('Open Studio Digital Twin','studio-twin','tl-studio')}</div></div>
+      <div class="trow"><div class="ttime">9:30</div><div class="tblock bcor"><p class="tb-title">All-subjects synthesis${hasThu?'<span class="tb-done">✓ Thu deck</span>':''}</p><p class="tb-sub">${week?'Theme: '+week.theme+". The week's thread made visible.":'—'}</p>${hasThu?btn('Open Thursday synthesis','deck','tl-teal',{subj:'synthesis',session:3}):btn('Generate Thu synthesis','gen','tl-gold')}</div></div>
+      <div class="trow"><div class="ttime">10:45</div><div class="tblock bpeer"><p class="tb-title">Isnad recording — 20 min</p><p class="tb-sub">Who did I teach? Who taught me? The transmission is recorded formally.</p><span class="tb-tag">Isnad grows here</span>${btn('Open Isnad','isnad','')}</div></div>
+      <div class="trow"><div class="ttime">11:05</div><div class="tblock bhal"><p class="tb-title">المنازرة — Munazara</p><p class="tb-sub">Structured debate on the week's claim. Facilitator holds the ring.</p><span class="tb-tag">Primary assessment mode</span>${btn('Open Munazara','munazara','tl-sacred')}</div></div>
       <div class="trow"><div class="ttime">12:30</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:15</div><div class="tblock bsah"><p class="tb-title">Week-closing revision entry</p><p class="tb-sub">Re-read Sunday's pre-answer. Write what changed.</p><span class="tb-tag">The most important weekly writing</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
       <div class="trow" data-eod="1"><div class="ttime">14:00</div><div class="tblock bMUH"><p class="tb-title">✦ Muhasaba — المُحاسَبَة</p><p class="tb-sub">20 minutes. Prompts: What did I resist this week? What question am I carrying? Who am I becoming?</p><span class="tb-tag">Private · never assessed</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
     </div>`,
-
     fri:`<div style="background:var(--night);border-radius:var(--rl);padding:24px;color:white;text-align:center">
       <p style="font-family:'Amiri',serif;font-size:28px;color:var(--gold);margin-bottom:8px">يوم الجمعة</p>
       <p style="font-family:'Spectral',serif;font-size:18px;color:white;font-weight:300;margin-bottom:8px">Friday</p>
@@ -5182,9 +5175,11 @@ async function sendMurshid(){
   murshidHistory.push({role:'user',content:text});
 
   try{
+    const _mJwt=localStorage.getItem('how_jwt');
+    if(!_mJwt){ addMsg('Please sign in to use the Murshid.','ai'); return; }
     const res=await fetch(API_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_mJwt},
       body:JSON.stringify({
         model:'claude-sonnet-4-6',
         max_tokens:350,
@@ -5448,7 +5443,7 @@ function onCtrl(){
       if(!(S.lessons&&S.lessons[key(S.grade,S.week,'review',4)])){
         // Not generated yet — show gen panel with a note
         var mc=document.getElementById('main-content');
-        if(mc){ mc.innerHTML='<div style="text-align:center;padding:60px 24px;color:var(--ink-soft,#9a9ab0)">'+'<div style="font-size:48px;margin-bottom:16px">📝</div>'+'<div style="font-size:16px;margin-bottom:8px">Wednesday Review not yet generated</div>'+'<div style="font-size:13px">Complete the Tuesday test first, then click Step 4 in <strong>⚙ Saturday Prep</strong> to generate the review deck.</div></div>'; return; }
+        if(mc){ mc.innerHTML='<div style="text-align:center;padding:60px 24px;color:var(--ink-soft,#9a9ab0)">'+'<div style="font-size:48px;margin-bottom:16px">📝</div>'+'<div style="font-size:16px;margin-bottom:8px">Wednesday Review not yet generated</div>'+'<div style="font-size:13px">Complete the Wednesday test first, then click Step 4 in <strong>⚙ Saturday Prep</strong> to generate the review deck.</div></div>'; return; }
       }
     }
     else if(_ds==='synthesis'){
@@ -5699,7 +5694,7 @@ async function generateReport(){
     }
     return;
   }
-  if(!sc){ toast('No test scores yet — complete the Tuesday test first'); return; }
+  if(!sc){ toast('No test scores yet — complete the Wednesday test first'); return; }
 
   var btn=document.getElementById('btn-report');
   if(btn){ btn.disabled=true; btn.textContent='Generating…'; }
@@ -6005,11 +6000,11 @@ function genPanel(){
         '<p class="gen-sat-note">Session 2 deepening decks for all 5 subjects. Review and annotate before Monday.</p>'+
       '</div>'+
       '<div class="gen-sat-step">'+
-        '<div class="gen-sat-step-label">Step 2 — Saturday prep: Tuesday test</div>'+
+        '<div class="gen-sat-step-label">Step 2 — Saturday prep: Wednesday test</div>'+
         '<button class="gen-week-btn" id="gen-test-btn" onclick="generateTest()"'+
-        ' title="Generate Tuesday mastery test for this week">'+
-        '📝 Generate Tuesday test</button>'+
-        '<p class="gen-sat-note">Generates the 5-subject test for Tuesday. Review and edit questions before locking.</p>'+
+        ' title="Generate Wednesday test for this week">'+
+        '📝 Generate Wednesday test</button>'+
+        '<p class="gen-sat-note">Generates the 5-subject test for Wednesday. Review and edit questions before locking.</p>'+
       '</div>'+
       '<div class="gen-sat-step">'+
         '<div class="gen-sat-step-label">Step 3 — Saturday prep: Thursday synthesis</div>'+
@@ -6022,14 +6017,14 @@ function genPanel(){
         '<div class="gen-sat-step-label">Munazara — week-long debate</div>'+
         '<button class="gen-week-btn" onclick="openMunazara()" style="background:var(--sacred,#5c2080)">'+
         '🗣 Open Munazara tool</button>'+
-        '<p class="gen-sat-note">The week\'s claim is auto-loaded. Student debates the Ustadh across the week. Wednesday synthesis on completion.</p>'+
+        '<p class="gen-sat-note">The week\'s claim is auto-loaded. Student debates the Ustadh across the week. Thursday synthesis on completion.</p>'+
       '</div>'+
       '<div class="gen-sat-step" style="border-top:2px solid var(--p3,#e4ddd0);padding-top:16px">'+
         '<div class="gen-sat-step-label">Step 4 — Wednesday review deck</div>'+
         '<button class="gen-week-btn" id="gen-wed-btn" onclick="generateWednesday()"'+
-        ' title="Generate Wednesday review from Tuesday test scores">'+
+        ' title="Generate Wednesday review from Wednesday test scores">'+
         '📝 Generate Wednesday review</button>'+
-        '<p class="gen-sat-note">Generates after Tuesday\'s test. Targets misconceptions by subject. Requires test scores.</p>'+
+        '<p class="gen-sat-note">Generates after Wednesday\'s test. Targets misconceptions by subject. Requires test scores.</p>'+
       '</div>'+
     '</div>';
   return '<div class="gen-panel">'+
@@ -7034,7 +7029,7 @@ async function generateTest(){
   autosave();
   pushTest(g, w, test); // push to Supabase — non-blocking
 
-  if(testBtn){ testBtn.disabled=false; testBtn.textContent='📝 Generate Tuesday test'; }
+  if(testBtn){ testBtn.disabled=false; testBtn.textContent='📝 Generate Wednesday test'; }
 
   // Show test button
   var tb=document.getElementById('btn-test');
@@ -7043,7 +7038,7 @@ async function generateTest(){
   if(errors.length){
     toast('⚠ Test generated — '+errors.length+' subject(s) failed');
   } else {
-    toast('✓ Tuesday test ready — review and edit before Tuesday');
+    toast('✓ Wednesday test ready — review and edit before Wednesday');
   }
 
   setView('test');
@@ -7062,7 +7057,7 @@ function renderTest(){
         autosave();
         renderTest(); // re-render now that we have it
       } else {
-        mc.innerHTML='<div class="no-week"><span class="no-week-icon">📝</span><span>No test generated yet. Click "Generate Tuesday test" in the gen panel.</span></div>';
+        mc.innerHTML='<div class="no-week"><span class="no-week-icon">📝</span><span>No test generated yet. Click "Generate Wednesday test" in the gen panel.</span></div>';
       }
     });
     return;
@@ -7092,7 +7087,7 @@ function renderTestIntro(t){
   var totalMarks=SUBJ_ORDER.reduce(function(a,s){ return a+(t.subjects[s]?t.subjects[s].totalMarks:0); },0);
   mc.innerHTML='<div class="test-intro">'+
     '<div class="test-intro-icon">📝</div>'+
-    '<h2 class="test-intro-title">Tuesday Assessment</h2>'+
+    '<h2 class="test-intro-title">Wednesday Assessment</h2>'+
     '<p class="test-intro-sub">Week '+t.week+' — '+SUBJ_ORDER.map(function(s){return SUBJ_LABELS[s];}).join(', ')+'</p>'+
     '<p class="test-intro-sub" style="font-size:.85rem;color:var(--ink3)">'+getTestMins(t.grade||S.grade)+' minutes per subject</p>'+
     '<div class="test-rules">'+
@@ -7369,7 +7364,7 @@ function renderTestEditor(t){
   var html='<div class="test-editor">';
   html+='<div class="te-header">'+
     '<div>'+
-      '<h2 class="te-title">📝 Tuesday Test — Week '+t.week+'</h2>'+
+      '<h2 class="te-title">📝 Wednesday Test — Week '+t.week+'</h2>'+
       '<p class="te-sub">'+totalMarks+' total marks · Review before Tuesday · Lock when ready</p>'+
     '</div>'+
     '<div class="te-actions">'+
@@ -8155,7 +8150,9 @@ async function ustadhSend(){
   history.push({role:'user',content:'Lesson context:\n'+ctx+'\n\nQuestion: '+q});
   var thinking=addUMsg('…','ai thinking');
   try{
-    var r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:600,system:sys,messages:history})});
+    const _qaJwt=localStorage.getItem('how_jwt');
+    if(!_qaJwt){ if(thinking) thinking.remove(); return; }
+    var r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_qaJwt},body:JSON.stringify({model:MODEL,max_tokens:600,system:sys,messages:history})});
     var d=await r.json();
     var ans=(d.content||[]).map(function(b){return b.text||'';}).join('').trim();
     if(thinking) thinking.remove();
@@ -8588,7 +8585,7 @@ function showWorkbookOnlyReport(g, w, wkHist, hist){
     +'<div style="background:#f0f8f8;border-radius:10px;padding:20px;margin-bottom:16px;text-align:center">'
     +'<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#1d6f6f;margin-bottom:10px">Workbook · Week '+w+'</div>'
     +wbBlock+'</div>'
-    +'<p style="font-size:.8rem;color:#9a9ab0;text-align:center;margin-bottom:16px">Full AI report available after the Tuesday test.</p>'
+    +'<p style="font-size:.8rem;color:#9a9ab0;text-align:center;margin-bottom:16px">Full AI report available after the Wednesday test.</p>'
     +buildProgressTable(hist)
     +'</div>';
   document.body.appendChild(overlay);
@@ -8959,7 +8956,7 @@ async function generateWeek2(){
 async function generateWednesday(){
   var g=S.grade, w=S.week;
   var sc=S.scores[testKey()];
-  if(!sc){ toast('\u26a0 No test scores yet \u2014 complete the Tuesday test first'); return; }
+  if(!sc){ toast('\u26a0 No test scores yet \u2014 complete the Wednesday test first'); return; }
 
   var wedBtn=document.getElementById('gen-wed-btn');
   if(wedBtn){ wedBtn.disabled=true; wedBtn.textContent='Generating\u2026'; }
@@ -8985,7 +8982,7 @@ async function generateWednesday(){
 
   var sys='You are generating a Wednesday review lesson deck for a K-12 Islamic homeschool platform.\n'+
     'Use US customary units (inches, feet, miles, ounces, pounds, gallons, degrees Fahrenheit) in all questions, examples, and measurements — never metric units unless the topic is explicitly the metric system. Use US spelling.\n'+
-    'The student took their Tuesday test. The deck targets ONLY the actual misconceptions from wrong answers.\n'+
+    'The student took their Wednesday test. The deck targets ONLY the actual misconceptions from wrong answers.\n'+
     'RULES:\n'+
     '- One review slide per subject that had wrong answers (max 5 subjects)\n'+
     '- Each slide names the SPECIFIC misconception and then asks ONE correcting question\n'+
@@ -9536,7 +9533,7 @@ function renderDebate(){
   var statusText=document.getElementById('status-text');
   if(isComplete){
     statusDot.className='status-dot complete';
-    statusText.textContent='Debate complete — ready for Wednesday synthesis';
+    statusText.textContent='Debate complete — ready for Thursday synthesis';
   } else {
     var next=MOVE_SEQUENCE[currentIdx];
     statusDot.className='status-dot active';
@@ -9724,19 +9721,19 @@ function buildTranscript(upToIdx){
 }
 
 // ═══════════════════════════════════════════════════
-//  WEDNESDAY SYNTHESIS
+//  THURSDAY SYNTHESIS
 // ═══════════════════════════════════════════════════
 async function generateSynthesis(){
   showScreen('synthesis');
   document.getElementById('synth-claim').textContent=D.claim;
   document.getElementById('synthesis-content').innerHTML=
     '<div class="ustadh-gen" style="padding:20px 0"><div class="spinner"></div>'+
-    '<span>Generating Wednesday synthesis…</span></div>';
+    '<span>Generating Thursday synthesis…</span></div>';
 
   var transcript=buildTranscript(6);
   var ustadhPos=D.studentPosition==='for'?'against':'for';
 
-  var sys='You are generating a Wednesday synthesis for a Munazara (structured debate) in an Islamic K-12 education platform.\n'+
+  var sys='You are generating a Thursday synthesis for a Munazara (structured debate) in an Islamic K-12 education platform.\n'+
     'The debate was between '+D.studentName+' (Grade '+D.grade+', arguing '+D.studentPosition+') and the Ustadh (arguing '+ustadhPos+').\n'+
     'The claim was: "'+D.claim+'"\n\n'+
     'Return a JSON object with exactly these keys:\n'+
@@ -9749,7 +9746,7 @@ async function generateSynthesis(){
     '}\n'+
     'Return ONLY valid JSON. No markdown.';
 
-  var usr='Full debate transcript:\n\n'+transcript+'\n\nGenerate the Wednesday synthesis JSON now.';
+  var usr='Full debate transcript:\n\n'+transcript+'\n\nGenerate the Thursday synthesis JSON now.';
 
   try{
     var raw=await munCallAPI(sys,usr,1000);
@@ -10215,9 +10212,11 @@ function speak(text){
 //  API
 // ═══════════════════════════════════════════════════
 async function munCallAPI(sys, usr, maxTokens){
+  var _munJwt=localStorage.getItem('how_jwt');
+  if(!_munJwt) return null;
   var resp=await fetch(API_URL,{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+_munJwt},
     body:JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens:maxTokens||800,
@@ -11833,7 +11832,7 @@ function buildParentReports(students, currentWeek){
 
       // Test scores section
       '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📊 Weekly Tests</div>' +
-      (hasAnyScore ? scoreRows : '<div style="font-size:12px;color:var(--ink3);padding:6px 0">No test scores yet — complete the Tuesday test.</div>') +
+      (hasAnyScore ? scoreRows : '<div style="font-size:12px;color:var(--ink3);padding:6px 0">No test scores yet — complete the Wednesday test.</div>') +
 
       // Workbook
       (hasAnyWb ? ('<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">📝 Workbook</div>' + wbRows) : '') +

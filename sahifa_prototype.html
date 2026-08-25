@@ -582,9 +582,11 @@ function getLatestTeachIt(){
 
 // ── MURSHID API — via Railway proxy (no API key needed) ───────────────
 async function sahifaCallAPI(sys, usr, maxTok){
+  const _sJwt = localStorage.getItem('how_jwt');
+  if(!_sJwt) return null;
   const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
     method:'POST',
-    headers:{ 'Content-Type':'application/json' },
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+_sJwt },
     body: JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens: maxTok||600,
@@ -726,24 +728,32 @@ function renderSahifaDay(dayId, mc){
   // Per-day content
   if(dayId==='sun'){
     html += entryCard({
-      type:'opening', icon:'✎', title:'Opening question — write before any instruction?',
+      type:'opening', icon:'✎', title:'Pre-answer — write before the Halaqa',
       howWhy: 'Al-Kindi wrote his first thoughts before reading other scholars — so he would know which ideas were truly his own.',
-      howInstructions: 'Write your best current answer to the week\'s opening question. It does not have to be right — it just has to be yours. Once saved, this entry is locked.',
-      prompt: `<strong>${openQ}</strong><br><span style="font-size:.8rem;color:var(--ink-4)">Write your answer now — before Sunday's lesson.</span>`,
+      howInstructions: 'Write your best current answer to the week\'s opening question before the Halaqa begins at 8:00. It does not have to be right — it just has to be yours. Once saved, this entry is locked.',
+      prompt: `<strong>${openQ}</strong><br><span style="font-size:.8rem;color:var(--ink-4)">Write your answer now — before the Halaqa opens.</span>`,
       placeholder: 'Write your current best understanding — even if it\'s incomplete or uncertain…',
       starters: starters35.opening,
-      saveLabel: 'Save & lock my answer',
+      saveLabel: 'Save & lock my pre-answer',
       locked: true,
     });
     html += entryCard({
-      type:'main-s1', icon:'✎', title:'Session 1 entry — what I learned today',
-      howWhy:'Ibn Sina kept a daily record — not of facts, but of how his understanding changed.',
-      howInstructions:'Write what you now understand after Session 1. Connect it to something you already knew. Include one surprise and one remaining question.',
-      prompt:'What did you learn in Sunday\'s session? Connect it to something you already knew.',
-      placeholder:'I learned… This connects to… I was surprised that… I still wonder…',
-      rows:4, starters:starters35.main,
-      saveLabel:'Save entry', deepenLabel:'Ask Murshid a deepening question',
-      deepenResultId:'main-s1-murshid',
+      type:'halaqa', icon:'◉', title:'Halaqa reflection — what the discussion revealed',
+      howWhy:'The scholars of the early umma tested ideas in open debate before writing them down. The halaqa is where your thinking meets others.',
+      howInstructions:'After the Halaqa: what shifted in your thinking? What did someone else say that you had not considered? One idea that landed, one question that opened.',
+      prompt:'What did the Halaqa discussion reveal or challenge in your pre-answer?',
+      placeholder:'Something that shifted in my thinking… A point someone raised that I hadn\'t considered… A question the Halaqa opened…',
+      rows:3, starters:['Something that shifted was…','I hadn\'t considered that…','The Halaqa opened a question about…'],
+      saveLabel:'Save Halaqa entry',
+    });
+    html += entryCard({
+      type:'arabic', icon:'ع', title:'Arabic reflection — word or phrase that stayed',
+      howWhy:'Language is the vessel of thought. Al-Khalil ibn Ahmad spent his life listening for the patterns beneath words.',
+      howInstructions:'After the Arabic session: write one word or phrase that stayed with you. Write it in Arabic script, then in transliteration, then explain what it means and why it stayed.',
+      prompt:'What word or phrase from today\'s Arabic session stayed with you?',
+      placeholder:'Arabic: ___  Transliteration: ___  Meaning: ___  It stayed because…',
+      rows:3, starters:['The word that stayed was…','This phrase means…and I remember it because…','I want to understand this word better because…'],
+      saveLabel:'Save Arabic entry',
     });
     html += entryCard({
       type:'scholar', icon:'م', title:'The scholar this week',
@@ -757,14 +767,14 @@ function renderSahifaDay(dayId, mc){
 
   else if(dayId==='mon'){
     html += entryCard({
-      type:'main-s2', icon:'✎', title:'Session 2 entry — what Monday added',
-      howWhy:'The second reading always reveals what the first concealed.',
-      howInstructions:'What did Session 2 add or change? Did it confirm or complicate what you wrote on Sunday?',
-      prompt:'What did Monday\'s session add to your understanding?',
-      placeholder:'After Session 2, I now think… Session 2 changed my understanding of… Something that became clearer was…',
+      type:'main-s1', icon:'✎', title:'Session 1 entry — what I learned today',
+      howWhy:'Ibn Sina kept a daily record — not of facts, but of how his understanding changed each day.',
+      howInstructions:'Write what you now understand after today\'s five sessions. Pick the subject where something genuinely shifted. Connect it to your pre-answer from Sunday. Include one surprise and one remaining question.',
+      prompt:'What did you learn across today\'s sessions? What shifted most from your Sunday pre-answer?',
+      placeholder:'The subject where something shifted was… This connects to my pre-answer because… I was surprised that… I still wonder…',
       rows:4, starters:starters35.main,
-      saveLabel:'Save entry', deepenLabel:'Ask Murshid',
-      deepenResultId:'main-s2-murshid',
+      saveLabel:'Save entry', deepenLabel:'Ask Murshid a deepening question',
+      deepenResultId:'main-s1-murshid',
     });
   }
 
@@ -783,10 +793,20 @@ function renderSahifaDay(dayId, mc){
       teachItBlock = `<div style="background:var(--parchment-2);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;font-size:.82rem;color:var(--ink-4);font-style:italic">No Teach It session found yet — complete a lesson in Teach It mode on the platform first.</div>`;
     }
     html += entryCard({
-      type:'teach-record', icon:'🎓', title:'Teaching record — what I taught and what I discovered',
-      howWhy:'The scholars of Bayt al-Hikmah were judged not by what they memorised but by what they could transmit. Teaching reveals the gaps.',
+      type:'main-s2', icon:'✎', title:'Session 2 entry — what deepened today',
+      howWhy:'The second pass always reveals what the first concealed. Ibn Rushd read every text twice — once for what it said, once for what it assumed.',
+      howInstructions:'What did Session 2 add or change from Monday? Did it confirm or complicate what you wrote yesterday? Pick one subject where something genuinely deepened.',
+      prompt:'What did today\'s Session 2 add to what you understood after Monday?',
+      placeholder:'After Session 2, I now think… Something that became clearer was… Something that became more complicated was…',
+      rows:3, starters:['After Session 2 I now think…','Monday I thought… today I realise…','Something that became clearer was…'],
+      saveLabel:'Save Session 2 entry', deepenLabel:'Ask Murshid',
+      deepenResultId:'main-s2-murshid',
+    });
+    html += entryCard({
+      type:'teach-record', icon:'🎓', title:'Teaching record — what peer teaching revealed',
+      howWhy:'The scholars of Bayt al-Hikmah were judged not by what they memorised but by what they could transmit. Teaching reveals the gaps that study conceals.',
       howInstructions:'Look at your Teach It annotations above. What did you notice while teaching? What questions came up that you could not answer? Write 2–3 sentences.',
-      prompt:'After teaching this lesson — what did you discover you understood, and what did you discover you didn\'t?',
+      prompt:'After peer teaching — what did you discover you understood, and what did you discover you didn\'t?',
       extraContent: teachItBlock,
       placeholder:'When I taught this, I discovered… A question came up that I couldn\'t answer… I realised I didn\'t understand…',
       rows:3, starters:['When I taught this I discovered…','A question I couldn\'t answer was…','I thought I understood… but when I tried to teach it…'],
@@ -795,6 +815,15 @@ function renderSahifaDay(dayId, mc){
   }
 
   else if(dayId==='wed'){
+    html += entryCard({
+      type:'test-reflection', icon:'📝', title:'Test reflection — what the test revealed',
+      howWhy:'Al-Jahiz said a scholar who cannot be questioned has not yet been taught. The test is not the endpoint — it is a mirror.',
+      howInstructions:'After today\'s test: which subject felt solid and which exposed a gap? Be specific — not "I didn\'t know maths" but "I couldn\'t explain why…". One strength, one gap, one plan.',
+      prompt:'What did today\'s test reveal about your understanding?',
+      placeholder:'A subject that felt solid was… because… A gap the test exposed was… I plan to address it by…',
+      rows:3, starters:['A subject that felt solid was…','The gap the test exposed was…','I was surprised that I couldn\'t explain…','My plan to address this gap is…'],
+      saveLabel:'Save test reflection',
+    });
     html += entryCard({
       type:'thread', icon:'🔗', title:'Thread search — find a connection',
       howWhy:'Al-Biruni said knowledge is a net — every new understanding is another knot. Wednesday is for finding the knots.',
@@ -810,13 +839,22 @@ function renderSahifaDay(dayId, mc){
 
   else if(dayId==='thu'){
     html += entryCard({
-      type:'revision', icon:'🔄', title:'Revision — find something to correct',
+      type:'munazara', icon:'⚖️', title:'Munazara record — what I argued and what challenged me',
+      howWhy:'The scholars of al-Andalus held that an argument you cannot counter is an argument you have not understood. The Munazara is where your knowledge becomes accountable.',
+      howInstructions:'What position did you argue in the Munazara? What was the strongest challenge against you? Did you hold your ground or shift? One sentence on each.',
+      prompt:'What did the Munazara reveal about how firmly you hold this week\'s ideas?',
+      placeholder:'My position was… The strongest challenge was… I held my ground / shifted because…',
+      rows:3, starters:['My position was…','The strongest challenge against me was…','I shifted my view because…','I held my ground because…'],
+      saveLabel:'Save Munazara record',
+    });
+    html += entryCard({
+      type:'revision', icon:'🔄', title:'Week-closing revision — re-read Sunday\'s pre-answer',
       howWhy:'Ibn al-Haytham famously revised his own optical theories after testing them. Revision is not failure — it is the sign of a working mind.',
-      howInstructions:'Find something you wrote earlier this week — or in a previous week — that you now know is incomplete or wrong. Copy the original, then write what you now understand.',
-      prompt:'What did you write earlier that you now know needs correcting or deepening?',
-      placeholder:'I wrote: "…" I now understand that…',
-      rows:4, starters:['I used to think… but now I know…','I wrote that… but a better explanation is…'],
-      saveLabel:'Save revision',
+      howInstructions:'Open Sunday\'s locked pre-answer and read it now. Copy one line from it below, then write what you now understand that you did not then. What changed? What held?',
+      prompt:'Re-read your Sunday pre-answer. What changed across this week?',
+      placeholder:'On Sunday I wrote: "…" I now understand that… What changed was… What held was…',
+      rows:4, starters:['On Sunday I wrote… I now understand…','What changed this week was…','What surprised me most was that I was right about… but wrong about…'],
+      saveLabel:'Save week-closing revision',
     });
   }
 

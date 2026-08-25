@@ -273,7 +273,7 @@ try{
 
     <div class="text-center mt-16 no-print" id="synthesis-btn-wrap" style="display:none">
       <button class="btn-primary" onclick="generateSynthesis()" style="max-width:360px;margin:0 auto">
-        📊 Generate Wednesday synthesis
+        📊 Generate Thursday synthesis
       </button>
     </div>
 
@@ -285,7 +285,7 @@ try{
   <!-- Synthesis screen -->
   <div id="screen-synthesis" class="hidden">
     <div class="claim-box">
-      <div class="claim-label">Debate complete — Wednesday synthesis</div>
+      <div class="claim-label">Debate complete — Thursday synthesis</div>
       <div class="claim-text" id="synth-claim"></div>
     </div>
 
@@ -791,7 +791,7 @@ function renderDebate(){
   var statusText=document.getElementById('status-text');
   if(isComplete){
     statusDot.className='status-dot complete';
-    statusText.textContent='Debate complete — ready for Wednesday synthesis';
+    statusText.textContent='Debate complete — ready for Thursday synthesis';
   } else {
     var next=MOVE_SEQUENCE[currentIdx];
     statusDot.className='status-dot active';
@@ -996,7 +996,7 @@ function buildTranscript(upToIdx){
 }
 
 // ═══════════════════════════════════════════════════
-//  WEDNESDAY SYNTHESIS
+//  THURSDAY SYNTHESIS
 // ═══════════════════════════════════════════════════
 async function addSpectatorReflection(){
   var text = 'I watched the debate on: "' + D.claim + '"\n\n';
@@ -1034,12 +1034,12 @@ async function generateSynthesis(){
   document.getElementById('synth-claim').textContent=D.claim;
   document.getElementById('synthesis-content').innerHTML=
     '<div class="ustadh-gen" style="padding:20px 0"><div class="spinner"></div>'+
-    '<span>Generating Wednesday synthesis…</span></div>';
+    '<span>Generating Thursday synthesis…</span></div>';
 
   var transcript=buildTranscript(6);
   var ustadhPos=D.studentPosition==='for'?'against':'for';
 
-  var sys='You are generating a Wednesday synthesis for a Munazara (structured inquiry) in an Islamic K-12 education platform.\n'+
+  var sys='You are generating a Thursday synthesis for a Munazara (structured inquiry) in an Islamic K-12 education platform.\n'+
     'The inquiry was between '+D.studentName+' (Grade '+D.grade+', arguing '+D.studentPosition+') and the Ustadh (arguing '+ustadhPos+').\n'+
     'The claim was: "'+D.claim+'"\n\n'+
     'The goal of a munazara is not to win but to find what is true. Evaluate accordingly.\n\n'+
@@ -1049,11 +1049,11 @@ async function generateSynthesis(){
     '  "where_understanding_shifted": "string — a moment where one debater\'s thinking visibly moved, or where the most important concession was made",\n'+
     '  "what_remains_open": "string — the central question the inquiry could not settle, and why it is genuinely hard",\n'+
     '  "adab_moments": ["string","string"] — up to 3 verbatim quotes (max 25 words each) where a debater showed intellectual virtue: conceding a point (insaf), expressing genuine uncertainty (tawadu), crediting the other\'s argument (amana), or honestly revising a position (sidq). Empty array if none occurred.",\n'+
-    '  "facilitator_prompt": "string — one question to open Wednesday discussion, pointing toward what the inquiry left unresolved"\n'+
+    '  "facilitator_prompt": "string — one question to open Thursday discussion, pointing toward what the inquiry left unresolved"\n'+
     '}\n'+
     'Return ONLY valid JSON. No markdown.';
 
-  var usr='Full debate transcript:\n\n'+transcript+'\n\nGenerate the Wednesday synthesis JSON now.';
+  var usr='Full debate transcript:\n\n'+transcript+'\n\nGenerate the Thursday synthesis JSON now.';
 
   try{
     var raw=await callAPI(sys,usr,1000);
@@ -1097,12 +1097,12 @@ function renderSynthesis(s){
   }
 
   html+='<div class="facilitator-prompt">';
-  html+='<div class="fp-label">Wednesday opening question for the facilitator</div>';
+  html+='<div class="fp-label">Thursday opening question for the facilitator</div>';
   html+='<div class="fp-text">'+escHtml(s.facilitator_prompt||'')+'</div>';
   html+='</div>';
 
   html+='<div class="synthesis-block sacred" style="margin-top:20px;font-size:13px">';
-  html+='<strong>How to use this on Wednesday:</strong> Read the insight and the open question aloud. ';
+  html+='<strong>How to use this on Thursday:</strong> Read the insight and the open question aloud. ';
   html+='If any moments of intellectual virtue are listed, read those too — name the virtue. ';
   html+='Ask the facilitator prompt and let the student respond without preparation. ';
   html+='The question that remained open becomes the seed for next week\'s munazara claim.';

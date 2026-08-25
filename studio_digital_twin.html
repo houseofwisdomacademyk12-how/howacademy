@@ -745,10 +745,12 @@ async function projectMurshid(title,openQ){
     },600);
     return;
   }
+  const _stJwt=localStorage.getItem('how_jwt');
+  if(!_stJwt) return;
   try{
     const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_stJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:150,
         system:'You are the Murshid. A student is viewing a peer\'s documented studio project. Ask them one precise question that connects this project to their own curriculum work or sahifa. Be brief — two sentences maximum. Never give information — only ask.',
         messages:[{role:'user',content:`I am looking at a studio project: "${title}". ${openQ?`It has an open question: "${openQ.slice(0,100)}"`:''}`}]})
@@ -761,7 +763,7 @@ async function projectMurshid(title,openQ){
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// BUILD-ON VERIFICATION — Tuesday 13:00 studio channel
+// BUILD-ON VERIFICATION — Sunday open studio + Thursday finishing
 // Any real contribution to a PEER's project (annotation, answered question,
 // new question, build-on) is onward transmission — mutābaʿah — and seals a
 // `transmission_verification` row (kind:'buildon'): owner → contributor.
