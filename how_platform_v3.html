@@ -2449,7 +2449,7 @@ function lfSwitch(tab, el){
 }
 
 // ═══ HOME DASHBOARD RENDERER ════════════════════════════
-async function renderHomeDashboard(){
+function renderHomeDashboard(){
   var root = document.getElementById('how-dashboard-root');
   if(!root) return;
 
@@ -2561,7 +2561,7 @@ async function renderHomeDashboard(){
     }).join('') :
     '<div style="padding:16px;color:var(--ink3);font-size:13px">No students added yet.</div>';
 
-    var reportsHtml = await buildParentReports(students, week);
+    var reportsHtml = buildParentReports(students, week);
 
     var navTo = function(page){
       return "(function(){var b=document.querySelector('.sb-nav-item[data-p="+page+"]');if(b)howSP(b);})()";
@@ -11738,7 +11738,7 @@ function onWeekChange(el){
 }
 
 // ── PARENT REPORTS BUILDER ──────────────────────────────────────────────────
-async function buildParentReports(students, currentWeek){
+function buildParentReports(students, currentWeek){
   var rows = '';
   var subjectLabels = typeof SUBJ_LABELS !== 'undefined' ? SUBJ_LABELS : {
     math:'Mathematics', english:'English', science:'Science',
@@ -11888,44 +11888,11 @@ async function buildParentReports(students, currentWeek){
     }
   } catch(e){}
 
-  // ── Halaqa — pull recent transcripts from Supabase ─────────────────────────
+  // ── Halaqa note ─────────────────────────────────────────────────────────────
   var halaqaHtml = '<div style="background:var(--p2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px">' +
-    '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🕌 Halaqa</div>';
-  try {
-    var _hJwt = localStorage.getItem('how_jwt');
-    var _hHid = localStorage.getItem('how_household_id');
-    if(_hJwt && _hHid && typeof supabaseClient !== 'undefined' && supabaseClient) {
-      var _hRes = await supabaseClient
-        .from('halaqa_transcript')
-        .select('id,question,theme,student_name,grade,summary,turns,duration_min,saved_at')
-        .eq('household_id', _hHid)
-        .order('saved_at', {ascending:false})
-        .limit(5);
-      if(!_hRes.error && _hRes.data && _hRes.data.length) {
-        _hRes.data.forEach(function(t) {
-          var _hDate = t.saved_at ? new Date(t.saved_at).toLocaleDateString([],{month:'short',day:'numeric'}) : '—';
-          var _hMeta = [t.student_name, t.grade ? 'Grade '+t.grade : '', t.duration_min ? t.duration_min+'min' : '', t.turns ? t.turns+' turns' : ''].filter(Boolean).join(' · ');
-          halaqaHtml += '<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">' +
-            '<div style="display:flex;justify-content:space-between;margin-bottom:3px">' +
-            '<span style="font-size:11px;font-weight:600;color:var(--ink2)">' + esc(t.question||'Halaqa session') + '</span>' +
-            '<span style="font-size:10px;color:var(--ink4)">' + _hDate + '</span>' +
-            '</div>' +
-            (t.theme ? '<div style="font-size:10px;color:var(--ink4);margin-bottom:4px">' + esc(t.theme) + '</div>' : '') +
-            '<div style="font-size:10px;color:var(--ink3);margin-bottom:4px">' + _hMeta + '</div>' +
-            (t.summary ? '<div style="font-size:11px;color:var(--ink2);line-height:1.5;font-style:italic">' + esc(t.summary) + '</div>' : '') +
-            '</div>';
-        });
-        halaqaHtml += '<div style="font-size:10px;color:var(--ink4);text-align:right">Showing last ' + _hRes.data.length + ' sessions · Open Halaqa to see all</div>';
-      } else {
-        halaqaHtml += '<div style="font-size:12px;color:var(--ink3)">No halaqa sessions recorded yet. Start a session from Sunday\'s schedule.</div>';
-      }
-    } else {
-      halaqaHtml += '<div style="font-size:12px;color:var(--ink3)">Sign in to see halaqa session summaries.</div>';
-    }
-  } catch(e) {
-    halaqaHtml += '<div style="font-size:12px;color:var(--ink3)">Halaqa sessions run in a separate tool — summaries appear here after each session.</div>';
-  }
-  halaqaHtml += '</div>';
+    '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🕌 Halaqa</div>' +
+    '<div style="font-size:12px;color:var(--ink3)">Halaqa sessions run in a separate tool. Summaries are not yet synced back to the platform — this is on the roadmap.</div>' +
+  '</div>';
 
   if(!students.length){
     return '<div style="padding:16px;color:var(--ink3);font-size:13px;background:var(--p2);border:1px solid var(--border);border-radius:12px">' +
