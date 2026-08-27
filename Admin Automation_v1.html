@@ -108,12 +108,6 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
     <input type="checkbox" id="bc-chk" checked onchange="STATE.broadcastAfter=this.checked" style="accent-color:#1d6f6f;cursor:pointer;width:14px;height:14px">
     <label for="bc-chk" style="font-size:11px;color:#9a98b8;cursor:pointer">Broadcast after</label>
   </div>
-  <div style="display:flex;align-items:center;gap:6px">
-    <input type="checkbox" id="resume-chk" checked onchange="STATE.resumeMode=this.checked" style="accent-color:#c8a96e;cursor:pointer;width:14px;height:14px">
-    <label for="resume-chk" style="font-size:11px;color:#9a98b8;cursor:pointer" title="Before running, query Supabase for what already exists this week and skip it">Skip existing</label>
-  </div>
-  <button class="action-btn" onclick="scanExisting()" style="border:1px solid #1d6f6f;background:none;color:#1d6f6f" title="Query Supabase and show what already exists for this week">🔍 Scan database</button>
-  <button class="action-btn" onclick="clearProgress()" style="border:1px solid #2e2a4a;background:none;color:#4a4870" title="Reset the grid and log for this week">↺ Clear progress</button>
   <button class="btn-violet" id="run-btn" onclick="handleRun()">▶ Run All Grades</button>
   <button class="btn-gray" id="studio-btn" onclick="importStudioCards()">📥 Import Studio Cards</button>
   <button class="btn-dark" onclick="broadcast()" style="margin-left:auto">📡 Broadcast now</button>
@@ -194,9 +188,9 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="action-btn btn-teal" onclick="runSlideGenBatch(false)">📄 Generate Slides (download each)</button>
       <button class="action-btn btn-teal" onclick="runSlideGenBatch(true)">🗜 Generate + Download as ZIP</button>
-      <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen (uses Scope)</button>
+      <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen (All Grades)</button>
     </div>
-    <p style="font-size:10px;color:#4a4870;margin:0">Slides download as HTML — upload to Google Drive and paste URL in HOW platform. Videos submit to Heygen Video Agent. Both respect the Scope selectors above (Heygen ignores the session selector — it generates one intro video per subject).</p>
+    <p style="font-size:10px;color:#4a4870;margin:0">Slides download as HTML — upload to Google Drive and paste URL in HOW platform. Videos submit to Heygen Video Agent.</p>
   </div>
 </div>
 
@@ -211,133 +205,10 @@ var STATE = {
     ela:{avatarId:'',voiceId:'',lookId:''},writing:{avatarId:'',voiceId:'',lookId:''},
     social:{avatarId:'',voiceId:'',lookId:''},
   },
-  resumeMode:true,
   grades: Array.from({length:13},function(_,i){return{label:i===0?'K':String(i),s1:Array(5).fill('idle'),s2:Array(5).fill('idle'),test:Array(5).fill('idle'),thu:'idle',qalamS1:Array(5).fill('idle'),qalamS2:Array(5).fill('idle'),heygen:Array(5).fill('idle'),status:'idle'};}),
   wedGrades:Array(13).fill('idle'), log:[], stats:{total:0,done:0,errors:0,startTime:null}
 };
 var sb=null, abortFlag=false;
-
-// ── PROGRESS PERSISTENCE ────────────────────────────────────────
-function progKey(){return 'how_batch_progress_w'+STATE.week;}
-
-var saveTimer=null;
-function saveProgress(){
-  if(saveTimer) return;
-  saveTimer=setTimeout(function(){
-    saveTimer=null;
-    try{
-      localStorage.setItem(progKey(), JSON.stringify({
-        week:STATE.week,
-        savedAt:new Date().toISOString(),
-        isRunning:STATE.isRunning,
-        stats:STATE.stats,
-        grades:STATE.grades.map(function(g){return{s1:g.s1,s2:g.s2,test:g.test,thu:g.thu,qalamS1:g.qalamS1,qalamS2:g.qalamS2,heygen:g.heygen,status:g.status};}),
-        wedGrades:STATE.wedGrades,
-        log:STATE.log.slice(0,120)
-      }));
-    }catch(e){}
-  }, 600);
-}
-
-function loadProgress(){
-  try{
-    var d=JSON.parse(localStorage.getItem(progKey())||'null');
-    if(!d||d.week!==STATE.week) return null;
-    d.grades.forEach(function(sg,gi){
-      var g=STATE.grades[gi]; if(!g) return;
-      ['s1','s2','test','qalamS1','qalamS2','heygen'].forEach(function(k){
-        if(Array.isArray(sg[k])) g[k]=sg[k].map(function(v){return v==='running'?'idle':v;});
-      });
-      g.thu = sg.thu==='running'?'idle':(sg.thu||'idle');
-      g.status = sg.status==='running'?'idle':(sg.status||'idle');
-    });
-    if(Array.isArray(d.wedGrades)) STATE.wedGrades=d.wedGrades.map(function(v){return v==='running'?'idle':v;});
-    if(Array.isArray(d.log)) STATE.log=d.log;
-    if(d.stats) STATE.stats=d.stats;
-    return d;
-  }catch(e){ return null; }
-}
-
-function clearProgress(){
-  try{localStorage.removeItem(progKey());}catch(e){}
-  STATE.grades.forEach(function(g){
-    g.s1=Array(5).fill('idle');g.s2=Array(5).fill('idle');g.test=Array(5).fill('idle');
-    g.thu='idle';g.qalamS1=Array(5).fill('idle');g.qalamS2=Array(5).fill('idle');
-    g.heygen=Array(5).fill('idle');g.status='idle';
-  });
-  STATE.wedGrades=Array(13).fill('idle');
-  STATE.log=[]; STATE.stats={total:0,done:0,errors:0,startTime:null};
-  for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-  updateLog(); updateProgress(); refreshWedBtns();
-  addLog('Progress cleared for Week '+STATE.week,'warn');
-}
-
-// Is this item already marked done in the grid?
-function alreadyDone(gi,field,si){
-  var g=STATE.grades[gi]; if(!g) return false;
-  return si===undefined ? g[field]==='done' : (g[field]||[])[si]==='done';
-}
-
-// ── SUPABASE EXISTENCE CHECK ────────────────────────────────────
-// Queries what already exists in the DB for a week, so a resume skips real
-// content rather than trusting the local grid.
-var EXISTS = null; // {lesson:Set('g|subj|session'), test:Set('g')}
-
-async function fetchExisting(week){
-  var hid=localStorage.getItem('how_household_id');
-  var out={lesson:new Set(), test:new Set()};
-  try{
-    var lr=await sb.from('lesson').select('grade,subject,session').eq('household_id',hid).eq('week',week);
-    if(lr.error) throw new Error(lr.error.message);
-    (lr.data||[]).forEach(function(r){out.lesson.add(r.grade+'|'+r.subject+'|'+r.session);});
-    var tr=await sb.from('test').select('grade,subjects').eq('household_id',hid).eq('week',week);
-    if(tr.error) throw new Error(tr.error.message);
-    (tr.data||[]).forEach(function(r){
-      var keys=r.subjects?Object.keys(r.subjects):[];
-      keys.forEach(function(k){out.test.add(r.grade+'|'+k);});
-    });
-  }catch(e){
-    addLog('Could not read existing content: '+e.message+' — falling back to local grid','warn');
-    return null;
-  }
-  return out;
-}
-
-// Does this item exist in the DB? Falls back to the grid if the query failed.
-function existsInDb(kind,g,key){
-  if(!EXISTS) return false;
-  if(kind==='lesson') return EXISTS.lesson.has(g+'|'+key.subj+'|'+key.session);
-  if(kind==='test')   return EXISTS.test.has(g+'|'+key.subj);
-  return false;
-}
-
-// Standalone scan — paints the grid to match what's actually in Supabase
-async function scanExisting(){
-  if(!sb){addLog('Not connected to Supabase','err');return;}
-  var week=STATE.week;
-  addLog('Scanning database for Week '+week+'…','start');
-  var ex=await fetchExisting(week);
-  if(!ex) return;
-  EXISTS=ex;
-  var LS=['math','science','ela','writing','social'];
-  var TS=['math','sci','ela','writing','ss'];
-  var found=0;
-  for(var gi=0;gi<13;gi++){
-    var g=STATE.grades[gi];
-    g.s1=g.s1.slice(); g.s2=g.s2.slice(); g.test=g.test.slice();
-    LS.forEach(function(s,si){
-      if(ex.lesson.has(gi+'|'+s+'|1')){g.s1[si]='done';found++;} else g.s1[si]='idle';
-      if(ex.lesson.has(gi+'|'+s+'|2')){g.s2[si]='done';found++;} else g.s2[si]='idle';
-    });
-    TS.forEach(function(s,si){
-      if(ex.test.has(gi+'|'+s)){g.test[si]='done';found++;} else g.test[si]='idle';
-    });
-    if(ex.lesson.has(gi+'|synthesis|3')){g.thu='done';found++;} else g.thu='idle';
-    updateGradeRow(gi);
-  }
-  saveProgress();
-  addLog('Scan complete — '+found+' items already in database for Week '+week,'done');
-}
 
 // ── DOM HELPERS ──────────────────────────────────────────────────────────────
 function qs(sel){return document.querySelector(sel);}
@@ -485,22 +356,7 @@ function initWeekSelect(){
     if(w===STATE.week) opt.selected=true;
     sel.appendChild(opt);
   }
-  sel.onchange=function(){
-    STATE.week=parseInt(this.value);
-    initMunGrid();
-    // Reset grid, then restore any saved progress for the newly selected week
-    STATE.grades.forEach(function(g){
-      g.s1=Array(5).fill('idle');g.s2=Array(5).fill('idle');g.test=Array(5).fill('idle');
-      g.thu='idle';g.qalamS1=Array(5).fill('idle');g.qalamS2=Array(5).fill('idle');
-      g.heygen=Array(5).fill('idle');g.status='idle';
-    });
-    STATE.wedGrades=Array(13).fill('idle');
-    STATE.log=[]; STATE.stats={total:0,done:0,errors:0,startTime:null};
-    var r=loadProgress();
-    for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-    refreshWedBtns(); updateLog(); updateProgress();
-    if(r){var d=r.stats||{};addLog('Week '+STATE.week+' — restored '+(d.done||0)+'/'+(d.total||0)+' from '+new Date(r.savedAt).toLocaleString(),'info');}
-  };
+  sel.onchange=function(){STATE.week=parseInt(this.value);initMunGrid();};
 }
 
 function setTab(id, btn){
@@ -533,32 +389,27 @@ function setSubjStatus(gi,session,si,status){
   STATE.grades[gi][session]=STATE.grades[gi][session].slice();
   STATE.grades[gi][session][si]=status;
   updateGradeRow(gi);
-  saveProgress();
 }
-function setGradeStatus(gi,status){STATE.grades[gi].status=status;updateGradeRow(gi);saveProgress();}
-function setThuStatus(gi,status){STATE.grades[gi].thu=status;updateGradeRow(gi);saveProgress();}
+function setGradeStatus(gi,status){STATE.grades[gi].status=status;updateGradeRow(gi);}
+function setThuStatus(gi,status){STATE.grades[gi].thu=status;updateGradeRow(gi);}
 function setWedStatus(gi,status){
   STATE.wedGrades[gi]=status;
   var btn=qs('#wed-btn-'+gi);
   if(btn){var C={idle:'#4a4870',running:'#c8a96e',done:'#1d6f6f',error:'#c0392b'};btn.style.color=C[status]||C.idle;btn.style.borderColor=C[status]||C.idle;btn.textContent=(gi===0?'K':'G'+gi)+(status==='done'?' ✓':status==='error'?' ✗':'');}
-  saveProgress();
 }
-function refreshWedBtns(){for(var i=0;i<13;i++) setWedStatus(i, STATE.wedGrades[i]||'idle');}
 function setQalamStatus(gi,si,sess,status){
   var key=sess===1?'qalamS1':'qalamS2';
   STATE.grades[gi][key]=STATE.grades[gi][key].slice();
   STATE.grades[gi][key][si]=status;
   updateGradeRow(gi);
-  saveProgress();
 }
 function setHeygenStatus(gi,si,status){
   STATE.grades[gi].heygen=STATE.grades[gi].heygen.slice();
   STATE.grades[gi].heygen[si]=status;
   updateGradeRow(gi);
-  saveProgress();
 }
-function bumpDone(){STATE.stats.done++;updateProgress();saveProgress();}
-function bumpError(){STATE.stats.errors++;updateProgress();saveProgress();}
+function bumpDone(){STATE.stats.done++;updateProgress();}
+function bumpError(){STATE.stats.errors++;updateProgress();}
 
 function addLog(msg,type){
   var t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
@@ -806,58 +657,18 @@ async function broadcast(){
 }
 
 async function runAll(){
-  var LS_PRE=['math','science','ela','writing','social'];
-  var TS_PRE=['math','sci','ela','writing','ss'];
-  // Resolve "is done" from the DB when available, else the local grid
-  function isDone(gi,field,si,key){
-    return EXISTS ? existsInDb('lesson',gi,key) : alreadyDone(gi,field,si);
-  }
-  function isDoneTest(gi,si,subj){
-    return EXISTS ? existsInDb('test',gi,{subj:subj}) : alreadyDone(gi,'test',si);
-  }
-  function isDoneThu(gi){
-    return EXISTS ? existsInDb('lesson',gi,{subj:'synthesis',session:3}) : alreadyDone(gi,'thu');
-  }
   var week=STATE.week;
   if(!STATE.genS1&&!STATE.genS2&&!STATE.genTest&&!STATE.genThursday&&!STATE.genQalamS1&&!STATE.genQalamS2){addLog('Select at least one thing to generate','warn');return;}
   if(!sb){addLog('Not connected to Supabase','err');return;}
   abortFlag=false;
-  var resume=STATE.resumeMode;
   var total=13*((STATE.genS1?10:0)+(STATE.genS2?10:0)+(STATE.genTest?5:0)+(STATE.genThursday?1:0)+(STATE.genQalamS1?5:0)+(STATE.genQalamS2?5:0));
   STATE.isRunning=true;
-  EXISTS=null;
-  if(resume){
-    addLog('Checking what already exists in Supabase…','start');
-    EXISTS=await fetchExisting(week);
-    var skipped=0;
-    for(var q=0;q<13;q++){
-      var gq=STATE.grades[q];
-      if(STATE.genS1) LS_PRE.forEach(function(s,si){if(isDone(q,'s1',si,{subj:s,session:1}))skipped+=2;});
-      if(STATE.genS2) LS_PRE.forEach(function(s,si){if(isDone(q,'s2',si,{subj:s,session:2}))skipped+=2;});
-      if(STATE.genTest) TS_PRE.forEach(function(s,si){if(isDoneTest(q,si,s))skipped++;});
-      if(STATE.genThursday&&isDoneThu(q)) skipped++;
-    }
-    STATE.stats={total:total,done:skipped,errors:0,startTime:Date.now()};
-    addLog('Resuming Week '+week+' — skipping '+skipped+' already-generated items'+(EXISTS?' (verified against database)':' (from local grid)'),'start');
-    // Reflect DB state in the grid so you can see what exists
-    if(EXISTS){
-      for(var q=0;q<13;q++){
-        LS_PRE.forEach(function(s,si){
-          if(existsInDb('lesson',q,{subj:s,session:1})) STATE.grades[q].s1[si]='done';
-          if(existsInDb('lesson',q,{subj:s,session:2})) STATE.grades[q].s2[si]='done';
-        });
-        TS_PRE.forEach(function(s,si){if(existsInDb('test',q,{subj:s})) STATE.grades[q].test[si]='done';});
-        if(existsInDb('lesson',q,{subj:'synthesis',session:3})) STATE.grades[q].thu='done';
-      }
-    }
-  } else {
-    STATE.stats={total:total,done:0,errors:0,startTime:Date.now()};
-    STATE.grades.forEach(function(gr){gr.s1=Array(5).fill('idle');gr.s2=Array(5).fill('idle');gr.test=Array(5).fill('idle');gr.thu='idle';gr.status='idle';});
-    STATE.log=[];
-    addLog('Week '+week+' — '+total+' items across 13 grades','start');
-  }
+  STATE.stats={total:total,done:0,errors:0,startTime:Date.now()};
+  STATE.grades.forEach(function(gr){gr.s1=Array(5).fill('idle');gr.s2=Array(5).fill('idle');gr.test=Array(5).fill('idle');gr.thu='idle';gr.status='idle';});
+  STATE.log=[];
   for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-  updateLog(); updateProgress(); saveProgress();
+  updateLog(); updateProgress();
+  addLog('Week '+week+' — '+total+' items across 13 grades','start');
   var LS=['math','science','ela','writing','social'];
   var TS=['math','sci','ela','writing','ss'];
   for(var gi=0;gi<13;gi++){
@@ -869,7 +680,6 @@ async function runAll(){
     if(STATE.genS1){
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(resume&&isDone(gi,'s1',si,{subj:LS[si],session:1})) continue;
         setSubjStatus(gi,'s1',si,'running');
         try{await generateLesson(g,week,LS[si],1);setSubjStatus(gi,'s1',si,'done');bumpDone();bumpDone();addLog(gl+' · S1 · '+LS[si]+' ✓','ok');}
         catch(e){setSubjStatus(gi,'s1',si,'error');errs++;bumpError();addLog(gl+' · S1 · '+LS[si]+' ✗ '+e.message,'err');}
@@ -879,7 +689,6 @@ async function runAll(){
     if(STATE.genS2){
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(resume&&isDone(gi,'s2',si,{subj:LS[si],session:2})) continue;
         setSubjStatus(gi,'s2',si,'running');
         try{await generateLesson(g,week,LS[si],2);setSubjStatus(gi,'s2',si,'done');bumpDone();bumpDone();addLog(gl+' · S2 · '+LS[si]+' ✓','ok');}
         catch(e){setSubjStatus(gi,'s2',si,'error');errs++;bumpError();addLog(gl+' · S2 · '+LS[si]+' ✗ '+e.message,'err');}
@@ -890,7 +699,6 @@ async function runAll(){
       var testSubjs={};
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(resume&&isDoneTest(gi,si,TS[si])) continue;
         setSubjStatus(gi,'test',si,'running');
         try{testSubjs[TS[si]]=await generateTestSubject(g,week,TS[si]);setSubjStatus(gi,'test',si,'done');bumpDone();addLog(gl+' · Test · '+TS[si]+' ✓','ok');}
         catch(e){setSubjStatus(gi,'test',si,'error');errs++;bumpError();addLog(gl+' · Test · '+TS[si]+' ✗ '+e.message,'err');}
@@ -900,12 +708,10 @@ async function runAll(){
     }
     if(STATE.genThursday){
       if(abortFlag) break;
-      if(!(resume&&isDoneThu(gi))){
       setThuStatus(gi,'running');
       try{await generateThursday(g,week);setThuStatus(gi,'done');bumpDone();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✓','ok');}
       catch(e){setThuStatus(gi,'error');errs++;bumpError();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✗ '+e.message,'err');}
       if(STATE.delay) await sleep(STATE.delay);
-      }
     }
     for(var qs=1;qs<=2;qs++){
       if(!(qs===1?STATE.genQalamS1:STATE.genQalamS2)) continue;
@@ -977,22 +783,14 @@ async function submitOneHeygenVideo(gi,si,g,w,subjKey){
 
 async function runHeygenBatch(){
   if(!STATE.heygenKey){addLog('Set Heygen API key in the Heygen tab first','err');return;}
-  var ALL=['math','science','ela','writing','social'];
-  var gSel=qs('#slide-grade-sel'), sSel=qs('#slide-subj-sel');
-  var gradeScope=gSel?gSel.value:'all';
-  var subjScope=sSel?sSel.value:'all';
-  var grades=gradeScope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gradeScope)];
-  var subjIdx=subjScope==='all'?[0,1,2,3,4]:[ALL.indexOf(subjScope)];
-  var scopeLbl=(gradeScope==='all'?'all grades':(gradeScope==='0'?'Kindergarten':'Grade '+gradeScope))+' · '+(subjScope==='all'?'all subjects':subjScope);
-  addLog('Heygen video batch — Week '+STATE.week+' — '+scopeLbl+' ('+(grades.length*subjIdx.length)+' videos)','start');
-  for(var gk=0;gk<grades.length;gk++){
+  var SUBJS=['math','science','ela','writing','social'];
+  addLog('Heygen video batch — Week '+STATE.week+' — all grades','start');
+  for(var gi=0;gi<13;gi++){
     if(abortFlag) break;
-    var gi=grades[gk];
-    for(var sk=0;sk<subjIdx.length;sk++){
+    for(var si=0;si<5;si++){
       if(abortFlag) break;
-      var si=subjIdx[sk];
-      try{await submitOneHeygenVideo(gi,si,gi,STATE.week,ALL[si]);}
-      catch(e){setHeygenStatus(gi,si,'error');addLog((gi===0?'K':'G'+gi)+' '+ALL[si]+' ✗ '+e.message,'err');}
+      try{await submitOneHeygenVideo(gi,si,gi,STATE.week,SUBJS[si]);}
+      catch(e){setHeygenStatus(gi,si,'error');addLog((gi===0?'K':'G'+gi)+' '+SUBJS[si]+' ✗ '+e.message,'err');}
       await sleep(400);
     }
   }
@@ -1107,14 +905,6 @@ window.addEventListener('DOMContentLoaded', function(){
   // Studio cards
   var sc=loadStudioCards();
   if(sc>0) qs('#studio-btn').textContent='📥 Studio Cards ('+sc+')';
-  // Restore saved progress for this week
-  var restored=loadProgress();
-  if(restored){
-    for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-    refreshWedBtns(); updateLog();
-    var d=restored.stats||{};
-    addLog('Restored progress from '+new Date(restored.savedAt).toLocaleString()+' — '+(d.done||0)+'/'+(d.total||0)+' done','info');
-  }
   updateProgress();
 });
 </script>

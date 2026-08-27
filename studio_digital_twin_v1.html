@@ -55,7 +55,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--in
 .sd-math{background:#534AB7} .sd-sky{background:#0F6E56}
 .sd-eng{background:#854F0B} .sd-med{background:#185FA5}
 .sd-hum{background:#712B13}
-.sd-map{background:#8B6914} .sd-cal{background:#1A5C5C} .sd-nat{background:#2D5A1B}
 
 /* STUDIO PILL */
 .studio-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid;font-weight:500}
@@ -242,18 +241,6 @@ textarea.field{resize:vertical}
       <button class="sb-btn" data-filter="hum" onclick="filterStudio(this)">
         <span class="studio-dot sd-hum"></span>Philosophy / Translation
         <span class="sb-chip" id="chip-hum">1</span>
-      </button>
-      <button class="sb-btn" data-filter="map" onclick="filterStudio(this)">
-        <span class="studio-dot sd-map"></span>Cartography / Geography
-        <span class="sb-chip" id="chip-map">0</span>
-      </button>
-      <button class="sb-btn" data-filter="cal" onclick="filterStudio(this)">
-        <span class="studio-dot sd-cal"></span>Calligraphy / Illumination
-        <span class="sb-chip" id="chip-cal">0</span>
-      </button>
-      <button class="sb-btn" data-filter="nat" onclick="filterStudio(this)">
-        <span class="studio-dot sd-nat"></span>Natural History / Observation
-        <span class="sb-chip" id="chip-nat">0</span>
       </button>
     </div>
     <div class="sb-divider"></div>
@@ -458,9 +445,6 @@ function updateChips(){
   document.getElementById('chip-med').textContent=all.filter(p=>p.studio==='med').length;
   document.getElementById('chip-math').textContent=all.filter(p=>p.studio==='math').length;
   document.getElementById('chip-hum').textContent=all.filter(p=>p.studio==='hum').length;
-  if(document.getElementById('chip-map')) document.getElementById('chip-map').textContent=all.filter(p=>p.studio==='map').length;
-  if(document.getElementById('chip-cal')) document.getElementById('chip-cal').textContent=all.filter(p=>p.studio==='cal').length;
-  if(document.getElementById('chip-nat')) document.getElementById('chip-nat').textContent=all.filter(p=>p.studio==='nat').length;
   document.getElementById('chip-mine').textContent=getProjects().length;
 }
 
@@ -761,10 +745,12 @@ async function projectMurshid(title,openQ){
     },600);
     return;
   }
+  const _stJwt=localStorage.getItem('how_jwt');
+  if(!_stJwt) return;
   try{
     const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_stJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:150,
         system:'You are the Murshid. A student is viewing a peer\'s documented studio project. Ask them one precise question that connects this project to their own curriculum work or sahifa. Be brief — two sentences maximum. Never give information — only ask.',
         messages:[{role:'user',content:`I am looking at a studio project: "${title}". ${openQ?`It has an open question: "${openQ.slice(0,100)}"`:''}`}]})
@@ -777,7 +763,7 @@ async function projectMurshid(title,openQ){
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// BUILD-ON VERIFICATION — Tuesday 13:00 studio channel
+// BUILD-ON VERIFICATION — Sunday open studio + Thursday finishing
 // Any real contribution to a PEER's project (annotation, answered question,
 // new question, build-on) is onward transmission — mutābaʿah — and seals a
 // `transmission_verification` row (kind:'buildon'): owner → contributor.
@@ -1031,8 +1017,6 @@ function docStep1(c){
     ['eng','Civil & water engineering'],['sky','Observatory / Optics & light'],
     ['med','Pharmacopoeia / Anatomy & surgery'],['math','Algebra atelier / Cipher lab'],
     ['hum','Philosophy & reason / Translation'],
-    ['map','Cartography / Geography'],['cal','Calligraphy / Illumination'],
-    ['nat','Natural History / Observation'],
   ];
   c.innerHTML=`
   <div class="section-card">

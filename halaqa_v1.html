@@ -177,7 +177,7 @@ try{
     if(_jwt && _ref){
       await sb.auth.setSession({access_token:_jwt, refresh_token:_ref});
     } else if(_jwt){
-      // No refresh token available — use JWT as-is without setSession
+      await sb.auth.setSession({access_token:_jwt, refresh_token:_jwt});
     }
   }catch(e){ console.warn('Halaqa: session restore failed:', e.message); }
 })();
@@ -568,8 +568,6 @@ function joinSession(){
 
   // Current week — used to validate session and question data against the right week
   var _sesJuz=(function(){try{return parseInt(JSON.parse(localStorage.getItem('sahifa_settings')||'{}').juz)||1;}catch(e){return 1;}})();
-  G.juz=_sesJuz;
-  G.scholar=(function(){try{return JSON.parse(localStorage.getItem('sahifa_settings')||'{}').scholar||'';}catch(e){return '';}})();
 
   _liveMode = (selRoleVal==='facilitator'&&_facMode==='create') ||
               (selRoleVal==='student'&&_studentMode==='live');
@@ -838,7 +836,7 @@ function startTimer(){
     if(elapsed===3000){
       setPhase('ended');
       addSys('الحلقة: 50 minutes — the circle is complete. '
-        +(G.role==='facilitator'?'Click ✓ End &amp; save to save the transcript.':'جزاكم الله خيراً — tap ✓ End &amp; save to keep your transcript.'));
+        +(G.role==='facilitator'?'Click ✓ End &amp; save to save the transcript.':'جزاكم الله خيراً'));
     }
   },1000);
 }
@@ -850,6 +848,52 @@ function setPhase(ph){
 }
 
 // ── AI FACILITATOR ────────────────────────────────────────────────
+const DEMO=[
+  `One student wrote something careful — that the ratio might be constant because all circles are similar to each other. That instinct is right, but "similar" is doing a lot of work there. What does similarity actually guarantee about ratios — and does it guarantee a constant, or just a consistent relationship?\n\nOmar, your sahifa mentioned something about unit rates last week. Does that connect here?`,
+  `What was just said — that π feels like a unit rate, the amount of circumference per unit of diameter — is worth sitting with. If that's true, then π is not a mysterious constant: it's the most natural ratio a circle could have.\n\nBut here is the complication: why should that ratio be irrational? Most natural ratios in the physical world are rational. What does it tell us that this one isn't?`,
+  `Two ideas are now in the circle that seem to be in tension. One says π is discovered — it was always true before anyone measured it. The other says π is defined — we chose what circumference and diameter mean. Can both be true? Is there a version of mathematics where π has a different value?\n\nFatima, you've been listening carefully. What do you think?`,
+  `Al-Battani measured the Earth's circumference using π — he didn't prove it, he used it as a known constant and checked his measurements against it. That's different from Archimedes, who tried to prove the value of π by squeezing it between two polygons.\n\nSo: when a mathematician uses a value they haven't proven, are they doing mathematics or something else? Where is the line?\n\nWhat does the circle think?`,
+  `The circle has moved through three ideas: π as a unit rate, π as irrational, and the question of whether π is discovered or defined. These are not three separate topics — they are three facets of the same question.\n\nBefore we close: write one sentence in your sahifa that connects all three. Not a summary — a connection. What is the thing underneath all three questions?\n\nTake a moment. Write it now.`,
+];
+
+function buildSys(){
+  const ctx=G.sahifaCtx?'\n\nSahifa context:\n'+G.sahifaCtx.slice(0,700):'';
+  // Define _circleMembers for ALL bands
+  var _peerNames=G.participants.filter(function(p){return p.role==='peer'||p.role==='facilitator';}).map(function(p){return p.n;});
+  var _circleMembers='Students in this circle: '+[G.name].concat(_peerNames).join(', ')+'. Only name these students — do not invent others.\n';
+  if(G.band==='k2'){
+  return 'You are running a halaqa circle for children aged 5-7.\n'
+      +'Circle members: '+_circleMembers
+      +'Opening question: "'+G.question+'" ('+G.theme+')\n\n'
+      +'CRITICAL: Every word must be one a 5-year-old knows. No abstract concepts. Maximum 2 sentences. End with one simple open question — "What do you think?" or "Did you ever see something like that?" or "Why do you think that happens?" — never a binary yes/no choice.\n'
+      +'Rules: draw out ideas, never lecture, no empty praise. Phase: '+G.phase+'; Turns: '+G.turnCount+ctx;
+  }
+  if(G.band==='35'){
+    return 'You are running a halaqa circle for students aged 8-11 (Grades 3-5).\n'
+      +'Circle members: '+_circleMembers
+      +'Opening question: "'+G.question+'" ('+G.theme+')\n\n'
+      +'CRITICAL: Everyday language only. No philosophical jargon. No words like "ontological","originary","particularity". Use concrete examples children know.\n'
+      +'Maximum 3 sentences. One simple open question at end.\n'
+      +'Rules: draw out ideas, name students by name, complicate when group agrees too fast, never lecture, no empty praise.\n'
+      +'Phase: '+G.phase+'; Turns: '+G.turnCount+ctx;
+  }
+  if(G.band==='68'){
+    return 'You are the AI facilitator of a halaqa for students aged 11-14 (Grades 6-8).\n'
+      +'Circle members: '+_circleMembers
+      +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
+      +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
+      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently. If a student argues to prove they are right rather than to understand what is true, redirect: "Is the question asking who is right, or what is actually true here?"\n'
+      +'Phase: '+G.phase+'; Turns: '+G.turnCount+'\n'
+      +(G.turnCount>8?'Move toward synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices.');
+  }
+  return 'You are the AI facilitator of a halaqa for students aged 14-18 (Grades 9-12).\n'
+    +'Circle members: '+_circleMembers
+    +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
+    +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
+    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n10. Truth-seeking: if a student argues to win rather than understand, name it — "The question is not who is right. What do you actually think is true?"\n'
+    +'Phase: '+G.phase+'; Turns: '+G.turnCount+'\n'
+    +(G.turnCount>8?'Begin synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices — do not converge yet.');
+}
 
 async function aiOpen(){
   setSt('الحلقة','typing');
@@ -890,73 +934,58 @@ async function aiRespond(who,text){
   }
 }
 
-// ── System prompt builder — restored + enhanced with scholar, juz, elapsed time ─
-function buildSys(){
-  const ctx=G.sahifaCtx?'\n\nSahifa context:\n'+G.sahifaCtx.slice(0,700):'';
-  const scholarLine=G.scholar?'\nScholar this week: '+G.scholar+'.':'';
-  const juzLine=G.juz?'\nJuz / week: '+G.juz+'.':'';
-  const elapsedMins=G.sessionStart?Math.floor((Date.now()-G.sessionStart)/60000):0;
-  const timeLine='\nElapsed: '+elapsedMins+' min. Phase: '+G.phase+'. Turns: '+G.turnCount+'.';
-  const timeGuidance=elapsedMins>=45?'\nTime: FINAL MINUTES — close warmly, name what the circle built.'
-    :elapsedMins>=40?'\nTime: Begin closing — name what emerged before ending.'
-    :elapsedMins>=30?'\nTime: Move toward synthesis — what has the circle discovered together?'
-    :elapsedMins>=20?'\nTime: Deepen — look for connections between what has been said.'
-    :'';
-  var _peerNames=G.participants.filter(function(p){return p.role==='peer'||p.role==='facilitator';}).map(function(p){return p.n;});
-  var _circleMembers='Students in this circle: '+[G.name].concat(_peerNames).join(', ')+'. Only name these students — do not invent others.\n';
-  const weekCtx='Opening question: "'+G.question+'" ('+G.theme+').'+scholarLine+juzLine;
-  if(G.band==='k2'){
-    return 'You are running a halaqa circle for children aged 5-7.\n'
-      +_circleMembers+weekCtx+'\n\n'
-      +'CRITICAL: Every word must be one a 5-year-old knows. No abstract concepts. Maximum 2 sentences. End with one simple open question — never a binary yes/no choice.\n'
-      +'Rules: draw out ideas, never lecture, no empty praise.'+timeLine+ctx;
-  }
-  if(G.band==='35'){
-    return 'You are running a halaqa circle for students aged 8-11 (Grades 3-5).\n'
-      +_circleMembers+weekCtx+'\n\n'
-      +'CRITICAL: Everyday language only. No philosophical jargon. Use concrete examples children know.\n'
-      +'Maximum 3 sentences. One simple open question at end.\n'
-      +'Rules: draw out ideas, name students by name, complicate when group agrees too fast, never lecture, no empty praise.\n'
-      +timeLine+timeGuidance+ctx;
-  }
-  if(G.band==='68'){
-    return 'You are the AI facilitator of a halaqa for students aged 11-14 (Grades 6-8).\n'
-      +_circleMembers+weekCtx+ctx+'\n'
-      +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\"\n\n'
-      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently.\n'
-      +timeLine+timeGuidance+'\n'
-      +(G.turnCount>8?'Move toward synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices.');
-  }
-  return 'You are the AI facilitator of a halaqa for students aged 14-18 (Grades 9-12).\n'
-    +_circleMembers+weekCtx+ctx+'\n'
-    +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\"\n\n'
-    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n10. Truth-seeking: if a student argues to win rather than understand, name it\n'
-    +timeLine+timeGuidance+'\n'
-    +(G.turnCount>8?'Begin synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices — do not converge yet.');
-}
-
-// ── JWT helper — always reads current token from localStorage ─────────────────
-function getFreshJwt() {
-  return localStorage.getItem('how_jwt') || null;
-}
-
 async function callAI(msgs,sys){
-  const jwt=getFreshJwt();
-  if(!jwt){ addSys('⚠ Not signed in — open from the HOW platform.'); return null; }
+  const _hJwt=localStorage.getItem('how_jwt');
+  if(!_hJwt) return null;
   try{
     const r=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_hJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:280,system:sys,messages:msgs.slice(-10)})});
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message||'API error');
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
     return d.content?.[0]?.text||'…';
   }catch(e){
     console.warn('callAI failed:',e.message);
-    addSys('⚠ Could not reach the AI — check your connection and try again. ('+ e.message +')');
-    return null;
+    return DEMO[G.demoIdx++%DEMO.length]; // fallback only on error
   }
 }
 
+const PEER_RESP=['I think it might be because all circles are the same shape — just different sizes, so the ratio has to stay the same.','But does similarity actually force the ratio to be constant? It feels like that needs more justification.','What surprises me is that it\'s irrational. I\'d expect a fundamental ratio to be something clean like 3 or 22/7.','In my sahifa I wrote about Al-Idrisi\'s circular map. I\'m wondering if he had to calculate π to draw it accurately.','I think measurement and proof are actually different things. Al-Battani measured it. Archimedes proved it. Which one counts?','Could there be a geometry where circles have a different ratio? Like on a sphere or a curved surface?'];
+let peerIdx=0;
+async function simSpecificPeer(peerName){
+  const p=G.participants.find(function(x){return x.n===peerName;});
+  if(!p) return;
+  if(G.phase==='close'||G.phase==='ended') return;
+  if(G.aiThinking){
+    // Keep retrying with backoff until facilitator finishes
+    setTimeout(function(){simSpecificPeer(peerName);},1500+Math.random()*1000);
+    return;
+  }
+  const hist=G.messages.filter(function(m){return m.t==='student'||m.t==='ai';}).slice(-6).map(function(m){return{role:m.t==='ai'?'assistant':'user',content:m.n+': '+m.txt};});
+  var _ns=' Never use asterisks, stage directions, or physical actions like *looks at* or *turns to*. Just speak.';
+  const bandInstr=G.band==='k2'?'You are a 5-7 year old child. 3-6 words per sentence. One simple concrete thing.'+_ns:
+    G.band==='35'?'You are an 8-11 year old. Simple sentences. 1-2 sentences max.'+_ns:
+    G.band==='68'?'You are an 11-14 year old. Think aloud, 1-2 sentences.'+_ns:
+    'You are a 14-18 year old student. Thoughtful, 1-2 sentences.'+_ns;
+  const peerSys='You are '+peerName+', a student in a halaqa who has just been called on directly by name. '
+    +bandInstr+' The facilitator is waiting for YOUR answer specifically. Respond directly. '
+    +'Opening question: "'+G.question+'". Never use asterisks, stage directions, or physical actions like *looks at* or *turns to*. Just speak plainly. Never say you are an AI.';
+  setSt(peerName,'typing');
+  showHalaqaTyping(peerName,'thinking');
+  await delay(getSimDelay(2000,3000));
+  showHalaqaTyping(peerName,'typing');
+  let resp='';
+  try{
+    resp=await callAI([...hist,{role:'user',content:'('+peerName+' has been called on directly — they must respond)'}],peerSys);
+  }catch(e){}
+  await delay(getSimDelay(1500,2000));
+  hideHalaqaTyping();
+  setSt(peerName,'on');
+  if(resp){
+    _peerSpeakCount[peerName]=(_peerSpeakCount[peerName]||0)+1;
+    addStudent(peerName,resp,'peer');
+    setTimeout(function(){aiRespond(peerName,resp);},1000+Math.random()*600);
+  }
+}
 
 // Did the facilitator's most recent message ask the circle to pause/quiet down?
 // If so, peers structurally stay silent until the facilitator says something else.
@@ -990,11 +1019,8 @@ async function simPeer(){
     G.band==='35'?'You are an 8-11 year old. Simple sentences. 1-2 sentences max.':
     G.band==='68'?'You are an 11-14 year old. Think aloud, 1-2 sentences.':
     'You are a 14-18 year old student. Thoughtful, 1-2 sentences.';
-  const _peerWeekCtx=(G.scholar?' This week\'s scholar is '+G.scholar+'.':'')
-      +(G.theme?' The theme is: '+G.theme+'.':'')
-      +(G.juz?' (Week/Juz '+G.juz+')':'');
   const peerSys='You are '+p.n+', a student in a halaqa. '+bandInstr
-    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'".'+_peerWeekCtx+' RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. (5) The facilitator leads the circle: if their most recent message asks anyone to pause, stop, wait, or give someone else a turn, you have NOTHING to add — respond with silence by writing only \'…\'. (6) If you have already pushed back on an idea once, do not push back on it again — listen or build instead. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
+    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'". RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. (5) The facilitator leads the circle: if their most recent message asks anyone to pause, stop, wait, or give someone else a turn, you have NOTHING to add — respond with silence by writing only \'…\'. (6) If you have already pushed back on an idea once, do not push back on it again — listen or build instead. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
 
   // Show thinking indicator
   setSt(p.n,'typing');
@@ -1438,7 +1464,7 @@ function endLiveSession(){
 
 async function endHalaqaSession(){
   if(!G.messages||!G.messages.length){toast('No messages to save');return;}
-  toast('Generating summary…');
+  toast('Saving session…');
   // Generate a brief AI summary
   var summary='';
   try{
@@ -1447,7 +1473,6 @@ async function endHalaqaSession(){
     var sysSumm='You summarise a halaqa session in 3 sentences: (1) the opening question, (2) the key argument or insight that emerged, (3) what was left open. Be specific — name actual ideas, not generic descriptions.';
     var r=await callAI([{role:'user',content:'Session on: "'+G.question+'"\n\n'+hist}],sysSumm);
     summary=r.trim();
-    if(summary) addSys('✦ Session summary: '+summary);
   }catch(e){ summary=''; }
 
   // Extract student contributions
@@ -1471,31 +1496,8 @@ async function endHalaqaSession(){
   transcripts.unshift(entry);
   if(transcripts.length>20) transcripts=transcripts.slice(0,20);
   S_hq.s('transcripts',transcripts);
-  // Save to Supabase — live session or authenticated solo session
-  if(_liveMode && _sessionId){
-    saveSessionToSupabase(entry);
-  } else {
-    // Solo session — push directly if JWT present
-    var _jwt = getFreshJwt();
-    var _hid = localStorage.getItem('how_household_id');
-    if(_jwt && _hid && typeof sb !== 'undefined' && sb){
-      try{
-        sb.from('halaqa_transcript').insert({
-          session_id:    null,
-          household_id:  _hid,
-          question:      entry.question||'',
-          theme:         entry.theme||'',
-          student_name:  entry.name||G.name||'',
-          grade:         entry.grade||G.grade||7,
-          summary:       entry.summary||'',
-          messages:      entry.messages||[],
-          turns:         entry.turns||0,
-          duration_min:  entry.duration||0,
-          saved_at:      new Date().toISOString()
-        });
-      }catch(e){ console.warn('Halaqa solo sync failed:',e); }
-    }
-  }
+  // Save to Supabase if live session
+  if(_liveMode && _sessionId) saveSessionToSupabase(entry);
   endLiveSession();
   // Show clear in-circle save confirmation before leaving
   hideHalaqaTyping();
