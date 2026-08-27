@@ -1487,7 +1487,7 @@ async function callAPI(sys, usr, maxTokens){
   if(!_munJwt) return null;
   var resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+_munJwt},
+    headers:{'Content-Type':'application/json'},
     // Railway proxy — no API key needed
    
     body:JSON.stringify({

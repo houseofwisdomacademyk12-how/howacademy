@@ -359,6 +359,45 @@ body{font-family:"DM Sans",sans-serif;background:var(--p);color:var(--ink);min-h
 .dict-senior-badge{font-size:.7rem;color:#4A1A6E;background:#f0e8fa;border-radius:4px;padding:1px 6px;margin-left:4px}
 
 .teacher-note{background:#fff8e1;border-left:3px solid #C47B2A;border-radius:0 6px 6px 0;padding:7px 10px;margin-bottom:10px;font-size:.78rem;color:#6B4A1A}
+
+/* ── Arabic on-screen keyboard ──────────────────────────────────────────── */
+#akb{position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;padding:8px 4px 12px;
+  z-index:9999;display:none;box-shadow:0 -4px 20px rgba(0,0,0,.4);user-select:none}
+#akb.akb-visible{display:block}
+.akb-top{display:flex;justify-content:space-between;align-items:center;
+  padding:0 6px 6px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:6px}
+.akb-label{font-size:.72rem;color:rgba(255,255,255,.5);letter-spacing:.04em}
+.akb-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:1.1rem;
+  cursor:pointer;padding:2px 6px}
+.akb-close:hover{color:#fff}
+.akb-row{display:flex;justify-content:center;gap:4px;margin-bottom:4px;direction:rtl}
+.akb-key{background:#2a2a4a;color:#e8e4d0;border:none;border-radius:7px;
+  font-family:'Amiri',serif;font-size:1.2rem;min-width:34px;height:40px;
+  cursor:pointer;transition:.1s;display:flex;align-items:center;justify-content:center;
+  padding:0 4px;flex:0 0 auto}
+.akb-key:hover{background:#3a3a5a}
+.akb-key:active{background:#4A1A6E;transform:scale(.95)}
+.akb-key.akb-special{font-size:.72rem;background:#151525;min-width:44px;color:rgba(255,255,255,.7)}
+.akb-key.akb-backspace{min-width:52px;font-size:.85rem}
+.akb-key.akb-space{min-width:80px;font-size:.72rem}
+.akb-key.akb-tashkeel-toggle{background:#4A1A6E;color:#e8e4d0;font-size:.72rem;min-width:52px}
+.akb-key.akb-tashkeel-toggle.active{background:#6B2A9E}
+.akb-key.akb-diac{font-size:1rem;min-width:38px;background:#2a1a3a}
+.akb-key.akb-diac:hover{background:#3a2a4a}
+.akb-tashkeel-row{display:none;justify-content:center;gap:4px;margin-bottom:4px}
+.akb-tashkeel-row.visible{display:flex}
+.akb-confirm{display:flex;align-items:center;gap:6px;padding:4px 8px 0}
+.akb-input-preview{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;padding:6px 10px;font-family:'Amiri',serif;font-size:1.1rem;
+  color:#e8e4d0;direction:rtl;text-align:right;min-height:34px;word-break:break-all}
+.akb-confirm-btn{background:#2a7a2a;color:#fff;border:none;border-radius:8px;
+  padding:6px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap}
+.akb-clear-btn{background:#5a1a1a;color:#fff;border:none;border-radius:8px;
+  padding:6px 10px;font-size:.8rem;cursor:pointer}
+.akb-trigger{background:none;border:1px solid var(--border);border-radius:6px;
+  padding:3px 8px;font-family:'Amiri',serif;font-size:1rem;cursor:pointer;
+  color:var(--ink3);margin-left:4px;vertical-align:middle}
+.akb-trigger:hover{border-color:#4A1A6E;color:#4A1A6E}
 @media print{.top-bar,button{display:none}.report-header,.report-section{break-inside:avoid}}
 /* ── Writing panel ──────────────────────────────────────────────── */
 .writing-panel{margin-top:14px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg)}
@@ -2038,6 +2077,7 @@ function fillRender(sk) {
     // Type-in mode
     html += '<div class="fill-type-wrap">';
     html += '<input class="fill-input" id="fill-inp-' + sk + '" type="text" dir="rtl" placeholder="اكتب هنا..." autocomplete="off">';
+    html += '<button class="akb-trigger" onclick="akbShow(document.getElementById(\'fill-inp-' + sk + '\'))">ع</button>';
     html += '<button class="fill-submit" data-sk="' + sk + '" onclick="fillCheck(this)">Check</button>';
     html += '<button class="fill-reveal" data-sk="' + sk + '" onclick="fillReveal(this)">Show answer</button>';
     html += '</div>';
@@ -2157,6 +2197,7 @@ function drillRender(sk) {
   if (s.mode === 'senior' || !ex.choices) {
     html += '<div class="fill-type-wrap">';
     html += '<input class="fill-input" id="drill-inp-' + sk + '" type="text" dir="rtl" placeholder="اكتب هنا..." autocomplete="off">';
+    html += '<button class="akb-trigger" onclick="akbShow(document.getElementById(\'drill-inp-' + sk + '\'))">ع</button>';
     html += '<button class="fill-submit" style="background:#6B4A8A" data-sk="' + sk + '" onclick="drillCheck(this)">Check</button>';
     html += '<button class="fill-reveal" data-sk="' + sk + '" onclick="drillReveal(this)">Show</button>';
     html += '</div>';
@@ -2251,7 +2292,7 @@ function tableRender(sk) {
       var showBlank = mode === 'senior' ? true : (mode === 'junior' ? (r.blank && blankCount++ < 3) : r.blank);
       html += '<tr><td style="font-size:.8rem;color:var(--ink3)">' + r.label + '</td>';
       if (showBlank) {
-        html += '<td><input class="gram-cell-input" id="tc-' + sk + '-' + ti + '-' + r.id + '" data-ans="' + r.given + '" type="text" dir="rtl" placeholder="___"></td>';
+        html += '<td style="display:flex;align-items:center;gap:3px"><input class="gram-cell-input" id="tc-' + sk + '-' + ti + '-' + r.id + '" data-ans="' + r.given + '" type="text" dir="rtl" placeholder="___"><button class="akb-trigger" style="padding:2px 5px;font-size:.85rem" onclick="akbShow(document.getElementById(\'tc-' + sk + '-' + ti + '-' + r.id + '\'))">ع</button></td>';
       } else {
         html += '<td class="gram-cell-given">' + r.given + '</td>';
       }
@@ -2468,6 +2509,7 @@ function compRender(sk) {
     // Type-in (senior)
     html += '<div class="comp-input-wrap"><textarea class="comp-input" id="comp-inp-' + sk + '" dir="rtl" placeholder="اكتب إجابتك هنا..."></textarea></div>';
     html += '<div class="comp-actions">';
+    html += '<button class="akb-trigger" onclick="akbShow(document.getElementById(\'comp-inp-' + sk + '\'))">ع لوحة المفاتيح</button>';
     html += '<button class="comp-check-btn" data-sk="' + sk + '" onclick="compCheck(this)">✓ Submit</button>';
     html += '<button class="comp-reveal-btn" data-sk="' + sk + '" onclick="compReveal(this)">Show model answer</button>';
     if (jwt) html += '<button class="comp-murshid-btn" data-sk="' + sk + '" onclick="compAskMurshid(this)">Ask Murshid to evaluate</button>';
@@ -2537,7 +2579,7 @@ async function compAskMurshid(btn) {
     var sys = 'You are an Arabic teacher evaluating a student answer. Question (Arabic): ' + q.question_ar + ' Model answer: ' + q.answer_ar + '. Evaluate the student answer in 2 sentences: correct? What to improve? Be encouraging. Respond in English.';
     var resp = await fetch('https://how-proxy-production.up.railway.app/api/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 150, system: sys, messages: [{ role: 'user', content: studentAns }] })
     });
     var d = await resp.json();
@@ -2813,6 +2855,13 @@ function dictRender(sk) {
   html += '</div>';
   html += '<p class="wp-hint">Write with finger · stylus · mouse &nbsp;·&nbsp; Arabic writes right to left ←</p>';
 
+  // Type-to-check row (Arabic keyboard trigger)
+  html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">';
+  html += '<input class="fill-input" id="dict-type-' + sk + '" type="text" dir="rtl" placeholder="أو اكتب للتحقق..." autocomplete="off" style="flex:1;width:auto">';
+  html += '<button class="akb-trigger" onclick="akbShow(document.getElementById(\'dict-type-' + sk + '\'),function(){dictTypeCheck(\''+sk+'\')})">ع</button>';
+  html += '<button class="fill-submit" style="background:#4A1A6E" data-sk="' + sk + '" onclick="dictTypeCheck(this.dataset.sk)">✓</button>';
+  html += '</div>';
+
   // Actions
   html += '<div class="dict-actions">';
   html += '<button class="wp-act-btn" data-sk="' + sk + '" onclick="dictClear(this)">Clear</button>';
@@ -2820,6 +2869,8 @@ function dictRender(sk) {
   html += '</div>';
 
   // Self-assessment (shown after reveal)
+  html += '<div class="dict-feedback" id="dict-fb-' + sk + '" style="display:none;margin-bottom:6px"></div>';
+  html += '<div class="dict-feedback" id="dict-fb-' + sk + '" style="display:none;margin-bottom:6px"></div>';
   html += '<div id="dict-assess-' + sk + '" style="display:none;margin-top:8px">';
   html += '<div style="font-size:.78rem;color:var(--ink3);margin-bottom:6px">Compare your writing to the word above — how did you do?</div>';
   html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
@@ -2905,6 +2956,26 @@ function dictCanvasUp(e,sk) {
 
 function dictClear(btn) {
   dictGuides(btn.dataset.sk);
+  var inp = document.getElementById('dict-type-' + btn.dataset.sk);
+  if(inp) inp.value = '';
+}
+
+function dictTypeCheck(sk) {
+  var s = _dict[sk]; if(!s) return;
+  var item = s.vocab[s.idx];
+  var inp = document.getElementById('dict-type-' + sk); if(!inp || !inp.value.trim()) return;
+  var attempt = inp.value.trim();
+  var correctFull = attempt === item.ar;
+  var correctBase = wsStrip(attempt) === wsStrip(item.ar);
+  var fb = document.getElementById('dict-fb-' + sk); if(!fb) return;
+  fb.style.display = 'block';
+  if(correctFull){
+    fb.innerHTML = '<span style="color:#2a7a2a;font-weight:600">✓ Correct — letters and diacritics!</span>';
+  } else if(correctBase){
+    fb.innerHTML = '<span style="color:#C47B2A;font-weight:600">✓ Base letters correct</span> <span style="font-size:.75rem;color:var(--ink3)">— diacritics not matching (see revealed word)</span>';
+  } else {
+    fb.innerHTML = '<span style="color:var(--coral);font-weight:600">✗ Not matching</span> <span style="font-size:.75rem;color:var(--ink3)">— try again or reveal</span>';
+  }
 }
 
 function dictReveal(btn) {
@@ -2945,6 +3016,134 @@ function dictAdvance(sk) {
 }
 function dictPrev(btn){var sk=btn.dataset.sk;var s=_dict[sk];if(!s||s.idx===0)return;s.idx--;dictRender(sk);}
 function dictNext(btn){var sk=btn.dataset.sk;var s=_dict[sk];if(!s||s.idx>=s.vocab.length-1)return;s.idx++;dictRender(sk);}
+
+
+// ── Arabic on-screen keyboard ─────────────────────────────────────────────────
+var _akbTarget = null;
+var _akbTashkeel = false;
+
+(function buildAKB(){
+  var rows = [
+    ['ض','ص','ث','ق','ف','غ','ع','ه','خ','ح','ج','د','ذ'],
+    ['ش','س','ي','ب','ل','ا','ت','ن','م','ك','ط','ة'],
+    ['ئ','ء','ؤ','ر','لا','ى','و','ز','ظ'],
+    ['أ','إ','آ','ٱ','ـ'],
+  ];
+  var diacritics = [
+    {c:'\u064E',l:'فَ fatha'},{c:'\u064F',l:'فُ damma'},{c:'\u0650',l:'فِ kasra'},
+    {c:'\u0652',l:'فْ sukun'},{c:'\u0651',l:'فّ shadda'},
+    {c:'\u064B',l:'فً tanwin f'},{c:'\u064C',l:'فٌ tanwin d'},{c:'\u064D',l:'فٍ tanwin k'},
+  ];
+
+  var html = '<div id="akb"><div class="akb-top">'
+    + '<span class="akb-label">لوحة المفاتيح العربية</span>'
+    + '<div style="display:flex;gap:6px">'
+    + '<button class="akb-key akb-tashkeel-toggle" id="akb-tashkeel-btn" onclick="akbToggleTashkeel()">التشكيل</button>'
+    + '<button class="akb-close" onclick="akbHide()">✕</button>'
+    + '</div></div>';
+
+  // Tashkeel row
+  html += '<div class="akb-tashkeel-row" id="akb-tashkeel-row">';
+  diacritics.forEach(function(d){
+    html += '<button class="akb-key akb-diac akb-char" data-akb-char="'+d.c+'" title="'+d.l+'">◌'+d.c+'</button>';
+  });
+  html += '</div>';
+
+  // Letter rows
+  rows.forEach(function(row){
+    html += '<div class="akb-row">';
+    row.forEach(function(k){
+      html += '<button class="akb-key akb-char" data-akb-char="'+k+'">'+k+'</button>';
+    });
+    html += '</div>';
+  });
+
+  // Bottom controls
+  html += '<div class="akb-row" style="margin-top:2px">'
+    + '<button class="akb-key akb-special akb-backspace" onclick="akbBackspace()">⌫ حذف</button>'
+    + '<button class="akb-key akb-special akb-space akb-char" data-akb-char=" ">مسافة</button>'
+    + '<button class="akb-key akb-special" onclick="akbClear()">مسح</button>'
+    + '</div>';
+
+  // Preview + confirm
+  html += '<div class="akb-confirm">'
+    + '<div class="akb-input-preview" id="akb-preview"></div>'
+    + '<button class="akb-clear-btn" onclick="akbClear()">✕</button>'
+    + '<button class="akb-confirm-btn" onclick="akbConfirm()">✓ تأكيد</button>'
+    + '</div></div>';
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.appendChild(div.firstChild);
+    // Event delegation for all char keys
+    document.getElementById('akb').addEventListener('click', function(e){
+      var btn = e.target.closest('.akb-char');
+      if(btn) akbTap(btn.dataset.akbChar);
+    });
+  });
+})();
+
+function akbShow(inputEl, onConfirm) {
+  _akbTarget = inputEl;
+  _akbOnConfirm = onConfirm || null;
+  var kb = document.getElementById('akb'); if(!kb) return;
+  kb.classList.add('akb-visible');
+  var prev = document.getElementById('akb-preview');
+  if(prev) prev.textContent = inputEl ? inputEl.value : '';
+}
+
+function akbHide() {
+  var kb = document.getElementById('akb'); if(!kb) return;
+  kb.classList.remove('akb-visible');
+  _akbTarget = null;
+}
+
+function akbTap(ch) {
+  var prev = document.getElementById('akb-preview');
+  if(prev) prev.textContent = (prev.textContent||'') + ch;
+  if(_akbTarget) {
+    var pos = _akbTarget.selectionStart || _akbTarget.value.length;
+    var val = _akbTarget.value;
+    _akbTarget.value = val.slice(0,pos) + ch + val.slice(pos);
+    _akbTarget.selectionStart = _akbTarget.selectionEnd = pos + ch.length;
+    _akbTarget.dispatchEvent(new Event('input'));
+  }
+}
+
+function akbBackspace() {
+  if(_akbTarget) {
+    var pos = _akbTarget.selectionStart || _akbTarget.value.length;
+    if(pos > 0) {
+      _akbTarget.value = _akbTarget.value.slice(0,pos-1) + _akbTarget.value.slice(pos);
+      _akbTarget.selectionStart = _akbTarget.selectionEnd = pos-1;
+      _akbTarget.dispatchEvent(new Event('input'));
+    }
+  }
+  var prev = document.getElementById('akb-preview');
+  if(prev && prev.textContent.length > 0) prev.textContent = prev.textContent.slice(0,-1);
+}
+
+function akbClear() {
+  if(_akbTarget) { _akbTarget.value = ''; _akbTarget.dispatchEvent(new Event('input')); }
+  var prev = document.getElementById('akb-preview');
+  if(prev) prev.textContent = '';
+}
+
+function akbConfirm() {
+  if(_akbOnConfirm) _akbOnConfirm();
+  akbHide();
+}
+
+function akbToggleTashkeel() {
+  _akbTashkeel = !_akbTashkeel;
+  var row = document.getElementById('akb-tashkeel-row');
+  var btn = document.getElementById('akb-tashkeel-btn');
+  if(row) row.classList.toggle('visible', _akbTashkeel);
+  if(btn) btn.classList.toggle('active', _akbTashkeel);
+}
+
+var _akbOnConfirm = null;
 
 // ── Writing canvas ──────────────────────────────────────────────────────────
 function toggleWP(btn){
