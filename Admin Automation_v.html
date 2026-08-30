@@ -55,9 +55,9 @@ input[type=range]{width:72px;accent-color:#7c3aed;cursor:pointer}
 .logo-wrap{display:flex;align-items:center;gap:10px}
 .logo-icon{width:26px;height:26px;background:linear-gradient(135deg,#7c3aed,#c8a96e);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
 select{background:#0f0d1e;border:1px solid #2e2a4a;border-radius:6px;color:#e8e4f8;font-size:11px;padding:5px 8px;font-family:'DM Sans',sans-serif;cursor:pointer;max-width:260px}
-input[type=password],input[type=text],input[type=number]{background:#0f0d1e;border:1px solid #2e2a4a;border-radius:6px;color:#e8e4f8;font-size:11px;padding:5px 8px;font-family:'DM Sans',sans-serif;outline:none}
+input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4a;border-radius:6px;color:#e8e4f8;font-size:11px;padding:5px 8px;font-family:'DM Sans',sans-serif;outline:none}
 .heygen-grid{display:grid;grid-template-columns:72px 1fr 1fr 1fr;gap:5px;align-items:center}
-.heygen-grid input{width:100%;font-size:10px;padding:4px 7px;font-family:'DM Mono',monospace;border-radius:5px;background:#0f0d1e;border:1px solid #2e2a4a;color:#e8e4f8;outline:none}
+.heygen-grid input{width:100%;font-size:10px;padding:4px 7px;font-family:'DM Mono',monospace;border-radius:5px}
 .heygen-grid-lbl{font-size:9px;color:#3a3860;font-weight:700}
 .heygen-subj-lbl{font-size:10px;color:#c8a96e;font-weight:600}
 .action-btn{padding:6px 14px;border-radius:6px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:600}
@@ -170,15 +170,6 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
       <span class="ctrl-label" style="min-width:60px">API Key</span>
       <input type="password" id="hey-key" placeholder="Heygen API key…" style="flex:1" oninput="STATE.heygenKey=this.value;saveHeygenCfg({key:this.value})">
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span class="ctrl-label" style="min-width:60px">Gap</span>
-      <input type="number" id="hey-gap" min="2" max="120" step="1" value="12" style="width:80px" oninput="var v=Math.max(2,Math.min(120,parseInt(this.value)||12));STATE.heygenGapMs=v*1000;saveHeygenCfg({gapMs:v*1000})">
-      <span style="font-size:11px;color:#6a6890">seconds between submissions — raise this if you keep hitting 429 rate limits</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <input type="checkbox" id="hey-serial" checked style="width:auto;accent-color:#c8a96e" onchange="STATE.heygenSerial=this.checked;saveHeygenCfg({serial:this.checked})">
-      <label for="hey-serial" style="font-size:11px;color:#a8a4c8;cursor:pointer">One at a time — wait for each video to finish rendering before submitting the next</label>
-    </div>
     <div class="heygen-grid" id="hey-avatar-grid">
       <span class="heygen-grid-lbl">Subject</span>
       <span class="heygen-grid-lbl">Avatar ID</span>
@@ -224,7 +215,7 @@ var STATE = {
   week:1, genS1:true, genS2:true, genTest:true, genThursday:true, genQalamS1:false, genQalamS2:false, genQalamS3:false,
   broadcastAfter:true, delay:800, isRunning:false,
   authStatus:'checking', householdId:null, studioCardCount:0,
-  heygenKey:'', heygenGapMs:12000, heygenSerial:true, heygenMaxWaitMs:1500000, heygenAvatars:{
+  heygenKey:'', heygenAvatars:{
     math:{avatarId:'',voiceId:'',lookId:''},science:{avatarId:'',voiceId:'',lookId:''},
     ela:{avatarId:'',voiceId:'',lookId:''},writing:{avatarId:'',voiceId:'',lookId:''},
     social:{avatarId:'',voiceId:'',lookId:''},
@@ -1004,10 +995,6 @@ function loadHeygenCfg(){
   try{
     var d=JSON.parse(localStorage.getItem('how_heygen_cfg')||'{}');
     if(d.key){STATE.heygenKey=d.key;var ki=qs('#hey-key');if(ki)ki.value=d.key;}
-    if(d.gapMs) STATE.heygenGapMs=d.gapMs;
-    if(typeof d.serial==='boolean') STATE.heygenSerial=d.serial;
-    var si2=qs('#hey-serial'); if(si2) si2.checked=STATE.heygenSerial;
-    var gi2=qs('#hey-gap'); if(gi2) gi2.value=String(Math.round(STATE.heygenGapMs/1000));
     if(d.avatars) Object.keys(d.avatars).forEach(function(k){STATE.heygenAvatars[k]=Object.assign({},STATE.heygenAvatars[k],d.avatars[k]);});
     var grid=qs('#hey-avatar-grid');
     if(grid&&grid.childNodes.length) initHeygenAvatarRows();
@@ -1038,19 +1025,8 @@ async function submitOneHeygenVideo(gi,si,g,w,subjKey){
   if(cfg.avatarId) body.avatar_id=cfg.avatarId;
   if(cfg.voiceId) body.voice_id=cfg.voiceId;
   if(cfg.lookId) body.look_id=cfg.lookId;
-  var r,raw,attempt=0,MAX=5;
-  while(true){
-    r=await fetch('https://api.heygen.com/v3/video-agents',{method:'POST',headers:{'X-Api-Key':STATE.heygenKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    raw=await r.text();
-    if(r.ok) break;
-    var retryable=(r.status===429||r.status>=500);
-    if(!retryable||attempt>=MAX) break;
-    attempt++;
-    var ra=parseFloat(r.headers.get('retry-after')||'0');
-    var waitMs=ra>0?ra*1000:Math.min(60000,STATE.heygenGapMs*Math.pow(2,attempt));
-    addLog((g===0?'K':'G'+g)+' '+subjKey+' rate limited — retry '+attempt+'/'+MAX+' in '+Math.round(waitMs/1000)+'s','info');
-    await sleep(waitMs);
-  }
+  var r=await fetch('https://api.heygen.com/v3/video-agents',{method:'POST',headers:{'X-Api-Key':STATE.heygenKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  var raw=await r.text();
   if(!r.ok){
     var msg=raw;
     try{
@@ -1067,39 +1043,7 @@ async function submitOneHeygenVideo(gi,si,g,w,subjKey){
   var vid=d.data&&d.data.video_id||d.video_id;
   if(!vid) throw new Error('No video_id returned');
   addLog((g===0?'K':'G'+g)+' '+subjKey+' submitted ('+vid.slice(0,8)+'…)','ok');
-  setHeygenStatus(gi,si,STATE.heygenSerial?'running':'done');
-  return vid;
-}
-
-// Poll until Heygen finishes rendering. Resolves 'completed' | 'failed' | 'timeout'.
-async function waitForHeygenVideo(vid,label){
-  var started=Date.now(), MAXMS=STATE.heygenMaxWaitMs, POLL=15000, lastState='';
-  while(Date.now()-started<MAXMS){
-    if(abortFlag) return 'aborted';
-    await sleep(POLL);
-    var st='',err='';
-    try{
-      var r=await fetch('https://api.heygen.com/v1/video_status.get?video_id='+encodeURIComponent(vid),{headers:{'X-Api-Key':STATE.heygenKey}});
-      var raw=await r.text(); var d={};
-      try{d=JSON.parse(raw);}catch(_){}
-      var dd=d.data||d;
-      st=(dd.status||'').toLowerCase();
-      err=(dd.error&&(dd.error.message||dd.error.detail))||'';
-      if(!r.ok&&!st){
-        if(r.status===429||r.status>=500){continue;}
-        addLog(label+' status check '+r.status+' → '+raw.slice(0,160),'err');
-        return 'failed';
-      }
-    }catch(e){continue;}
-    if(st&&st!==lastState){
-      lastState=st;
-      var mins=Math.round((Date.now()-started)/60000);
-      if(st!=='completed'&&st!=='failed') addLog(label+' '+st+'… ('+mins+'m elapsed)','info');
-    }
-    if(st==='completed') return 'completed';
-    if(st==='failed'){addLog(label+' render failed'+(err?' — '+err:''),'err');return 'failed';}
-  }
-  return 'timeout';
+  setHeygenStatus(gi,si,'done');
 }
 
 async function runHeygenBatch(){
@@ -1111,31 +1055,16 @@ async function runHeygenBatch(){
   var grades=gradeScope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gradeScope)];
   var subjIdx=subjScope==='all'?[0,1,2,3,4]:[ALL.indexOf(subjScope)];
   var scopeLbl=(gradeScope==='all'?'all grades':(gradeScope==='0'?'Kindergarten':'Grade '+gradeScope))+' · '+(subjScope==='all'?'all subjects':subjScope);
-  var n=grades.length*subjIdx.length;
-  addLog(STATE.heygenSerial
-    ? 'Heygen video batch (serial) — Week '+STATE.week+' — '+scopeLbl+' ('+n+' videos, one at a time — waits for each render to finish)'
-    : 'Heygen video batch — Week '+STATE.week+' — '+scopeLbl+' ('+n+' videos, '+Math.round(STATE.heygenGapMs/1000)+'s apart ≈ '+Math.max(1,Math.round(n*STATE.heygenGapMs/60000))+' min)','start');
+  addLog('Heygen video batch — Week '+STATE.week+' — '+scopeLbl+' ('+(grades.length*subjIdx.length)+' videos)','start');
   for(var gk=0;gk<grades.length;gk++){
     if(abortFlag) break;
     var gi=grades[gk];
     for(var sk=0;sk<subjIdx.length;sk++){
       if(abortFlag) break;
       var si=subjIdx[sk];
-      var lbl=(gi===0?'K':'G'+gi)+' '+ALL[si];
-      var ok=false;
-      try{
-        var vid=await submitOneHeygenVideo(gi,si,gi,STATE.week,ALL[si]);
-        ok=true;
-        if(STATE.heygenSerial&&vid){
-          var res=await waitForHeygenVideo(vid,lbl);
-          if(res==='completed'){setHeygenStatus(gi,si,'done');addLog(lbl+' ✓ rendered','ok');}
-          else if(res==='aborted'){setHeygenStatus(gi,si,'idle');}
-          else{setHeygenStatus(gi,si,'error');if(res==='timeout')addLog(lbl+' still rendering after '+Math.round(STATE.heygenMaxWaitMs/60000)+'m — check the Heygen dashboard','err');}
-        }
-      }
-      catch(e){setHeygenStatus(gi,si,'error');addLog(lbl+' ✗ '+e.message,'err');}
-      var last=(gk===grades.length-1&&sk===subjIdx.length-1);
-      if(!last) await sleep(ok&&STATE.heygenSerial?2000:STATE.heygenGapMs);
+      try{await submitOneHeygenVideo(gi,si,gi,STATE.week,ALL[si]);}
+      catch(e){setHeygenStatus(gi,si,'error');addLog((gi===0?'K':'G'+gi)+' '+ALL[si]+' ✗ '+e.message,'err');}
+      await sleep(400);
     }
   }
   addLog('Heygen batch submitted — check your Heygen dashboard for video status','done');
