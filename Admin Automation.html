@@ -737,6 +737,7 @@ async function generateLesson(g,w,subj,sessionNum){
     if(!slides.some(function(sl){return sl.type==='juz';})) slides.push({type:'juz',arabic:juz.arabic||juz.tr||'',name:(juz.tr||'')+(juz.meaning?' — '+juz.meaning:''),story:juz.story||'',reflection:juz.q||''});
   }
   var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:subj,session:sessionNum,title:deck.title||topic,objective:deck.objective||'',slides:slides,workbook:wb.workbook||wb,created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+  cacheDeck(g,w,subj,sessionNum,{title:entry.title,objective:entry.objective,slides:slides});
   var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
   if(r.error) throw new Error(r.error.message);
 }
@@ -782,6 +783,7 @@ async function generateThursday(g,w){
   slides.forEach(function(sl){if(sl.body&&!sl.content) sl.content=sl.body;if(sl.teacherNote&&!sl.scholarNote) sl.scholarNote=sl.teacherNote;if(sl.type==='juz'){sl.arabic=juz.arabic||juz.tr||'';sl.name=(juz.tr||'')+(juz.meaning?' — '+juz.meaning:'');sl.story=juz.story||'';sl.reflection=juz.q||'';delete sl.theme;}});
   if(!slides.some(function(sl){return sl.type==='juz';})) slides.push({type:'juz',arabic:juz.arabic||juz.tr||'',name:(juz.tr||'')+(juz.meaning?' — '+juz.meaning:''),story:juz.story||'',reflection:juz.q||''});
   var entry={household_id:localStorage.getItem('how_household_id'),grade:g,week:w,subject:'synthesis',session:3,title:deck.title||'Thursday Synthesis — Week '+w,objective:deck.objective||'',slides:slides,workbook:{},created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+  cacheDeck(g,w,'synthesis',3,{title:entry.title,objective:entry.objective,slides:slides});
   var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
   if(r.error) throw new Error(r.error.message);
 }
@@ -980,8 +982,23 @@ function importStudioCards(){
 }
 
 // ── HEYGEN ───────────────────────────────────────────────────────────────────
+// ── LOCAL DECK CACHE ───────────────────────────────────────────────────────
+function deckCacheKey(g,w,subject,sessionNum){return 'how_deck_'+g+'_'+w+'_'+subject+'_'+sessionNum;}
+function cacheDeck(g,w,subject,sessionNum,payload){
+  try{localStorage.setItem(deckCacheKey(g,w,subject,sessionNum),JSON.stringify(Object.assign({savedAt:new Date().toISOString()},payload)));}catch(e){}
+}
+function readCachedDeck(g,w,subject,sessionNum){
+  try{return JSON.parse(localStorage.getItem(deckCacheKey(g,w,subject,sessionNum))||'null');}catch(e){return null;}
+}
+
 function loadHeygenCfg(){
-  try{var d=JSON.parse(localStorage.getItem('how_heygen_cfg')||'{}');if(d.key){STATE.heygenKey=d.key;qs('#hey-key').value=d.key;}if(d.avatars) Object.assign(STATE.heygenAvatars,d.avatars);}catch(e){}
+  try{
+    var d=JSON.parse(localStorage.getItem('how_heygen_cfg')||'{}');
+    if(d.key){STATE.heygenKey=d.key;var ki=qs('#hey-key');if(ki)ki.value=d.key;}
+    if(d.avatars) Object.keys(d.avatars).forEach(function(k){STATE.heygenAvatars[k]=Object.assign({},STATE.heygenAvatars[k],d.avatars[k]);});
+    var grid=qs('#hey-avatar-grid');
+    if(grid&&grid.childNodes.length) initHeygenAvatarRows();
+  }catch(e){}
 }
 function saveHeygenCfg(patch){
   try{var d=JSON.parse(localStorage.getItem('how_heygen_cfg')||'{}');Object.assign(d,patch);localStorage.setItem('how_heygen_cfg',JSON.stringify(d));}catch(e){}
@@ -1240,11 +1257,12 @@ async function exportSupabaseDeck(g,w,subject,sessionNum,label,collectOnly){
   var r=await sb.from('lesson').select('title,objective,slides')
     .eq('household_id',localStorage.getItem('how_household_id'))
     .eq('grade',g).eq('week',w).eq('subject',subject).eq('session',sessionNum).maybeSingle();
-  if(!r.data||!r.data.slides||!r.data.slides.length) throw new Error('not generated yet');
+  var src=(r.data&&r.data.slides&&r.data.slides.length)?r.data:readCachedDeck(g,w,subject,sessionNum);
+  if(!src||!src.slides||!src.slides.length) throw new Error('not generated yet');
   var how=(HOW_CURR[g]||{})[w]||{};
   var juz=JUZ[w-1]||{};
   var gl=g===0?'Kindergarten':'Grade '+g;
-  var html=renderSlideHTML(gl,label,label,{title:r.data.title,objective:r.data.objective,slides:r.data.slides},juz,how);
+  var html=renderSlideHTML(gl,label,label,{title:src.title,objective:src.objective,slides:src.slides},juz,how);
   var fname=(g===0?'K':'Grade_'+g)+'_'+label.replace(/ /g,'_')+'_Week'+w+'.html';
   if(!collectOnly){
     var blob=new Blob([html],{type:'text/html'});
@@ -1353,13 +1371,13 @@ window.addEventListener('DOMContentLoaded', function(){
   initGrid();
   initWedBtns();
   initMunGrid();
+  loadHeygenCfg();
   initHeygenAvatarRows();
   (function(){
     var gs=qs('#slide-grade-sel'); if(!gs) return;
     gs.innerHTML='<option value="all">All grades</option>';
     for(var i=0;i<13;i++){var o=document.createElement('option');o.value=String(i);o.textContent=i===0?'Kindergarten':'Grade '+i;gs.appendChild(o);}
   })();
-  loadHeygenCfg();
   // Studio cards
   var sc=loadStudioCards();
   if(sc>0) qs('#studio-btn').textContent='📥 Studio Cards ('+sc+')';
