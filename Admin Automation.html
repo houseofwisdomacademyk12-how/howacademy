@@ -1029,8 +1029,14 @@ async function submitOneHeygenVideo(gi,si,g,w,subjKey){
   var raw=await r.text();
   if(!r.ok){
     var msg=raw;
-    try{var e=JSON.parse(raw);msg=(e.error&&(e.error.message||e.error.detail||e.error))||e.message||e.detail||raw;if(typeof msg==='object')msg=JSON.stringify(msg);}catch(_){}
-    addLog('Heygen '+r.status+' → '+String(msg).slice(0,400),'err');
+    try{
+      var e=JSON.parse(raw);
+      var det=e.detail||(e.error&&e.error.detail)||e.errors;
+      if(Array.isArray(det)) msg=det.map(function(x){return (Array.isArray(x.loc)?x.loc.join('.'):(x.loc||x.field||'?'))+': '+(x.msg||x.message||JSON.stringify(x));}).join(' | ');
+      else msg=(e.error&&(e.error.message||e.error.detail||e.error))||e.message||det||raw;
+      if(typeof msg==='object') msg=JSON.stringify(msg);
+    }catch(_){}
+    addLog('Heygen '+r.status+' → '+String(msg).slice(0,300)+' ⟪raw: '+raw.slice(0,300)+'⟫','err');
     throw new Error('Heygen API '+r.status+': '+String(msg).slice(0,160));
   }
   var d={};try{d=JSON.parse(raw);}catch(_){}
