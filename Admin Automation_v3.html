@@ -20,16 +20,16 @@ body{background:#0f0d1e;color:#e8e4f8;font-family:'DM Sans',sans-serif;height:10
 #progress-inner{height:100%;width:0%;background:#7c3aed;border-radius:2px;transition:width .4s}
 #main{display:flex;flex:1;overflow:hidden}
 #grade-wrap{flex:1;overflow-y:auto}
-#grid-header{display:grid;grid-template-columns:44px 58px 58px 58px 24px 58px 58px 58px 58px 1fr;column-gap:11px;padding:6px 20px;border-bottom:1px solid #2e2a4a;position:sticky;top:0;background:#0f0d1e;z-index:1}
+#grid-header{display:grid;grid-template-columns:44px 68px 68px 68px 26px 68px 68px 68px 1fr;gap:0;padding:6px 20px;border-bottom:1px solid #2e2a4a;position:sticky;top:0;background:#0f0d1e;z-index:1}
 #grid-header div{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 #grade-body{}
-.grade-row{display:grid;grid-template-columns:44px 58px 58px 58px 24px 58px 58px 58px 58px 1fr;column-gap:11px;align-items:center;padding:9px 20px;border-bottom:1px solid #1a1630}
+.grade-row{display:grid;grid-template-columns:44px 68px 68px 68px 26px 68px 68px 68px 1fr;align-items:center;padding:9px 20px;border-bottom:1px solid #1a1630}
 .grade-label{font-size:14px;font-weight:700;color:#c8a96e}
 .dots-cell{display:flex;align-items:center;gap:4px}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#2e2a4a;flex-shrink:0;transition:background .3s}
 .dot.running{animation:pulse 1s ease-in-out infinite}
 .dot.done-reg{background:#1d6f6f}
-.dot.done-qalam{background:#2dd4bf}.dot.done-s3{background:#c8a96e}
+.dot.done-qalam{background:#2dd4bf}
 .dot.done-hey{background:#9d4edd}
 .dot.error{background:#c0392b}
 .dot.running{background:#c8a96e}
@@ -97,7 +97,6 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
     <button class="gen-btn active" id="btn-thu" onclick="toggleGen('genThursday','btn-thu')" style="border-color:#9d4edd;background:rgba(157,78,221,.2);color:#c084fc">Thu Synthesis</button>
     <button class="gen-btn" id="btn-qs1" onclick="toggleGen('genQalamS1','btn-qs1')" style="border-color:#1d6f6f;color:#1d6f6f">Qalam S1</button>
     <button class="gen-btn" id="btn-qs2" onclick="toggleGen('genQalamS2','btn-qs2')" style="border-color:#1d6f6f;color:#1d6f6f">Qalam S2</button>
-    <button class="gen-btn" id="btn-qs3" onclick="toggleGen('genQalamS3','btn-qs3')" style="border-color:#c8a96e;color:#c8a96e">Qalam S3</button>
   </div>
   <div class="sep"></div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -109,12 +108,6 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
     <input type="checkbox" id="bc-chk" checked onchange="STATE.broadcastAfter=this.checked" style="accent-color:#1d6f6f;cursor:pointer;width:14px;height:14px">
     <label for="bc-chk" style="font-size:11px;color:#9a98b8;cursor:pointer">Broadcast after</label>
   </div>
-  <div style="display:flex;align-items:center;gap:6px">
-    <input type="checkbox" id="resume-chk" checked onchange="STATE.resumeMode=this.checked" style="accent-color:#c8a96e;cursor:pointer;width:14px;height:14px">
-    <label for="resume-chk" style="font-size:11px;color:#9a98b8;cursor:pointer" title="Before running, query Supabase for what already exists this week and skip it">Skip existing</label>
-  </div>
-  <button class="action-btn" onclick="scanExisting()" style="border:1px solid #1d6f6f;background:none;color:#1d6f6f" title="Query Supabase and show what already exists for this week">🔍 Scan database</button>
-  <button class="action-btn" onclick="clearProgress()" style="border:1px solid #2e2a4a;background:none;color:#4a4870" title="Reset the grid and log for this week">↺ Clear progress</button>
   <button class="btn-violet" id="run-btn" onclick="handleRun()">▶ Run All Grades</button>
   <button class="btn-gray" id="studio-btn" onclick="importStudioCards()">📥 Import Studio Cards</button>
   <button class="btn-dark" onclick="broadcast()" style="margin-left:auto">📡 Broadcast now</button>
@@ -136,7 +129,6 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
       <div style="color:#5c2080">Thu</div>
       <div style="color:#1d6f6f">Qalam S1</div>
       <div style="color:#1d6f6f">Qalam S2</div>
-      <div style="color:#c8a96e">Qalam S3</div>
       <div style="color:#9d4edd">🎬</div>
       <div style="color:#3a3860">Status</div>
     </div>
@@ -191,28 +183,21 @@ input[type=password],input[type=text]{background:#0f0d1e;border:1px solid #2e2a4
         <option value="all">Both sessions</option>
         <option value="1">Session 1 only</option>
         <option value="2">Session 2 only</option>
-        <option value="3">Session 3 only (activity rounds)</option>
-        <option value="123">Sessions 1, 2 + 3</option>
       </select>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="action-btn btn-teal" onclick="runSlideGenBatch(false)">📄 Generate Slides (download each)</button>
       <button class="action-btn btn-teal" onclick="runSlideGenBatch(true)">🗜 Generate + Download as ZIP</button>
-      <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen (uses Scope)</button>
+      <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen (All Grades)</button>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <span class="ctrl-label" style="min-width:60px">Other decks</span>
-      <button class="action-btn btn-teal" onclick="runDeckExport('thursday',true)">📄 Thursday Synthesis → ZIP</button>
-      <button class="action-btn btn-teal" onclick="runDeckExport('wednesday',true)">📄 Wednesday Review → ZIP</button>
-    </div>
-    <p style="font-size:10px;color:#4a4870;margin:0">Slides download as HTML — upload to Google Drive and paste URL in HOW platform. Videos submit to Heygen Video Agent. Both respect the Scope selectors above (Heygen ignores the session selector — it generates one intro video per subject).</p>
+    <p style="font-size:10px;color:#4a4870;margin:0">Slides download as HTML — upload to Google Drive and paste URL in HOW platform. Videos submit to Heygen Video Agent.</p>
   </div>
 </div>
 
 <script>
 // ── STATE ────────────────────────────────────────────────────────────────────
 var STATE = {
-  week:1, genS1:true, genS2:true, genTest:true, genThursday:true, genQalamS1:false, genQalamS2:false, genQalamS3:false,
+  week:1, genS1:true, genS2:true, genTest:true, genThursday:true, genQalamS1:false, genQalamS2:false,
   broadcastAfter:true, delay:800, isRunning:false,
   authStatus:'checking', householdId:null, studioCardCount:0,
   heygenKey:'', heygenAvatars:{
@@ -220,133 +205,10 @@ var STATE = {
     ela:{avatarId:'',voiceId:'',lookId:''},writing:{avatarId:'',voiceId:'',lookId:''},
     social:{avatarId:'',voiceId:'',lookId:''},
   },
-  resumeMode:true,
-  grades: Array.from({length:13},function(_,i){return{label:i===0?'K':String(i),s1:Array(5).fill('idle'),s2:Array(5).fill('idle'),test:Array(5).fill('idle'),thu:'idle',qalamS1:Array(5).fill('idle'),qalamS2:Array(5).fill('idle'),qalamS3:Array(5).fill('idle'),heygen:Array(5).fill('idle'),status:'idle'};}),
+  grades: Array.from({length:13},function(_,i){return{label:i===0?'K':String(i),s1:Array(5).fill('idle'),s2:Array(5).fill('idle'),test:Array(5).fill('idle'),thu:'idle',qalamS1:Array(5).fill('idle'),qalamS2:Array(5).fill('idle'),heygen:Array(5).fill('idle'),status:'idle'};}),
   wedGrades:Array(13).fill('idle'), log:[], stats:{total:0,done:0,errors:0,startTime:null}
 };
 var sb=null, abortFlag=false;
-
-// ── PROGRESS PERSISTENCE ────────────────────────────────────────
-function progKey(){return 'how_batch_progress_w'+STATE.week;}
-
-var saveTimer=null;
-function saveProgress(){
-  if(saveTimer) return;
-  saveTimer=setTimeout(function(){
-    saveTimer=null;
-    try{
-      localStorage.setItem(progKey(), JSON.stringify({
-        week:STATE.week,
-        savedAt:new Date().toISOString(),
-        isRunning:STATE.isRunning,
-        stats:STATE.stats,
-        grades:STATE.grades.map(function(g){return{s1:g.s1,s2:g.s2,test:g.test,thu:g.thu,qalamS1:g.qalamS1,qalamS2:g.qalamS2,heygen:g.heygen,status:g.status};}),
-        wedGrades:STATE.wedGrades,
-        log:STATE.log.slice(0,120)
-      }));
-    }catch(e){}
-  }, 600);
-}
-
-function loadProgress(){
-  try{
-    var d=JSON.parse(localStorage.getItem(progKey())||'null');
-    if(!d||d.week!==STATE.week) return null;
-    d.grades.forEach(function(sg,gi){
-      var g=STATE.grades[gi]; if(!g) return;
-      ['s1','s2','test','qalamS1','qalamS2','heygen'].forEach(function(k){
-        if(Array.isArray(sg[k])) g[k]=sg[k].map(function(v){return v==='running'?'idle':v;});
-      });
-      g.thu = sg.thu==='running'?'idle':(sg.thu||'idle');
-      g.status = sg.status==='running'?'idle':(sg.status||'idle');
-    });
-    if(Array.isArray(d.wedGrades)) STATE.wedGrades=d.wedGrades.map(function(v){return v==='running'?'idle':v;});
-    if(Array.isArray(d.log)) STATE.log=d.log;
-    if(d.stats) STATE.stats=d.stats;
-    return d;
-  }catch(e){ return null; }
-}
-
-function clearProgress(){
-  try{localStorage.removeItem(progKey());}catch(e){}
-  STATE.grades.forEach(function(g){
-    g.s1=Array(5).fill('idle');g.s2=Array(5).fill('idle');g.test=Array(5).fill('idle');
-    g.thu='idle';g.qalamS1=Array(5).fill('idle');g.qalamS2=Array(5).fill('idle');
-    g.heygen=Array(5).fill('idle');g.status='idle';
-  });
-  STATE.wedGrades=Array(13).fill('idle');
-  STATE.log=[]; STATE.stats={total:0,done:0,errors:0,startTime:null};
-  for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-  updateLog(); updateProgress(); refreshWedBtns();
-  addLog('Progress cleared for Week '+STATE.week,'warn');
-}
-
-// Is this item already marked done in the grid?
-function alreadyDone(gi,field,si){
-  var g=STATE.grades[gi]; if(!g) return false;
-  return si===undefined ? g[field]==='done' : (g[field]||[])[si]==='done';
-}
-
-// ── SUPABASE EXISTENCE CHECK ────────────────────────────────────
-// Queries what already exists in the DB for a week, so a resume skips real
-// content rather than trusting the local grid.
-var EXISTS = null; // {lesson:Set('g|subj|session'), test:Set('g')}
-
-async function fetchExisting(week){
-  var hid=localStorage.getItem('how_household_id');
-  var out={lesson:new Set(), test:new Set()};
-  try{
-    var lr=await sb.from('lesson').select('grade,subject,session').eq('household_id',hid).eq('week',week);
-    if(lr.error) throw new Error(lr.error.message);
-    (lr.data||[]).forEach(function(r){out.lesson.add(r.grade+'|'+r.subject+'|'+r.session);});
-    var tr=await sb.from('test').select('grade,subjects').eq('household_id',hid).eq('week',week);
-    if(tr.error) throw new Error(tr.error.message);
-    (tr.data||[]).forEach(function(r){
-      var keys=r.subjects?Object.keys(r.subjects):[];
-      keys.forEach(function(k){out.test.add(r.grade+'|'+k);});
-    });
-  }catch(e){
-    addLog('Could not read existing content: '+e.message+' — falling back to local grid','warn');
-    return null;
-  }
-  return out;
-}
-
-// Does this item exist in the DB? Falls back to the grid if the query failed.
-function existsInDb(kind,g,key){
-  if(!EXISTS) return false;
-  if(kind==='lesson') return EXISTS.lesson.has(g+'|'+key.subj+'|'+key.session);
-  if(kind==='test')   return EXISTS.test.has(g+'|'+key.subj);
-  return false;
-}
-
-// Standalone scan — paints the grid to match what's actually in Supabase
-async function scanExisting(){
-  if(!sb){addLog('Not connected to Supabase','err');return;}
-  var week=STATE.week;
-  addLog('Scanning database for Week '+week+'…','start');
-  var ex=await fetchExisting(week);
-  if(!ex) return;
-  EXISTS=ex;
-  var LS=['math','science','ela','writing','social'];
-  var TS=['math','sci','ela','writing','ss'];
-  var found=0;
-  for(var gi=0;gi<13;gi++){
-    var g=STATE.grades[gi];
-    g.s1=g.s1.slice(); g.s2=g.s2.slice(); g.test=g.test.slice();
-    LS.forEach(function(s,si){
-      if(ex.lesson.has(gi+'|'+s+'|1')){g.s1[si]='done';found++;} else g.s1[si]='idle';
-      if(ex.lesson.has(gi+'|'+s+'|2')){g.s2[si]='done';found++;} else g.s2[si]='idle';
-    });
-    TS.forEach(function(s,si){
-      if(ex.test.has(gi+'|'+s)){g.test[si]='done';found++;} else g.test[si]='idle';
-    });
-    if(ex.lesson.has(gi+'|synthesis|3')){g.thu='done';found++;} else g.thu='idle';
-    updateGradeRow(gi);
-  }
-  saveProgress();
-  addLog('Scan complete — '+found+' items already in database for Week '+week,'done');
-}
 
 // ── DOM HELPERS ──────────────────────────────────────────────────────────────
 function qs(sel){return document.querySelector(sel);}
@@ -373,7 +235,6 @@ function updateGradeRow(gi){
   updateDot(thuId(gi),gr.thu,'done-reg');
   gr.qalamS1.forEach(function(st,si){updateDot(dotId('qs1',gi,si),st,'done-qalam');});
   gr.qalamS2.forEach(function(st,si){updateDot(dotId('qs2',gi,si),st,'done-qalam');});
-  gr.qalamS3.forEach(function(st,si){updateDot(dotId('qs3',gi,si),st,'done-s3');});
   gr.heygen.forEach(function(st,si){updateDot(dotId('hey',gi,si),st,'done-hey');});
   var sc=document.getElementById(statusId(gi));
   if(sc){sc.textContent={idle:'—',running:'Running…',done:'✓ Done',error:'⚠ Error'}[gr.status]||'—';sc.className='status-cell status-'+gr.status;}
@@ -384,7 +245,7 @@ function updateProgress(){
   var pct=t>0?Math.min(100,Math.round(d/t*100)):0;
   qs('#progress-inner').style.width=pct+'%';
   qs('#progress-inner').style.background=e>0?'#c8a96e':'#7c3aed';
-  var sl=t>0?(d+'/'+t+' items · '+e+' errors · '+pct+'%'):'Ready · '+(STATE.genS1?'S1 ':'')+(STATE.genS2?'S2 ':'')+(STATE.genTest?'Test ':'')+(STATE.genThursday?'Thu ':'')+(STATE.genQalamS1?'QS1 ':'')+(STATE.genQalamS2?'QS2 ':'')+(STATE.genQalamS3?'QS3 ':'')+'· 13 grades';
+  var sl=t>0?(d+'/'+t+' items · '+e+' errors · '+pct+'%'):'Ready · '+(STATE.genS1?'S1 ':'')+(STATE.genS2?'S2 ':'')+(STATE.genTest?'Test ':'')+(STATE.genThursday?'Thu ':'')+(STATE.genQalamS1?'QS1 ':'')+(STATE.genQalamS2?'QS2 ':'')+'· 13 grades';
   qs('#stats-label').textContent=sl;
   var eta='';
   if(STATE.isRunning&&s.startTime&&d>0){var el=(Date.now()-s.startTime)/1000;var rem=(t-d)*(el/d);eta=rem>60?'~'+Math.ceil(rem/60)+'min remaining':'~'+Math.round(rem)+'s remaining';}
@@ -432,7 +293,7 @@ function initGrid(){
     var thuDot=document.createElement('span'); thuDot.className='dot'; thuDot.id=thuId(gi); thuDot.style.width='12px'; thuDot.style.height='12px'; thuDot.title='Thu: idle';
     thuCell.appendChild(thuDot); row.appendChild(thuCell);
     // QalamS1 QalamS2 dots
-    ['qs1','qs2','qs3'].forEach(function(sess){
+    ['qs1','qs2'].forEach(function(sess){
       var cell=document.createElement('div'); cell.className='dots-cell';
       for(var si=0;si<5;si++){var d=document.createElement('span');d.className='dot';d.id=dotId(sess,gi,si);d.title=['Math','Sci','ELA','Writ','SS'][si]+' Qalam '+sess.slice(1).toUpperCase()+': idle';cell.appendChild(d);}
       row.appendChild(cell);
@@ -495,22 +356,7 @@ function initWeekSelect(){
     if(w===STATE.week) opt.selected=true;
     sel.appendChild(opt);
   }
-  sel.onchange=function(){
-    STATE.week=parseInt(this.value);
-    initMunGrid();
-    // Reset grid, then restore any saved progress for the newly selected week
-    STATE.grades.forEach(function(g){
-      g.s1=Array(5).fill('idle');g.s2=Array(5).fill('idle');g.test=Array(5).fill('idle');
-      g.thu='idle';g.qalamS1=Array(5).fill('idle');g.qalamS2=Array(5).fill('idle');
-      g.heygen=Array(5).fill('idle');g.status='idle';
-    });
-    STATE.wedGrades=Array(13).fill('idle');
-    STATE.log=[]; STATE.stats={total:0,done:0,errors:0,startTime:null};
-    var r=loadProgress();
-    for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-    refreshWedBtns(); updateLog(); updateProgress();
-    if(r){var d=r.stats||{};addLog('Week '+STATE.week+' — restored '+(d.done||0)+'/'+(d.total||0)+' from '+new Date(r.savedAt).toLocaleString(),'info');}
-  };
+  sel.onchange=function(){STATE.week=parseInt(this.value);initMunGrid();};
 }
 
 function setTab(id, btn){
@@ -524,12 +370,7 @@ function setTab(id, btn){
 function toggleGen(key, btnId){
   STATE[key]=!STATE[key];
   var btn=qs('#'+btnId);
-  if(key==='genQalamS3'){
-    btn.style.background=STATE[key]?'rgba(200,169,110,.25)':'none';
-    btn.style.color=STATE[key]?'#e6c98a':'#c8a96e';
-    btn.style.borderColor='#c8a96e';
-    btn.style.fontWeight=STATE[key]?'700':'600';
-  } else if(key==='genQalamS1'||key==='genQalamS2'){
+  if(key==='genQalamS1'||key==='genQalamS2'){
     btn.style.background=STATE[key]?'rgba(29,111,111,.3)':'none';
     btn.style.color=STATE[key]?'#2dd4bf':'#1d6f6f';
     btn.style.fontWeight=STATE[key]?'700':'600';
@@ -548,32 +389,27 @@ function setSubjStatus(gi,session,si,status){
   STATE.grades[gi][session]=STATE.grades[gi][session].slice();
   STATE.grades[gi][session][si]=status;
   updateGradeRow(gi);
-  saveProgress();
 }
-function setGradeStatus(gi,status){STATE.grades[gi].status=status;updateGradeRow(gi);saveProgress();}
-function setThuStatus(gi,status){STATE.grades[gi].thu=status;updateGradeRow(gi);saveProgress();}
+function setGradeStatus(gi,status){STATE.grades[gi].status=status;updateGradeRow(gi);}
+function setThuStatus(gi,status){STATE.grades[gi].thu=status;updateGradeRow(gi);}
 function setWedStatus(gi,status){
   STATE.wedGrades[gi]=status;
   var btn=qs('#wed-btn-'+gi);
   if(btn){var C={idle:'#4a4870',running:'#c8a96e',done:'#1d6f6f',error:'#c0392b'};btn.style.color=C[status]||C.idle;btn.style.borderColor=C[status]||C.idle;btn.textContent=(gi===0?'K':'G'+gi)+(status==='done'?' ✓':status==='error'?' ✗':'');}
-  saveProgress();
 }
-function refreshWedBtns(){for(var i=0;i<13;i++) setWedStatus(i, STATE.wedGrades[i]||'idle');}
 function setQalamStatus(gi,si,sess,status){
-  var key=sess===3?'qalamS3':(sess===1?'qalamS1':'qalamS2');
+  var key=sess===1?'qalamS1':'qalamS2';
   STATE.grades[gi][key]=STATE.grades[gi][key].slice();
   STATE.grades[gi][key][si]=status;
   updateGradeRow(gi);
-  saveProgress();
 }
 function setHeygenStatus(gi,si,status){
   STATE.grades[gi].heygen=STATE.grades[gi].heygen.slice();
   STATE.grades[gi].heygen[si]=status;
   updateGradeRow(gi);
-  saveProgress();
 }
-function bumpDone(){STATE.stats.done++;updateProgress();saveProgress();}
-function bumpError(){STATE.stats.errors++;updateProgress();saveProgress();}
+function bumpDone(){STATE.stats.done++;updateProgress();}
+function bumpError(){STATE.stats.errors++;updateProgress();}
 
 function addLog(msg,type){
   var t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
@@ -643,12 +479,11 @@ function getSysPrompt(s,sessionNum){
 
 function getDeckSchema(s){
   var b='{\n  "title":"string",\n  "objective":"string",\n  "slides":[\n    {"type":"title","heading":"...","objective":"...","juzTheme":"...","juzArabic":"..."},\n    {"type":"provocation","heading":"Opening Question","question":"The exact openingQ from context","parentNote":"Do not answer this yet."},\n';
-  var jTail='\n  ]\n}\n\nThe slides listed above are the slide TYPES available to you — NOT the full deck. Build the complete arc described in the instructions, repeating content / worked / activity / discussion types as many times as the arc requires.';
-  var j='    {"type":"juz","arabic":"Arabic text of the Name","name":"Name transliteration and meaning","story":"The story paragraph exactly as provided","reflection":"The carrying question exactly as provided"}\n  ]\n}\n\nThe slide list above shows slide TYPES available to you — it is not the full deck. Build the complete arc described in the instructions above, adding as many content / worked / activity / discussion slides as the arc calls for.';
-  if(s==='math') return b+'    {"type":"content","heading":"Concept","content":"3-5 full sentences, taught slowly","parentNote":"Tip"},\n    {"type":"worked","heading":"Worked Example 1","steps":["Step 1 — name the input","Step 2 — apply the rule","Step 3 — check the output","Step 4 — interpret what it means"],"parentNote":"Common error"},\n    {"type":"worked","heading":"Worked Example 2","steps":["Step 1","Step 2","Step 3","Step 4"],"parentNote":"Mastery looks like"},\n    {"type":"activity","heading":"Your Turn","question":"Practice problem","parentNote":"Expected answer"},\n    {"type":"content","heading":"Real-World Connection","content":"3-5 full sentences","scholarNote":"Islamic connection"},\n'+j;
+  var j='    {"type":"juz","arabic":"Arabic text of the Name","name":"Name transliteration and meaning","story":"The story paragraph exactly as provided","reflection":"The carrying question exactly as provided"}\n  ]\n}';
+  if(s==='math') return b+'    {"type":"content","heading":"Concept","content":"2-3 sentences","parentNote":"Tip"},\n    {"type":"worked","heading":"Worked Example 1","steps":["Step 1","Step 2","Step 3"],"parentNote":"Common error"},\n    {"type":"worked","heading":"Worked Example 2","steps":["Step 1","Step 2"],"parentNote":"Mastery looks like"},\n    {"type":"activity","heading":"Your Turn","question":"Practice problem","parentNote":"Expected answer"},\n    {"type":"content","heading":"Real-World Connection","content":"2 sentences","scholarNote":"Islamic connection"},\n'+j;
   if(s==='ela') return b+'    {"type":"content","heading":"Vocabulary","content":"4 words with definitions","parentNote":"Tip"},\n    {"type":"passage","heading":"The Text","passage":"Original 4-6 sentence Islamic passage","parentNote":"Reading notes"},\n    {"type":"discussion","heading":"First Read","question":"Literal question","parentNote":"Listen for"},\n    {"type":"discussion","heading":"Second Read","question":"Craft question","parentNote":"Tip"},\n    {"type":"discussion","heading":"Discussion","question":"Rich open question","parentNote":"Facilitate"},\n'+j;
   if(s==='writing') return b+'    {"type":"mentor","heading":"Mentor Text","passage":"Short 3-5 sentence exemplar","parentNote":"Notice"},\n    {"type":"content","heading":"Notice It","content":"What writer does","parentNote":"Tip"},\n    {"type":"content","heading":"Name the Technique","content":"Name and define","parentNote":"Tip"},\n    {"type":"activity","heading":"Your Turn","question":"Writing prompt","parentNote":"Strong attempt looks like"},\n    {"type":"content","heading":"Revision Focus","content":"One strategy","parentNote":"Revision language"},\n'+j;
-  if(s==='science') return b+'    {"type":"phenomenon","heading":"The Phenomenon","content":"Observable thing","question":"What do you observe?","parentNote":"Tip"},\n    {"type":"discussion","heading":"Our Question","question":"Investigation question","parentNote":"Tip"},\n    {"type":"content","heading":"The Science","content":"3-5 full sentences, taught slowly","scholarNote":"Islamic scholar","parentNote":"Misconception"},\n    {"type":"activity","heading":"Investigation","materials":["item1","item2"],"steps":["Step 1","Step 2","Step 3"],"parentNote":"Expected result"},\n    {"type":"content","heading":"What We Found","content":"Conclusion","parentNote":"Tip"},\n'+j;
+  if(s==='science') return b+'    {"type":"phenomenon","heading":"The Phenomenon","content":"Observable thing","question":"What do you observe?","parentNote":"Tip"},\n    {"type":"discussion","heading":"Our Question","question":"Investigation question","parentNote":"Tip"},\n    {"type":"content","heading":"The Science","content":"2-3 sentences","scholarNote":"Islamic scholar","parentNote":"Misconception"},\n    {"type":"activity","heading":"Investigation","materials":["item1","item2"],"steps":["Step 1","Step 2","Step 3"],"parentNote":"Expected result"},\n    {"type":"content","heading":"What We Found","content":"Conclusion","parentNote":"Tip"},\n'+j;
   return b+'    {"type":"content","heading":"Setting the Scene","content":"Context","parentNote":"Background"},\n    {"type":"source","heading":"The Story","passage":"3-5 sentence story","parentNote":"Grade notes"},\n    {"type":"content","heading":"Key People","content":"Who and role","scholarNote":"Islamic figure","parentNote":"Tip"},\n    {"type":"content","heading":"What and Why","content":"Events and causes","parentNote":"Tip"},\n    {"type":"discussion","heading":"Discussion","question":"Evidence-based question","parentNote":"Listen for"},\n'+j;
 }
 
@@ -675,23 +510,6 @@ function getTestSchema(subj,grade){
   return g68[subj]||g68.math;
 }
 
-var CAPTION_INSTR='Every slide also needs a "caption": one short sentence (under 14 words) summarizing what happens on that slide, written to the student. It appears under the heading.\n\n';
-
-var NARRATION_INSTR=[
-  'Every slide also needs a "narration": an array of 2-5 short spoken lines \u2014 what the teacher actually SAYS while this slide is up.',
-  'Write them as speech, not prose: one idea per line, contractions allowed, no stage directions, no "welcome back" filler.',
-  'The narration teaches the slide; it does not read the slide aloud word for word.',
-  'On activity slides, the last line should invite the pause: e.g. "Take a full minute before you check."',
-  '',''
-].join('\n');
-
-var QUIZ_INSTR=[
-  'On BOTH activity slides (Guided Practice and Your Turn) add an interactive check as a "quiz" key on that slide object:',
-  '"quiz": {"question":"the check question","options":["A","B","C","D"],"answer":0,"feedback":["why A is right or wrong","why B...","why C...","why D..."]}',
-  'The "answer" value is the 0-based index of the correct option. Every option needs feedback that explains the reasoning, not just correct/wrong.',
-  '',''
-].join('\n');
-
 function buildCtx(g,w,subj,sessionNum){
   var how=(HOW_CURR[g]||{})[w]||{};
   var juz=JUZ[w-1]||{};
@@ -715,7 +533,7 @@ function buildCtx(g,w,subj,sessionNum){
   ctx+='\n-- SESSION INSTRUCTIONS --\n';
   if(sessionNum===1){ctx+='COMPLETE, SELF-CONTAINED SESSION 1. Title slide = lesson topic (not opening question). Slide 2 = type:provocation, use opening question EXACTLY: \''+how.openingQ+'\'. Final slide = type:juz with arabic:'+(juz.arabic||juz.tr||'')+', name:'+(juz.tr||'')+' = '+(juz.meaning||'')+', story, carrying question.\n';}
   else{ctx+='COMPLETE, SELF-CONTAINED SESSION 2. Deepens — do not re-teach Session 1. Final slide = Juz reflection.';if(how.munazaraClaim) ctx+=' Munazara claim: \''+how.munazaraClaim+'\'. Reference naturally.';ctx+='\n';}
-  ctx+=CAPTION_INSTR+NARRATION_INSTR+(sessionNum===1?"Word problems: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha.\n\n── REQUIRED SLIDE ARC (12-14 slides — do NOT compress) ──\nThis deck must follow the full gradual-release teaching arc. A short deck is a failed deck.\n1.  title — the lesson topic\n2.  provocation — the opening question, verbatim\n3.  scholar intro — who the scholar is and what they made (type:content, scholarNote set)\n4.  content — the core concept, taught slowly with a concrete anchor\n5.  content — a second angle on the concept, or a common misconception named\n6.  worked — Worked Example 1, full numbered steps\n7.  worked — Worked Example 2, a different case, full numbered steps\n8.  activity — Guided Practice (\"We do together\") — same shape as the worked examples, but the student supplies the next move\n9.  activity — Your Turn (independent) — one full problem, no scaffolding\n10. content — Real-World Connection to the scholar's actual work (scholarNote required)\n11. discussion — one open question tying the concept to the week's overarching question\n12. content — Synthesis / exit ticket: the big idea in one sentence, in the student's own words\n13. juz — the Name of the week, exactly as provided\n\n"+QUIZ_INSTR+"Teach at an unhurried, pedagogical pace. Each content slide gets 3-5 full sentences, not one line. Worked examples get 3-5 real steps that show the thinking, not just the answer.\n":"Word problems: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha.\n\n── REQUIRED SLIDE ARC (11-13 slides — do NOT compress) ──\nSession 2 deepens. Do not re-teach Session 1. A short deck is a failed deck.\n1.  title — the deepening topic\n2.  content — \"What we already know\" in two sentences, then the harder question this session answers\n3.  content — the deeper concept, taught slowly\n4.  worked — Worked Example 1 at the harder level, full numbered steps\n5.  worked — Worked Example 2, a different case, full numbered steps\n6.  activity — Guided Practice (\"We do together\")\n7.  activity — Your Turn (independent), harder than Session 1\n8.  content — Real-World Connection to the scholar's actual work (scholarNote required)\n9.  discussion — Munazara prep: state the contestable claim and ask the student to defend or challenge it\n10. content — Synthesis / exit ticket\n11. juz — the Name of the week, exactly as provided\n\n"+QUIZ_INSTR+"Teach at an unhurried, pedagogical pace. Each content slide gets 3-5 full sentences. Worked examples get 3-5 real steps.\n");
+  ctx+='Word problems: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha.\nAim 5-8 slides. Keep concise.\n';
   return ctx;
 }
 
@@ -727,7 +545,7 @@ async function generateLesson(g,w,subj,sessionNum){
   var ctx=buildCtx(g,w,subj,sessionNum);
   var sys=getSysPrompt(subj,sessionNum)+'\n\nRespond with ONLY valid JSON. No markdown. No backticks.';
   var gp=getGradePrefix(g);
-  var dRaw=await callAPI(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(subj)+'\n\nReturn all 11-14 slides. JSON only.',16000);
+  var dRaw=await callAPI(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(subj)+'\n\nJSON only.');
   var deck=parseJSON(dRaw);
   var wRaw=await callAPI(sys,gp+'Generate the student workbook:\n\n'+ctx+'\nLesson: '+(deck.title||topic)+'\n\n'+getWBSchema(subj,g)+'\n\nJSON only — return object with single "workbook" key.');
   var wb=parseJSON(wRaw);
@@ -839,58 +657,18 @@ async function broadcast(){
 }
 
 async function runAll(){
-  var LS_PRE=['math','science','ela','writing','social'];
-  var TS_PRE=['math','sci','ela','writing','ss'];
-  // Resolve "is done" from the DB when available, else the local grid
-  function isDone(gi,field,si,key){
-    return EXISTS ? existsInDb('lesson',gi,key) : alreadyDone(gi,field,si);
-  }
-  function isDoneTest(gi,si,subj){
-    return EXISTS ? existsInDb('test',gi,{subj:subj}) : alreadyDone(gi,'test',si);
-  }
-  function isDoneThu(gi){
-    return EXISTS ? existsInDb('lesson',gi,{subj:'synthesis',session:3}) : alreadyDone(gi,'thu');
-  }
   var week=STATE.week;
-  if(!STATE.genS1&&!STATE.genS2&&!STATE.genTest&&!STATE.genThursday&&!STATE.genQalamS1&&!STATE.genQalamS2&&!STATE.genQalamS3){addLog('Select at least one thing to generate','warn');return;}
+  if(!STATE.genS1&&!STATE.genS2&&!STATE.genTest&&!STATE.genThursday&&!STATE.genQalamS1&&!STATE.genQalamS2){addLog('Select at least one thing to generate','warn');return;}
   if(!sb){addLog('Not connected to Supabase','err');return;}
   abortFlag=false;
-  var resume=STATE.resumeMode;
-  var total=13*((STATE.genS1?10:0)+(STATE.genS2?10:0)+(STATE.genTest?5:0)+(STATE.genThursday?1:0)+(STATE.genQalamS1?5:0)+(STATE.genQalamS2?5:0)+(STATE.genQalamS3?5:0));
+  var total=13*((STATE.genS1?10:0)+(STATE.genS2?10:0)+(STATE.genTest?5:0)+(STATE.genThursday?1:0)+(STATE.genQalamS1?5:0)+(STATE.genQalamS2?5:0));
   STATE.isRunning=true;
-  EXISTS=null;
-  if(resume){
-    addLog('Checking what already exists in Supabase…','start');
-    EXISTS=await fetchExisting(week);
-    var skipped=0;
-    for(var q=0;q<13;q++){
-      var gq=STATE.grades[q];
-      if(STATE.genS1) LS_PRE.forEach(function(s,si){if(isDone(q,'s1',si,{subj:s,session:1}))skipped+=2;});
-      if(STATE.genS2) LS_PRE.forEach(function(s,si){if(isDone(q,'s2',si,{subj:s,session:2}))skipped+=2;});
-      if(STATE.genTest) TS_PRE.forEach(function(s,si){if(isDoneTest(q,si,s))skipped++;});
-      if(STATE.genThursday&&isDoneThu(q)) skipped++;
-    }
-    STATE.stats={total:total,done:skipped,errors:0,startTime:Date.now()};
-    addLog('Resuming Week '+week+' — skipping '+skipped+' already-generated items'+(EXISTS?' (verified against database)':' (from local grid)'),'start');
-    // Reflect DB state in the grid so you can see what exists
-    if(EXISTS){
-      for(var q=0;q<13;q++){
-        LS_PRE.forEach(function(s,si){
-          if(existsInDb('lesson',q,{subj:s,session:1})) STATE.grades[q].s1[si]='done';
-          if(existsInDb('lesson',q,{subj:s,session:2})) STATE.grades[q].s2[si]='done';
-        });
-        TS_PRE.forEach(function(s,si){if(existsInDb('test',q,{subj:s})) STATE.grades[q].test[si]='done';});
-        if(existsInDb('lesson',q,{subj:'synthesis',session:3})) STATE.grades[q].thu='done';
-      }
-    }
-  } else {
-    STATE.stats={total:total,done:0,errors:0,startTime:Date.now()};
-    STATE.grades.forEach(function(gr){gr.s1=Array(5).fill('idle');gr.s2=Array(5).fill('idle');gr.test=Array(5).fill('idle');gr.thu='idle';gr.status='idle';});
-    STATE.log=[];
-    addLog('Week '+week+' — '+total+' items across 13 grades','start');
-  }
+  STATE.stats={total:total,done:0,errors:0,startTime:Date.now()};
+  STATE.grades.forEach(function(gr){gr.s1=Array(5).fill('idle');gr.s2=Array(5).fill('idle');gr.test=Array(5).fill('idle');gr.thu='idle';gr.status='idle';});
+  STATE.log=[];
   for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-  updateLog(); updateProgress(); saveProgress();
+  updateLog(); updateProgress();
+  addLog('Week '+week+' — '+total+' items across 13 grades','start');
   var LS=['math','science','ela','writing','social'];
   var TS=['math','sci','ela','writing','ss'];
   for(var gi=0;gi<13;gi++){
@@ -902,7 +680,6 @@ async function runAll(){
     if(STATE.genS1){
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(resume&&isDone(gi,'s1',si,{subj:LS[si],session:1})) continue;
         setSubjStatus(gi,'s1',si,'running');
         try{await generateLesson(g,week,LS[si],1);setSubjStatus(gi,'s1',si,'done');bumpDone();bumpDone();addLog(gl+' · S1 · '+LS[si]+' ✓','ok');}
         catch(e){setSubjStatus(gi,'s1',si,'error');errs++;bumpError();addLog(gl+' · S1 · '+LS[si]+' ✗ '+e.message,'err');}
@@ -912,7 +689,6 @@ async function runAll(){
     if(STATE.genS2){
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(resume&&isDone(gi,'s2',si,{subj:LS[si],session:2})) continue;
         setSubjStatus(gi,'s2',si,'running');
         try{await generateLesson(g,week,LS[si],2);setSubjStatus(gi,'s2',si,'done');bumpDone();bumpDone();addLog(gl+' · S2 · '+LS[si]+' ✓','ok');}
         catch(e){setSubjStatus(gi,'s2',si,'error');errs++;bumpError();addLog(gl+' · S2 · '+LS[si]+' ✗ '+e.message,'err');}
@@ -923,7 +699,6 @@ async function runAll(){
       var testSubjs={};
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(resume&&isDoneTest(gi,si,TS[si])) continue;
         setSubjStatus(gi,'test',si,'running');
         try{testSubjs[TS[si]]=await generateTestSubject(g,week,TS[si]);setSubjStatus(gi,'test',si,'done');bumpDone();addLog(gl+' · Test · '+TS[si]+' ✓','ok');}
         catch(e){setSubjStatus(gi,'test',si,'error');errs++;bumpError();addLog(gl+' · Test · '+TS[si]+' ✗ '+e.message,'err');}
@@ -933,12 +708,10 @@ async function runAll(){
     }
     if(STATE.genThursday){
       if(abortFlag) break;
-      if(!(resume&&isDoneThu(gi))){
       setThuStatus(gi,'running');
       try{await generateThursday(g,week);setThuStatus(gi,'done');bumpDone();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✓','ok');}
       catch(e){setThuStatus(gi,'error');errs++;bumpError();addLog((g===0?'K':'G'+g)+' · Thu Synthesis ✗ '+e.message,'err');}
       if(STATE.delay) await sleep(STATE.delay);
-      }
     }
     for(var qs=1;qs<=2;qs++){
       if(!(qs===1?STATE.genQalamS1:STATE.genQalamS2)) continue;
@@ -947,15 +720,6 @@ async function runAll(){
         setQalamStatus(gi,si,qs,'running');
         try{await generateAndExportSlides(g,week,LS[si],qs);setQalamStatus(gi,si,qs,'done');bumpDone();addLog(gl+' · Qalam S'+qs+' · '+LS[si]+' \u2713','ok');}
         catch(e){setQalamStatus(gi,si,qs,'error');errs++;bumpError();addLog(gl+' · Qalam S'+qs+' · '+LS[si]+' \u2717 '+e.message,'err');}
-        if(STATE.delay&&si<4) await sleep(STATE.delay);
-      }
-    }
-    if(STATE.genQalamS3){
-      for(var si=0;si<5;si++){
-        if(abortFlag) break;
-        setQalamStatus(gi,si,3,'running');
-        try{await generateAndExportS3(g,week,LS[si]);setQalamStatus(gi,si,3,'done');bumpDone();addLog(gl+' · Qalam S3 · '+LS[si]+' \u2713','ok');}
-        catch(e){setQalamStatus(gi,si,3,'error');errs++;bumpError();addLog(gl+' · Qalam S3 · '+LS[si]+' \u2717 '+e.message,'err');}
         if(STATE.delay&&si<4) await sleep(STATE.delay);
       }
     }
@@ -1009,14 +773,8 @@ async function submitOneHeygenVideo(gi,si,g,w,subjKey){
   if(cfg.voiceId) body.voice_id=cfg.voiceId;
   if(cfg.lookId) body.look_id=cfg.lookId;
   var r=await fetch('https://api.heygen.com/v3/video-agents',{method:'POST',headers:{'X-Api-Key':STATE.heygenKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
-  var raw=await r.text();
-  if(!r.ok){
-    var msg=raw;
-    try{var e=JSON.parse(raw);msg=(e.error&&(e.error.message||e.error.detail||e.error))||e.message||e.detail||raw;if(typeof msg==='object')msg=JSON.stringify(msg);}catch(_){}
-    addLog('Heygen '+r.status+' → '+String(msg).slice(0,400),'err');
-    throw new Error('Heygen API '+r.status+': '+String(msg).slice(0,160));
-  }
-  var d={};try{d=JSON.parse(raw);}catch(_){}
+  if(!r.ok) throw new Error('Heygen API '+r.status);
+  var d=await r.json();
   var vid=d.data&&d.data.video_id||d.video_id;
   if(!vid) throw new Error('No video_id returned');
   addLog((g===0?'K':'G'+g)+' '+subjKey+' submitted ('+vid.slice(0,8)+'…)','ok');
@@ -1025,95 +783,31 @@ async function submitOneHeygenVideo(gi,si,g,w,subjKey){
 
 async function runHeygenBatch(){
   if(!STATE.heygenKey){addLog('Set Heygen API key in the Heygen tab first','err');return;}
-  var ALL=['math','science','ela','writing','social'];
-  var gSel=qs('#slide-grade-sel'), sSel=qs('#slide-subj-sel');
-  var gradeScope=gSel?gSel.value:'all';
-  var subjScope=sSel?sSel.value:'all';
-  var grades=gradeScope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gradeScope)];
-  var subjIdx=subjScope==='all'?[0,1,2,3,4]:[ALL.indexOf(subjScope)];
-  var scopeLbl=(gradeScope==='all'?'all grades':(gradeScope==='0'?'Kindergarten':'Grade '+gradeScope))+' · '+(subjScope==='all'?'all subjects':subjScope);
-  addLog('Heygen video batch — Week '+STATE.week+' — '+scopeLbl+' ('+(grades.length*subjIdx.length)+' videos)','start');
-  for(var gk=0;gk<grades.length;gk++){
+  var SUBJS=['math','science','ela','writing','social'];
+  addLog('Heygen video batch — Week '+STATE.week+' — all grades','start');
+  for(var gi=0;gi<13;gi++){
     if(abortFlag) break;
-    var gi=grades[gk];
-    for(var sk=0;sk<subjIdx.length;sk++){
+    for(var si=0;si<5;si++){
       if(abortFlag) break;
-      var si=subjIdx[sk];
-      try{await submitOneHeygenVideo(gi,si,gi,STATE.week,ALL[si]);}
-      catch(e){setHeygenStatus(gi,si,'error');addLog((gi===0?'K':'G'+gi)+' '+ALL[si]+' ✗ '+e.message,'err');}
+      try{await submitOneHeygenVideo(gi,si,gi,STATE.week,SUBJS[si]);}
+      catch(e){setHeygenStatus(gi,si,'error');addLog((gi===0?'K':'G'+gi)+' '+SUBJS[si]+' ✗ '+e.message,'err');}
       await sleep(400);
     }
   }
   addLog('Heygen batch submitted — check your Heygen dashboard for video status','done');
 }
 
-function slidePhase(sl){
-  var t=(sl.type||'').toLowerCase(), h=(sl.heading||'').toLowerCase();
-  if(t==='title') return null;
-  if(t==='provocation'||t==='phenomenon') return {label:'Activate',color:'#6d6250'};
-  if(t==='juz') return {label:'Reflect',color:'#3d6644'};
-  if(t==='worked'||t==='mentor') return {label:'I do \u00b7 watch me',color:'#96601f'};
-  if(t==='passage'||t==='source') return {label:'Read',color:'#2d5c81'};
-  if(t==='discussion') return {label:'Discuss',color:'#2d5c81'};
-  if(t==='activity'){
-    if(/guided|together|we do/.test(h)) return {label:'We do \u00b7 together',color:'#584a86'};
-    return {label:'You do \u00b7 independent',color:'#9c4529'};
-  }
-  if(/synthesis|exit ticket|big idea/.test(h)) return {label:'Synthesis',color:'#6d6250'};
-  if(/real-world|connection/.test(h)) return {label:'Connect',color:'#3d6644'};
-  return {label:'I do \u00b7 watch me',color:'#96601f'};
-}
-
-function frontMatter(juz,how,subject){
-  var out=[];
-  out.push({_fm:1,kicker:'OPENING',type:'content',heading:'Before we begin',
-    content:'Hold this question as we work today \u2014 we will come back to it.',lead:how.openingQ||'',
-    narration:['Before we open the lesson, sit with one question.',how.openingQ||'',"Don't answer it yet. Just hold it."].filter(Boolean)});
-  out.push({_fm:1,kicker:'OVERARCHING QUESTION',type:'content',heading:juz.theme||'This week\u2019s thread',
-    content:juz.story||'',lead:juz.q||'',
-    narration:['This week every subject pulls on the same thread.',juz.theme||'',juz.q||''].filter(Boolean)});
-  if(how.scholar) out.push({_fm:1,kicker:'SCHOLAR OF THE WEEK',type:'content',heading:how.scholar,
-    content:'',lead:how.scholarDates||'',
-    narration:['Our scholar this week is '+how.scholar+'.','Watch for their work as the lesson goes on \u2014 it is not decoration, it is where this idea came from.']});
-  return out;
-}
-
 function renderSlideHTML(grade,subject,session,deck,juz,how){
-  var COLORS={Mathematics:'#1B2A4A',Science:'#1A3A2A','ELA / Reading':'#3A1A2A',Writing:'#2A2A3A','Social Studies':'#F5EBDD'};
-  var ACCENTS={Mathematics:'#F5C842',Science:'#3DD9C5','ELA / Reading':'#F5A0B0',Writing:'#B0A0F5','Social Studies':'#1B7A66'};
-  var LIGHT={'Social Studies':1};
+  var COLORS={Mathematics:'#1B2A4A',Science:'#1A3A2A','ELA / Reading':'#3A1A2A',Writing:'#2A2A3A','Social Studies':'#2A1F0A'};
+  var ACCENTS={Mathematics:'#F5C842',Science:'#3DD9C5','ELA / Reading':'#F5A0B0',Writing:'#B0A0F5','Social Studies':'#1FB997'};
   var bg=COLORS[subject]||'#1B2A4A', acc=ACCENTS[subject]||'#c8a96e';
-  var lt=!!LIGHT[subject];
-  var ink=lt?'#3A2A22':'#fff';
-  var sf=lt?'rgba(58,42,34,.05)':'rgba(255,255,255,.07)';
-  var sfH=lt?'rgba(58,42,34,.10)':'rgba(255,255,255,.14)';
-  var ln=lt?'rgba(58,42,34,.18)':'rgba(255,255,255,.2)';
-  var lnF=lt?'rgba(58,42,34,.12)':'rgba(255,255,255,.12)';
-  var barBg=lt?'rgba(58,42,34,.07)':'rgba(0,0,0,.35)';
-  var narrBg=lt?'rgba(255,255,255,.88)':'rgba(0,0,0,.5)';
-  var opCap=lt?'.82':'.62', opNote=lt?'.78':'.55', opNum=lt?'.62':'.40';
-  var slides=(deck.slides||[]).slice();
-  var sessNum=parseInt(String(session).replace(/\D/g,''))||1;
-  if(sessNum===1) slides=frontMatter(juz,how,subject).concat(slides);
+  var slides=deck.slides||[];
   var slideHtml=slides.map(function(sl,i){
     var body=sl.content||sl.question||sl.passage||sl.story||'';
     var steps=sl.steps?'<ol>'+sl.steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol>':'';
-    var quiz='';
-    if(sl.quiz&&sl.quiz.options&&sl.quiz.options.length){
-      var q=sl.quiz;
-      quiz='<div class="quiz" data-a="'+(q.answer||0)+'"><div class="qq">'+(q.question||body)+'</div><div class="qo">'+
-        q.options.map(function(o,oi){return '<button class="qb" data-i="'+oi+'" data-fb="'+String(q.feedback&&q.feedback[oi]||'').replace(/"/g,'&quot;')+'">'+o+'</button>';}).join('')+
-        '</div><div class="qf"></div></div>';
-      body='';
-    }
-    var ph=sl._fm?null:slidePhase(sl);
-    var tag=sl._fm?'<div class="kick">'+sl.kicker+'</div>':(ph?'<div class="phase" style="background:'+ph.color+'">'+ph.label+'</div>':'');
-    var lead=sl.lead?'<div class="lead">'+sl.lead+'</div>':'';
-    var cap=sl.caption?'<div class="cap">'+sl.caption+'</div>':'';
-    var narr=(sl.narration&&sl.narration.length)?'<div class="narr"><div class="narr-h">SCRIPT</div>'+sl.narration.map(function(n){return '<div class="narr-l">'+n+'</div>';}).join('')+'</div>':'';
-    return '<div class="slide'+(sl._fm?' fm':'')+'" id="s'+i+'"><div class="sn">'+(i+1)+'/'+slides.length+'</div>'+tag+'<h2>'+(sl.heading||sl.type||'')+'</h2>'+cap+lead+(body?'<p>'+body+'</p>':'')+steps+quiz+(sl.parentNote?'<div class="pn">\ud83d\udc64 '+sl.parentNote+'</div>':'')+narr+'</div>';
+    return '<div class="slide" id="s'+i+'"><div class="sn">'+(i+1)+'/'+slides.length+'</div><h2>'+(sl.heading||sl.type||'')+'</h2>'+(body?'<p>'+body+'</p>':'')+steps+(sl.parentNote?'<div class="pn">\ud83d\udc64 '+sl.parentNote+'</div>':'')+'</div>';
   }).join('');
-  return '<!DOCTYPE html><html><head><meta charset=utf-8><title>'+grade+' \xb7 '+subject+' \xb7 Session '+session+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:'+bg+';color:'+ink+';font-family:Georgia,serif;height:100vh;overflow:hidden}.slide{display:none;height:100vh;padding:60px 80px;flex-direction:column;justify-content:center;position:relative}.slide.active{display:flex}.sn{position:absolute;top:18px;right:24px;font-size:12px;opacity:'+opNum+'}h2{font-size:34px;line-height:1.2;color:'+acc+';margin-bottom:18px}p{font-size:21px;line-height:1.65;max-width:880px}ol{font-size:19px;line-height:1.8;max-width:880px;padding-left:22px}.quiz{margin-top:20px;max-width:880px}.qq{font-size:20px;line-height:1.5;margin-bottom:16px}.qo{display:flex;flex-direction:column;gap:9px}.qb{text-align:left;background:'+sf+';border:1px solid '+ln+';color:'+ink+';padding:13px 17px;border-radius:11px;cursor:pointer;font-size:17px;font-family:inherit;transition:all .15s}.qb:hover:not(.locked){background:'+sfH+'}.qb.ok{background:rgba(45,212,191,.22);border-color:#2dd4bf}.qb.no{background:rgba(248,113,113,.18);border-color:#f87171}.qf{margin-top:13px;font-size:16px;line-height:1.6;opacity:0;transition:opacity .25s}.qf.on{opacity:.85}.narr{display:none;position:fixed;right:22px;bottom:74px;width:330px;max-height:52vh;overflow-y:auto;background:'+narrBg+';border:1px solid '+ln+';border-radius:13px;padding:14px 16px;font-family:system-ui,sans-serif}body.script .slide.active .narr{display:block}.narr-h{font-size:10px;font-weight:700;letter-spacing:.15em;opacity:.5;margin-bottom:9px}.narr-l{font-size:14px;line-height:1.55;opacity:.88;margin-bottom:8px;padding-left:11px;border-left:2px solid '+acc+'}.phase{display:inline-block;align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#fff;padding:5px 13px;border-radius:99px;margin-bottom:15px;font-family:system-ui,sans-serif}.kick{font-size:13px;font-weight:700;letter-spacing:.16em;color:'+acc+';margin-bottom:16px;font-family:system-ui,sans-serif}.cap{font-size:17px;line-height:1.5;opacity:'+opCap+';margin:-8px 0 18px;max-width:820px;font-style:italic}.lead{font-size:26px;line-height:1.45;max-width:860px;margin-bottom:16px;color:'+acc+'}.slide.fm{justify-content:center}.slide.fm h2{font-size:44px;max-width:900px}.pn{margin-top:18px;font-size:14px;opacity:'+opNote+';font-style:italic;border-top:1px solid '+lnF+';padding-top:10px}.bar{position:fixed;top:0;left:0;right:0;height:46px;background:'+barBg+';display:flex;align-items:center;padding:0 22px;font-size:12px;opacity:.65;gap:8px}.nav{position:fixed;bottom:20px;right:22px;display:flex;gap:8px}.nav button{background:'+sf+';border:1px solid '+ln+';color:'+ink+';padding:7px 18px;border-radius:18px;cursor:pointer;font-size:13px}</style></head><body><div class=bar><span style="color:'+acc+'">'+grade+'</span><span style="opacity:.4">\xb7</span>'+subject+'<span style="opacity:.4">\xb7</span>Session '+session+'<span style="opacity:.4">\xb7</span>'+(how.scholar||'')+'</div>'+slideHtml+'<div class=nav><button onclick="document.body.classList.toggle(\'script\')" title="Toggle teacher script (N)">\u2261</button><button onclick="prev()">\u2190</button><button onclick="next()">\u2192</button></div><script>var c=0,ss=document.querySelectorAll(".slide");function show(n){ss.forEach(function(s,i){s.classList.toggle("active",i===n);});}function next(){if(c<ss.length-1){c++;show(c);}}function prev(){if(c>0){c--;show(c);}}document.querySelectorAll(".quiz").forEach(function(q){var ans=parseInt(q.dataset.a)||0,fb=q.querySelector(".qf");q.querySelectorAll(".qb").forEach(function(b){b.onclick=function(){if(b.classList.contains("locked"))return;var i=parseInt(b.dataset.i),right=i===ans;b.classList.add(right?"ok":"no");if(right){q.querySelectorAll(".qb").forEach(function(x){x.classList.add("locked");});}fb.textContent=(right?"\u2713 ":"\u2717 ")+(b.dataset.fb||(right?"Correct.":"Not quite \u2014 try again."));fb.className="qf on";};});});document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")next();if(e.key==="ArrowLeft")prev();if(e.key==="n"||e.key==="N")document.body.classList.toggle("script");});show(0);<\/script></body></html>';
+  return '<!DOCTYPE html><html><head><meta charset=utf-8><title>'+grade+' \xb7 '+subject+' \xb7 Session '+session+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:'+bg+';color:#fff;font-family:Georgia,serif;height:100vh;overflow:hidden}.slide{display:none;height:100vh;padding:60px 80px;flex-direction:column;justify-content:center;position:relative}.slide.active{display:flex}.sn{position:absolute;top:18px;right:24px;font-size:12px;opacity:.4}h2{font-size:34px;line-height:1.2;color:'+acc+';margin-bottom:18px}p{font-size:21px;line-height:1.65;max-width:880px}ol{font-size:19px;line-height:1.8;max-width:880px;padding-left:22px}.pn{margin-top:18px;font-size:14px;opacity:.55;font-style:italic;border-top:1px solid rgba(255,255,255,.12);padding-top:10px}.bar{position:fixed;top:0;left:0;right:0;height:46px;background:rgba(0,0,0,.35);display:flex;align-items:center;padding:0 22px;font-size:12px;opacity:.65;gap:8px}.nav{position:fixed;bottom:20px;right:22px;display:flex;gap:8px}.nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;padding:7px 18px;border-radius:18px;cursor:pointer;font-size:13px}</style></head><body><div class=bar><span style="color:'+acc+'">'+grade+'</span><span style="opacity:.4">\xb7</span>'+subject+'<span style="opacity:.4">\xb7</span>Session '+session+'<span style="opacity:.4">\xb7</span>'+(how.scholar||'')+'</div>'+slideHtml+'<div class=nav><button onclick="prev()">\u2190</button><button onclick="next()">\u2192</button></div><script>var c=0,ss=document.querySelectorAll(".slide");function show(n){ss.forEach(function(s,i){s.classList.toggle("active",i===n);});}function next(){if(c<ss.length-1){c++;show(c);}}function prev(){if(c>0){c--;show(c);}}document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")next();if(e.key==="ArrowLeft")prev();});show(0);<\/script></body></html>';
 }
 
 async function generateAndExportSlides(g,w,subjKey,sessionNum,collectOnly){
@@ -1135,157 +829,6 @@ async function generateAndExportSlides(g,w,subjKey,sessionNum,collectOnly){
   return {name:fname,html:html};
 }
 
-
-// ── QALAM SESSION 3 — interactive activity rounds ────────────────────────────
-var _s3Engine=null;
-async function s3EngineSrc(){
-  if(_s3Engine) return _s3Engine;
-  var r=await fetch('session3-engine.js');
-  if(!r.ok) throw new Error('session3-engine.js not found — deploy it alongside this file');
-  _s3Engine=await r.text();
-  return _s3Engine;
-}
-
-function s3Prompt(g,w,subjKey,s1Text,s2Text){
-  var how=(HOW_CURR[g]||{})[w]||{};
-  var juz=JUZ[w-1]||{};
-  var gl=g===0?'Kindergarten':'Grade '+g;
-  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
-  var scholar=how.scholar||'the scholar of the week';
-  var upper=g>=6;
-  var head='Generate a 3-round interactive matching activity for '+gl+' '+LABELS[subjKey]+'.\n\n'+
-    'SCHOLAR OF THE WEEK: '+scholar+' — every round must reference '+scholar+' specifically, by name, using their actual work. Do NOT substitute any other scholar.\n'+
-    "OVERARCHING QUESTION: "+(how.openingQ||'')+'\n'+
-    'JUZ THEME: '+(juz.theme||'')+'\n\n'+
-    'SESSION 1 CONTENT:\n'+String(s1Text||'').substring(0,900)+'\n\n'+
-    'SESSION 2 CONTENT:\n'+String(s2Text||'').substring(0,900)+'\n\n'+
-    'The activity must test the ACTUAL concepts from Sessions 1 and 2 above — not generic subject content.\n\n';
-  if(upper){
-    return head+'Activity type: INPUT\u2192OUTPUT MATCHING (grades 6-12)\n'+
-      'Each round: a "rule" sentence describing the relationship using '+scholar+"'s work as the concrete example, 4 input-output pairs drawn directly from the lesson, and an explanation of why the pairs demonstrate the concept.\n"+
-      'Rounds escalate in difficulty: Round 1 recall, Round 2 application, Round 3 transfer to a new case.\n\n'+
-      'Return ONLY valid JSON:\n{\n  "rounds": [\n    {\n      "title": "Round 1: [short concept title]",\n'+
-      '      "rule": "[The rule, referencing '+scholar+" specifically]\",\n"+
-      '      "scholarQuote": "[2 sentences on '+scholar+"'s specific contribution, tied to this round]\",\n"+
-      '      "pairs": [{"input":"...","output":"..."},{"input":"...","output":"..."},{"input":"...","output":"..."},{"input":"...","output":"..."}],\n'+
-      '      "explanation": "[Why these pairs show the lesson concept. 2 sentences.]"\n    }\n  ]\n}\nExactly 3 rounds.';
-  }
-  return head+'Activity type: SIMPLE MATCHING (grades K-5)\n'+
-    'Each round: 3 input-output pairs in simple concrete language, 2 distractors per pair, and '+scholar+"'s story told simply.\n"+
-    'Rounds escalate gently in difficulty.\n\n'+
-    'Return ONLY valid JSON:\n{\n  "rounds": [\n    {\n      "title": "Round 1: [short title]",\n'+
-    '      "rule": "[Simple sentence a child understands, naming '+scholar+"]\",\n"+
-    '      "scholarQuote": "[1-2 simple sentences about '+scholar+" for kids]\",\n"+
-    '      "pairs": [{"input":"...","correct":"...","distractors":["...","..."]},{"input":"...","correct":"...","distractors":["...","..."]},{"input":"...","correct":"...","distractors":["...","..."]}],\n'+
-    '      "explanation": "[Simple explanation. 1 sentence.]"\n    }\n  ]\n}\nExactly 3 rounds.';
-}
-
-async function fetchSessionText(g,w,subjKey,sessionNum){
-  try{
-    var r=await sb.from('lesson').select('slides').eq('household_id',localStorage.getItem('how_household_id'))
-      .eq('grade',g).eq('week',w).eq('subject',subjKey).eq('session',sessionNum).maybeSingle();
-    if(r.data&&r.data.slides) return r.data.slides.map(function(sl){
-      return [sl.heading,sl.content,sl.question,sl.passage,(sl.steps||[]).join(' ')].filter(Boolean).join(' ');
-    }).join(' ');
-  }catch(e){}
-  var how=(HOW_CURR[g]||{})[w]||{};
-  var HK={math:'math',science:'sci',ela:'ela',writing:'writing',social:'ss'};
-  return how[HK[subjKey]]||'';
-}
-
-function buildS3Html(engineSrc,data,gl,subjLabel){
-  var dj=JSON.stringify(data).replace(/</g,'\\u003c');
-  return '<!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">'+
-    '<title>'+gl+' \u00b7 '+subjLabel+' \u00b7 Session 3</title></head><body>'+
-    '<header><span>'+gl+' \u00b7 '+subjLabel+' \u00b7 Session 3</span><span class=badge id=sb>0 / 0</span></header>'+
-    '<main id=app></main>'+
-    '<script type="application/json" id="__d">'+dj+'<\/script>'+
-    '<script>'+engineSrc+'<\/script></body></html>';
-}
-
-async function generateAndExportS3(g,w,subjKey,collectOnly){
-  var how=(HOW_CURR[g]||{})[w]||{};
-  var juz=JUZ[w-1]||{};
-  var gl=g===0?'Kindergarten':'Grade '+g;
-  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
-  var scholar=how.scholar||'';
-  var engine=await s3EngineSrc();
-  var s1=await fetchSessionText(g,w,subjKey,1);
-  var s2=await fetchSessionText(g,w,subjKey,2);
-  var sys='You generate interactive synthesis activities for a K-12 Islamic education platform. US customary units, US spelling. Return ONLY valid JSON, no markdown.';
-  var raw=await callAPI(sys,s3Prompt(g,w,subjKey,s1,s2),8000);
-  var parsed=parseJSON(raw);
-  var rounds=parsed.rounds||[];
-  if(rounds.length<3) throw new Error('Only '+rounds.length+' rounds returned');
-  rounds=rounds.map(function(r){
-    return Object.assign({},r,{
-      rule: r.rule&&scholar&&r.rule.indexOf(scholar)>=0?r.rule:(scholar?scholar+' used this: '+(r.rule||''):r.rule),
-      scholarQuote: r.scholarQuote&&scholar&&r.scholarQuote.indexOf(scholar)>=0?r.scholarQuote:(scholar?scholar+': '+(r.scholarQuote||''):r.scholarQuote)
-    });
-  });
-  var data={grade:gl,subject:LABELS[subjKey],sn:scholar,sd:how.scholarDates||'',tq:how.openingQ||juz.q||'',upper:g>=6,rounds:rounds};
-  var html=buildS3Html(engine,data,gl,LABELS[subjKey]);
-  var fname=(g===0?'K':'Grade_'+g)+'_'+LABELS[subjKey].replace(/ \//g,'').replace(/ /g,'_')+'_Session_3.html';
-  if(!collectOnly){
-    var blob=new Blob([html],{type:'text/html'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a'); a.href=url; a.download=fname; a.click(); URL.revokeObjectURL(url);
-  }
-  return {name:fname,html:html};
-}
-
-
-// ── Export Thursday Synthesis / Wednesday Review as Qalam decks ──────────────
-async function exportSupabaseDeck(g,w,subject,sessionNum,label,collectOnly){
-  var r=await sb.from('lesson').select('title,objective,slides')
-    .eq('household_id',localStorage.getItem('how_household_id'))
-    .eq('grade',g).eq('week',w).eq('subject',subject).eq('session',sessionNum).maybeSingle();
-  if(!r.data||!r.data.slides||!r.data.slides.length) throw new Error('not generated yet');
-  var how=(HOW_CURR[g]||{})[w]||{};
-  var juz=JUZ[w-1]||{};
-  var gl=g===0?'Kindergarten':'Grade '+g;
-  var html=renderSlideHTML(gl,label,label,{title:r.data.title,objective:r.data.objective,slides:r.data.slides},juz,how);
-  var fname=(g===0?'K':'Grade_'+g)+'_'+label.replace(/ /g,'_')+'_Week'+w+'.html';
-  if(!collectOnly){
-    var blob=new Blob([html],{type:'text/html'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a'); a.href=url; a.download=fname; a.click(); URL.revokeObjectURL(url);
-  }
-  return {name:fname,html:html};
-}
-
-async function runDeckExport(kind,asZip){
-  var w=STATE.week;
-  var cfg=kind==='thursday'
-    ? {subject:'synthesis',session:3,label:'Thursday Synthesis'}
-    : {subject:'review',   session:4,label:'Wednesday Review'};
-  var gSel=qs('#slide-grade-sel');
-  var scope=gSel?gSel.value:'all';
-  var grades=scope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(scope)];
-  var zip=asZip&&typeof JSZip!=='undefined'?new JSZip():null;
-  abortFlag=false;
-  addLog(cfg.label+' export \u2014 Week '+w+' \u2014 '+grades.length+' grade(s)'+(zip?' \u2192 ZIP':''),'start');
-  var count=0,errs=0;
-  for(var k=0;k<grades.length;k++){
-    if(abortFlag) break;
-    var gi=grades[k], gl=gi===0?'K':'G'+gi;
-    try{
-      var out=await exportSupabaseDeck(gi,w,cfg.subject,cfg.session,cfg.label,!!zip);
-      if(zip) zip.file(out.name,out.html);
-      count++; addLog(gl+' '+cfg.label+' \u2713','ok');
-    }catch(e){errs++;addLog(gl+' '+cfg.label+' \u2717 '+e.message,'err');}
-    await sleep(120);
-  }
-  if(zip&&count>0){
-    var blob=await zip.generateAsync({type:'blob'});
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');
-    a.href=url; a.download=cfg.label.replace(/ /g,'_')+'_Week'+w+'.zip'; a.click();
-    URL.revokeObjectURL(url);
-  }
-  addLog(cfg.label+' export done \u2014 '+count+' decks, '+errs+' errors.',errs?'warn':'done');
-}
-
 async function runSlideGenBatch(asZip){
   var week=STATE.week;
   var ALL=['math','science','ela','writing','social'];
@@ -1295,7 +838,7 @@ async function runSlideGenBatch(asZip){
   var sessScope=sesSel?sesSel.value:'all';
   var grades=gradeScope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gradeScope)];
   var subjs=subjScope==='all'?ALL:[subjScope];
-  var sessions=sessScope==='all'?[1,2]:(sessScope==='123'?[1,2,3]:[parseInt(sessScope)]);
+  var sessions=sessScope==='all'?[1,2]:[parseInt(sessScope)];
   var zip=asZip&&typeof JSZip!=='undefined'?new JSZip():null;
   if(asZip&&!zip){addLog('ZIP library unavailable — falling back to individual downloads','warn');}
   abortFlag=false;
@@ -1311,8 +854,7 @@ async function runSlideGenBatch(asZip){
         var sess=sessions[n];
         setQalamStatus(gi,si,sess,'running');
         try{
-          var out=sess===3?await generateAndExportS3(gi,week,subjs[m],!!zip)
-                              :await generateAndExportSlides(gi,week,subjs[m],sess,!!zip);
+          var out=await generateAndExportSlides(gi,week,subjs[m],sess,!!zip);
           if(zip) zip.file(out.name,out.html);
           setQalamStatus(gi,si,sess,'done'); count++;
           addLog(gl+' '+subjs[m]+' S'+sess+' \u2713','ok');
@@ -1363,14 +905,6 @@ window.addEventListener('DOMContentLoaded', function(){
   // Studio cards
   var sc=loadStudioCards();
   if(sc>0) qs('#studio-btn').textContent='📥 Studio Cards ('+sc+')';
-  // Restore saved progress for this week
-  var restored=loadProgress();
-  if(restored){
-    for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-    refreshWedBtns(); updateLog();
-    var d=restored.stats||{};
-    addLog('Restored progress from '+new Date(restored.savedAt).toLocaleString()+' — '+(d.done||0)+'/'+(d.total||0)+' done','info');
-  }
   updateProgress();
 });
 </script>
