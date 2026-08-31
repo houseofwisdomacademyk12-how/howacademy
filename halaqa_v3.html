@@ -177,7 +177,7 @@ try{
     if(_jwt && _ref){
       await sb.auth.setSession({access_token:_jwt, refresh_token:_ref});
     } else if(_jwt){
-      // No refresh token available — use JWT as-is without setSession
+      await sb.auth.setSession({access_token:_jwt, refresh_token:_jwt});
     }
   }catch(e){ console.warn('Halaqa: session restore failed:', e.message); }
 })();
@@ -549,7 +549,7 @@ function initLobby(){
     try{
       var _ents=JSON.parse(localStorage.getItem('sahifa_entries')||'[]');
       var _sun=_ents.find(function(e){
-        return (e.type==='sunday'||e.type==='pre'||e.type==='opening')&&(!e.grade||parseInt(e.grade)===_effectiveGrade);
+        return (e.type==='sunday'||e.type==='pre')&&(!e.grade||parseInt(e.grade)===_effectiveGrade);
       });
       if(_sun&&_sun.text) G.preAnswer=_sun.text.slice(0,300);
     }catch(e){}
@@ -565,11 +565,11 @@ function joinSession(){
   G.apiKey=''; // Using Railway proxy — no API key needed
   G.grade=parseInt((document.getElementById('lb-grade')||{}).value||'7')||7;
   G.band=G.grade<=2?'k2':G.grade<=5?'35':G.grade<=8?'68':'912';
+  G.juz=(function(){try{return parseInt(JSON.parse(localStorage.getItem('sahifa_settings')||'{}').juz)||1;}catch(e){return 1;}})();
+  G.scholar=(function(){try{return JSON.parse(localStorage.getItem('sahifa_settings')||'{}').scholar||'';}catch(e){return '';}})();
 
   // Current week — used to validate session and question data against the right week
   var _sesJuz=(function(){try{return parseInt(JSON.parse(localStorage.getItem('sahifa_settings')||'{}').juz)||1;}catch(e){return 1;}})();
-  G.juz=_sesJuz;
-  G.scholar=(function(){try{return JSON.parse(localStorage.getItem('sahifa_settings')||'{}').scholar||'';}catch(e){return '';}})();
 
   _liveMode = (selRoleVal==='facilitator'&&_facMode==='create') ||
               (selRoleVal==='student'&&_studentMode==='live');
@@ -747,7 +747,7 @@ async function _buildLiveParticipants(){
           return '['+G.name+' · '+e.type+' · '+e.entry_date+']: '+e.text;
         }).join('\n\n');
         // Also grab pre-answer
-        var pre=sRes.data.find(function(e){return e.type==='sunday'||e.type==='pre'||e.type==='opening';});
+        var pre=sRes.data.find(function(e){return e.type==='sunday'||e.type==='pre';});
         if(pre&&!G.preAnswer) G.preAnswer=pre.text.slice(0,300);
       }
     }catch(e){ console.warn('Sahifa pull for halaqa failed:',e); }
@@ -850,6 +850,54 @@ function setPhase(ph){
 }
 
 // ── AI FACILITATOR ────────────────────────────────────────────────
+function buildSys(){
+  const ctx=G.sahifaCtx?'\n\nSahifa context:\n'+G.sahifaCtx.slice(0,700):'';
+  const scholarLine=G.scholar?'\nScholar this week: '+G.scholar+'.':'';
+  const juzLine=G.juz?'\nJuz/Week: '+G.juz+'.':'';
+  const elapsedMins=G.sessionStart?Math.floor((Date.now()-G.sessionStart)/60000):0;
+  const timeGuidance=elapsedMins>=45?'\n[Time: FINAL MINUTES — close warmly, name what the circle built.]'
+    :elapsedMins>=40?'\n[Time: begin closing — name what emerged before ending.]'
+    :elapsedMins>=30?'\n[Time: move toward synthesis — what has the circle discovered together?]'
+    :elapsedMins>=20?'\n[Time: deepen — look for connections between what has been said.]':'';
+  const timeTurns='\nElapsed: '+elapsedMins+' min. Phase: '+G.phase+'. Turns: '+G.turnCount+'.'+timeGuidance;
+  // Define _circleMembers for ALL bands
+  var _peerNames=G.participants.filter(function(p){return p.role==='peer'||p.role==='facilitator';}).map(function(p){return p.n;});
+  var _circleMembers='Students in this circle: '+[G.name].concat(_peerNames).join(', ')+'. Only name these students — do not invent others.\n';
+  var weekCtx='Opening question: "'+G.question+'" ('+G.theme+').'+scholarLine+juzLine;
+  if(G.band==='k2'){
+  return 'You are running a halaqa circle for children aged 5-7.\n'
+      +'Circle members: '+_circleMembers
+      +'Opening question: "'+G.question+'" ('+G.theme+')\n\n'
+      +'CRITICAL: Every word must be one a 5-year-old knows. No abstract concepts. Maximum 2 sentences. End with one simple open question — "What do you think?" or "Did you ever see something like that?" or "Why do you think that happens?" — never a binary yes/no choice.\n'
+      +'Rules: draw out ideas, never lecture, no empty praise.'+timeTurns+ctx;
+  }
+  if(G.band==='35'){
+    return 'You are running a halaqa circle for students aged 8-11 (Grades 3-5).\n'
+      +'Circle members: '+_circleMembers
+      +'Opening question: "'+G.question+'" ('+G.theme+')\n\n'
+      +'CRITICAL: Everyday language only. No philosophical jargon. No words like "ontological","originary","particularity". Use concrete examples children know.\n'
+      +'Maximum 3 sentences. One simple open question at end.\n'
+      +'Rules: draw out ideas, name students by name, complicate when group agrees too fast, never lecture, no empty praise.\n'
+      +'Phase: '+G.phase+'; Turns: '+G.turnCount+ctx;
+  }
+  if(G.band==='68'){
+    return 'You are the AI facilitator of a halaqa for students aged 11-14 (Grades 6-8).\n'
+      +'Circle members: '+_circleMembers
+      +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
+      +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
+      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently. If a student argues to prove they are right rather than to understand what is true, redirect: "Is the question asking who is right, or what is actually true here?"\n'
+      +timeTurns+'\n'
+      +(G.turnCount>8?'Move toward synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices.');
+  }
+  return 'You are the AI facilitator of a halaqa for students aged 14-18 (Grades 9-12).\n'
+    +'Circle members: '+_circleMembers
+    +'Opening question: "'+G.question+'" ('+G.theme+')'+ctx+'\n'
+    +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\n\n'
+    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n10. Truth-seeking: if a student argues to win rather than understand, name it — "The question is not who is right. What do you actually think is true?"\n'
+    +'Phase: '+G.phase+'; Turns: '+G.turnCount+'\n'
+    +timeTurns+'\n'
+    +(G.turnCount>8?'Begin synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices — do not converge yet.');
+}
 
 async function aiOpen(){
   setSt('الحلقة','typing');
@@ -865,7 +913,7 @@ Open the circle by:
 
 Tone: scholarly, warm, unhurried. 4–5 sentences maximum.`;
   const r=await callAI([{role:'user',content:prompt}],prompt);
-  setSt('الحلقة','on');addAI(r);setPhase('inquiry');
+  if(r){ setSt('الحلقة','on');addAI(r);setPhase('inquiry'); }
 }
 
 async function aiRespond(who,text){
@@ -884,58 +932,13 @@ async function aiRespond(who,text){
       addSys('The circle is closing. '+(G.role==='facilitator'?'Click ✓ End &amp; save when ready.':'The facilitator will close the circle shortly.'));
     },2000);
   }
-  addAI(r);G.aiThinking=false;
+  if(r){ addAI(r); } G.aiThinking=false;
   if(!_liveMode && G.role!=='facilitator' && G.phase!=='close' && G.phase!=='ended'){
     setTimeout(showPeerPanel,400);
   }
 }
 
-// ── System prompt builder — restored + enhanced with scholar, juz, elapsed time ─
-function buildSys(){
-  const ctx=G.sahifaCtx?'\n\nSahifa context:\n'+G.sahifaCtx.slice(0,700):'';
-  const scholarLine=G.scholar?'\nScholar this week: '+G.scholar+'.':'';
-  const juzLine=G.juz?'\nJuz / week: '+G.juz+'.':'';
-  const elapsedMins=G.sessionStart?Math.floor((Date.now()-G.sessionStart)/60000):0;
-  const timeLine='\nElapsed: '+elapsedMins+' min. Phase: '+G.phase+'. Turns: '+G.turnCount+'.';
-  const timeGuidance=elapsedMins>=45?'\nTime: FINAL MINUTES — close warmly, name what the circle built.'
-    :elapsedMins>=40?'\nTime: Begin closing — name what emerged before ending.'
-    :elapsedMins>=30?'\nTime: Move toward synthesis — what has the circle discovered together?'
-    :elapsedMins>=20?'\nTime: Deepen — look for connections between what has been said.'
-    :'';
-  var _peerNames=G.participants.filter(function(p){return p.role==='peer'||p.role==='facilitator';}).map(function(p){return p.n;});
-  var _circleMembers='Students in this circle: '+[G.name].concat(_peerNames).join(', ')+'. Only name these students — do not invent others.\n';
-  const weekCtx='Opening question: "'+G.question+'" ('+G.theme+').'+scholarLine+juzLine;
-  if(G.band==='k2'){
-    return 'You are running a halaqa circle for children aged 5-7.\n'
-      +_circleMembers+weekCtx+'\n\n'
-      +'CRITICAL: Every word must be one a 5-year-old knows. No abstract concepts. Maximum 2 sentences. End with one simple open question — never a binary yes/no choice.\n'
-      +'Rules: draw out ideas, never lecture, no empty praise.'+timeLine+ctx;
-  }
-  if(G.band==='35'){
-    return 'You are running a halaqa circle for students aged 8-11 (Grades 3-5).\n'
-      +_circleMembers+weekCtx+'\n\n'
-      +'CRITICAL: Everyday language only. No philosophical jargon. Use concrete examples children know.\n'
-      +'Maximum 3 sentences. One simple open question at end.\n'
-      +'Rules: draw out ideas, name students by name, complicate when group agrees too fast, never lecture, no empty praise.\n'
-      +timeLine+timeGuidance+ctx;
-  }
-  if(G.band==='68'){
-    return 'You are the AI facilitator of a halaqa for students aged 11-14 (Grades 6-8).\n'
-      +_circleMembers+weekCtx+ctx+'\n'
-      +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\"\n\n'
-      +'Rules: draw out thinking, name students, connect ideas, complicate when group converges, pass circle to quiet voices, never lecture, no empty praise. Maximum 3 sentences, one question at end. If contemptuous language appears, redirect gently.\n'
-      +timeLine+timeGuidance+'\n'
-      +(G.turnCount>8?'Move toward synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices.');
-  }
-  return 'You are the AI facilitator of a halaqa for students aged 14-18 (Grades 9-12).\n'
-    +_circleMembers+weekCtx+ctx+'\n'
-    +'Pre-session answer from '+G.name+': "'+(G.preAnswer||'not provided')+'\"\n\n'
-    +'Rules:\n1. Draw out — ask questions, never answer\n2. Name thinking by student name\n3. Connect different students ideas\n4. Complicate when group converges\n5. Pass circle to quiet voices\n6. Never lecture\n7. No empty praise\n8. Maximum 4 sentences, one question at end\n9. If wrong: ask a question that reveals the problem\n10. Truth-seeking: if a student argues to win rather than understand, name it\n'
-    +timeLine+timeGuidance+'\n'
-    +(G.turnCount>8?'Begin synthesis.':G.turnCount>4?'Deepen — introduce a complication.':'Draw out more voices — do not converge yet.');
-}
-
-// ── JWT helper — always reads current token from localStorage ─────────────────
+// ── JWT helper ────────────────────────────────────────────────────────────────
 function getFreshJwt() {
   return localStorage.getItem('how_jwt') || null;
 }
@@ -947,16 +950,52 @@ async function callAI(msgs,sys){
     const r=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:280,system:sys,messages:msgs.slice(-10)})});
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message||'API error');
+    if(!r.ok) throw new Error('HTTP '+r.status+' from proxy');
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
     return d.content?.[0]?.text||'…';
   }catch(e){
     console.warn('callAI failed:',e.message);
-    addSys('⚠ Could not reach the AI — check your connection and try again. ('+ e.message +')');
+    addSys('⚠ Could not reach the AI ('+e.message+'). Check connection or re-open from the platform.');
     return null;
   }
 }
 
+let peerIdx=0;
+async function simSpecificPeer(peerName){
+  const p=G.participants.find(function(x){return x.n===peerName;});
+  if(!p) return;
+  if(G.phase==='close'||G.phase==='ended') return;
+  if(G.aiThinking){
+    // Keep retrying with backoff until facilitator finishes
+    setTimeout(function(){simSpecificPeer(peerName);},1500+Math.random()*1000);
+    return;
+  }
+  const hist=G.messages.filter(function(m){return m.t==='student'||m.t==='ai';}).slice(-6).map(function(m){return{role:m.t==='ai'?'assistant':'user',content:m.n+': '+m.txt};});
+  var _ns=' Never use asterisks, stage directions, or physical actions like *looks at* or *turns to*. Just speak.';
+  const bandInstr=G.band==='k2'?'You are a 5-7 year old child. 3-6 words per sentence. One simple concrete thing.'+_ns:
+    G.band==='35'?'You are an 8-11 year old. Simple sentences. 1-2 sentences max.'+_ns:
+    G.band==='68'?'You are an 11-14 year old. Think aloud, 1-2 sentences.'+_ns:
+    'You are a 14-18 year old student. Thoughtful, 1-2 sentences.'+_ns;
+  const peerSys='You are '+peerName+', a student in a halaqa who has just been called on directly by name. '
+    +bandInstr+' The facilitator is waiting for YOUR answer specifically. Respond directly. '
+    +'Opening question: "'+G.question+'". Never use asterisks, stage directions, or physical actions like *looks at* or *turns to*. Just speak plainly. Never say you are an AI.';
+  setSt(peerName,'typing');
+  showHalaqaTyping(peerName,'thinking');
+  await delay(getSimDelay(2000,3000));
+  showHalaqaTyping(peerName,'typing');
+  let resp='';
+  try{
+    resp=await callAI([...hist,{role:'user',content:'('+peerName+' has been called on directly — they must respond)'}],peerSys);
+  }catch(e){}
+  await delay(getSimDelay(1500,2000));
+  hideHalaqaTyping();
+  setSt(peerName,'on');
+  if(resp){
+    _peerSpeakCount[peerName]=(_peerSpeakCount[peerName]||0)+1;
+    addStudent(peerName,resp,'peer');
+    setTimeout(function(){aiRespond(peerName,resp);},1000+Math.random()*600);
+  }
+}
 
 // Did the facilitator's most recent message ask the circle to pause/quiet down?
 // If so, peers structurally stay silent until the facilitator says something else.
@@ -990,11 +1029,10 @@ async function simPeer(){
     G.band==='35'?'You are an 8-11 year old. Simple sentences. 1-2 sentences max.':
     G.band==='68'?'You are an 11-14 year old. Think aloud, 1-2 sentences.':
     'You are a 14-18 year old student. Thoughtful, 1-2 sentences.';
-  const _peerWeekCtx=(G.scholar?' This week\'s scholar is '+G.scholar+'.':'')
-      +(G.theme?' The theme is: '+G.theme+'.':'')
-      +(G.juz?' (Week/Juz '+G.juz+')':'');
+  const _peerWeekCtx=(G.scholar?' Scholar this week: '+G.scholar+'.':'')
+    +(G.theme?' Theme: '+G.theme+'.':'')+(G.juz?' (Week '+G.juz+')':'');
   const peerSys='You are '+p.n+', a student in a halaqa. '+bandInstr
-    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'".'+_peerWeekCtx+' RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. (5) The facilitator leads the circle: if their most recent message asks anyone to pause, stop, wait, or give someone else a turn, you have NOTHING to add — respond with silence by writing only \'…\'. (6) If you have already pushed back on an idea once, do not push back on it again — listen or build instead. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
+    +' '+(PEER_CHARS[p.n]?PEER_CHARS[p.n].chr+' ':'')+'Opening question: "'+G.question+'".'+_peerWeekCtx+'. RULES OF ENGAGEMENT — strictly follow: (1) Never use contemptuous, insulting or dismissive language — no words like dumb, wrong, coward, stupid, obvious. (2) Disagree respectfully: say \'I see it differently because\' not \'that is wrong\'. (3) Build on what was said before. (4) One short contribution — do not dominate. (5) The facilitator leads the circle: if their most recent message asks anyone to pause, stop, wait, or give someone else a turn, you have NOTHING to add — respond with silence by writing only \'…\'. (6) If you have already pushed back on an idea once, do not push back on it again — listen or build instead. Contribute genuinely. Never say you are an AI. Never use asterisks or stage directions like *fidgets* or *raises hand* — just speak.';
 
   // Show thinking indicator
   setSt(p.n,'typing');
@@ -1044,6 +1082,7 @@ function hideHalaqaTyping(){
 
 // ── MESSAGES ──────────────────────────────────────────────────────
 function addAI(text){
+  if(!text) return;
   G.messages.push({t:'ai',n:'الحلقة',txt:text});
   const c=document.getElementById('mc-msgs');
   const d=document.createElement('div');d.className='msg';
@@ -1104,7 +1143,7 @@ function raiseHand(){
       (async function(){
       if(!G.aiThinking){setSt('الحلقة','typing');await delay(600);
         const r=await callAI([{role:'user',content:`${G.name} has raised their hand and wants to speak. Acknowledge them and invite them to share.`}],buildSys());
-        setSt('الحلقة','on');addAI(r);}}
+        if(r){ setSt('الحلقة','on');addAI(r); }}}
       )();
     },800);
   } else {
@@ -1438,7 +1477,7 @@ function endLiveSession(){
 
 async function endHalaqaSession(){
   if(!G.messages||!G.messages.length){toast('No messages to save');return;}
-  toast('Generating summary…');
+  toast('Saving session…');
   // Generate a brief AI summary
   var summary='';
   try{
@@ -1471,29 +1510,22 @@ async function endHalaqaSession(){
   transcripts.unshift(entry);
   if(transcripts.length>20) transcripts=transcripts.slice(0,20);
   S_hq.s('transcripts',transcripts);
-  // Save to Supabase — live session or authenticated solo session
+  // Save to Supabase if live session
   if(_liveMode && _sessionId){
     saveSessionToSupabase(entry);
   } else {
-    // Solo session — push directly if JWT present
-    var _jwt = getFreshJwt();
-    var _hid = localStorage.getItem('how_household_id');
-    if(_jwt && _hid && typeof sb !== 'undefined' && sb){
+    var _jwt=getFreshJwt(); var _hid=localStorage.getItem('how_household_id');
+    if(_jwt && _hid && typeof sb!=='undefined' && sb){
       try{
         sb.from('halaqa_transcript').insert({
-          session_id:    null,
-          household_id:  _hid,
-          question:      entry.question||'',
-          theme:         entry.theme||'',
-          student_name:  entry.name||G.name||'',
-          grade:         entry.grade||G.grade||7,
-          summary:       entry.summary||'',
-          messages:      entry.messages||[],
-          turns:         entry.turns||0,
-          duration_min:  entry.duration||0,
-          saved_at:      new Date().toISOString()
+          session_id:null, household_id:_hid,
+          question:entry.question||'', theme:entry.theme||'',
+          student_name:entry.name||G.name||'', grade:entry.grade||G.grade||7,
+          summary:entry.summary||'', messages:entry.messages||[],
+          turns:entry.turns||0, duration_min:entry.duration||0,
+          saved_at:new Date().toISOString()
         });
-      }catch(e){ console.warn('Halaqa solo sync failed:',e); }
+      }catch(e){ console.warn('Solo halaqa sync failed:',e); }
     }
   }
   endLiveSession();

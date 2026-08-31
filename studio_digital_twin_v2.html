@@ -55,7 +55,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--in
 .sd-math{background:#534AB7} .sd-sky{background:#0F6E56}
 .sd-eng{background:#854F0B} .sd-med{background:#185FA5}
 .sd-hum{background:#712B13}
-.sd-map{background:#8B6914} .sd-cal{background:#1A5C5C} .sd-nat{background:#2D5A1B}
 
 /* STUDIO PILL */
 .studio-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid;font-weight:500}
@@ -195,81 +194,6 @@ textarea.field{resize:vertical}
 .dot-pulse span{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:dp 1.2s ease-in-out infinite}
 .dot-pulse span:nth-child(2){animation-delay:.2s}.dot-pulse span:nth-child(3){animation-delay:.4s}
 @keyframes dp{0%,80%,100%{opacity:.2}40%{opacity:1}}
-
-/* ═══════════════════════════════════════════════════
-   STUDIO DIGITAL TWIN — MOBILE RESPONSIVE
-   ═══════════════════════════════════════════════════ */
-@media(max-width:767px){
-  /* Top nav — collapse tabs */
-  .topnav{ padding:0 12px; height:48px; gap:0; overflow-x:auto; }
-  .nav-tab{ font-size:12px; padding:0 10px; white-space:nowrap; }
-  .nav-right{ gap:6px; }
-
-  /* Body — single column */
-  .body-wrap{
-    grid-template-columns: 1fr !important;
-    min-height: calc(100vh - 48px);
-  }
-
-  /* Sidebar — horizontal scrolling strip at top */
-  .sidebar{
-    position: static;
-    height: auto;
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0;
-    border-right: none;
-    border-bottom: 1px solid var(--ink-5);
-  }
-  .sb-btn{
-    white-space: nowrap;
-    padding: 10px 12px;
-    font-size: 12px;
-    min-height: 44px;
-    border-right: 1px solid var(--ink-5);
-  }
-  .sb-divider{ display:none; }
-
-  /* Main content */
-  .main{ padding:16px 14px; max-width:100%; }
-  .page-title{ font-size:20px; }
-  .page-sub{ font-size:12px; }
-
-  /* Project detail — stack two columns */
-  .detail-grid{
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Cards */
-  .p-title{ font-size:13px; }
-  .p-summary{ font-size:12px; }
-  .p-footer{ flex-wrap:wrap; }
-
-  /* Record steps — scroll horizontally */
-  .rec-steps{ overflow-x:auto; }
-
-  /* Modal */
-  .modal-overlay .modal,
-  [class*="modal"]{
-    width: calc(100vw - 24px) !important;
-    max-width: none !important;
-  }
-
-  /* Buttons */
-  .btn-row{ gap:6px; }
-  button:not(.nav-tab):not(.sb-btn){ min-height:40px; }
-
-  /* Inputs */
-  input, textarea, select{ font-size:14px !important; }
-}
-
-@media(min-width:768px) and (max-width:1024px){
-  .body-wrap{ grid-template-columns:200px 1fr; }
-  .main{ padding:20px 20px; max-width:100%; }
-  .detail-grid{ grid-template-columns:1fr 280px; }
-}
 </style>
 </head>
 <body>
@@ -317,18 +241,6 @@ textarea.field{resize:vertical}
       <button class="sb-btn" data-filter="hum" onclick="filterStudio(this)">
         <span class="studio-dot sd-hum"></span>Philosophy / Translation
         <span class="sb-chip" id="chip-hum">1</span>
-      </button>
-      <button class="sb-btn" data-filter="map" onclick="filterStudio(this)">
-        <span class="studio-dot sd-map"></span>Cartography / Geography
-        <span class="sb-chip" id="chip-map">0</span>
-      </button>
-      <button class="sb-btn" data-filter="cal" onclick="filterStudio(this)">
-        <span class="studio-dot sd-cal"></span>Calligraphy / Illumination
-        <span class="sb-chip" id="chip-cal">0</span>
-      </button>
-      <button class="sb-btn" data-filter="nat" onclick="filterStudio(this)">
-        <span class="studio-dot sd-nat"></span>Natural History / Observation
-        <span class="sb-chip" id="chip-nat">0</span>
       </button>
     </div>
     <div class="sb-divider"></div>
@@ -533,9 +445,6 @@ function updateChips(){
   document.getElementById('chip-med').textContent=all.filter(p=>p.studio==='med').length;
   document.getElementById('chip-math').textContent=all.filter(p=>p.studio==='math').length;
   document.getElementById('chip-hum').textContent=all.filter(p=>p.studio==='hum').length;
-  if(document.getElementById('chip-map')) document.getElementById('chip-map').textContent=all.filter(p=>p.studio==='map').length;
-  if(document.getElementById('chip-cal')) document.getElementById('chip-cal').textContent=all.filter(p=>p.studio==='cal').length;
-  if(document.getElementById('chip-nat')) document.getElementById('chip-nat').textContent=all.filter(p=>p.studio==='nat').length;
   document.getElementById('chip-mine').textContent=getProjects().length;
 }
 
@@ -836,10 +745,12 @@ async function projectMurshid(title,openQ){
     },600);
     return;
   }
+  const _stJwt=localStorage.getItem('how_jwt');
+  if(!_stJwt) return;
   try{
     const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_stJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:150,
         system:'You are the Murshid. A student is viewing a peer\'s documented studio project. Ask them one precise question that connects this project to their own curriculum work or sahifa. Be brief — two sentences maximum. Never give information — only ask.',
         messages:[{role:'user',content:`I am looking at a studio project: "${title}". ${openQ?`It has an open question: "${openQ.slice(0,100)}"`:''}`}]})
@@ -852,7 +763,7 @@ async function projectMurshid(title,openQ){
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// BUILD-ON VERIFICATION — Tuesday 13:00 studio channel
+// BUILD-ON VERIFICATION — Sunday open studio + Thursday finishing
 // Any real contribution to a PEER's project (annotation, answered question,
 // new question, build-on) is onward transmission — mutābaʿah — and seals a
 // `transmission_verification` row (kind:'buildon'): owner → contributor.
@@ -1106,8 +1017,6 @@ function docStep1(c){
     ['eng','Civil & water engineering'],['sky','Observatory / Optics & light'],
     ['med','Pharmacopoeia / Anatomy & surgery'],['math','Algebra atelier / Cipher lab'],
     ['hum','Philosophy & reason / Translation'],
-    ['map','Cartography / Geography'],['cal','Calligraphy / Illumination'],
-    ['nat','Natural History / Observation'],
   ];
   c.innerHTML=`
   <div class="section-card">

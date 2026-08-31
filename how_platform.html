@@ -451,6 +451,7 @@ body.how-admin .how-admin-grid{display:grid!important;}
 .bhal{background:var(--tl);border:1px solid #5DCAA5;color:var(--teal)}.bhal::before{background:var(--teal)}
 .bcor{background:white;border:1px solid var(--ink5);color:var(--ink3)}.bcor::before{background:var(--ink5)}
 .bstua{background:#3d2868;border:1px solid #2a1c4a;color:white}.bstua::before{background:white}.bstua .tb-tag{background:rgba(255,255,255,.18)}
+.bpe{background:#0d1f2d;border:1px solid #1a6b8a;color:#b8dde8}
 .bpeer{background:var(--gp);border:1px solid var(--gline);color:#7a5010}.bpeer::before{background:var(--gold)}
 .bsah{background:var(--pl);border:1px solid #CE93D8;color:var(--purple)}.bsah::before{background:#9c27b0}
 .bMUH{background:#1a0a2e;border:1px solid #5c2a8e;color:#e0b8f5}.bMUH::before{background:var(--sacredline)}
@@ -1177,6 +1178,97 @@ body.how-admin .how-admin-grid{display:grid!important;}
 .how-collapse-btn svg{width:14px;height:14px;transition:transform .25s}
 .how-input-wrap.collapsed .how-collapse-btn svg{transform:rotate(180deg)}
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   PLATFORM — MOBILE RESPONSIVE  (max-width: 600px)
+   ═══════════════════════════════════════════════════════════════════ */
+@media(max-width:600px){
+
+  /* ── Layout ──────────────────────────────────────────────────── */
+  .how-main{ min-width:0; }
+
+  /* ── Schedule timeline ───────────────────────────────────────── */
+  .timeline{ padding-left:0; }
+  .trow{ flex-direction:column; gap:2px; margin-bottom:8px; }
+  .ttime{ width:auto; margin-left:0; text-align:left; padding:0 0 2px 0;
+          font-size:11px !important; }
+  .ttime-clock{ font-size:11px !important; }
+  .tblock{ margin-left:0; border-radius:8px; padding:8px 10px; }
+  .tb-title{ font-size:13px !important; }
+  .tb-sub{ font-size:11px !important; }
+  .tb-tag{ font-size:10px !important; }
+  .tb-done{ font-size:10px !important; }
+
+  /* ── Curriculum layout ───────────────────────────────────────── */
+  .curr-layout{ grid-template-columns:1fr; min-height:auto; }
+  .curr-sidebar{ border-right:none; border-bottom:1px solid var(--ink5);
+                 max-height:160px; overflow-y:auto; }
+  .curr-sidebar-label{ font-size:10px !important; }
+  .week-btn{ width:28px; height:26px; font-size:10px !important; }
+  .cwv-week{ font-size:10px !important; }
+  .grade-btn .seeded,
+  .grade-btn .unseeded{ font-size:10px !important; }
+  .curr-week-view{ padding:12px; }
+
+  /* ── Dashboard grid ──────────────────────────────────────────── */
+  .dash-grid{ grid-template-columns:1fr !important; }
+  .dash-juz-label{ font-size:10px !important; }
+  .dash-sec-label{ font-size:10px !important; }
+
+  /* ── Deck slides / lesson generator ─────────────────────────── */
+  .deck-slide{ padding:14px !important; }
+  .lg-root{ padding:10px !important; }
+
+  /* ── Juz tracker / calendar ──────────────────────────────────── */
+  .jtb-pill{ font-size:10px !important; }
+  .jtb-surahs{ font-size:10px !important; }
+  .ac-wk{ font-size:10px !important; }
+  .ac-cal-hdr{ font-size:10px !important; }
+  .ac-day{ font-size:10px !important; }
+  .ac-greg{ font-size:10px !important; }
+  .ac-hij{ font-size:10px !important; }
+
+  /* ── Buttons — minimum 44px tap target ──────────────────────── */
+  .btn, button:not(.week-btn):not(.grade-btn):not(.tb-done){
+    min-height:44px; padding-left:14px; padding-right:14px;
+  }
+
+  /* ── Sidebar nav labels — already hidden at 768px, keep hidden ─ */
+  .sb-sec-label{ font-size:10px !important; }
+  .sb-nav-badge{ font-size:10px !important; }
+
+  /* ── Tool grid ───────────────────────────────────────────────── */
+  .tool-grid{ grid-template-columns:1fr !important; }
+  .tc{ padding:12px; }
+
+  /* ── Reports / workbooks ─────────────────────────────────────── */
+  .rpt-modal{ width:calc(100vw - 24px) !important; max-height:90vh !important; }
+  .wb-page{ padding:16px !important; }
+
+  /* ── Modals ──────────────────────────────────────────────────── */
+  .modal, [class*="-modal"]{
+    width:calc(100vw - 24px) !important;
+    max-width:none !important;
+    margin:12px auto !important;
+  }
+
+  /* ── Narration / tooltips ────────────────────────────────────── */
+  .tt-nat{ font-size:10px !important; }
+  .tt-clock{ font-size:10px !important; }
+  .tt-desc{ font-size:10px !important; }
+  .nab-moment{ font-size:10px !important; }
+  .nab-desc{ font-size:10px !important; }
+  .nd-juz{ font-size:10px !important; }
+  .nd-section-label{ font-size:10px !important; }
+}
+
+/* ── Tablet: 601–767px ───────────────────────────────────────────── */
+@media(min-width:601px) and (max-width:767px){
+  .curr-layout{ grid-template-columns:160px 1fr; }
+  .timeline{ padding-left:80px; }
+  .ttime{ width:72px; margin-left:-80px; font-size:11px !important; }
+  .dash-grid{ grid-template-columns:1fr 1fr !important; }
+}
 </style>
 <style id="lg-styles">
 /* Lesson Generator */
@@ -2582,6 +2674,9 @@ async function renderHomeDashboard(){
       '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:24px 0 10px">Reports</div>' +
       reportsHtml +
 
+      '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">My Teachings</div>' +
+      '<div id="my-teachings-section">' + _buildMyTeachingsHTML() + '</div>' +
+
       '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">Quick access</div>' +
       '<div class="dash-cards">' +
         '<div class="dash-card" onclick="' + navTo('schedule') + '">' +
@@ -2637,6 +2732,9 @@ async function renderHomeDashboard(){
     (students.length ?
       '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:18px 0 10px">Students</div>' +
       studentRowsHtml : '') +
+
+    '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">My Teachings</div>' +
+    '<div id="my-teachings-section">' + _buildMyTeachingsHTML() + '</div>' +
 
     '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:' + (students.length?'0':'18px') + ' 0 10px">Quick actions</div>' +
     '<div class="dash-cards">' +
@@ -3217,6 +3315,191 @@ function buildCurriculumFromHOW(){
 }
 // CURRICULUM built lazily on first selectGrade call, after HOW_CURR is normalized
 var CURRICULUM = null;
+var PE_CURR = {
+  1: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Creation & beginnings",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Creation & beginnings",
+    pe3: "U1 Intro to Fitness: Push & Pull — Creation & beginnings",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Creation & beginnings",
+  },
+  2: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Signs & patterns",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Signs & patterns",
+    pe3: "U1 Intro to Fitness: Push & Pull — Signs & patterns",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Signs & patterns",
+  },
+  3: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Structure & foundation",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Structure & foundation",
+    pe3: "U1 Intro to Fitness: Push & Pull — Structure & foundation",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Structure & foundation",
+  },
+  4: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Division & distribution",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Division & distribution",
+    pe3: "U1 Intro to Fitness: Push & Pull — Division & distribution",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Division & distribution",
+  },
+  5: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Measurement & proportion",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Measurement & proportion",
+    pe3: "U1 Intro to Fitness: Push & Pull — Measurement & proportion",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Measurement & proportion",
+  },
+  6: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Knowledge & trust",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Knowledge & trust",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Knowledge & trust",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Knowledge & trust",
+  },
+  7: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Inquiry & observation",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Inquiry & observation",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Inquiry & observation",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Inquiry & observation",
+  },
+  8: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Circles & proportion",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Circles & proportion",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Circles & proportion",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Circles & proportion",
+  },
+  9: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Living systems",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Living systems",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Living systems",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Living systems",
+  },
+  10: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Change & time",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Change & time",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Change & time",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Change & time",
+  },
+  11: {
+    pe1: "U3 Sports & Fitness: Field Sports — Language & transmission",
+    pe2: "U3 Sports & Fitness: Court Sports — Language & transmission",
+    pe3: "U3 Sports & Fitness: Target Sports — Language & transmission",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Language & transmission",
+  },
+  12: {
+    pe1: "U3 Sports & Fitness: Field Sports — Order & structure",
+    pe2: "U3 Sports & Fitness: Court Sports — Order & structure",
+    pe3: "U3 Sports & Fitness: Target Sports — Order & structure",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Order & structure",
+  },
+  13: {
+    pe1: "U3 Sports & Fitness: Field Sports — Wisdom & revelation",
+    pe2: "U3 Sports & Fitness: Court Sports — Wisdom & revelation",
+    pe3: "U3 Sports & Fitness: Target Sports — Wisdom & revelation",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Wisdom & revelation",
+  },
+  14: {
+    pe1: "U3 Sports & Fitness: Field Sports — Balance & equilibrium",
+    pe2: "U3 Sports & Fitness: Court Sports — Balance & equilibrium",
+    pe3: "U3 Sports & Fitness: Target Sports — Balance & equilibrium",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Balance & equilibrium",
+  },
+  15: {
+    pe1: "U3 Sports & Fitness: Field Sports — Communication & clarity",
+    pe2: "U3 Sports & Fitness: Court Sports — Communication & clarity",
+    pe3: "U3 Sports & Fitness: Target Sports — Communication & clarity",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Communication & clarity",
+  },
+  16: {
+    pe1: "U4 Warming Up: Why We Warm Up — Cycles & repetition",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Cycles & repetition",
+    pe3: "U4 Warming Up: Core Warm-Up — Cycles & repetition",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Cycles & repetition",
+  },
+  17: {
+    pe1: "U4 Warming Up: Why We Warm Up — Islamic scholarship",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Islamic scholarship",
+    pe3: "U4 Warming Up: Core Warm-Up — Islamic scholarship",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Islamic scholarship",
+  },
+  18: {
+    pe1: "U4 Warming Up: Why We Warm Up — Precision & accuracy",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Precision & accuracy",
+    pe3: "U4 Warming Up: Core Warm-Up — Precision & accuracy",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Precision & accuracy",
+  },
+  19: {
+    pe1: "U4 Warming Up: Why We Warm Up — US Civil War & Reconstruction",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — US Civil War & Reconstruction",
+    pe3: "U4 Warming Up: Core Warm-Up — US Civil War & Reconstruction",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — US Civil War & Reconstruction",
+  },
+  20: {
+    pe1: "U4 Warming Up: Why We Warm Up — Force & motion",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Force & motion",
+    pe3: "U4 Warming Up: Core Warm-Up — Force & motion",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Force & motion",
+  },
+  21: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Heritage & legacy",
+    pe2: "U5 Your Workout: Core Workout — Heritage & legacy",
+    pe3: "U5 Your Workout: Lower-Body Workout — Heritage & legacy",
+    pe4: "U5 Your Workout: Full-Body Workout — Heritage & legacy",
+  },
+  22: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Transatlantic slave trade",
+    pe2: "U5 Your Workout: Core Workout — Transatlantic slave trade",
+    pe3: "U5 Your Workout: Lower-Body Workout — Transatlantic slave trade",
+    pe4: "U5 Your Workout: Full-Body Workout — Transatlantic slave trade",
+  },
+  23: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Justice & reckoning",
+    pe2: "U5 Your Workout: Core Workout — Justice & reckoning",
+    pe3: "U5 Your Workout: Lower-Body Workout — Justice & reckoning",
+    pe4: "U5 Your Workout: Full-Body Workout — Justice & reckoning",
+  },
+  24: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Complexity & emergence",
+    pe2: "U5 Your Workout: Core Workout — Complexity & emergence",
+    pe3: "U5 Your Workout: Lower-Body Workout — Complexity & emergence",
+    pe4: "U5 Your Workout: Full-Body Workout — Complexity & emergence",
+  },
+  25: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Memory & transmission",
+    pe2: "U5 Your Workout: Core Workout — Memory & transmission",
+    pe3: "U5 Your Workout: Lower-Body Workout — Memory & transmission",
+    pe4: "U5 Your Workout: Full-Body Workout — Memory & transmission",
+  },
+  26: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Evidence & proof",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Evidence & proof",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Evidence & proof",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Evidence & proof",
+  },
+  27: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Reflection & self-knowledge",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Reflection & self-knowledge",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Reflection & self-knowledge",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Reflection & self-knowledge",
+  },
+  28: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — New beginnings",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — New beginnings",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — New beginnings",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — New beginnings",
+  },
+  29: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Completion & approach",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Completion & approach",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Completion & approach",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Completion & approach",
+  },
+  30: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Return & renewal",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Return & renewal",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Return & renewal",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Return & renewal",
+  },
+};
+
+function getPE(w, n){ var d=PE_CURR[w]; return d?d["pe"+n]:""; }
+
 function getCURRICULUM(){
   if(!CURRICULUM) CURRICULUM = buildCurriculumFromHOW();
   return CURRICULUM;
@@ -4347,6 +4630,74 @@ function drivePdfNav(dir){
 }
 
 // ── Teach It ────────────────────────────────────────────────────────────────
+
+// ── HOW Teach It — wire lesson deck to PTL ───────────────────────────────────
+function _launchHOWTeachIt(){
+  var l = lesson();
+  if(!l || !l.slides){
+    toast('Lesson not loaded — ask your facilitator to generate it first.');
+    return;
+  }
+  var g   = S.grade;
+  var w   = S.week;
+  var subj = S.subj || 'math';
+  var sess = S.session || 1;
+  var how  = (HOW_CURR[g]||HOW_CURR[String(g)]||{})[w]||{};
+  var scholar = how.scholar || '';
+  var juz     = how.juz    || ('Juz '+w);
+
+  // Map lesson slides to HOW format
+  // The 8-slot structure: title, provocation, content×3, activity, discussion, juz
+  var HOW_SLIDE_TYPES = {
+    'title':       'Title',
+    'provocation': 'Opening Question',
+    'content':     'Content',
+    'worked':      'Source / Worked Example / Text',
+    'activity':    'Activity / Discussion',
+    'discussion':  'Discussion',
+    'juz':         'Juz Connection',
+  };
+
+  var mappedSlides = (l.slides||[]).map(function(sl, i){
+    var typeLabel = HOW_SLIDE_TYPES[sl.type] || 'Content';
+    // Assign positional labels for types that repeat (content)
+    if(sl.type==='content'){
+      var contentCount = (l.slides||[]).slice(0,i).filter(function(s){return s.type==='content';}).length;
+      if(contentCount===1) typeLabel = 'Source / Worked Example / Text';
+      if(contentCount===2) typeLabel = 'Content (deeper)';
+    }
+    return {
+      slideNum: i+1,
+      type:     sl.type || 'content',
+      typeLabel: typeLabel,
+      heading:  sl.heading  || '',
+      content:  sl.content  || sl.question || ''
+    };
+  });
+
+  // Build the deck payload
+  var deck = {
+    slides:   mappedSlides,
+    title:    l.title || '',
+    subject:  subj,
+    grade:    g,
+    week:     w,
+    session:  sess,
+    scholar:  scholar,
+    juz:      juz,
+    lessonKey: key(g, w, subj, sess)
+  };
+
+  try{
+    localStorage.setItem('how_teachit_deck', JSON.stringify(deck));
+  } catch(e){
+    toast('Could not prepare deck — storage full?');
+    return;
+  }
+
+  window.open('peer_teaching_library.html', '_blank');
+}
+
 async function _goToTeachIt(){
   var genBtn=document.querySelector('[data-p="generate"]');
   if(genBtn){ SP(genBtn); syncLG(); }
@@ -4715,6 +5066,214 @@ async function publishTeaching(){
   }catch(e){ toast('\u26a0 Could not publish: '+e.message); }
 }
 // ────────────────────────────────────────────────────────────────────────────
+
+// ── My Teachings — Facilitator/Parent annotated lesson library ────────────────
+function _saveToMyTeachings(){
+  var l = lesson();
+  if(!l || !l.slides){ toast('No lesson loaded'); return; }
+  var annot    = annots();
+  var notes    = annot.notes    || {};
+  var drawings = annot.drawings || {};
+  var hasContent = Object.keys(notes).some(function(k){ return notes[k]&&notes[k].trim(); }) ||
+                   Object.keys(drawings).some(function(k){ return drawings[k]&&drawings[k].length>100; });
+  if(!hasContent){ toast('Add notes or drawings to your slides first'); return; }
+
+  var how = (HOW_CURR[S.grade]||HOW_CURR[String(S.grade)]||{})[S.week]||{};
+  var annotatedSlides = (l.slides||[]).map(function(sl,i){
+    return {
+      type:        sl.type    || 'content',
+      heading:     sl.heading || '',
+      content:     sl.content || '',
+      studentNote: notes[i]   || '',
+      drawing:     drawings[i]|| ''
+    };
+  });
+
+  var entry = {
+    id:          'mt_'+Date.now(),
+    title:       l.title || ('Week '+S.week+' · '+(SUBJ_LABELS[S.subj]||S.subj)),
+    subject:     S.subj  || 'math',
+    grade:       S.grade,
+    week:        S.week,
+    session:     S.session || 1,
+    scholar:     how.scholar || '',
+    savedAt:     new Date().toISOString(),
+    role:        _schedRole || 'facilitator',
+    annotatedSlides: annotatedSlides
+  };
+
+  var saved = [];
+  try{ saved = JSON.parse(localStorage.getItem('how_my_teachings')||'[]'); }catch(e){}
+  // Replace if same lesson already saved, otherwise prepend
+  var existIdx = saved.findIndex(function(e){
+    return e.grade===entry.grade && e.week===entry.week &&
+           e.subject===entry.subject && e.session===entry.session;
+  });
+  if(existIdx>=0) saved[existIdx] = entry;
+  else saved.unshift(entry);
+  try{
+    localStorage.setItem('how_my_teachings', JSON.stringify(saved));
+    toast('✓ Saved to My Teachings');
+  }catch(e){ toast('⚠ Could not save: '+e.message); }
+}
+
+// ── Read-only annotated deck viewer ──────────────────────────────────────────
+function _openMyTeaching(id){
+  var saved = [];
+  try{ saved = JSON.parse(localStorage.getItem('how_my_teachings')||'[]'); }catch(e){}
+  var entry = saved.find(function(e){ return e.id===id; });
+  if(!entry){ toast('Teaching not found'); return; }
+
+  var slides = entry.annotatedSlides || [];
+  var idx = 0;
+
+  var ov = document.createElement('div');
+  ov.id = 'my-teaching-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(26,26,46,.97);'+
+    'display:flex;flex-direction:column;font-family:inherit';
+
+  function renderSlide(){
+    var sl = slides[idx] || {};
+    var hasDrawing = sl.drawing && sl.drawing.length > 100;
+    var hasNote    = sl.studentNote && sl.studentNote.trim();
+
+    ov.innerHTML =
+      // Header
+      '<div style="display:flex;align-items:center;justify-content:space-between;'+
+      'padding:10px 16px;background:rgba(255,255,255,.06);flex-shrink:0">'+
+        '<span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)">'+
+          entry.title+' · My Teaching</span>'+
+        '<div style="display:flex;gap:8px">'+
+          '<span style="font-size:12px;color:rgba(255,255,255,.4);padding:5px 10px">'+
+            'Slide '+(idx+1)+' of '+slides.length+'</span>'+
+          '<button onclick="document.getElementById(\'my-teaching-overlay\').remove()" '+
+            'style="background:rgba(255,255,255,.1);border:none;color:white;padding:5px 10px;'+
+            'border-radius:5px;cursor:pointer;font-size:12px">✕ Close</button>'+
+        '</div>'+
+      '</div>'+
+      // Content
+      '<div style="flex:1;overflow-y:auto;padding:24px;max-width:720px;margin:0 auto;width:100%">'+
+        '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;'+
+          'color:rgba(255,255,255,.3);margin-bottom:6px">'+
+          'Slide '+(idx+1)+' · '+(sl.type||'content')+'</div>'+
+        (sl.heading ? '<div style="font-size:1.2rem;font-weight:700;color:white;margin-bottom:10px">'+
+          sl.heading+'</div>' : '')+
+        (sl.content ? '<div style="font-size:.9rem;color:rgba(255,255,255,.6);line-height:1.7;'+
+          'margin-bottom:20px">'+sl.content+'</div>' : '')+
+        (hasNote ?
+          '<div style="background:rgba(29,111,111,.2);border-left:3px solid #1d6f6f;'+
+          'padding:14px 16px;border-radius:0 8px 8px 0;margin-bottom:16px">'+
+            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;'+
+              'color:#1d6f6f;margin-bottom:6px">My teaching note</div>'+
+            '<div style="font-size:.9rem;color:rgba(255,255,255,.85);line-height:1.7">'+
+              sl.studentNote+'</div>'+
+          '</div>' : '')+
+        (hasDrawing ?
+          '<div style="margin-bottom:16px">'+
+            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;'+
+              'color:rgba(255,255,255,.4);margin-bottom:8px">My drawing</div>'+
+            '<img src="'+sl.drawing+'" style="max-width:100%;border-radius:8px;'+
+              'border:1px solid rgba(255,255,255,.1)" alt="Drawing">'+
+          '</div>' : '')+
+        (!hasNote && !hasDrawing ?
+          '<div style="color:rgba(255,255,255,.25);font-size:.85rem;font-style:italic;padding:20px 0">'+
+            'No annotation on this slide</div>' : '')+
+      '</div>'+
+      // Nav
+      '<div style="display:flex;align-items:center;justify-content:center;gap:12px;'+
+        'padding:14px;background:rgba(0,0,0,.3);flex-shrink:0">'+
+        '<button onclick="window._myTeachingNav(-1)" '+
+          'style="background:rgba(255,255,255,.15);border:none;color:white;padding:8px 20px;'+
+          'border-radius:6px;cursor:pointer;font-size:14px;font-weight:700">← Prev</button>'+
+        '<span style="font-size:12px;color:rgba(255,255,255,.4)">'+(idx+1)+' / '+slides.length+'</span>'+
+        '<button onclick="window._myTeachingNav(1)" '+
+          'style="background:rgba(255,255,255,.15);border:none;color:white;padding:8px 20px;'+
+          'border-radius:6px;cursor:pointer;font-size:14px;font-weight:700">Next →</button>'+
+      '</div>';
+  }
+
+  window._myTeachingNav = function(dir){
+    idx = Math.max(0, Math.min(slides.length-1, idx+dir));
+    renderSlide();
+  };
+
+  renderSlide();
+  document.body.appendChild(ov);
+}
+
+// ── Build My Teachings HTML for dashboard ────────────────────────────────────
+function _buildMyTeachingsHTML(){
+  var saved = [];
+  try{ saved = JSON.parse(localStorage.getItem('how_my_teachings')||'[]'); }catch(e){}
+  if(!saved.length){
+    return '<div style="font-size:13px;color:var(--ink3);padding:12px 0">'+
+      'No saved teachings yet. Open a lesson deck and click '+
+      '<strong>Save to My Teachings</strong> to save your annotated version.</div>';
+  }
+
+  var SUBJ_ICON = {math:'📐',science:'🔬',ela:'📖',writing:'✍️',history:'🌍',ss:'🌍',review:'📋'};
+  var shown = saved.slice(0,5);
+  var html = '<div style="display:flex;flex-direction:column;gap:8px">';
+  shown.forEach(function(e){
+    var icon = SUBJ_ICON[e.subject] || '📄';
+    var dateStr = e.savedAt ? new Date(e.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    var hasAnnotations = (e.annotatedSlides||[]).some(function(s){
+      return (s.studentNote&&s.studentNote.trim()) || (s.drawing&&s.drawing.length>100);
+    });
+    html +=
+      '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;'+
+      'background:var(--p2);border:1px solid var(--border);border-radius:10px;'+
+      'cursor:pointer" onclick="_openMyTeaching("+JSON.stringify(e.id)+")">'+
+        '<span style="font-size:18px">'+icon+'</span>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:13px;font-weight:600;color:var(--ink);'+
+            'white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.title+'</div>'+
+          '<div style="font-size:11px;color:var(--ink3)">'+
+            'Grade '+(e.grade===0?'K':e.grade)+' · Week '+e.week+
+            (e.scholar?' · '+e.scholar:'')+
+            (dateStr?' · '+dateStr:'')+
+          '</div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--teal);white-space:nowrap">View →</div>'+
+      '</div>';
+  });
+  html += '</div>';
+  if(saved.length>5){
+    html += '<div style="font-size:12px;color:var(--ink3);margin-top:8px;cursor:pointer" '+
+      'onclick="_showAllMyTeachings()">+ '+(saved.length-5)+' more…</div>';
+  }
+  return html;
+}
+
+function _showAllMyTeachings(){
+  // Expand — re-render dashboard with all teachings shown
+  // Simple approach: replace the section content
+  var sec = document.getElementById('my-teachings-section');
+  if(!sec) return;
+  var saved = [];
+  try{ saved = JSON.parse(localStorage.getItem('how_my_teachings')||'[]'); }catch(e){}
+  var SUBJ_ICON = {math:'📐',science:'🔬',ela:'📖',writing:'✍️',history:'🌍',ss:'🌍',review:'📋'};
+  var html = '<div style="display:flex;flex-direction:column;gap:8px">';
+  saved.forEach(function(e){
+    var icon = SUBJ_ICON[e.subject]||'📄';
+    var dateStr = e.savedAt ? new Date(e.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    html +=
+      '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;'+
+      'background:var(--p2);border:1px solid var(--border);border-radius:10px;cursor:pointer" '+
+      'onclick="_openMyTeaching("+JSON.stringify(e.id)+")">'+
+        '<span style="font-size:18px">'+icon+'</span>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:13px;font-weight:600;color:var(--ink);'+
+            'white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.title+'</div>'+
+          '<div style="font-size:11px;color:var(--ink3)">Grade '+(e.grade===0?'K':e.grade)+
+            ' · Week '+e.week+(dateStr?' · '+dateStr:'')+'</div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--teal)">View →</div>'+
+      '</div>';
+  });
+  html += '</div>';
+  sec.innerHTML = html;
+}
 window.addEventListener('load',()=>{
   var _sg=localStorage.getItem('how_curr_grade')||'7';
   var _sw=parseInt(localStorage.getItem('how_curr_week')); // read BEFORE selectGrade overwrites it
@@ -4847,7 +5406,8 @@ function renderScheduleDay(day){
       <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:15</div><div class="tblock bcor"><p class="tb-title">Writing${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'writing',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'writing',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">14:00</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'ss',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ss',session:1}):''}</div></div>
-      <div class="trow" data-eod="1"><div class="ttime">14:45</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow"><div class="ttime">14:45</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow" data-eod="1"><div class="ttime">15:05</div><div class="tblock bpe"><p class="tb-title">Physical Education — Session 1</p><p class="tb-sub">${getPE(week&&week.w||1,1)||'Fitness session — see P.E. curriculum'}</p><span class="tb-tag">30 min · teacher-led</span></div></div>
     </div>`,
 
     tue:`<div class="timeline">
@@ -4859,7 +5419,8 @@ function renderScheduleDay(day){
       <div class="trow"><div class="ttime">13:00</div><div class="tblock bcor"><p class="tb-title">Writing${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'writing',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'writing',session:2}):''}</div></div>
       <div class="trow"><div class="ttime">13:45</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'ss',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ss',session:2}):''}</div></div>
       <div class="trow"><div class="ttime">14:30</div><div class="tblock bpeer"><p class="tb-title">Peer teaching preparation &amp; recording</p><span class="tb-tag">Library grows here</span>${btn('Open Peer Library','peer','tl-peer')}</div></div>
-      <div class="trow" data-eod="1"><div class="ttime">14:50</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow"><div class="ttime">14:50</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow" data-eod="1"><div class="ttime">15:10</div><div class="tblock bpe"><p class="tb-title">Physical Education — Session 2</p><p class="tb-sub">${getPE(week&&week.w||1,2)||'Fitness session — see P.E. curriculum'}</p><span class="tb-tag">30 min · teacher-led</span></div></div>
     </div>`,
 
     wed:`<div class="timeline">
@@ -4869,7 +5430,8 @@ function renderScheduleDay(day){
       <div class="trow"><div class="ttime">10:20</div><div class="tblock bcor"><p class="tb-title">Mathematics &amp; Science — test review${hasWed?'<span class="tb-done">✓ Wed deck</span>':''}</p><p class="tb-sub">Go over Wednesday test results · targeted re-teaching where needed</p>${hasWed?btn('Open Wednesday review','deck','tl-teal',{subj:'review',session:4}):btn('Generate Wed review','gen','tl-gold')}</div></div>
       <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:00</div><div class="tblock bcor"><p class="tb-title">ELA, Writing &amp; Social Studies — test review</p>${hasWed?btn('Open Wednesday review','deck','tl-teal',{subj:'review',session:4}):btn('Generate Wed review','gen','tl-gold')}</div></div>
-      <div class="trow" data-eod="1"><div class="ttime">14:10</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry + thread search</p><p class="tb-sub">What did the test reveal? Look for the thread connecting subjects.</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow"><div class="ttime">14:10</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry + thread search</p><p class="tb-sub">What did the test reveal? Look for the thread connecting subjects.</p>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow" data-eod="1"><div class="ttime">14:30</div><div class="tblock bpe"><p class="tb-title">Physical Education — Session 3</p><p class="tb-sub">${getPE(week&&week.w||1,3)||'Fitness session — see P.E. curriculum'}</p><span class="tb-tag">30 min · teacher-led</span></div></div>
     </div>`,
 
     thu:`<div class="timeline">
@@ -4881,7 +5443,8 @@ function renderScheduleDay(day){
       <div class="trow"><div class="ttime">11:05</div><div class="tblock bhal"><p class="tb-title">المنازرة — Munazara</p><p class="tb-sub">Structured debate on the week's claim. Facilitator holds the ring.</p><span class="tb-tag">Primary assessment mode</span>${btn('Open Munazara','munazara','tl-sacred')}</div></div>
       <div class="trow"><div class="ttime">12:30</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
       <div class="trow"><div class="ttime">13:15</div><div class="tblock bsah"><p class="tb-title">Week-closing revision entry</p><p class="tb-sub">Re-read Sunday's pre-answer. Write what changed.</p><span class="tb-tag">The most important weekly writing</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
-      <div class="trow" data-eod="1"><div class="ttime">14:00</div><div class="tblock bMUH"><p class="tb-title">✦ Muhasaba — المُحاسَبَة</p><p class="tb-sub">20 minutes. Prompts: What did I resist this week? What question am I carrying? Who am I becoming?</p><span class="tb-tag">Private · never assessed</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow"><div class="ttime">14:00</div><div class="tblock bMUH"><p class="tb-title">✦ Muhasaba — المُحاسَبَة</p><p class="tb-sub">20 minutes. Prompts: What did I resist this week? What question am I carrying? Who am I becoming?</p><span class="tb-tag">Private · never assessed</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
+      <div class="trow" data-eod="1"><div class="ttime">14:20</div><div class="tblock bpe"><p class="tb-title">Physical Education — Session 4</p><p class="tb-sub">${getPE(week&&week.w||1,4)||'Fitness session — see P.E. curriculum'}</p><span class="tb-tag">30 min · teacher-led</span></div></div>
     </div>`,
     fri:`<div style="background:var(--night);border-radius:var(--rl);padding:24px;color:white;text-align:center">
       <p style="font-family:'Amiri',serif;font-size:28px;color:var(--gold);margin-bottom:8px">يوم الجمعة</p>
@@ -6095,7 +6658,7 @@ function renderSlide(sl, idx, total){
     html+='<div style="font-size:2.5rem">✏️</div>';
     html+='<div style="font-size:1.4rem;font-weight:800;color:var(--ink,#1a1a2e);font-family:var(--font-display,serif)">Now Teach It</div>';
     html+='<div style="font-size:.95rem;color:var(--ink3,#5a5a78);max-width:420px;line-height:1.7">You have watched the introduction and studied the worked examples.<br><br>Now it is your turn to teach <strong>'+(sl.content||'this lesson')+'</strong> — in your own words, through drawings and notes.</div>';
-    html+='<button onclick="closePres();_goToTeachIt()" style="background:var(--navy,#1a3d8a);color:white;border:none;border-radius:10px;padding:14px 32px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">✏️ Start Teaching →</button>';
+    html+='<button onclick="closePres();_launchHOWTeachIt()" style="background:var(--navy,#1a3d8a);color:white;border:none;border-radius:10px;padding:14px 32px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">✏️ Start Teaching →</button>';
     html+='</div>';
   } else if(sl.type==='studio'){
   } else {
@@ -8214,6 +8777,7 @@ function openPres(){
     '  <span id="pres-info" style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)">Lesson Deck</span>'+
     '  <div style="display:flex;gap:8px">'+
     '    <button class="pres-ctrl" id="pnotes-btn" onclick="togglePresNotes()" style="background:rgba(255,255,255,.1);border:none;color:white;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">👤 Notes</button>'+
+    (_schedRole==='facilitator'||_schedRole==='prep' ? '    <button class="pres-ctrl" onclick="_saveToMyTeachings()" style="background:rgba(212,175,55,.25);border:1px solid rgba(212,175,55,.4);color:rgba(255,255,255,.9);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">💾 Save to My Teachings</button>' : '')+
     '    <button class="pres-ctrl" onclick="closePres()" style="background:rgba(255,255,255,.1);border:none;color:white;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">✕ Close</button>'+
     '  </div>'+
     '</div>'+

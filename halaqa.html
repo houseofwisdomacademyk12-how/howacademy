@@ -92,7 +92,7 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 
 /* main convo */
 .mc{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--p)}
-.mc-topbar{padding:9px 16px;border-bottom:1px solid var(--ink5);background:white;display:flex;align-items:center;gap:9px;flex-shrink:0}
+.mc-topbar{padding:9px 16px;border-bottom:1px solid var(--ink5);background:white;display:flex;align-items:center;gap:9px;flex-shrink:0;flex-wrap:wrap}
 .mc-topic-label{font-size:11px;color:var(--ink4)}
 .mc-topic{font-size:13px;font-weight:500;color:var(--ink);font-family:'DM Serif Display',serif;flex:1;font-style:italic}
 .mc-msgs{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
@@ -155,6 +155,97 @@ textarea.lob-input{resize:vertical;line-height:1.6}
 .peer-next-btn:hover{background:var(--gl)}
 
 @keyframes dp{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* ═══════════════════════════════════════════════════
+   HALAQA — MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media(max-width:767px){
+
+  /* ── Halaqa screen: stack circle sidebar on top ── */
+  #halaqa{
+    flex-direction: column !important;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Circle sidebar → compact header strip */
+  .cc{
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    border-bottom: 1px solid rgba(255,255,255,.15);
+    flex-shrink: 0;
+  }
+  .cc-hdr{
+    padding: 8px 12px;
+    border-bottom: none;
+    border-right: 1px solid rgba(255,255,255,.1);
+    flex-shrink: 0;
+  }
+  .cc-logo{ font-size:13px; }
+  .cc-meta{ font-size:9px; }
+  .cc-seats{
+    flex: 1;
+    padding: 0 8px;
+    overflow-y: hidden;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+  /* Seat avatars — horizontal row */
+  .seat{
+    flex-direction: column;
+    align-items: center;
+    min-width: 44px;
+    padding: 6px 4px;
+  }
+  .seat-name{ font-size:9px; }
+  .cc-foot{
+    padding: 6px 10px;
+    border-top: none;
+    border-left: 1px solid rgba(255,255,255,.1);
+    flex-shrink: 0;
+  }
+  .phase-badge{ font-size:9px !important; padding:3px 7px; }
+
+  /* Conversation column — takes remaining height */
+  .mc{ flex:1; min-height:0; }
+
+  /* Topbar — already has flex-wrap, make it more compact */
+  .mc-topbar{ padding:7px 12px; gap:6px; }
+  .mc-topic-label{ font-size:10px; }
+  .mc-topic{ font-size:12px; }
+
+  /* Messages */
+  .mc-msgs{ padding:10px 12px; gap:8px; }
+  .msg-bubble{ font-size:13px !important; }
+
+  /* Input area */
+  .mc-input{ padding:8px 12px; }
+  .mc-starters{ gap:4px; margin-bottom:5px; }
+  .mc-starter-btn{ font-size:11px !important; padding:4px 8px; }
+  .mc-ibox{ padding:8px 11px; }
+  .mc-ibox textarea{ font-size:14px !important; } /* prevent iOS zoom */
+  .mc-send{ width:40px; height:40px; } /* bigger tap target */
+
+  /* Lobby screen */
+  #lobby{ padding:16px; }
+  .lob-inner{ padding:20px 16px; }
+  .lob-title{ font-size:22px; }
+
+  /* Pre-session screen */
+  #pre{ padding:16px; }
+  .pre-inner{ padding:20px 16px; }
+}
+
+@media(min-width:768px) and (max-width:1024px){
+  .cc{ width:180px; }
+  .cc-logo{ font-size:13px; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -169,18 +260,6 @@ try{
 }catch(e){}
 /* ─────────────────────────── */
 // Restore auth session from platform
-(async function(){
-  if(!sb) return;
-  try{
-    var _jwt = localStorage.getItem('how_jwt');
-    var _ref = localStorage.getItem('how_refresh_token');
-    if(_jwt && _ref){
-      await sb.auth.setSession({access_token:_jwt, refresh_token:_ref});
-    } else if(_jwt){
-      await sb.auth.setSession({access_token:_jwt, refresh_token:_jwt});
-    }
-  }catch(e){ console.warn('Halaqa: session restore failed:', e.message); }
-})();
 </script>
 </head>
 <body>
@@ -349,7 +428,7 @@ try{
         <p class="mc-topic-label">This session's question</p>
         <p class="mc-topic" id="mc-topic">…</p>
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
         <button onclick="toggleROEOverlay()" title="Rules of Engagement" style="background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);color:var(--gold,#d4af37);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit">⚖ Rules</button>
         <button id="end-save-btn" onclick="endHalaqaSession()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">✓ End &amp; save</button>
       </div>

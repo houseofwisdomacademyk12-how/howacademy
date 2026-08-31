@@ -586,7 +586,7 @@ async function sahifaCallAPI(sys, usr, maxTok){
   if(!_sJwt) return null;
   const resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
     method:'POST',
-    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+_sJwt },
+    headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens: maxTok||600,

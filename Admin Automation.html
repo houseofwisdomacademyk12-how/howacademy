@@ -1034,7 +1034,7 @@ async function submitOneHeygenVideo(gi,si,g,w,subjKey){
   if(!cfg.avatarId) throw new Error('No avatar ID for '+subjKey);
   setHeygenStatus(gi,si,'running');
   var prompt=buildHeygenVideoPrompt(g,w,subjKey);
-  var body={agent:{input:prompt,type:'VIDEO_AGENT'},test:false};
+  var body={prompt:prompt,test:false};
   if(cfg.avatarId) body.avatar_id=cfg.avatarId;
   if(cfg.voiceId) body.voice_id=cfg.voiceId;
   if(cfg.lookId) body.look_id=cfg.lookId;

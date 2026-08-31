@@ -411,7 +411,7 @@ async function getMurshidResponse(userMessage){
       renderConvo(); isWaiting=false; return;
     }
     const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_jwt},
       body:JSON.stringify({
         model:'claude-sonnet-4-6',
         max_tokens:400,
@@ -627,7 +627,7 @@ async function scanAdab(){
     const _adabJwt=localStorage.getItem('how_jwt');
     if(!_adabJwt) return;
     const resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_adabJwt},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,
         system:'You are the Murshid acting as a rijal observer, assessing adab (character and etiquette) shown in students\' shared work this week. The four intellectual virtues to look for in munazara and halaqa exchanges are: insaf (conceding a better argument — giving the other side what it is owed), tawadu (intellectual humility — acknowledging what one does not know), amana (scholarly faithfulness — crediting another\'s idea rather than absorbing it silently), and sidq (truthfulness — honestly changing a stated position when the evidence demands it). Also look for: patience with a struggling peer, encouraging a younger student, helping without being asked, honoring another\'s work while building on it. POSITIVE OBSERVATIONS ONLY — never note bad behavior. Each nomination must quote its evidence verbatim from the artifacts. If nothing clearly qualifies, return an empty array — do not stretch. Respond ONLY with a JSON array: [{"student":"name","quote":"verbatim evidence","why":"one short line on the character shown — name the virtue if it is one of the four","source":"which artifact"}]',
         messages:[{role:'user',content:'This week\'s shared artifacts:\n\n'+artifacts.join('\n')+'\n\nJSON nominations:'}]})

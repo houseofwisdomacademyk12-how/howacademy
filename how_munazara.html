@@ -138,6 +138,52 @@ textarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}
 .k2-icon{font-size:24px;flex-shrink:0;width:36px;text-align:center}
 .k2-listen-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:4px 10px;background:var(--cream2);border:1px solid var(--cream3);border-radius:12px;font-size:11px;cursor:pointer;font-family:inherit}
 .k2-listen-btn:hover{background:var(--teal-pale)}
+
+/* ═══════════════════════════════════════════════════
+   MUNAZARA — MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media(max-width:600px){
+  .app{ padding:14px 12px 40px; }
+
+  /* Claim text */
+  .claim-text{ font-size:15px; }
+
+  /* Position row — stack vertically on small screens */
+  .position-row{ flex-direction:column; gap:8px; }
+
+  /* Buttons — full width, min tap target */
+  .btn-primary{ padding:13px; font-size:14px; min-height:44px; }
+
+  /* Debate moves */
+  .move-text{ font-size:14px; }
+  .move-header{ padding:10px 12px; gap:8px; }
+  .move-num{ width:24px; height:24px; font-size:11px; }
+
+  /* Write box */
+  .write-textarea{
+    min-height:120px;
+    font-size:14px !important; /* prevent iOS zoom */
+  }
+  .write-context{ font-size:13px; padding:10px 12px; }
+
+  /* Footer row — stack on mobile */
+  .write-footer{ flex-direction:column; align-items:flex-start; gap:8px; }
+
+  /* AI response */
+  .synthesis-block{ font-size:13px; padding:12px; }
+  .fp-text{ font-size:14px; }
+
+  /* K-2 choices — full width */
+  .k2-choice-btn{ padding:12px 14px; }
+  .k2-icon{ font-size:20px; }
+
+  /* Inputs — prevent iOS zoom */
+  .setup-input{ font-size:14px !important; }
+  input, textarea, select{ font-size:14px !important; }
+
+  /* Status bar */
+  .status-bar{ font-size:12px; padding:8px 12px; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -146,6 +192,7 @@ var sb = null;
 try{
   if(typeof supabase !== 'undefined'){
     sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
+    // Restore session from platform tokens so RLS policies resolve    }catch(e){ console.warn('Session restore failed:',e.message); }
   }
 }catch(e){}
 /* ─────────────────────────────────────────────────── */

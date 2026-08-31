@@ -2771,7 +2771,7 @@ function wsReveal(btn) {
 }
 
 
-// ── Dictation (canvas-based — finger · stylus · mouse) ─────────────────────────
+// ── Dictation ─────────────────────────────────────────────────────────────────
 var _dict = {};
 
 function toggleDict(btn) {
@@ -2783,51 +2783,42 @@ function toggleDict(btn) {
   if (!open && !_dict[sk]) dictInit(sk);
 }
 
+function dictStripDiac(str) {
+  return str.replace(/[\u064B-\u065F\u0640]/g, '').trim();
+}
+
 function dictInit(sk) {
   var vocab = _wcVocab[sk]; if (!vocab || !vocab.length) return;
-  _dict[sk] = { idx:0, vocab:vocab, replays:0, score:0, answered:0,
-                drawing:false, lastX:0, lastY:0, ctx:null, W:0, H:0 };
+  _dict[sk] = { idx: 0, vocab: vocab, replays: 0, score: { base: 0, full: 0 }, answered: 0 };
   dictRender(sk);
 }
 
 function dictRender(sk) {
   var s = _dict[sk]; if (!s) return;
   var item = s.vocab[s.idx]; var total = s.vocab.length;
-  s.replays = 0; s.ctx = null;
+  s.replays = 0;
 
-  var html = '<div class="dict-progress">Word ' + (s.idx+1) + ' of ' + total;
-  if (s.answered > 0) html += ' &nbsp;·&nbsp; <span class="dict-score">' + s.score + '/' + s.answered + ' mastered</span>';
+  var html = '<div class="dict-progress">';
+  html += 'Word ' + (s.idx+1) + ' of ' + total;
+  if (s.answered > 0) html += ' &nbsp;·&nbsp; <span class="dict-score">' + s.score.base + '/' + s.answered + ' base · ' + s.score.full + '/' + s.answered + ' with diacritics</span>';
   html += '</div>';
 
-  // Play row
   html += '<div class="dict-play-row">';
   html += '<button class="dict-play-btn" data-sk="' + sk + '" data-ar="' + item.ar + '" onclick="dictPlay(this)" title="Listen">🔊</button>';
-  html += '<div><div style="font-size:.78rem;color:var(--ink3)">' + item.en + '</div>';
-  html += '<div class="dict-replay-count" id="dict-rc-' + sk + '">Tap 🔊 — then write the word below</div></div>';
+  html += '<div>';
+  html += '<div style="font-size:.78rem;color:var(--ink3)">' + item.en + '</div>';
+  html += '<div class="dict-replay-count" id="dict-rc-' + sk + '">Tap 🔊 to hear the word</div>';
+  html += '</div>';
   html += '<div class="dict-reveal-word" id="dict-rw-' + sk + '">' + item.ar + '</div>';
   html += '</div>';
 
-  // Canvas (reuses writing panel CSS and pointer infrastructure)
-  html += '<div class="wp-canvas-wrap" style="margin-bottom:8px">';
-  html += '<canvas id="dcanvas-' + sk + '" class="wp-canvas" style="height:150px"></canvas>';
-  html += '</div>';
-  html += '<p class="wp-hint">Write with finger · stylus · mouse &nbsp;·&nbsp; Arabic writes right to left ←</p>';
-
-  // Actions
+  html += '<input class="dict-input" id="dict-inp-' + sk + '" type="text" dir="rtl" placeholder="اكتب ما سمعت..." autocomplete="off" autocorrect="off" spellcheck="false">';
   html += '<div class="dict-actions">';
-  html += '<button class="wp-act-btn" data-sk="' + sk + '" onclick="dictClear(this)">Clear</button>';
-  html += '<button class="dict-show-btn" data-sk="' + sk + '" onclick="dictReveal(this)">Reveal word</button>';
+  html += '<button class="dict-check-btn" data-sk="' + sk + '" onclick="dictCheck(this)">✓ Check</button>';
+  html += '<button class="dict-show-btn" data-sk="' + sk + '" onclick="dictShowWord(this)">Show word</button>';
   html += '</div>';
+  html += '<div class="dict-feedback" id="dict-fb-' + sk + '"></div>';
 
-  // Self-assessment (shown after reveal)
-  html += '<div id="dict-assess-' + sk + '" style="display:none;margin-top:8px">';
-  html += '<div style="font-size:.78rem;color:var(--ink3);margin-bottom:6px">Compare your writing to the word above — how did you do?</div>';
-  html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
-  html += '<button class="dict-check-btn" data-sk="' + sk + '" onclick="dictGotIt(this)">✓ Got it</button>';
-  html += '<button class="dict-show-btn" data-sk="' + sk + '" onclick="dictTryAgain(this)">↺ Try again</button>';
-  html += '</div></div>';
-
-  // Nav
   html += '<div class="dict-nav">';
   html += '<button class="dict-nav-btn" data-sk="' + sk + '" onclick="dictPrev(this)">&#8592;</button>';
   html += '<span class="fill-counter">' + (s.idx+1) + ' / ' + total + '</span>';
@@ -2836,111 +2827,75 @@ function dictRender(sk) {
 
   var body = document.getElementById('dictb-' + sk);
   if (body) body.innerHTML = html;
-  setTimeout(function(){ dictInitCanvas(sk); }, 30);
-}
-
-// ── Canvas init — pointer events cover mouse, stylus, finger ─────────────────
-function dictInitCanvas(sk) {
-  var canvas = document.getElementById('dcanvas-' + sk); if (!canvas) return;
-  var s = _dict[sk]; if (!s) return;
-  var dpr = window.devicePixelRatio || 1;
-  var rect = canvas.getBoundingClientRect();
-  canvas.width  = Math.round(rect.width  * dpr);
-  canvas.height = Math.round(rect.height * dpr);
-  var ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  s.ctx = ctx; s.W = rect.width; s.H = rect.height;
-  dictGuides(sk);
-
-  canvas.addEventListener('pointerdown',   function(e){ dictCanvasDown(e,sk); }, {passive:false});
-  canvas.addEventListener('pointermove',   function(e){ dictCanvasMove(e,sk); }, {passive:false});
-  canvas.addEventListener('pointerup',     function(e){ dictCanvasUp(e,sk);   }, {passive:false});
-  canvas.addEventListener('pointercancel', function(e){ dictCanvasUp(e,sk);   }, {passive:false});
-  canvas.addEventListener('pointerleave',  function(e){ dictCanvasUp(e,sk);   }, {passive:false});
-}
-
-function dictGuides(sk) {
-  var s = _dict[sk]; if (!s || !s.ctx) return;
-  var ctx = s.ctx; var W = s.W; var H = s.H;
-  ctx.clearRect(0,0,W,H);
-  ctx.save();
-  ctx.strokeStyle='#e0dcd0'; ctx.lineWidth=1; ctx.setLineDash([]);
-  [H*0.25, H*0.55, H*0.82].forEach(function(y){
-    ctx.beginPath(); ctx.moveTo(12,y); ctx.lineTo(W-12,y); ctx.stroke();
-  });
-  ctx.fillStyle='#c8c4b8'; ctx.font='10px sans-serif'; ctx.textAlign='right';
-  ctx.fillText('← right to left', W-10, H-5);
-  ctx.restore();
-}
-
-function dictCanvasDown(e,sk) {
-  e.preventDefault();
-  var s=_dict[sk]; if(!s||!s.ctx) return;
-  s.drawing=true;
-  e.target.setPointerCapture(e.pointerId);
-  var r=e.target.getBoundingClientRect();
-  s.lastX=e.clientX-r.left; s.lastY=e.clientY-r.top;
-  var pressure=(e.pressure>0)?e.pressure:0.5;
-  s.ctx.beginPath(); s.ctx.moveTo(s.lastX,s.lastY);
-  s.ctx.lineWidth=1.5+pressure*3; s.ctx.strokeStyle='#1a1a2e';
-}
-
-function dictCanvasMove(e,sk) {
-  e.preventDefault();
-  var s=_dict[sk]; if(!s||!s.drawing||!s.ctx) return;
-  var r=e.target.getBoundingClientRect();
-  var x=e.clientX-r.left; var y=e.clientY-r.top;
-  var pressure=(e.pressure>0)?e.pressure:0.5;
-  s.ctx.lineWidth=1.5+pressure*3;
-  var mx=(s.lastX+x)/2; var my=(s.lastY+y)/2;
-  s.ctx.quadraticCurveTo(s.lastX,s.lastY,mx,my);
-  s.ctx.stroke(); s.ctx.beginPath(); s.ctx.moveTo(mx,my);
-  s.lastX=x; s.lastY=y;
-}
-
-function dictCanvasUp(e,sk) {
-  var s=_dict[sk]; if(s) s.drawing=false;
-}
-
-function dictClear(btn) {
-  dictGuides(btn.dataset.sk);
-}
-
-function dictReveal(btn) {
-  var sk=btn.dataset.sk;
-  var rw=document.getElementById('dict-rw-'+sk);
-  if(rw) rw.classList.add('shown');
-  btn.style.display='none';
-  var assess=document.getElementById('dict-assess-'+sk);
-  if(assess) assess.style.display='block';
-}
-
-function dictGotIt(btn) {
-  var sk=btn.dataset.sk; var s=_dict[sk]; if(!s) return;
-  s.answered++; s.score++;
-  setTimeout(function(){ dictAdvance(sk); }, 600);
-}
-
-function dictTryAgain(btn) {
-  var sk=btn.dataset.sk; var s=_dict[sk]; if(!s) return;
-  s.answered++;
-  dictRender(sk); // fresh canvas, replay
 }
 
 function dictPlay(btn) {
-  var sk=btn.dataset.sk; var s=_dict[sk]; if(!s) return;
-  speak(btn.dataset.ar); s.replays++;
-  var rc=document.getElementById('dict-rc-'+sk);
-  if(rc) rc.textContent='Played '+s.replays+'x — now write it';
+  var sk = btn.dataset.sk; var s = _dict[sk]; if (!s) return;
+  var ar = btn.dataset.ar;
+  speak(ar);
+  s.replays++;
+  var rc = document.getElementById('dict-rc-' + sk);
+  if (rc) rc.textContent = 'Played ' + s.replays + 'x — now write it';
+}
+
+function dictShowWord(btn) {
+  var sk = btn.dataset.sk;
+  var rw = document.getElementById('dict-rw-' + sk);
+  if (rw) rw.classList.toggle('shown');
+  btn.textContent = rw && rw.classList.contains('shown') ? 'Hide word' : 'Show word';
+}
+
+function dictCheck(btn) {
+  var sk = btn.dataset.sk; var s = _dict[sk]; if (!s) return;
+  var item = s.vocab[s.idx];
+  var inp = document.getElementById('dict-inp-' + sk); if (!inp) return;
+  var attempt = inp.value.trim();
+  if (!attempt) { inp.focus(); return; }
+
+  var correctFull = attempt === item.ar;
+  var correctBase = dictStripDiac(attempt) === dictStripDiac(item.ar);
+
+  // Style input
+  inp.classList.remove('base-ok','base-fail');
+  inp.classList.add(correctBase ? 'base-ok' : 'base-fail');
+  inp.disabled = true;
+  btn.disabled = true;
+
+  // Feedback
+  var fb = document.getElementById('dict-fb-' + sk);
+  if (fb) {
+    fb.className = 'dict-feedback show';
+    fb.style.background = correctFull ? '#eaf5ea' : (correctBase ? '#fff8e1' : '#fdf0f0');
+    var html = '';
+    html += '<div class="dict-fb-row"><span class="dict-fb-icon">' + (correctBase?'✓':'✗') + '</span>';
+    html += '<span>' + (correctBase ? 'Base letters correct' : 'Base letters — check spelling') + '</span></div>';
+    html += '<div class="dict-fb-row"><span class="dict-fb-icon">' + (correctFull?'✓':'✗') + '</span>';
+    html += '<span>' + (correctFull ? 'Diacritics correct — full mastery!' : 'Diacritics — see correct form below') + '</span></div>';
+    if (!correctFull) {
+      html += '<div class="dict-correct-ans">' + item.ar + '</div>';
+    }
+    fb.innerHTML = html;
+  }
+
+  // Score
+  s.answered++;
+  if (correctBase) s.score.base++;
+  if (correctFull) s.score.full++;
+
+  // Reveal the word
+  var rw = document.getElementById('dict-rw-' + sk);
+  if (rw) rw.classList.add('shown');
+
+  // Auto-advance after correct full answer
+  if (correctFull) setTimeout(function(){ dictAdvance(sk); }, 1200);
 }
 
 function dictAdvance(sk) {
-  var s=_dict[sk]; if(!s) return;
-  if(s.idx<s.vocab.length-1){ s.idx++; dictRender(sk); }
+  var s = _dict[sk]; if (!s) return;
+  if (s.idx < s.vocab.length - 1) { s.idx++; dictRender(sk); }
   else {
-    var body=document.getElementById('dictb-'+sk);
-    if(body) body.innerHTML+='<div style="text-align:center;padding:10px;color:#4A1A6E;font-weight:600;font-size:.85rem">✓ Complete · '+s.score+'/'+s.answered+' mastered</div>';
+    var body = document.getElementById('dictb-' + sk);
+    if (body) body.innerHTML += '<div style="text-align:center;padding:10px;color:#4A1A6E;font-weight:600;font-size:.85rem">✓ Dictation complete · ' + s.score.base + '/' + s.answered + ' base · ' + s.score.full + '/' + s.answered + ' full</div>';
   }
 }
 function dictPrev(btn){var sk=btn.dataset.sk;var s=_dict[sk];if(!s||s.idx===0)return;s.idx--;dictRender(sk);}
