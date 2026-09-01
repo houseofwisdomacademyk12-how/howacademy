@@ -265,15 +265,7 @@ textarea.field{resize:vertical;line-height:1.65}
 .how-slide-header{font-size:10px;font-weight:800;text-transform:uppercase;
   letter-spacing:.08em;color:var(--ink-4);margin-bottom:4px}
 .how-slide-type{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:16px}
-.how-pos-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-.how-pos-btn{flex:1;min-width:100px;padding:13px 10px;border:2px solid var(--ink-5);
-  border-radius:10px;background:white;cursor:pointer;font-size:13px;font-weight:600;
-  color:var(--ink);transition:.15s;text-align:center}
-.how-pos-btn:hover{border-color:var(--teal);color:var(--teal)}
-.how-pos-btn.selected{border-color:var(--teal);background:var(--teal);color:white}
-.how-pos-btn.agree.selected{border-color:#2d7a2d;background:#2d7a2d}
-.how-pos-btn.notexactly.selected{border-color:#c47b2a;background:#c47b2a}
-.how-pos-btn.disagree.selected{border-color:#8a1a1a;background:#8a1a1a}
+/* position buttons removed — flat approach list */
 .how-approach-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
 .how-app-btn{padding:12px 16px;border:2px solid var(--ink-5);border-radius:8px;
   background:white;cursor:pointer;font-size:13px;color:var(--ink);text-align:left;
@@ -314,8 +306,6 @@ textarea.field{resize:vertical;line-height:1.65}
   border-top-color:var(--teal);border-radius:50%;animation:howspin .7s linear infinite}
 @keyframes howspin{to{transform:rotate(360deg)}}
 @media(max-width:600px){
-  .how-pos-row{flex-direction:column}
-  .how-pos-btn{min-width:0}
 }
 
 </style>
@@ -1598,6 +1588,12 @@ function getSettings(){return S.get('settings')||{name:'',grade:'',apiKey:''}}
 updateCounts();
 
 // ── HOW Teach It — detect incoming deck from platform ────────────────────────
+
+
+renderTab('browse');
+
+// HOW Teach It deck — detect after browse renders
+setTimeout(function(){
 (function detectHOWTeachItDeck(){
   var raw = null;
   try{ raw = localStorage.getItem('how_teachit_deck'); }catch(e){}
@@ -1625,13 +1621,22 @@ updateCounts();
     _howDeckSlides: deck.slides
   };
 
-  // Switch to Record tab and show pre-filled Step 1
+  // Save deck slides separately — switchTab triggers renderRecord which clears draftTeaching
+  var _savedDeckSlides   = deck.slides;
+  var _savedDraftTeaching = Object.assign({}, draftTeaching);
+
+  // Switch to Record tab AFTER browse has rendered
   var recTab = document.querySelector('[data-tab=record]');
-  if(recTab) switchTab(recTab);
+  if(recTab){
+    switchTab(recTab);        // → renderRecord() → draftTeaching = {}
+    renderRecordStep();
+    // Re-assign after renderRecord wiped draftTeaching
+    Object.assign(draftTeaching, _savedDraftTeaching);
+    draftTeaching._howDeckSlides = _savedDeckSlides;
+  }
 
 })();
-
-renderTab('browse');
+}, 0);
 
 function renderAnnotatedDeck(t){
   const slides = t.annotatedSlides || [];
@@ -1711,29 +1716,10 @@ var HOW_SLIDE_TYPES = {
 };
 
 // ── Band-appropriate position labels ─────────────────────────────────────────
-function _howPosLabels(){
-  var band = _ptlTeacherBand();
-  if(band==='k2')  return ['Yes!','Sort of...','I don\'t think so'];
-  return ['I agree','Not exactly','I disagree'];
-}
 
 // ── Band-appropriate sentence starters ───────────────────────────────────────
-function _howStarter(band, position, approachIdx){
-  if(band!=='k2' && band!=='35') return '';
-  var starters = {
-    agree:     ['I think this is right because...','This connects to...','This makes me think of...'],
-    notexactly:['This is partly right because...','I would add...','I see it differently because...'],
-    disagree:  ['I don\'t think so because...','A better way to say this is...','This doesn\'t explain...']
-  };
-  return starters[position] ? (starters[position][approachIdx]||'') : '';
-}
 
 // ── Slide 8 position labels ───────────────────────────────────────────────────
-function _howJuzPosLabels(){
-  var band = _ptlTeacherBand();
-  if(band==='k2') return ['I see it!','Sort of...','I see something else'];
-  return ['I see this connection clearly','I see a different connection','I think the connection is elsewhere'];
-}
 
 // ── Main HOW step renderer ────────────────────────────────────────────────────
 function renderHOWStep(){
@@ -1765,17 +1751,15 @@ function renderHOWStep(){
   var deckSlides = draftTeaching._howDeckSlides || [];
   var deckSlide  = deckSlides[_howSlide - 1] || null;
   var slideContentHTML = '';
-  if(deckSlide && (deckSlide.heading || deckSlide.content)){
-    slideContentHTML =
-      '<div style="background:#f9f7f4;border:1px solid #e4ddd0;border-radius:8px;' +
-      'padding:14px 16px;margin-bottom:16px">' +
-        (deckSlide.heading ?
-          '<div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px">' +
-          deckSlide.heading + '</div>' : '') +
-        (deckSlide.content ?
-          '<div style="font-size:13px;color:var(--ink-3);line-height:1.7">' +
-          deckSlide.content + '</div>' : '') +
-      '</div>';
+  if(deckSlide){
+    var _renderedSlide = _howRenderSlideCard(deckSlide);
+    if(_renderedSlide){
+      slideContentHTML =
+        '<div style="background:var(--parchment);border:1px solid var(--parchment-3);' +
+        'border-radius:10px;padding:16px;margin-bottom:16px">' +
+        _renderedSlide +
+        '</div>';
+    }
   }
 
   el.innerHTML =
@@ -1844,11 +1828,11 @@ async function _howGeneratePrompts(n){
     'Generate JSON with this exact shape:\n' +
     '{\n' +
     '  "positions": ["I see this connection clearly","I see a different connection","I think the connection is elsewhere"],\n' +
-    '  "approaches": {\n' +
-    '    "agree": [{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."}],\n' +
-    '    "notexactly": [{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."}],\n' +
-    '    "disagree": [{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."}]\n' +
-    '  },\n' +
+    '  "approaches": [\n' +
+    '    {"label":"Give a new example","work1":"...","work2":"..."},\n' +
+    '    {"label":"Explain why it matters","work1":"...","work2":"..."},\n' +
+    '    {"label":"Connect to what you know","work1":"...","work2":"..."}\n' +
+    '  ],\n' +
     '  "drawingPrompt": "Draw ... (no faces, no eyes)"\n' +
     '}\n' +
     'The approaches and work prompts must be specific to this slide type and the student\'s previous teaching. work2 may be empty string if one prompt is enough.' :
@@ -1857,16 +1841,15 @@ async function _howGeneratePrompts(n){
     'Lesson title: "'+title+'". Subject: '+subject+'. Scholar: '+scholar+'. Juz: '+juz+'.' + '\n\n' +
     'Generate JSON with this exact shape:\n' +
     '{\n' +
-    '  "approaches": {\n' +
-    '    "agree": [{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."}],\n' +
-    '    "notexactly": [{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."}],\n' +
-    '    "disagree": [{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."},{"label":"...","work1":"...","work2":"..."}]\n' +
-    '  },\n' +
+    '  "approaches": [\n' +
+    '    {"label":"Give a new example","work1":"...","work2":"..."},\n' +
+    '    {"label":"Explain why it matters","work1":"...","work2":"..."},\n' +
+    '    {"label":"Connect to what you know","work1":"...","work2":"..."}\n' +
+    '  ],\n' +
     '  "drawingPrompt": "Draw ... (no faces, no eyes)"\n' +
     '}\n' +
-    'Each label must say what the student will DO (e.g. "Give an example the slide didn\'t give"). ' +
-    'work1 and work2 are the specific prompts for what the student writes. work2 can be empty string. ' +
-    'All prompts must be specific to this slide type and subject. Band: '+bandDesc+'.';
+    'The three approaches are always: "Give a new example", "Explain why it matters", "Connect to what you know". ' +
+    'Keep these labels exactly. work1 and work2 are specific prompts tailored to this slide type and subject. work2 can be empty string. Band: '+bandDesc+'.';
 
   try{
     var jwt = localStorage.getItem('how_jwt');
@@ -1892,27 +1875,14 @@ async function _howGeneratePrompts(n){
 
 // ── Fallback prompts if AI fails ──────────────────────────────────────────────
 function _howFallbackPrompts(n, subject){
-  var base = {
-    approaches:{
-      agree:[
-        {label:'Give a new example',work1:'Give one example that proves this is true — one the slide didn\'t give.',work2:''},
-        {label:'Explain why it matters',work1:'Why does this matter beyond this lesson?',work2:''},
-        {label:'Connect to what you know',work1:'What did you already know that this connects to?',work2:'How does this deepen it?'}
-      ],
-      notexactly:[
-        {label:'What is missing',work1:'What important idea does the slide leave out?',work2:''},
-        {label:'When it stops being true',work1:'Describe a situation where this doesn\'t apply.',work2:''},
-        {label:'What exception breaks it',work1:'Give one example this explanation can\'t account for.',work2:''}
-      ],
-      disagree:[
-        {label:'Give a better explanation',work1:'Explain this in a way that makes more sense to you.',work2:''},
-        {label:'What evidence makes you doubt it',work1:'What makes this explanation feel incomplete?',work2:''},
-        {label:'What question does it fail to answer',work1:'What important question does this leave unanswered?',work2:''}
-      ]
-    },
+  return {
+    approaches:[
+      {label:'Give a new example',  work1:'Give one example that proves this is true — one the slide didn\'t give.',work2:''},
+      {label:'Explain why it matters',work1:'Why does this matter beyond this lesson — where does it show up in the world?',work2:''},
+      {label:'Connect to what you know',work1:'What did you already know that this connects to?',work2:'How does this connection deepen the idea?'}
+    ],
     drawingPrompt:'Draw the concept as a diagram or symbol — no faces, no eyes.'
   };
-  return base;
 }
 
 // ── Render slide body after prompts loaded ────────────────────────────────────
@@ -1920,32 +1890,16 @@ function _howRenderSlideBody(n, prompts){
   var el = document.getElementById('how-slide-body');
   if(!el) return;
 
-  var posLabels = (n===8) ? _howJuzPosLabels() : _howPosLabels();
-  var posKeys   = ['agree','notexactly','disagree'];
-  var saved     = _howResponses[n] || {};
-
-  var html = '';
+  var saved = _howResponses[n] || {};
+  var html  = '';
 
   // Teaching target — what this slide means for teaching
   html += '<p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:16px">' +
     '<strong style="color:var(--ink)">To teach this slide means to</strong> ' +
     _howTeachingTarget(n) + '</p>';
 
-  // Position row
-  html += '<div class="how-pos-row">';
-  posKeys.forEach(function(key,i){
-    var sel = saved.position===key ? ' selected '+key : '';
-    html += '<button class="how-pos-btn'+sel+'" onclick="_howSelectPos(\''+key+'\',this)">' +
-      posLabels[i] + '</button>';
-  });
-  html += '</div>';
-
-  // Approach list (hidden until position chosen)
-  html += '<div id="how-approach-area" style="' + (saved.position?'':'display:none') + '">';
-  if(saved.position && prompts.approaches && prompts.approaches[saved.position]){
-    html += _howApproachHTML(n, prompts, saved.position, saved.approachIdx);
-  }
-  html += '</div>';
+  // Approach list — shown directly, no position step
+  html += _howApproachHTML(n, prompts, saved.approachIdx);
 
   el.innerHTML = html;
 
@@ -1969,8 +1923,8 @@ function _howTeachingTarget(n){
 }
 
 // ── Approach HTML ─────────────────────────────────────────────────────────────
-function _howApproachHTML(n, prompts, position, savedApproachIdx){
-  var apps = (prompts.approaches&&prompts.approaches[position]) || [];
+function _howApproachHTML(n, prompts, savedApproachIdx){
+  var apps = (prompts.approaches) || [];
   var band = _ptlTeacherBand();
   var html = '<p style="font-size:11px;font-weight:700;text-transform:uppercase;'+
     'letter-spacing:.06em;color:var(--ink-4);margin-bottom:8px">Choose your approach</p>';
@@ -1982,7 +1936,7 @@ function _howApproachHTML(n, prompts, position, savedApproachIdx){
   html += '</div>';
   // Work fields (shown if approach selected)
   if(savedApproachIdx !== undefined && apps[savedApproachIdx]){
-    html += _howWorkHTML(n, apps[savedApproachIdx], position, band, savedApproachIdx);
+    html += _howWorkHTML(n, apps[savedApproachIdx], band, savedApproachIdx);
   } else {
     html += '<div id="how-work-area"></div>';
   }
@@ -1990,9 +1944,10 @@ function _howApproachHTML(n, prompts, position, savedApproachIdx){
 }
 
 // ── Work fields + canvas + live paragraph ─────────────────────────────────────
-function _howWorkHTML(n, app, position, band, appIdx){
+function _howWorkHTML(n, app, band, appIdx){
   var saved = _howResponses[n] || {};
-  var starter1 = (band==='k2'||band==='35') ? _howStarter(band,position,appIdx) : '';
+  var STARTERS = ['This is an example of...','This matters because...','This connects to...'];
+  var starter1 = (band==='k2'||band==='35') ? (STARTERS[appIdx]||'') : '';
   var html = '<div id="how-work-area">';
 
   // Work field 1
@@ -2047,23 +2002,6 @@ function _howWorkHTML(n, app, position, band, appIdx){
 }
 
 // ── Select position ───────────────────────────────────────────────────────────
-function _howSelectPos(posKey, btn){
-  // Highlight button
-  document.querySelectorAll('.how-pos-btn').forEach(function(b){b.classList.remove('selected','agree','notexactly','disagree');});
-  btn.classList.add('selected', posKey);
-
-  // Save position
-  if(!_howResponses[_howSlide]) _howResponses[_howSlide]={};
-  _howResponses[_howSlide].position = posKey;
-  _howResponses[_howSlide].approachIdx = undefined;
-
-  // Show approaches
-  var area = document.getElementById('how-approach-area');
-  if(!area) return;
-  area.style.display = '';
-  var prompts = _howAICache[_howSlide] || {};
-  area.innerHTML = _howApproachHTML(_howSlide, prompts, posKey, undefined);
-}
 
 // ── Select approach ───────────────────────────────────────────────────────────
 function _howSelectApp(idx, btn){
@@ -2075,14 +2013,13 @@ function _howSelectApp(idx, btn){
   _howResponses[n].approachIdx = idx;
 
   var prompts  = _howAICache[n] || {};
-  var position = _howResponses[n].position || 'agree';
-  var apps     = (prompts.approaches && prompts.approaches[position]) || [];
+  var apps     = (prompts.approaches) || [];
   var app      = apps[idx] || {work1:'Describe your thinking.',work2:''};
   var band     = _ptlTeacherBand();
 
   var workArea = document.getElementById('how-work-area');
   if(!workArea) return;
-  workArea.outerHTML = _howWorkHTML(n, app, position, band, idx);
+  workArea.outerHTML = _howWorkHTML(n, app, band, idx);
 
   // Init canvas
   setTimeout(function(){ _howInitCanvas(n); }, 50);
@@ -2091,27 +2028,18 @@ function _howSelectApp(idx, btn){
 // ── Live paragraph assembly ───────────────────────────────────────────────────
 function _howUpdateParagraph(n){
   var saved = _howResponses[n] || {};
-  var position = saved.position || 'agree';
-  var prompts  = _howAICache[n] || {};
-  var apps     = (prompts.approaches && prompts.approaches[position]) || [];
-  var app      = apps[saved.approachIdx] || {label:''};
-  var posLabels = (n===8) ? _howJuzPosLabels() : _howPosLabels();
-  var posKeys   = ['agree','notexactly','disagree'];
-  var posLabel  = posLabels[posKeys.indexOf(position)] || position;
+  var prompts = _howAICache[n] || {};
+  var apps    = (prompts.approaches) || [];
+  var app     = apps[saved.approachIdx] || {label:''};
 
   var w1El = document.getElementById('how-w1-'+n);
   var w2El = document.getElementById('how-w2-'+n);
   var w1 = (w1El&&w1El.value.trim()) || '';
   var w2 = (w2El&&w2El.value.trim()) || '';
 
-  // Save to responses
   if(!_howResponses[n]) _howResponses[n]={};
   _howResponses[n].work1 = w1;
   _howResponses[n].work2 = w2;
-
-  // Build paragraph
-  var para = '';
-  var slideType = HOW_SLIDE_TYPES[n] || 'this slide';
 
   if(!w1 && !w2){
     var paraEl = document.getElementById('how-para-'+n);
@@ -2119,18 +2047,12 @@ function _howUpdateParagraph(n){
     return;
   }
 
-  if(n===8){
-    para = posLabel + ' — ';
-    if(w1) para += w1;
-    if(w2) para += ' ' + w2;
-  } else {
-    para = posLabel + ' with this slide — ' + (app.label?app.label.toLowerCase()+'. ':'');
-    if(w1) para += w1;
-    if(w2) para += ' ' + w2;
-  }
+  // Paragraph: approach label + student's work
+  var para = (app.label ? app.label + '. ' : '');
+  if(w1) para += w1;
+  if(w2) para += ' ' + w2;
 
   _howResponses[n].paragraph = para;
-
   var paraEl = document.getElementById('how-para-'+n);
   if(paraEl) paraEl.textContent = para;
 }
@@ -2168,7 +2090,6 @@ function _howRestoreCanvas(n, dataUrl){
 // ── Save slide and advance ────────────────────────────────────────────────────
 function _howSaveSlide(n){
   var saved = _howResponses[n] || {};
-  if(!saved.position){ toast('Take a side first — I agree, Not exactly, or I disagree.'); return; }
   if(saved.approachIdx === undefined){ toast('Choose your approach first.'); return; }
   var w1El = document.getElementById('how-w1-'+n);
   if(w1El && !w1El.value.trim()){ toast('Show your work — write at least one response.'); return; }
@@ -2180,16 +2101,12 @@ function _howSaveSlide(n){
 
   // Build the annotatedSlide entry
   var prompts  = _howAICache[n] || {};
-  var position = saved.position;
-  var apps     = (prompts.approaches && prompts.approaches[position]) || [];
+  var apps     = (prompts.approaches) || [];
   var app      = apps[saved.approachIdx] || {};
-  var posLabels = (n===8) ? _howJuzPosLabels() : _howPosLabels();
-  var posKeys   = ['agree','notexactly','disagree'];
-  var posLabel  = posLabels[posKeys.indexOf(position)] || position;
 
   var slide = {
     type:      HOW_SLIDE_TYPES[n] || 'content',
-    heading:   posLabel + ' — ' + (app.label||''),
+    heading:   (app.label||''),
     content:   (saved.work1||'') + (saved.work2 ? '\n' + saved.work2 : ''),
     studentNote: saved.paragraph || '',
     drawing:   saved.drawing || ''
@@ -2647,6 +2564,74 @@ function _howSyncPreview(n, srcCanvas){
   if(srcCanvas.width>0) tctx.drawImage(srcCanvas,0,0,thumb.width,thumb.height);
   if(!_howResponses[n]) _howResponses[n]={};
   try{ _howResponses[n].drawing=thumb.toDataURL(); }catch(e){}
+}
+
+// ── HOW Approach — slide card renderer (matches presRender logic, PTL styles) ─
+function _howRenderSlideCard(sl){
+  if(!sl) return '';
+  var type = sl.type || 'content';
+  var html = '';
+
+  if(type==='title'){
+    html += '<div style="text-align:center;padding:8px 0 4px">';
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">Lesson title</div>';
+    html += '<div style="font-size:1.3rem;font-weight:800;color:var(--ink);line-height:1.3;font-family:\'DM Serif Display\',serif;margin-bottom:8px">'+(sl.heading||'')+'</div>';
+    if(sl.objective) html += '<div style="font-size:.85rem;color:var(--ink-3);line-height:1.6;margin-bottom:6px">'+sl.objective+'</div>';
+    if(sl.juzTheme)  html += '<div style="display:inline-block;background:var(--gold-pale);border:1px solid var(--gold);border-radius:20px;padding:3px 12px;font-size:.78rem;color:var(--coral);font-weight:600;margin-top:4px">✦ '+sl.juzTheme+'</div>';
+    html += '</div>';
+
+  } else if(type==='provocation'){
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">Opening question</div>';
+    if(sl.heading && sl.heading!=='Opening Question') html += '<div style="font-size:.85rem;font-weight:600;color:var(--ink-3);margin-bottom:6px">'+sl.heading+'</div>';
+    if(sl.question) html += '<div style="font-size:1.05rem;font-weight:700;border-left:3px solid var(--teal);padding-left:12px;color:var(--ink);line-height:1.6">'+sl.question+'</div>';
+    if(sl.parentNote) html += '<div style="margin-top:10px;font-size:.78rem;color:var(--ink-4);font-style:italic">'+sl.parentNote+'</div>';
+
+  } else if(type==='worked'){
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">Worked example</div>';
+    html += '<div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px">'+(sl.heading||'')+'</div>';
+    if(sl.content) html += '<div style="font-size:.9rem;color:var(--ink-3);line-height:1.6;margin-bottom:8px">'+sl.content+'</div>';
+    if(sl.steps && sl.steps.length){
+      html += '<ol style="padding-left:1.1rem;margin-top:4px">';
+      sl.steps.forEach(function(s){ html += '<li style="margin-bottom:6px;font-size:.9rem;color:var(--ink);line-height:1.5">'+s+'</li>'; });
+      html += '</ol>';
+    }
+    if(sl.parentNote) html += '<div style="margin-top:8px;font-size:.78rem;color:var(--teal);font-style:italic;border-left:2px solid var(--teal);padding-left:8px">'+sl.parentNote+'</div>';
+
+  } else if(type==='juz'){
+    // PTL adaptation — warm parchment, no dark overlay
+    html += '<div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:10px;padding:14px 16px;text-align:center">';
+    if(sl.arabic) html += '<div style="font-size:1.8rem;direction:rtl;font-family:\'Amiri\',serif;color:var(--ink);margin-bottom:6px;line-height:1.6">'+sl.arabic+'</div>';
+    if(sl.name)   html += '<div style="font-size:.85rem;font-weight:700;color:var(--coral);margin-bottom:8px">'+sl.name+'</div>';
+    if(sl.story)  html += '<div style="font-size:.85rem;color:var(--ink-3);line-height:1.7;margin-bottom:8px;font-style:italic">'+sl.story+'</div>';
+    if(sl.reflection) html += '<div style="font-size:.9rem;font-weight:600;border-left:3px solid var(--gold);padding-left:10px;color:var(--ink);text-align:left;margin-top:4px">'+sl.reflection+'</div>';
+    html += '</div>';
+
+  } else if(type==='studio'){
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:8px">🎨 Studio connection</div>';
+    html += '<div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px">'+(sl.heading||'')+'</div>';
+    if(sl.discipline) html += '<div style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:8px">'+sl.discipline+'</div>';
+    if(sl.prompt)    html += '<div style="background:var(--teal-l);border-left:3px solid var(--teal);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.9rem;line-height:1.7">'+sl.prompt+'</div>';
+    if(sl.materials) html += '<div style="font-size:.8rem;color:var(--ink-3);margin-top:8px"><strong>Materials:</strong> '+sl.materials+'</div>';
+
+  } else {
+    // Default: content, activity, discussion, anything else
+    var typeLabel = {'content':'Concept','activity':'Activity','discussion':'Discussion'}[type]||'';
+    if(typeLabel) html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">'+typeLabel+'</div>';
+    if(sl.heading) html += '<div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px">'+sl.heading+'</div>';
+    if(sl.content) html += '<div style="font-size:.9rem;color:var(--ink-3);line-height:1.7;margin-bottom:8px">'+sl.content+'</div>';
+    if(sl.passage) html += '<div style="background:var(--parchment-2);border-left:3px solid var(--gold);padding:10px 14px;border-radius:0 8px 8px 0;font-family:\'DM Serif Display\',serif;font-size:.9rem;line-height:1.8;margin-top:6px">'+sl.passage+'</div>';
+    if(sl.steps && sl.steps.length){
+      html += '<ol style="padding-left:1.1rem;margin-top:6px">';
+      sl.steps.forEach(function(s){ html += '<li style="margin-bottom:5px;font-size:.9rem;color:var(--ink)">'+s+'</li>'; });
+      html += '</ol>';
+    }
+    if(sl.question) html += '<div style="font-size:1rem;font-weight:700;border-left:3px solid var(--teal);padding-left:10px;color:var(--ink);margin-top:8px;line-height:1.6">'+sl.question+'</div>';
+    if(sl.example)  html += '<div style="margin-top:8px;font-size:.85rem;color:var(--ink-3);font-style:italic"><strong style="color:var(--ink)">Example:</strong> '+sl.example+'</div>';
+    if(sl.visual)   html += '<div style="margin-top:6px;font-size:.8rem;color:var(--teal);font-style:italic">'+sl.visual+'</div>';
+    if(sl.scholarNote) html += '<div style="margin-top:8px;padding:6px 10px;border-radius:6px;font-size:.8rem;font-weight:700;background:var(--teal-l);color:var(--teal)">☪ '+sl.scholarNote+'</div>';
+    if(sl.parentNote)  html += '<div style="margin-top:8px;font-size:.78rem;color:var(--ink-4);font-style:italic;border-left:2px solid var(--ink-5);padding-left:8px">'+sl.parentNote+'</div>';
+  }
+  return html;
 }
 
 </script>

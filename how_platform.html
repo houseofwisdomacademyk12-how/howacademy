@@ -2442,9 +2442,9 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       <button class="tb-btn" onclick="openPres()">🖥 Present</button>
     </span>
     <!-- Student actions -->
-    <span class="role-actions" id="acts-student" style="display:none">
+    <span class="role-actions" id="acts-facilitator-teaching" style="display:none">
       <button class="tb-btn" onclick="teachItFeedback()" style="background:var(--teal,#1d6f6f);color:white;border-color:var(--teal)">🎓 Get feedback</button>
-      <button class="tb-btn" onclick="publishTeaching()" style="background:var(--navy,#1a3d8a);color:white;border-color:var(--navy)">📚 Publish teaching</button>
+      <button class="tb-btn" onclick="publishTeaching()" style="background:var(--navy,#1a3d8a);color:white;border-color:var(--navy)" id="publish-teaching-btn">💾 Save to My Teachings</button>
     </span>
     <button class="tb-btn" id="btn-to-library" onclick="sendToLibrary()" style="display:none;background:var(--teal);color:white;border-color:var(--teal)">📚 Send to peer library</button>
     <button class="tb-btn" id="btn-report" onclick="generateReport()" style="display:none;background:#1a3d8a;color:white;border-color:#1a3d8a">📊 Grade Report</button>
@@ -4660,20 +4660,14 @@ function _launchHOWTeachIt(){
 
   var mappedSlides = (l.slides||[]).map(function(sl, i){
     var typeLabel = HOW_SLIDE_TYPES[sl.type] || 'Content';
-    // Assign positional labels for types that repeat (content)
     if(sl.type==='content'){
       var contentCount = (l.slides||[]).slice(0,i).filter(function(s){return s.type==='content';}).length;
       if(contentCount===1) typeLabel = 'Source / Worked Example / Text';
       if(contentCount===2) typeLabel = 'Content (deeper)';
     }
-    return {
-      slideNum: i+1,
-      type:     sl.type || 'content',
-      typeLabel: typeLabel,
-      heading:  sl.heading  || '',
-      content:  sl.content  || sl.question || ''
-    };
-  });
+    // Pass the full slide object so _howRenderSlideCard can read all fields
+    return Object.assign({}, sl, { slideNum: i+1, typeLabel: typeLabel });
+  });;
 
   // Build the deck payload
   var deck = {
@@ -6150,10 +6144,10 @@ function setRole(role){
   // Show/hide role action groups
   var af = document.getElementById('acts-fac');
   var ap = document.getElementById('acts-parent');
-  var as = document.getElementById('acts-student');
-  if(af) af.style.display    = role==='facilitator'?'':'none';
-  if(ap) ap.style.display    = role==='parent'?'':'none';
-  if(as) as.style.display    = (role==='student'||role==='child')?'':'none';
+  var aft = document.getElementById('acts-facilitator-teaching');
+  if(af)  af.style.display  = role==='facilitator'?'':'none';
+  if(ap)  ap.style.display  = role==='parent'?'':'none';
+  if(aft) aft.style.display = (role==='facilitator'||role==='prep')?'':'none';
 
   // View tabs visibility
   var wbBtn   = document.getElementById('btn-wb');
@@ -8777,7 +8771,6 @@ function openPres(){
     '  <span id="pres-info" style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)">Lesson Deck</span>'+
     '  <div style="display:flex;gap:8px">'+
     '    <button class="pres-ctrl" id="pnotes-btn" onclick="togglePresNotes()" style="background:rgba(255,255,255,.1);border:none;color:white;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">👤 Notes</button>'+
-    (_schedRole==='facilitator'||_schedRole==='prep' ? '    <button class="pres-ctrl" onclick="_saveToMyTeachings()" style="background:rgba(212,175,55,.25);border:1px solid rgba(212,175,55,.4);color:rgba(255,255,255,.9);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">💾 Save to My Teachings</button>' : '')+
     '    <button class="pres-ctrl" onclick="closePres()" style="background:rgba(255,255,255,.1);border:none;color:white;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">✕ Close</button>'+
     '  </div>'+
     '</div>'+
@@ -8803,6 +8796,9 @@ function openPres(){
   if(_pdf&&_pdf.url) _prefix.push({type:'pdf',heading:'Worked Examples',content:l.title,url:_pdf.url});
   if(S.mode==='teachit'||_schedRole==='student'||_schedRole==='child'||S.role==='student'){
     _prefix.push({type:'teach_it',heading:'Now Teach It',content:l.title});
+  }
+  if(_schedRole==='facilitator'||_schedRole==='prep'){
+    _prefix.push({type:'teach_it',heading:'Annotate This Lesson',content:l.title});
   }
   _presSlides=_prefix.concat(_presSlides);
   ov._slides=_presSlides;
@@ -8864,7 +8860,7 @@ function presRender(slides){
     html+='<div style="font-size:2.5rem">✏️</div>';
     html+='<div style="font-size:1.4rem;font-weight:800;color:var(--ink,#1a1a2e)">Now Teach It</div>';
     html+='<div style="font-size:.95rem;color:var(--ink3,#5a5a78);max-width:420px;line-height:1.7">You have watched the introduction and studied the worked examples.<br><br>Now it is your turn to teach <strong>'+(sl.content||'this lesson')+'</strong> — in your own words, through drawings and notes on each slide.</div>';
-    html+='<button onclick="closePres();_goToTeachIt()" style="background:var(--navy,#1a3d8a);color:white;border:none;border-radius:10px;padding:14px 32px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">✏️ Start Teaching →</button>';
+    html+=(_schedRole==='student'||_schedRole==='child'||S.role==='student'?'<button onclick="closePres();_launchHOWTeachIt()" style="background:var(--navy,#1a3d8a);color:white;border:none;border-radius:10px;padding:14px 32px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">✏️ Start Teaching →</button>':'<button onclick="closePres();_goToTeachIt()" style="background:var(--navy,#1a3d8a);color:white;border:none;border-radius:10px;padding:14px 32px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">✏️ Go to Lesson Generator →</button>');
     html+='</div>';
   } else if(sl.type==='pdf'){
     var _dm=(sl.url||'').match(/drive\.google\.com\/file\/d\/([^/?]+)/);
@@ -9241,7 +9237,8 @@ function howVideo(grade, week, subj, ses){
   var ses_=ses||S.session||1;
   var lsKey='how_vid_'+grade+'_'+week+'_'+tk+'_s'+ses_;
   var saved=''; try{ saved=localStorage.getItem(lsKey)||''; }catch(e){}
-  if(!saved){ try{ saved=localStorage.getItem('how_vid_'+grade+'_'+week+'_'+tk)||''; }catch(e){} } // legacy key fallback
+  // Legacy fallback only for session 1 — do NOT fall back to session 1 URL for session 2+
+  if(!saved && ses_===1){ try{ saved=localStorage.getItem('how_vid_'+grade+'_'+week+'_'+tk)||''; }catch(e){} } // legacy key fallback
   if(saved) return {t:'Video Resource', url:saved};
   // Broadcast fallback — URL embedded in lesson workbook by vidSaveLink
   var l=S.lessons&&S.lessons[key(grade,week,subj,ses_)];
@@ -9254,7 +9251,8 @@ function howPdf(grade, week, subj, ses){
   var ses_=ses||S.session||1;
   var lsKey='how_pdf_'+grade+'_'+week+'_'+tk+'_s'+ses_;
   var saved=''; try{ saved=localStorage.getItem(lsKey)||''; }catch(e){}
-  if(!saved){ try{ saved=localStorage.getItem('how_pdf_'+grade+'_'+week+'_'+tk)||''; }catch(e){} } // legacy key fallback
+  // Legacy fallback only for session 1
+  if(!saved && ses_===1){ try{ saved=localStorage.getItem('how_pdf_'+grade+'_'+week+'_'+tk)||''; }catch(e){} } // legacy key fallback
   if(saved) return {t:'Worked Examples', url:saved};
   // Broadcast fallback — URL embedded in lesson workbook by vidSaveLink
   var l=S.lessons&&S.lessons[key(grade,week,subj,ses_)];
