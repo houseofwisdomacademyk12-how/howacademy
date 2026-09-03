@@ -173,6 +173,141 @@ textarea.field{resize:vertical;line-height:1.65}
 .modal-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px}
 .modal-sub{font-size:13px;color:var(--ink-3);margin-bottom:18px;line-height:1.6}
 .highlight{background:var(--gold-pale);border-left:3px solid var(--gold);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;font-size:13px;color:var(--ink-2);line-height:1.7;margin:12px 0}
+
+/* ═══════════════════════════════════════════════════
+   PEER TEACHING LIBRARY — MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media(max-width:767px){
+
+  /* Top nav */
+  .topnav{ padding:0 12px; height:48px; }
+  .topnav-tabs{ overflow-x:auto; }
+  .topnav-tab{ font-size:12px; padding:0 10px; white-space:nowrap; }
+  .topnav-right{ gap:6px; }
+
+  /* Body grid — single column */
+  .body-grid{ grid-template-columns:1fr !important; }
+
+  /* Sidebar — horizontal scrolling strip */
+  .sidebar{
+    position: static;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--ink-5);
+  }
+  .sb-section-label{ display:none; }
+  .sb-item{
+    white-space: nowrap;
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 44px;
+    border-right: 1px solid var(--ink-5);
+    gap: 6px;
+  }
+  .sb-divider{ width:1px; height:100%; margin:0; }
+
+  /* Main area */
+  .main-area{ padding:14px; max-width:100%; }
+  .page-title{ font-size:20px; }
+
+  /* Teaching cards */
+  .t-card-title{ font-size:13px; }
+  .t-card-preview{ font-size:12px; }
+  .t-card-footer{ flex-wrap:wrap; gap:8px; }
+  .t-card-actions{ flex-wrap:wrap; }
+
+  /* Detail view */
+  .detail-title{ font-size:18px; }
+  .detail-header{ flex-direction:column; gap:10px; }
+  .detail-body{ font-size:13px; }
+  .detail-back{ font-size:12px; }
+
+  /* Transcript bubbles */
+  .bubble{ max-width:95%; font-size:12px; }
+
+  /* Record steps — scrollable */
+  .record-steps{ overflow-x:auto; white-space:nowrap; }
+
+  /* Form fields */
+  .field{ font-size:14px !important; } /* prevent iOS zoom */
+  input, textarea, select{ font-size:14px !important; }
+
+  /* Search bar */
+  .search-bar{ flex-wrap:wrap; gap:6px; }
+
+  /* Modal — full width */
+  .modal, [class*="-modal"]{
+    width: calc(100vw - 20px) !important;
+    max-width: none !important;
+  }
+
+  /* Stat cards */
+  .stat-card{ padding:12px; }
+  .stat-n{ font-size:24px; }
+
+  /* Buttons */
+  button:not(.topnav-tab):not(.sb-item):not(.t-card-stat){
+    min-height:40px;
+  }
+}
+
+@media(min-width:768px) and (max-width:1100px){
+  .body-grid{ grid-template-columns:220px 1fr; }
+  .main-area{ padding:20px 22px; max-width:100%; }
+}
+
+/* ── HOW Approach — TeachIt flow ──────────────────────────────────────────── */
+.how-slide-header{font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--ink-4);margin-bottom:4px}
+.how-slide-type{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:16px}
+/* position buttons removed — flat approach list */
+.how-approach-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.how-app-btn{padding:12px 16px;border:2px solid var(--ink-5);border-radius:8px;
+  background:white;cursor:pointer;font-size:13px;color:var(--ink);text-align:left;
+  transition:.15s;line-height:1.5}
+.how-app-btn:hover{border-color:var(--teal);background:#f0fafa}
+.how-app-btn.selected{border-color:var(--teal);background:#e6f5f5;font-weight:600}
+.how-work-block{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.how-work-label{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--teal);margin-bottom:4px}
+.how-work-field{width:100%;padding:10px 12px;border:1.5px solid var(--ink-5);
+  border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;
+  min-height:60px;line-height:1.6;color:var(--ink)}
+.how-work-field:focus{outline:none;border-color:var(--teal)}
+.how-para-live{background:#f9f7f4;border:1px solid #e4ddd0;border-radius:8px;
+  padding:14px 16px;margin-bottom:16px;min-height:60px;font-size:13px;
+  line-height:1.75;color:var(--ink);font-style:italic;transition:.2s}
+.how-para-label{font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.06em;color:#aaa;margin-bottom:6px}
+.how-canvas-wrap{border:1.5px solid var(--ink-5);border-radius:8px;
+  overflow:hidden;margin-bottom:8px;background:#fff;touch-action:none}
+.how-canvas{width:100%;height:160px;cursor:crosshair;display:block}
+.how-canvas-tools{display:flex;gap:6px;align-items:center;margin-bottom:12px;
+  flex-wrap:wrap}
+.how-canvas-tool{padding:4px 10px;border:1px solid var(--ink-5);border-radius:6px;
+  background:white;font-size:11px;cursor:pointer}
+.how-canvas-tool:hover{border-color:var(--teal)}
+.how-draw-label{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:#9c6b2e;margin-bottom:6px}
+.how-slide-nav{display:flex;align-items:center;justify-content:space-between;
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--ink-5)}
+.how-slide-dots{display:flex;gap:5px}
+.how-slide-dot{width:8px;height:8px;border-radius:50%;background:var(--ink-5);transition:.15s}
+.how-slide-dot.done{background:var(--teal)}
+.how-slide-dot.current{background:var(--ink);transform:scale(1.3)}
+.how-loading{display:flex;align-items:center;gap:8px;color:var(--ink-4);
+  font-size:13px;padding:20px 0}
+.how-spinner{width:18px;height:18px;border:2px solid var(--ink-5);
+  border-top-color:var(--teal);border-radius:50%;animation:howspin .7s linear infinite}
+@keyframes howspin{to{transform:rotate(360deg)}}
+@media(max-width:600px){
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -967,7 +1102,13 @@ function renderRecord(mc){
   renderRecordStep();
 }
 
-function _ptlTeacherBand(){var g=parseInt(draftTeaching.teacherGrade||99);return g<=4?'34':'512';}
+function _ptlTeacherBand(){
+  var g=parseInt(draftTeaching.teacherGrade||99);
+  if(g<=2) return 'k2';
+  if(g<=5) return '35';
+  if(g<=8) return '68';
+  return '912';
+}
 
 function renderRecordStep(){
   const body = document.getElementById('record-body');
@@ -1101,8 +1242,21 @@ function renderRecStep1(c){
       <label class="form-label">Scholar connected to this concept (optional)</label>
       <input class="field" type="text" id="r-scholar" placeholder="e.g. Al-Khwarizmi, Al-Battani, Ibn Sina…" value="${draftTeaching.scholar||''}">
     </div>
+    <div style="margin-bottom:16px;padding:14px;background:#f0f8f4;border:1.5px solid #b8ddc8;border-radius:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="r-teachit" style="width:18px;height:18px;${draftTeaching.isTeachIt?'cursor:default':'cursor:pointer'}" ${draftTeaching.isTeachIt?'checked disabled':''}>
+        <div>
+          <label for="r-teachit" style="font-size:13px;font-weight:600;color:var(--ink);cursor:pointer">
+            ✏️ I am teaching from my lesson deck
+          </label>
+          <p style="font-size:11px;color:var(--ink-4);margin:2px 0 0">
+            Use the HOW Approach — each slide becomes a teaching moment
+          </p>
+        </div>
+      </div>
+    </div>
     <div class="btn-row">
-      <button class="btn primary" onclick="saveRecStep1()">Next: describe your teaching →</button>
+      <button class="btn primary" onclick="saveRecStep1()">Next →</button>
     </div>
   </div>`;
 }
@@ -1116,7 +1270,17 @@ function saveRecStep1(){
   draftTeaching.disc = draftTeaching.subject==='math'?'math':draftTeaching.subject==='science'?'sky':draftTeaching.subject==='history'?'eng':'hum';
   draftTeaching.juz = document.getElementById('r-juz').value;
   draftTeaching.scholar = document.getElementById('r-scholar').value;
-  recStep=2; renderRecordStep();
+  draftTeaching.isTeachIt = document.getElementById('r-teachit').checked;
+  if(draftTeaching.isTeachIt){
+    // HOW Approach flow — start at slide 1
+    _howSlide = 1;
+    _howResponses = {};
+    _howAICache = {};
+    draftTeaching.annotatedSlides = [];
+    renderHOWStep();
+  } else {
+    recStep=2; renderRecordStep();
+  }
 }
 
 function renderRecStep2(c){
@@ -1298,7 +1462,7 @@ async function publishTeaching(){
   const shared = await pushTeachingToSupabase(entry);
   if(shared && shared.id){
     // Adopt the server uuid so future publish-toggles update the real row
-    var list = getTeachings().map(function(t){ return t.id===entry.id ? Object.assign({},t,{id:shared.id, fromSupabase:true}) : t; });
+    var list = getTeachings().map(function(t){ return t.id===entry.id ? Object.assign({},t,{id:shared.id, fromSupabase:true, keyIdea:shared.keyIdea||t.keyIdea, summary:shared.summary||t.summary, scholar:shared.scholar||t.scholar, juz:shared.juz||t.juz, openQuestion:shared.openQuestion||t.openQuestion, annotatedSlides:shared.annotatedSlides||t.annotatedSlides||[]}) : t; });
     saveTeachings(list);
     toast('✓ Published to the shared library — it can now be verified on the Isnād Map.');
   } else {
@@ -1320,14 +1484,24 @@ async function pushTeachingToSupabase(t){
   var teacherGrade = parseInt(t.teacherGrade, 10) || null;
   var teacherId = await findOrCreatePerson(teacherName, teacherGrade, 'student');
   var row = {
-    household_id: hid||null,
-    teacher_name: teacherName,          // v1: kept for backward compat
-    teacher_id:   teacherId,            // v2: FK to person
-    student_id: sid,
-    taught_grade: parseInt(t.taughtGrade,10)||parseInt(t.grade,10)||parseInt((getSettings()||{}).grade,10)||null,
-    subject: t.subject||'other',
-    title: t.title||'Untitled teaching',
-    is_published: true
+    household_id:     hid||null,
+    teacher_name:     teacherName,
+    teacher_id:       teacherId,
+    student_id:       sid,
+    taught_grade:     parseInt(t.taughtGrade,10)||parseInt(t.grade,10)||parseInt((getSettings()||{}).grade,10)||null,
+    teacher_grade:    parseInt(t.teacherGrade,10)||teacherGrade||null,
+    subject:          t.subject||'other',
+    title:            t.title||'Untitled teaching',
+    key_idea:         t.keyIdea||'',
+    summary:          t.summary||'',
+    transcript:       t.transcript||[],
+    tags:             t.tags||[],
+    scholar:          t.scholar||'',
+    juz:              t.juz||'',
+    open_question:    t.openQuestion||'',
+    year:             t.year||String(new Date().getFullYear()),
+    annotated_slides: t.annotatedSlides||[],
+    is_published:     true
   };
   try{
     var r = await sb.from('teaching').insert(row).select().single();
@@ -1337,7 +1511,16 @@ async function pushTeachingToSupabase(t){
       r = await sb.from('teaching').insert(row).select().single();
     }
     if(r.error) return { reason:'Server rejected it: '+(r.error.message||'unknown error') };
-    return { id: r.data.id };
+    // Merge server fields back into the local object shape (snake_case → camelCase)
+    return {
+      id: r.data.id,
+      keyIdea:       r.data.key_idea||t.keyIdea||'',
+      summary:       r.data.summary||t.summary||'',
+      scholar:       r.data.scholar||t.scholar||'',
+      juz:           r.data.juz||t.juz||'',
+      openQuestion:  r.data.open_question||t.openQuestion||'',
+      annotatedSlides: r.data.annotated_slides||t.annotatedSlides||[],
+    };
   }catch(e){
     return { reason:'Network error: '+(e.message||'could not reach Supabase') };
   }
@@ -1403,7 +1586,57 @@ function getSettings(){return S.get('settings')||{name:'',grade:'',apiKey:''}}
 
 // ── INIT ──────────────────────────────────────────────────────────
 updateCounts();
+
+// ── HOW Teach It — detect incoming deck from platform ────────────────────────
+
+
 renderTab('browse');
+
+// HOW Teach It deck — detect after browse renders
+setTimeout(function(){
+(function detectHOWTeachItDeck(){
+  var raw = null;
+  try{ raw = localStorage.getItem('how_teachit_deck'); }catch(e){}
+  if(!raw) return;
+
+  var deck = null;
+  try{ deck = JSON.parse(raw); }catch(e){ return; }
+  if(!deck || !deck.slides || !deck.slides.length) return;
+
+  // Clear the key immediately so it doesn't re-trigger on next load
+  try{ localStorage.removeItem('how_teachit_deck'); }catch(e){}
+
+  // Pre-fill draftTeaching from the deck
+  recStep = 1;
+  draftTeaching = {
+    title:       deck.title    || '',
+    subject:     deck.subject  || 'math',
+    disc:        deck.subject==='math'?'math':deck.subject==='science'?'sky':deck.subject==='history'?'eng':'hum',
+    teacherGrade:String(deck.grade  || 7),
+    taughtGrade: String(deck.grade  || 7),
+    scholar:     deck.scholar  || '',
+    juz:         deck.juz      || '',
+    isTeachIt:   true,
+    // Store the slide data for the HOW flow
+    _howDeckSlides: deck.slides
+  };
+
+  // Save deck slides separately — switchTab triggers renderRecord which clears draftTeaching
+  var _savedDeckSlides   = deck.slides;
+  var _savedDraftTeaching = Object.assign({}, draftTeaching);
+
+  // Switch to Record tab AFTER browse has rendered
+  var recTab = document.querySelector('[data-tab=record]');
+  if(recTab){
+    switchTab(recTab);        // → renderRecord() → draftTeaching = {}
+    renderRecordStep();
+    // Re-assign after renderRecord wiped draftTeaching
+    Object.assign(draftTeaching, _savedDraftTeaching);
+    draftTeaching._howDeckSlides = _savedDeckSlides;
+  }
+
+})();
+}, 0);
 
 function renderAnnotatedDeck(t){
   const slides = t.annotatedSlides || [];
@@ -1462,9 +1695,948 @@ function libSlideNav(id, dir){
   if(ctr)  ctr.textContent = 'Slide '+(state.idx+1)+' of '+state.slides.length;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// HOW APPROACH — TeachIt Flow
+// ══════════════════════════════════════════════════════════════════════════════
+
+var _howSlide = 1;
+var _howResponses = {};   // { slideNum: {position,approach,work,drawing,paragraph} }
+var _howAICache  = {};    // { slideNum: {slideType,prompts} }
+
+// ── Slide type definitions ────────────────────────────────────────────────────
+var HOW_SLIDE_TYPES = {
+  1: 'Title',
+  2: 'Opening Question',
+  3: 'Content',
+  4: 'Source / Worked Example / Text',
+  5: 'Content (deeper)',
+  6: 'Activity / Discussion',
+  7: 'Discussion',
+  8: 'Juz Connection'
+};
+
+// ── Band-appropriate position labels ─────────────────────────────────────────
+
+// ── Band-appropriate sentence starters ───────────────────────────────────────
+
+// ── Slide 8 position labels ───────────────────────────────────────────────────
+
+// ── Main HOW step renderer ────────────────────────────────────────────────────
+function renderHOWStep(){
+  var body = document.getElementById('record-body');
+  if(!body) return;
+
+  var total = 8;
+  var dots = '';
+  for(var i=1;i<=total;i++){
+    var cls = _howResponses[i] ? 'done' : (i===_howSlide ? 'current' : '');
+    dots += '<div class="how-slide-dot '+cls+'"></div>';
+  }
+
+  body.innerHTML =
+    '<div class="record-steps">' +
+      ['Setup','HOW Approach','Open question','Review'].map(function(s,i){
+        var step = i+1;
+        var cls = step===2?'active-step':step<2?'done-step':'';
+        return '<div class="rec-step '+cls+'"><p class="rec-step-n">'+step+'</p><p class="rec-step-l">'+s+'</p></div>';
+      }).join('') +
+    '</div>' +
+    '<div id="rec-step-content"></div>';
+
+  var el = document.getElementById('rec-step-content');
+
+  // Slide header
+  var slideType = HOW_SLIDE_TYPES[_howSlide] || 'Content';
+  // Get actual slide content from deck if available
+  var deckSlides = draftTeaching._howDeckSlides || [];
+  var deckSlide  = deckSlides[_howSlide - 1] || null;
+  var slideContentHTML = '';
+  if(deckSlide){
+    var _renderedSlide = _howRenderSlideCard(deckSlide);
+    if(_renderedSlide){
+      slideContentHTML =
+        '<div style="background:var(--parchment);border:1px solid var(--parchment-3);' +
+        'border-radius:10px;padding:16px;margin-bottom:16px">' +
+        _renderedSlide +
+        '</div>';
+    }
+  }
+
+  el.innerHTML =
+    '<div style="background:white;border:1px solid var(--ink-5);border-radius:var(--rl);padding:20px">' +
+      '<div class="how-slide-header">Slide ' + _howSlide + ' of 8</div>' +
+      '<div class="how-slide-type">' + slideType + '</div>' +
+      slideContentHTML +
+      '<div id="how-slide-body"><div class="how-loading"><div class="how-spinner"></div>Preparing your slide prompts…</div></div>' +
+      '<div class="how-slide-nav">' +
+        (_howSlide > 1 ? '<button class="btn" onclick="_howBack()">← Back</button>' : '<div></div>') +
+        '<div class="how-slide-dots">' + dots + '</div>' +
+        '<div style="font-size:11px;color:var(--ink-4)">'+_howSlide+' / 8</div>' +
+      '</div>' +
+    '</div>';
+
+  _howLoadSlide(_howSlide);
+}
+
+// ── Load slide prompts (AI or cached) ────────────────────────────────────────
+async function _howLoadSlide(n){
+  if(_howAICache[n]){
+    _howRenderSlideBody(n, _howAICache[n]);
+    return;
+  }
+  var prompts = await _howGeneratePrompts(n);
+  _howAICache[n] = prompts;
+  _howRenderSlideBody(n, prompts);
+}
+
+// ── AI prompt generation ──────────────────────────────────────────────────────
+async function _howGeneratePrompts(n){
+  var band    = _ptlTeacherBand();
+  var subject = draftTeaching.subject || 'general';
+  var scholar = draftTeaching.scholar || '';
+  var juz     = draftTeaching.juz    || '';
+  var title   = draftTeaching.title  || '';
+  var slideType = HOW_SLIDE_TYPES[n] || 'Content';
+
+  // Previous responses for slide 8 context
+  var prevContext = '';
+  if(n===8){
+    var parts = [];
+    for(var i=1;i<=7;i++){
+      if(_howResponses[i] && _howResponses[i].paragraph){
+        parts.push('Slide '+i+' ('+HOW_SLIDE_TYPES[i]+'): '+_howResponses[i].paragraph);
+      }
+    }
+    if(parts.length) prevContext = '\n\nStudent\'s teaching so far:\n' + parts.join('\n');
+  }
+
+  var isJuz = (n===8);
+  var bandDesc = band==='k2'?'Ages 5-7, very simple language':
+                 band==='35'?'Ages 8-11, clear simple sentences':
+                 band==='68'?'Ages 11-14, thoughtful language':
+                 'Ages 14-18, full intellectual depth';
+
+  var sys = 'You are helping a student prepare to teach a slide from their lesson deck. ' +
+    'Generate prompts for the HOW Approach — a structured teaching framework. ' +
+    'The student\'s grade band is: '+bandDesc+'. ' +
+    'Return ONLY valid JSON. No markdown, no backticks, no explanation.';
+
+  var prompt = isJuz ?
+    'Slide type: Juz Connection (Slide 8 of 8).\n' +
+    'Lesson title: "'+title+'". Subject: '+subject+'. Scholar: '+scholar+'. Juz: '+juz+'.' +
+    prevContext + '\n\n' +
+    'Generate JSON with this exact shape:\n' +
+    '{\n' +
+    '  "positions": ["I see this connection clearly","I see a different connection","I think the connection is elsewhere"],\n' +
+    '  "approaches": [\n' +
+    '    {"label":"Give a new example","work1":"...","work2":"..."},\n' +
+    '    {"label":"Explain why it matters","work1":"...","work2":"..."},\n' +
+    '    {"label":"Connect to what you know","work1":"...","work2":"..."}\n' +
+    '  ],\n' +
+    '  "drawingPrompt": "Draw ... (no faces, no eyes)"\n' +
+    '}\n' +
+    'The approaches and work prompts must be specific to this slide type and the student\'s previous teaching. work2 may be empty string if one prompt is enough.' :
+
+    'Slide type: "'+slideType+'" (Slide '+n+' of 8).\n' +
+    'Lesson title: "'+title+'". Subject: '+subject+'. Scholar: '+scholar+'. Juz: '+juz+'.' + '\n\n' +
+    'Generate JSON with this exact shape:\n' +
+    '{\n' +
+    '  "approaches": [\n' +
+    '    {"label":"Give a new example","work1":"...","work2":"..."},\n' +
+    '    {"label":"Explain why it matters","work1":"...","work2":"..."},\n' +
+    '    {"label":"Connect to what you know","work1":"...","work2":"..."}\n' +
+    '  ],\n' +
+    '  "drawingPrompt": "Draw ... (no faces, no eyes)"\n' +
+    '}\n' +
+    'The three approaches are always: "Give a new example", "Explain why it matters", "Connect to what you know". ' +
+    'Keep these labels exactly. work1 and work2 are specific prompts tailored to this slide type and subject. work2 can be empty string. Band: '+bandDesc+'.';
+
+  try{
+    var jwt = localStorage.getItem('how_jwt');
+    if(!jwt) throw new Error('no jwt');
+    var resp = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:600,
+        system: sys,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    var data = await resp.json();
+    var raw = (data.content&&data.content[0]&&data.content[0].text)||'{}';
+    raw = raw.replace(/```json/g,'').replace(/```/g,'').trim();
+    return JSON.parse(raw);
+  } catch(e){
+    // Fallback — generic prompts
+    return _howFallbackPrompts(n, subject);
+  }
+}
+
+// ── Fallback prompts if AI fails ──────────────────────────────────────────────
+function _howFallbackPrompts(n, subject){
+  return {
+    approaches:[
+      {label:'Give a new example',  work1:'Give one example that proves this is true — one the slide didn\'t give.',work2:''},
+      {label:'Explain why it matters',work1:'Why does this matter beyond this lesson — where does it show up in the world?',work2:''},
+      {label:'Connect to what you know',work1:'What did you already know that this connects to?',work2:'How does this connection deepen the idea?'}
+    ],
+    drawingPrompt:'Draw the concept as a diagram or symbol — no faces, no eyes.'
+  };
+}
+
+// ── Render slide body after prompts loaded ────────────────────────────────────
+function _howRenderSlideBody(n, prompts){
+  var el = document.getElementById('how-slide-body');
+  if(!el) return;
+
+  var saved = _howResponses[n] || {};
+  var html  = '';
+
+  // Teaching target — what this slide means for teaching
+  html += '<p style="font-size:13px;color:var(--ink-3);line-height:1.7;margin-bottom:16px">' +
+    '<strong style="color:var(--ink)">To teach this slide means to</strong> ' +
+    _howTeachingTarget(n) + '</p>';
+
+  // Approach list — shown directly, no position step
+  html += _howApproachHTML(n, prompts, saved.approachIdx);
+
+  el.innerHTML = html;
+
+  // Restore drawing if any
+  if(saved.drawing) _howRestoreCanvas(n, saved.drawing);
+}
+
+// ── What teaching this slide means — one line per type ───────────────────────
+function _howTeachingTarget(n){
+  var targets = {
+    1: 'frame what you\'re about to teach — the big idea behind the title, in your own words.',
+    2: 'take a position on this question and give one reason for it.',
+    3: 'explain this concept in your own words and give one example the slide didn\'t give.',
+    4: 'explain what this source or example proves — and what it doesn\'t.',
+    5: 'go one step further than the slide — the next question, example, or connection.',
+    6: 'explain what doing this activity would reveal and why it matters.',
+    7: 'state your position on this discussion and give one reason for it.',
+    8: 'explain how the Juz connects to what you taught in slides 1–7 — in your own words.'
+  };
+  return targets[n] || 'engage with this content on your own terms.';
+}
+
+// ── Approach HTML ─────────────────────────────────────────────────────────────
+function _howApproachHTML(n, prompts, savedApproachIdx){
+  var apps = (prompts.approaches) || [];
+  var band = _ptlTeacherBand();
+  var html = '<p style="font-size:11px;font-weight:700;text-transform:uppercase;'+
+    'letter-spacing:.06em;color:var(--ink-4);margin-bottom:8px">Choose your approach</p>';
+  html += '<div class="how-approach-list">';
+  apps.forEach(function(app,i){
+    var sel = savedApproachIdx===i ? ' selected' : '';
+    html += '<button class="how-app-btn'+sel+'" onclick="_howSelectApp('+i+',this)">'+app.label+'</button>';
+  });
+  html += '</div>';
+  // Work fields (shown if approach selected)
+  if(savedApproachIdx !== undefined && apps[savedApproachIdx]){
+    html += _howWorkHTML(n, apps[savedApproachIdx], band, savedApproachIdx);
+  } else {
+    html += '<div id="how-work-area"></div>';
+  }
+  return html;
+}
+
+// ── Work fields + canvas + live paragraph ─────────────────────────────────────
+function _howWorkHTML(n, app, band, appIdx){
+  var saved = _howResponses[n] || {};
+  var STARTERS = ['This is an example of...','This matters because...','This connects to...'];
+  var starter1 = (band==='k2'||band==='35') ? (STARTERS[appIdx]||'') : '';
+  var html = '<div id="how-work-area">';
+
+  // Work field 1
+  html += '<div class="how-work-block">';
+  html += '<div class="how-work-label">' + app.work1 + '</div>';
+  html += '<textarea class="how-work-field" id="how-w1-'+n+'" rows="3" ' +
+    'placeholder="' + (starter1 || 'Your response...') + '" ' +
+    'oninput="_howUpdateParagraph('+n+')">' + (saved.work1||'') + '</textarea>';
+  html += '</div>';
+
+  // Work field 2 if present
+  if(app.work2){
+    html += '<div class="how-work-block">';
+    html += '<div class="how-work-label">' + app.work2 + '</div>';
+    html += '<textarea class="how-work-field" id="how-w2-'+n+'" rows="3" ' +
+      'placeholder="Your response..." oninput="_howUpdateParagraph('+n+')">' +
+      (saved.work2||'') + '</textarea>';
+    html += '</div>';
+  }
+
+  // Drawing box — compact preview + expand button matching lesson generator
+  html += '<div class="how-draw-label">' +
+    (_howAICache[n]&&_howAICache[n].drawingPrompt ? _howAICache[n].drawingPrompt :
+     'Draw what pushed you to this position — no faces, no eyes.') + '</div>';
+  html += '<div style="border:1.5px solid #e4ddd0;border-radius:10px;overflow:hidden;background:#fafaf8;margin-bottom:8px">';
+  html += '<canvas class="how-canvas" id="how-canvas-'+n+'" width="600" height="160" '+
+    'style="display:block;width:100%;height:120px;cursor:default"></canvas>';
+  html += '<div style="padding:8px 12px;background:#f8f5ee;border-top:1px solid #f0ece4;'+
+    'display:flex;align-items:center;justify-content:space-between">';
+  html += '<span style="font-size:.72rem;color:#9a9ab0" id="how-canvas-hint-'+n+'">No drawing yet</span>';
+  html += '<button onclick="_howExpandCanvas('+n+')" '+
+    'style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#1a1a2e;'+
+    'color:white;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit">'+
+    '✏ Draw explanation</button>';
+  html += '</div></div>';
+
+  // Live paragraph
+  html += '<div class="how-para-label">Your teaching — builds as you write</div>';
+  html += '<div class="how-para-live" id="how-para-'+n+'">' +
+    (saved.paragraph||'<span style="color:#ccc">Your teaching will appear here as you write…</span>') +
+    '</div>';
+
+  // Save + next
+  html += '<div style="display:flex;gap:8px;margin-top:4px">';
+  html += '<button class="btn primary" onclick="_howSaveSlide('+n+')">'+
+    (n<8 ? 'Save & next slide →' : 'Save & finish →') + '</button>';
+  if(n>1) html += '<button class="btn" onclick="_howBack()">← Back</button>';
+  html += '</div>';
+
+  html += '</div>'; // how-work-area
+  return html;
+}
+
+// ── Select position ───────────────────────────────────────────────────────────
+
+// ── Select approach ───────────────────────────────────────────────────────────
+function _howSelectApp(idx, btn){
+  document.querySelectorAll('.how-app-btn').forEach(function(b){b.classList.remove('selected');});
+  btn.classList.add('selected');
+
+  var n = _howSlide;
+  if(!_howResponses[n]) _howResponses[n]={};
+  _howResponses[n].approachIdx = idx;
+
+  var prompts  = _howAICache[n] || {};
+  var apps     = (prompts.approaches) || [];
+  var app      = apps[idx] || {work1:'Describe your thinking.',work2:''};
+  var band     = _ptlTeacherBand();
+
+  var workArea = document.getElementById('how-work-area');
+  if(!workArea) return;
+  workArea.outerHTML = _howWorkHTML(n, app, band, idx);
+
+  // Init canvas
+  setTimeout(function(){ _howInitCanvas(n); }, 50);
+}
+
+// ── Live paragraph assembly ───────────────────────────────────────────────────
+function _howUpdateParagraph(n){
+  var saved = _howResponses[n] || {};
+  var prompts = _howAICache[n] || {};
+  var apps    = (prompts.approaches) || [];
+  var app     = apps[saved.approachIdx] || {label:''};
+
+  var w1El = document.getElementById('how-w1-'+n);
+  var w2El = document.getElementById('how-w2-'+n);
+  var w1 = (w1El&&w1El.value.trim()) || '';
+  var w2 = (w2El&&w2El.value.trim()) || '';
+
+  if(!_howResponses[n]) _howResponses[n]={};
+  _howResponses[n].work1 = w1;
+  _howResponses[n].work2 = w2;
+
+  if(!w1 && !w2){
+    var paraEl = document.getElementById('how-para-'+n);
+    if(paraEl) paraEl.innerHTML = '<span style="color:#ccc">Your teaching will appear here as you write…</span>';
+    return;
+  }
+
+  // Paragraph: approach label + student's work
+  var para = (app.label ? app.label + '. ' : '');
+  if(w1) para += w1;
+  if(w2) para += ' ' + w2;
+
+  _howResponses[n].paragraph = para;
+  var paraEl = document.getElementById('how-para-'+n);
+  if(paraEl) paraEl.textContent = para;
+}
+
+// ── Canvas init / draw / clear / restore ─────────────────────────────────────
+var _howCanvasState = {};
+
+// Canvas managed by _howExpandCanvas — these are kept as no-ops for compatibility
+var _howCanvasState = {};
+function _howInitCanvas(n){}
+function _howSaveCanvasData(n){
+  var cv=document.getElementById('how-canvas-'+n);
+  if(!cv) return;
+  if(!_howResponses[n]) _howResponses[n]={};
+  try{ _howResponses[n].drawing=cv.toDataURL(); }catch(e){}
+}
+function _howClearCanvas(n){
+  _howStrokes[n]=[];
+  var cv=document.getElementById('how-canvas-'+n);
+  if(!cv) return;
+  cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+  if(_howResponses[n]) _howResponses[n].drawing='';
+  var hint=document.getElementById('how-canvas-hint-'+n);
+  if(hint) hint.textContent='No drawing yet';
+}
+function _howRestoreCanvas(n, dataUrl){
+  if(!dataUrl) return;
+  var cv=document.getElementById('how-canvas-'+n);
+  if(!cv) return;
+  var img=new Image();
+  img.onload=function(){ cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); };
+  img.src=dataUrl;
+}
+
+// ── Save slide and advance ────────────────────────────────────────────────────
+function _howSaveSlide(n){
+  var saved = _howResponses[n] || {};
+  if(saved.approachIdx === undefined){ toast('Choose your approach first.'); return; }
+  var w1El = document.getElementById('how-w1-'+n);
+  if(w1El && !w1El.value.trim()){ toast('Show your work — write at least one response.'); return; }
+
+  // Save canvas before advancing
+  _howSaveCanvasData(n);
+  var hint=document.getElementById('how-canvas-hint-'+n);
+  if(hint && _howStrokes[n] && _howStrokes[n].length>0) hint.textContent='Drawing saved ✓';
+
+  // Build the annotatedSlide entry
+  var prompts  = _howAICache[n] || {};
+  var apps     = (prompts.approaches) || [];
+  var app      = apps[saved.approachIdx] || {};
+
+  var slide = {
+    type:      HOW_SLIDE_TYPES[n] || 'content',
+    heading:   (app.label||''),
+    content:   (saved.work1||'') + (saved.work2 ? '\n' + saved.work2 : ''),
+    studentNote: saved.paragraph || '',
+    drawing:   saved.drawing || ''
+  };
+
+  draftTeaching.annotatedSlides = draftTeaching.annotatedSlides || [];
+  // Replace or add
+  var existing = draftTeaching.annotatedSlides.findIndex(function(s,i){ return i===n-1; });
+  if(existing >= 0) draftTeaching.annotatedSlides[existing] = slide;
+  else draftTeaching.annotatedSlides.push(slide);
+
+  if(n < 8){
+    _howSlide = n + 1;
+    renderHOWStep();
+    // Init canvas after render
+    setTimeout(function(){ _howInitCanvas(_howSlide); }, 100);
+  } else {
+    // Done with all slides — build key idea and summary from paragraphs
+    var paras = [];
+    for(var i=1;i<=8;i++){
+      if(_howResponses[i] && _howResponses[i].paragraph) paras.push(_howResponses[i].paragraph);
+    }
+    draftTeaching.keyIdea = paras[0] || '';
+    draftTeaching.summary = paras.join(' ');
+    draftTeaching.isTeachIt = true;
+    // Go to open question step
+    recStep = 4; renderRecordStep();
+  }
+}
+
+// ── Back navigation ───────────────────────────────────────────────────────────
+function _howBack(){
+  if(_howSlide > 1){
+    _howSlide--;
+    renderHOWStep();
+    setTimeout(function(){
+      var saved = _howResponses[_howSlide];
+      if(saved && saved.drawing) _howRestoreCanvas(_howSlide, saved.drawing);
+      _howInitCanvas(_howSlide);
+    }, 100);
+  } else {
+    // Back to step 1
+    recStep = 1; renderRecordStep();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HOW APPROACH — Drawing Engine (ported from HOW Platform)
+// ══════════════════════════════════════════════════════════════════════════════
+
+var _howStrokes = {};  // { slideNum: [{type,x1,y1,x2,y2,color,lw,...}] }
+var _howCvState = {};  // { slideNum: {tool,color,size} }
+
+function _howShapeRedraw(ctx, strokes){
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  (strokes||[]).forEach(function(h){ _howShapeDrawOn(ctx,h); });
+}
+
+function _howShapeDrawOn(ctx,h){
+  ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+  if(h.type==='highlight'){
+    ctx.globalAlpha=0.28;
+    ctx.fillStyle=(h.color==='#1a1a2e')?'#ffdd44':h.color;
+    ctx.fillRect(Math.min(h.x1,h.x2),Math.min(h.y1,h.y2),Math.abs(h.x2-h.x1),Math.abs(h.y2-h.y1));
+  }else if(h.type==='circle'){
+    ctx.strokeStyle=h.color; ctx.lineWidth=(h.lw||3)+1;
+    var rx=Math.abs(h.x2-h.x1)/2,ry=Math.abs(h.y2-h.y1)/2;
+    ctx.beginPath(); ctx.ellipse((h.x1+h.x2)/2,(h.y1+h.y2)/2,Math.max(rx,5),Math.max(ry,5),0,0,Math.PI*2); ctx.stroke();
+  }else if(h.type==='rect'){
+    ctx.strokeStyle=h.color; ctx.lineWidth=(h.lw||3)+1;
+    ctx.strokeRect(Math.min(h.x1,h.x2),Math.min(h.y1,h.y2),Math.abs(h.x2-h.x1),Math.abs(h.y2-h.y1));
+  }else if(h.type==='arrow'){
+    ctx.strokeStyle=h.color; ctx.fillStyle=h.color; ctx.lineWidth=(h.lw||3)+1;
+    var dx=h.x2-h.x1,dy=h.y2-h.y1,len=Math.sqrt(dx*dx+dy*dy);
+    if(len<5){ctx.restore();return;}
+    var angle=Math.atan2(dy,dx),headLen=Math.min(20,len*0.4);
+    ctx.beginPath(); ctx.moveTo(h.x1,h.y1); ctx.lineTo(h.x2,h.y2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(h.x2,h.y2);
+    ctx.lineTo(h.x2-headLen*Math.cos(angle-0.4),h.y2-headLen*Math.sin(angle-0.4));
+    ctx.lineTo(h.x2-headLen*Math.cos(angle+0.4),h.y2-headLen*Math.sin(angle+0.4));
+    ctx.closePath(); ctx.fill();
+  }else if(h.type==='text'){
+    ctx.fillStyle=h.color; ctx.font='bold '+(h.size||16)+'px DM Sans,sans-serif';
+    ctx.fillText(h.text,h.x,h.y);
+  }else if(h.type==='erase'){
+    if(!h.points||h.points.length<2){ctx.restore();return;}
+    ctx.globalCompositeOperation='destination-out';
+    ctx.lineWidth=(h.lw||3)*4; ctx.strokeStyle='rgba(0,0,0,1)';
+    ctx.beginPath(); ctx.moveTo(h.points[0].x,h.points[0].y);
+    for(var ei=1;ei<h.points.length;ei++){
+      var emx=(h.points[ei-1].x+h.points[ei].x)/2,emy=(h.points[ei-1].y+h.points[ei].y)/2;
+      ctx.quadraticCurveTo(h.points[ei-1].x,h.points[ei-1].y,emx,emy);
+    }
+    ctx.stroke();
+  }else if(h.type==='star'){
+    ctx.strokeStyle=h.color; ctx.lineWidth=(h.lw||3)+1;
+    var scx=(h.x1+h.x2)/2,scy=(h.y1+h.y2)/2;
+    var sR=Math.min(Math.abs(h.x2-h.x1),Math.abs(h.y2-h.y1))/2;
+    if(sR<5){ctx.restore();return;}
+    var sr=sR*0.38;
+    ctx.beginPath();
+    for(var si=0;si<16;si++){
+      var sa=si*Math.PI/8-Math.PI/2;
+      var srad=(si%2===0)?sR:sr;
+      var spx=scx+srad*Math.cos(sa),spy=scy+srad*Math.sin(sa);
+      if(si===0)ctx.moveTo(spx,spy);else ctx.lineTo(spx,spy);
+    }
+    ctx.closePath(); ctx.stroke();
+  }else if(h.type==='crescent'){
+    ctx.fillStyle=h.color;
+    var ccx=(h.x1+h.x2)/2,ccy=(h.y1+h.y2)/2;
+    var cR=Math.min(Math.abs(h.x2-h.x1),Math.abs(h.y2-h.y1))/2;
+    if(cR<5){ctx.restore();return;}
+    ctx.beginPath();
+    ctx.arc(ccx,ccy,cR,0,Math.PI*2,false);
+    ctx.arc(ccx+cR*0.32,ccy-cR*0.08,cR*0.76,0,Math.PI*2,true);
+    ctx.fill('evenodd');
+  }else if(h.type==='arch'){
+    ctx.strokeStyle=h.color; ctx.lineWidth=(h.lw||3)+1;
+    var al=Math.min(h.x1,h.x2),at=Math.min(h.y1,h.y2);
+    var ar=Math.max(h.x1,h.x2),ab=Math.max(h.y1,h.y2);
+    var amid=(al+ar)/2,aw=ar-al,ah=ab-at;
+    ctx.beginPath();
+    ctx.moveTo(al,ab); ctx.lineTo(al,at+ah*0.45);
+    ctx.quadraticCurveTo(al,at,amid,at);
+    ctx.quadraticCurveTo(ar,at,ar,at+ah*0.45);
+    ctx.lineTo(ar,ab); ctx.stroke();
+  }else if(h.type==='diamond'){
+    ctx.strokeStyle=h.color; ctx.lineWidth=(h.lw||3)+1;
+    var dcx=(h.x1+h.x2)/2,dcy=(h.y1+h.y2)/2;
+    var dw=Math.abs(h.x2-h.x1)/2,dh=Math.abs(h.y2-h.y1)/2;
+    ctx.beginPath();
+    ctx.moveTo(dcx,dcy-dh); ctx.lineTo(dcx+dw,dcy);
+    ctx.lineTo(dcx,dcy+dh); ctx.lineTo(dcx-dw,dcy);
+    ctx.closePath(); ctx.stroke();
+  }else if(h.type==='pen'){
+    if(!h.points||h.points.length<2){ctx.restore();return;}
+    ctx.strokeStyle=h.color; ctx.lineWidth=h.lw||3;
+    ctx.beginPath(); ctx.moveTo(h.points[0].x,h.points[0].y);
+    for(var i=1;i<h.points.length;i++){
+      var mx=(h.points[i-1].x+h.points[i].x)/2,my=(h.points[i-1].y+h.points[i].y)/2;
+      ctx.quadraticCurveTo(h.points[i-1].x,h.points[i-1].y,mx,my);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function _howExpandCanvas(n){
+  if(!_howStrokes[n]) _howStrokes[n]=[];
+  var cv    = _howCvState[n]||{};
+  var activeTool  = cv.tool  ||'pen';
+  var activeColor = cv.color ||'#1a1a2e';
+  var activeSize  = cv.size  ||3;
+
+  var slideType = HOW_SLIDE_TYPES[n]||'Content';
+  var drawPrompt = (_howAICache[n]&&_howAICache[n].drawingPrompt)||
+    'Draw what pushed you to this position — no faces, no eyes.';
+
+  var TOOLS=[
+    {id:'highlight',icon:'▬',key:'H',hint:'Drag to highlight'},
+    {id:'circle',   icon:'○',key:'C',hint:'Drag to circle'},
+    {id:'arrow',    icon:'↗',key:'A',hint:'Drag for arrow'},
+    {id:'rect',     icon:'□',key:'R',hint:'Drag a box'},
+    {id:'text',     icon:'T',key:'T',hint:'Click to type'},
+    {id:'pen',      icon:'✏',key:'P',hint:'Freehand'},
+    {id:'erase',    icon:'⊘',key:'E',hint:'Drag to erase'},
+    {id:'star',     icon:'★',key:'S',hint:'8-point star'},
+    {id:'crescent', icon:'☽',key:'M',hint:'Crescent'},
+    {id:'arch',     icon:'⌒',key:'N',hint:'Pointed arch'},
+    {id:'diamond',  icon:'◇',key:'D',hint:'Arabesque tile'}
+  ];
+  var COLORS=[
+    '#1d6f6f','#c0522a','#1a1a2e','#d4af37','#6b3fa0','#1a3d8a','#2a7a2a',
+    '#d32f2f','#e65100','#c2185b','#0288d1','#5d4037','#9e9e9e','#ffffff'
+  ];
+
+  var ov=document.createElement('div');
+  ov.id='how-canvas-expand-ov';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);'+
+    'display:flex;flex-direction:column;align-items:stretch;font-family:DM Sans,sans-serif';
+
+  // Left palette
+  var palette=document.createElement('div');
+  palette.style.cssText='position:absolute;left:0;top:0;bottom:0;width:52px;background:#13101f;'+
+    'display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;z-index:2;overflow-y:auto';
+
+  TOOLS.forEach(function(def){
+    var b=document.createElement('button');
+    b.setAttribute('data-how-tool',def.id);
+    b.title=def.hint+' ('+def.key+')';
+    b.style.cssText='width:38px;height:38px;border-radius:9px;border:1.5px solid transparent;'+
+      'background:transparent;color:rgba(255,255,255,.5);cursor:pointer;display:flex;'+
+      'flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:15px;font-family:inherit';
+    var ic=document.createElement('span'); ic.textContent=def.icon;
+    var ky=document.createElement('span'); ky.textContent=def.key;
+    ky.style.cssText='font-size:7px;font-weight:700;color:rgba(255,255,255,.25);line-height:1';
+    b.appendChild(ic); b.appendChild(ky);
+    b.onclick=function(){ setET(def.id); };
+    palette.appendChild(b);
+  });
+
+  var sep=document.createElement('div');
+  sep.style.cssText='width:24px;height:1px;background:rgba(255,255,255,.1);margin:4px 0';
+  palette.appendChild(sep);
+
+  // Undo + clear
+  [{ic:'↩',k:'⌘Z',fn:function(){
+    _howStrokes[n].pop();
+    _howShapeRedraw(bgCtx,_howStrokes[n]);
+    _howSyncPreview(n,bgCanvas);
+  }},{ic:'🗑',k:'Del',fn:function(){
+    _howStrokes[n]=[];
+    _howShapeRedraw(bgCtx,_howStrokes[n]);
+    _howSyncPreview(n,bgCanvas);
+  }}].forEach(function(cfg){
+    var b=document.createElement('button'); b.title=cfg.k; b.onclick=cfg.fn;
+    b.style.cssText='width:38px;height:38px;border-radius:9px;border:1.5px solid transparent;'+
+      'background:transparent;color:rgba(255,255,255,.5);cursor:pointer;display:flex;'+
+      'flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;font-family:inherit';
+    var ic=document.createElement('span'); ic.textContent=cfg.ic;
+    var ky=document.createElement('span'); ky.textContent=cfg.k;
+    ky.style.cssText='font-size:7px;font-weight:700;color:rgba(255,255,255,.25);line-height:1';
+    b.appendChild(ic); b.appendChild(ky);
+    palette.appendChild(b);
+  });
+
+  var sep2=document.createElement('div');
+  sep2.style.cssText='width:24px;height:1px;background:rgba(255,255,255,.1);margin:4px 0';
+  palette.appendChild(sep2);
+
+  COLORS.forEach(function(col){
+    var dot=document.createElement('div');
+    dot.setAttribute('data-how-color',col);
+    dot.style.cssText='width:16px;height:16px;border-radius:50%;background:'+col+
+      ';cursor:pointer;border:2px solid '+(activeColor===col?'white':'transparent')+
+      ';box-sizing:border-box;margin:2px 0';
+    dot.onclick=function(){ setEC(col); };
+    palette.appendChild(dot);
+  });
+
+  // Topbar
+  var topbar=document.createElement('div');
+  topbar.style.cssText='min-height:44px;background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,.08);'+
+    'display:flex;align-items:center;padding:0 14px 0 62px;gap:10px;flex-shrink:0';
+
+  var titleWrap=document.createElement('div');
+  titleWrap.style.cssText='display:flex;flex-direction:column;gap:2px';
+  var titleEl=document.createElement('span');
+  titleEl.style.cssText='font-size:12px;font-weight:600;color:rgba(255,255,255,.8)';
+  titleEl.textContent='Explain it with a drawing · Slide '+n+' · '+slideType;
+  var promptEl=document.createElement('span');
+  promptEl.style.cssText='font-size:10px;color:rgba(255,255,255,.4);max-width:500px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+  promptEl.textContent=drawPrompt;
+  titleWrap.appendChild(titleEl); titleWrap.appendChild(promptEl);
+
+  var hintEl=document.createElement('span');
+  hintEl.id='how-expand-hint';
+  hintEl.style.cssText='font-size:11px;color:rgba(255,255,255,.3)';
+
+  var szWrap=document.createElement('div');
+  szWrap.style.cssText='display:flex;align-items:center;gap:5px;margin-left:auto';
+  var szLbl=document.createElement('span');
+  szLbl.style.cssText='font-size:10px;color:rgba(255,255,255,.4)';
+  szLbl.textContent='Size';
+  var szSlider=document.createElement('input');
+  szSlider.type='range'; szSlider.min=1; szSlider.max=16; szSlider.value=activeSize;
+  szSlider.style.width='70px';
+  szSlider.oninput=function(){
+    activeSize=parseInt(this.value);
+    if(_howCvState[n]) _howCvState[n].size=activeSize;
+  };
+  szWrap.appendChild(szLbl); szWrap.appendChild(szSlider);
+
+  var doneBtn=document.createElement('button');
+  doneBtn.style.cssText='background:#d4af37;color:#1a1a2e;border:none;border-radius:6px;'+
+    'padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:10px';
+  doneBtn.textContent='Save ✓';
+  doneBtn.onclick=function(){
+    _howSyncPreview(n,bgCanvas);
+    ov.remove();
+    document.removeEventListener('keydown',kbHandler);
+    // Update the preview thumbnail in the HOW slide
+    var thumb=document.getElementById('how-canvas-'+n);
+    if(thumb && bgCanvas.width>0){
+      var tctx=thumb.getContext('2d');
+      tctx.clearRect(0,0,thumb.width,thumb.height);
+      tctx.drawImage(bgCanvas,0,0,thumb.width,thumb.height);
+    }
+    // Save data URL
+    if(!_howResponses[n]) _howResponses[n]={};
+    try{ _howResponses[n].drawing=bgCanvas.toDataURL(); }catch(e){}
+  };
+
+  topbar.appendChild(titleWrap); topbar.appendChild(hintEl);
+  topbar.appendChild(szWrap); topbar.appendChild(doneBtn);
+
+  // Canvas area
+  var ca=document.createElement('div');
+  ca.style.cssText='flex:1;position:relative;background:#fff;margin-left:52px;overflow:hidden;touch-action:none';
+  var bgCanvas=document.createElement('canvas');
+  bgCanvas.style.cssText='position:absolute;inset:0';
+  var pvCanvas=document.createElement('canvas');
+  pvCanvas.style.cssText='position:absolute;inset:0;cursor:crosshair;touch-action:none';
+  var bgCtx=bgCanvas.getContext('2d'), pvCtx=pvCanvas.getContext('2d');
+  var textInput=document.createElement('input');
+  textInput.type='text'; textInput.placeholder='Type… (Enter to place)';
+  textInput.style.cssText='display:none;position:absolute;z-index:20;background:transparent;'+
+    'border:1.5px dashed #d4af37;min-width:80px;padding:3px 6px;font-family:DM Sans,sans-serif;'+
+    'font-size:16px;color:#1a1a2e;outline:none';
+  ca.appendChild(bgCanvas); ca.appendChild(pvCanvas); ca.appendChild(textInput);
+
+  // Status bar
+  var statusBar=document.createElement('div');
+  statusBar.style.cssText='height:26px;background:#13101f;display:flex;align-items:center;'+
+    'padding:0 14px 0 62px;flex-shrink:0';
+  var st=document.createElement('span');
+  st.style.cssText='font-size:10px;color:rgba(255,255,255,.4)';
+  st.textContent='H highlight · C circle · A arrow · R rect · T text · P pen · E erase · S star · M crescent · N arch · D diamond · ⌘Z undo · Esc close';
+  statusBar.appendChild(st);
+
+  var body=document.createElement('div');
+  body.style.cssText='flex:1;display:flex;flex-direction:column;overflow:hidden';
+  body.appendChild(ca); body.appendChild(statusBar);
+  ov.appendChild(topbar); ov.appendChild(body); ov.appendChild(palette);
+  document.body.appendChild(ov);
+
+  // Resize and restore existing strokes
+  function resizeCanvases(){
+    var r=ca.getBoundingClientRect();
+    [bgCanvas,pvCanvas].forEach(function(cv){
+      cv.width=r.width; cv.height=r.height;
+      cv.style.width=r.width+'px'; cv.style.height=r.height+'px';
+    });
+    // Restore from existing thumbnail
+    var thumb=document.getElementById('how-canvas-'+n);
+    if(thumb && thumb.width>0){
+      bgCtx.drawImage(thumb,0,0,bgCanvas.width,bgCanvas.height);
+    }
+    _howShapeRedraw(bgCtx,_howStrokes[n]);
+  }
+  requestAnimationFrame(resizeCanvases);
+
+  // Tool / colour setters
+  function setET(t){
+    activeTool=t;
+    if(!_howCvState[n]) _howCvState[n]={};
+    _howCvState[n].tool=t;
+    palette.querySelectorAll('[data-how-tool]').forEach(function(b){
+      var on=b.getAttribute('data-how-tool')===t;
+      b.style.background=on?'rgba(212,175,55,.15)':'transparent';
+      b.style.borderColor=on?'#d4af37':'transparent';
+      b.style.color=on?'#e8cc70':'rgba(255,255,255,.5)';
+    });
+    var def=TOOLS.find(function(tt){return tt.id===t;})||{};
+    if(hintEl) hintEl.textContent='· '+(def.hint||'');
+    pvCanvas.style.cursor=t==='text'?'text':'crosshair';
+  }
+  function setEC(col){
+    activeColor=col;
+    if(!_howCvState[n]) _howCvState[n]={};
+    _howCvState[n].color=col;
+    palette.querySelectorAll('[data-how-color]').forEach(function(d){
+      d.style.borderColor=d.getAttribute('data-how-color')===col?'white':'transparent';
+    });
+  }
+  setET(activeTool); setEC(activeColor);
+
+  // Drawing
+  var drawing=false,sx=0,sy=0,penPoints=[];
+  function commitText(){
+    if(textInput.style.display==='none') return;
+    var v=textInput.value.trim();
+    if(v){
+      var x=parseInt(textInput.style.left)||0,y=(parseInt(textInput.style.top)||0)+20;
+      _howStrokes[n].push({type:'text',x:x,y:y,text:v,color:activeColor,size:Math.max(14,activeSize*4)});
+      _howShapeRedraw(bgCtx,_howStrokes[n]);
+      _howSyncPreview(n,bgCanvas);
+    }
+    textInput.style.display='none'; textInput.value='';
+  }
+  function gp(e){
+    var r=ca.getBoundingClientRect();
+    if(e.touches) return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
+    return{x:e.clientX-r.left,y:e.clientY-r.top};
+  }
+  ca.addEventListener('pointerdown',function(e){
+    if(e.target===textInput) return;
+    e.preventDefault(); ca.setPointerCapture(e.pointerId);
+    if(textInput.style.display!=='none') commitText();
+    if(activeTool==='text'){
+      var p=gp(e);
+      textInput.style.left=p.x+'px'; textInput.style.top=p.y+'px';
+      textInput.value=''; textInput.style.display='block';
+      requestAnimationFrame(function(){textInput.focus();}); return;
+    }
+    drawing=true; var p=gp(e); sx=p.x; sy=p.y;
+    if(activeTool==='pen'||activeTool==='erase') penPoints=[{x:p.x,y:p.y}];
+  });
+  ca.addEventListener('pointermove',function(e){
+    e.preventDefault();
+    if(!drawing) return;
+    var p=gp(e);
+    pvCtx.clearRect(0,0,pvCanvas.width,pvCanvas.height);
+    if(activeTool==='pen'||activeTool==='erase'){
+      penPoints.push({x:p.x,y:p.y});
+      _howShapeDrawOn(pvCtx,{type:activeTool,points:penPoints,color:activeColor,lw:activeSize});
+    } else {
+      _howShapeDrawOn(pvCtx,{type:activeTool,x1:sx,y1:sy,x2:p.x,y2:p.y,color:activeColor,lw:activeSize});
+    }
+  });
+  function finish(e){
+    if(!drawing) return; drawing=false;
+    pvCtx.clearRect(0,0,pvCanvas.width,pvCanvas.height);
+    var p=e?gp(e):{x:sx,y:sy};
+    if(activeTool==='pen'||activeTool==='erase'){
+      if(penPoints.length>1) _howStrokes[n].push({type:activeTool,points:penPoints.slice(),color:activeColor,lw:activeSize});
+    } else {
+      _howStrokes[n].push({type:activeTool,x1:sx,y1:sy,x2:p.x,y2:p.y,color:activeColor,lw:activeSize});
+    }
+    _howShapeRedraw(bgCtx,_howStrokes[n]);
+    _howSyncPreview(n,bgCanvas);
+    penPoints=[];
+  }
+  ca.addEventListener('pointerup',finish);
+  ca.addEventListener('pointercancel',finish);
+  ca.addEventListener('contextmenu',function(e){e.preventDefault();});
+  textInput.addEventListener('keydown',function(e){
+    if(e.key==='Escape'||(e.key==='Enter'&&!e.shiftKey)){e.preventDefault();commitText();}
+  });
+
+  var kbHandler=function(e){
+    if(textInput===document.activeElement) return;
+    if(!document.getElementById('how-canvas-expand-ov')) return;
+    var map={h:'highlight',c:'circle',a:'arrow',r:'rect',t:'text',p:'pen',e:'erase',s:'star',m:'crescent',n:'arch',d:'diamond'};
+    if(map[e.key.toLowerCase()]) setET(map[e.key.toLowerCase()]);
+    if(e.key>='1'&&e.key<='9') setEC(COLORS[parseInt(e.key)-1]);
+    if((e.metaKey||e.ctrlKey)&&e.key==='z'){
+      e.preventDefault();
+      _howStrokes[n].pop();
+      _howShapeRedraw(bgCtx,_howStrokes[n]);
+      _howSyncPreview(n,bgCanvas);
+    }
+    if(e.key==='Escape'){commitText();ov.remove();document.removeEventListener('keydown',kbHandler);}
+  };
+  document.addEventListener('keydown',kbHandler);
+}
+
+// Sync expanded canvas back to the small preview thumbnail
+function _howSyncPreview(n, srcCanvas){
+  var thumb=document.getElementById('how-canvas-'+n);
+  if(!thumb) return;
+  var tctx=thumb.getContext('2d');
+  tctx.clearRect(0,0,thumb.width,thumb.height);
+  if(srcCanvas.width>0) tctx.drawImage(srcCanvas,0,0,thumb.width,thumb.height);
+  if(!_howResponses[n]) _howResponses[n]={};
+  try{ _howResponses[n].drawing=thumb.toDataURL(); }catch(e){}
+}
+
+// ── HOW Approach — slide card renderer (matches presRender logic, PTL styles) ─
+function _howRenderSlideCard(sl){
+  if(!sl) return '';
+  var type = sl.type || 'content';
+  var html = '';
+
+  if(type==='title'){
+    html += '<div style="text-align:center;padding:8px 0 4px">';
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">Lesson title</div>';
+    html += '<div style="font-size:1.3rem;font-weight:800;color:var(--ink);line-height:1.3;font-family:\'DM Serif Display\',serif;margin-bottom:8px">'+(sl.heading||'')+'</div>';
+    if(sl.objective) html += '<div style="font-size:.85rem;color:var(--ink-3);line-height:1.6;margin-bottom:6px">'+sl.objective+'</div>';
+    if(sl.juzTheme)  html += '<div style="display:inline-block;background:var(--gold-pale);border:1px solid var(--gold);border-radius:20px;padding:3px 12px;font-size:.78rem;color:var(--coral);font-weight:600;margin-top:4px">✦ '+sl.juzTheme+'</div>';
+    html += '</div>';
+
+  } else if(type==='provocation'){
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">Opening question</div>';
+    if(sl.heading && sl.heading!=='Opening Question') html += '<div style="font-size:.85rem;font-weight:600;color:var(--ink-3);margin-bottom:6px">'+sl.heading+'</div>';
+    if(sl.question) html += '<div style="font-size:1.05rem;font-weight:700;border-left:3px solid var(--teal);padding-left:12px;color:var(--ink);line-height:1.6">'+sl.question+'</div>';
+    if(sl.parentNote) html += '<div style="margin-top:10px;font-size:.78rem;color:var(--ink-4);font-style:italic">'+sl.parentNote+'</div>';
+
+  } else if(type==='worked'){
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">Worked example</div>';
+    html += '<div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px">'+(sl.heading||'')+'</div>';
+    if(sl.content) html += '<div style="font-size:.9rem;color:var(--ink-3);line-height:1.6;margin-bottom:8px">'+sl.content+'</div>';
+    if(sl.steps && sl.steps.length){
+      html += '<ol style="padding-left:1.1rem;margin-top:4px">';
+      sl.steps.forEach(function(s){ html += '<li style="margin-bottom:6px;font-size:.9rem;color:var(--ink);line-height:1.5">'+s+'</li>'; });
+      html += '</ol>';
+    }
+    if(sl.parentNote) html += '<div style="margin-top:8px;font-size:.78rem;color:var(--teal);font-style:italic;border-left:2px solid var(--teal);padding-left:8px">'+sl.parentNote+'</div>';
+
+  } else if(type==='juz'){
+    // PTL adaptation — warm parchment, no dark overlay
+    html += '<div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:10px;padding:14px 16px;text-align:center">';
+    if(sl.arabic) html += '<div style="font-size:1.8rem;direction:rtl;font-family:\'Amiri\',serif;color:var(--ink);margin-bottom:6px;line-height:1.6">'+sl.arabic+'</div>';
+    if(sl.name)   html += '<div style="font-size:.85rem;font-weight:700;color:var(--coral);margin-bottom:8px">'+sl.name+'</div>';
+    if(sl.story)  html += '<div style="font-size:.85rem;color:var(--ink-3);line-height:1.7;margin-bottom:8px;font-style:italic">'+sl.story+'</div>';
+    if(sl.reflection) html += '<div style="font-size:.9rem;font-weight:600;border-left:3px solid var(--gold);padding-left:10px;color:var(--ink);text-align:left;margin-top:4px">'+sl.reflection+'</div>';
+    html += '</div>';
+
+  } else if(type==='studio'){
+    html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:8px">🎨 Studio connection</div>';
+    html += '<div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px">'+(sl.heading||'')+'</div>';
+    if(sl.discipline) html += '<div style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:8px">'+sl.discipline+'</div>';
+    if(sl.prompt)    html += '<div style="background:var(--teal-l);border-left:3px solid var(--teal);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.9rem;line-height:1.7">'+sl.prompt+'</div>';
+    if(sl.materials) html += '<div style="font-size:.8rem;color:var(--ink-3);margin-top:8px"><strong>Materials:</strong> '+sl.materials+'</div>';
+
+  } else {
+    // Default: content, activity, discussion, anything else
+    var typeLabel = {'content':'Concept','activity':'Activity','discussion':'Discussion'}[type]||'';
+    if(typeLabel) html += '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-4);margin-bottom:8px">'+typeLabel+'</div>';
+    if(sl.heading) html += '<div style="font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px">'+sl.heading+'</div>';
+    if(sl.content) html += '<div style="font-size:.9rem;color:var(--ink-3);line-height:1.7;margin-bottom:8px">'+sl.content+'</div>';
+    if(sl.passage) html += '<div style="background:var(--parchment-2);border-left:3px solid var(--gold);padding:10px 14px;border-radius:0 8px 8px 0;font-family:\'DM Serif Display\',serif;font-size:.9rem;line-height:1.8;margin-top:6px">'+sl.passage+'</div>';
+    if(sl.steps && sl.steps.length){
+      html += '<ol style="padding-left:1.1rem;margin-top:6px">';
+      sl.steps.forEach(function(s){ html += '<li style="margin-bottom:5px;font-size:.9rem;color:var(--ink)">'+s+'</li>'; });
+      html += '</ol>';
+    }
+    if(sl.question) html += '<div style="font-size:1rem;font-weight:700;border-left:3px solid var(--teal);padding-left:10px;color:var(--ink);margin-top:8px;line-height:1.6">'+sl.question+'</div>';
+    if(sl.example)  html += '<div style="margin-top:8px;font-size:.85rem;color:var(--ink-3);font-style:italic"><strong style="color:var(--ink)">Example:</strong> '+sl.example+'</div>';
+    if(sl.visual)   html += '<div style="margin-top:6px;font-size:.8rem;color:var(--teal);font-style:italic">'+sl.visual+'</div>';
+    if(sl.scholarNote) html += '<div style="margin-top:8px;padding:6px 10px;border-radius:6px;font-size:.8rem;font-weight:700;background:var(--teal-l);color:var(--teal)">☪ '+sl.scholarNote+'</div>';
+    if(sl.parentNote)  html += '<div style="margin-top:8px;font-size:.78rem;color:var(--ink-4);font-style:italic;border-left:2px solid var(--ink-5);padding-left:8px">'+sl.parentNote+'</div>';
+  }
+  return html;
+}
+
 </script>
 <script>
-/* ── SUPABASE CREDENTIALS — replace before deploying ── */
+/* ── SUPABASE CREDENTIALS ── */
 var sb = null;
 try{
   if(typeof supabase !== 'undefined'){
@@ -1474,190 +2646,6 @@ try{
     );
   }
 }catch(e){}
-/* ─────────────────────────────────────────────────── */
-
-// ── PERSON HELPER (v2 schema) ─────────────────────────────────────────────
-// Looks up a person row by (household_id, name); creates one if missing.
-// Returns the UUID, or null if Supabase is unavailable.
-// Safe to call multiple times — the UNIQUE INDEX on (household_id, name)
-// ensures no duplicates even if two tabs race.
-async function findOrCreatePerson(name, grade, role) {
-  if (!sb || !localStorage.getItem('how_jwt')) return null;
-  var hid = localStorage.getItem('how_household_id');
-  if (!hid || !name) return null;
-  try {
-    // Try to find existing person first
-    var found = await sb.from('person')
-      .select('id')
-      .eq('household_id', hid)
-      .eq('name', name.trim())
-      .limit(1);
-    if (found.data && found.data.length) return found.data[0].id;
-    // Not found — insert
-    var created = await sb.from('person').insert({
-      household_id: hid,
-      name: name.trim(),
-      grade: grade || null,
-      role: role || 'student'
-    }).select('id').single();
-    if (created.data) return created.data.id;
-  } catch(e) {
-    // Conflict on unique index means another tab just inserted — re-fetch
-    try {
-      var retry = await sb.from('person')
-        .select('id')
-        .eq('household_id', hid)
-        .eq('name', name.trim())
-        .limit(1);
-      if (retry.data && retry.data.length) return retry.data[0].id;
-    } catch(e2) {}
-  }
-  return null;
-}
-
-// ── Fetch published teachings from Supabase and merge with local ──────────
-async function fetchSupabaseTeachings(){
-  // Raw fetch to avoid DataCloneError — the Supabase JS client's auth module
-  // tries to postMessage a Headers object internally, which browsers reject in
-  // sandboxed/iframe contexts. (Same fix already applied to fetchSupabaseDebates.)
-  try{
-    var SURL='https://apallkuclqcqxnbmjuqu.supabase.co';
-    var SKEY='sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9';
-    var jwt=localStorage.getItem('how_jwt');
-    var resp=await fetch(
-      SURL+'/rest/v1/teaching?select=*&is_published=eq.true&order=created_at.desc',
-      {headers:{'apikey':SKEY,'Authorization':'Bearer '+(jwt||SKEY),'Content-Type':'application/json'}}
-    );
-    if(!resp.ok){console.warn('Supabase fetch failed: HTTP',resp.status);return[];}
-    var data=await resp.json();
-
-    if(!data || !data.length) return [];
-
-    // Map Supabase row format → ptl format
-    return data.map(function(r){
-      return {
-        id:             r.id,
-        title:          r.title || '',
-        teacherGrade:   String(r.taught_grade || ''),
-        taughtGrade:    String(r.taught_grade || ''),
-        subject:        r.subject || '',
-        disc:           ({math:'math',science:'sky',social:'eng',ela:'hum',writing:'hum'})[r.subject] || 'hum',
-        juz:            '',
-        scholar:        '',
-        keyIdea:        r.key_idea || '',
-        summary:        r.summary || '',
-        transcript:     Array.isArray(r.transcript) ? r.transcript : [],
-        openQuestion:   '',
-        tags:           Array.isArray(r.tags) ? r.tags : [],
-        teacherName:    r.teacher_name || '',
-        teacherInitials:(r.teacher_name||'??').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase(),
-        year:           new Date(r.created_at).getFullYear().toString(),
-        views:          0,
-        helpful:        r.helpful || 0,
-        isTeachIt:      !!r.student_id,
-        fromSupabase:   true
-      };
-    });
-  }catch(e){
-    console.warn('fetchSupabaseTeachings error:', e);
-    return [];
-  }
-}
-
-// ── Fetch public debates from Supabase ───────────────────────────────────
-async function fetchSupabaseDebates(){
-  // Raw fetch instead of Supabase JS client to avoid DataCloneError —
-  // the client's auth module tries to postMessage a Headers object internally,
-  // which browsers reject in sandboxed/iframe contexts.
-  try{
-    var SURL='https://apallkuclqcqxnbmjuqu.supabase.co';
-    var SKEY='sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9';
-    var jwt=localStorage.getItem('how_jwt');
-    var resp=await fetch(
-      SURL+'/rest/v1/debate?select=*&is_public=eq.true&status=eq.complete&order=updated_at.desc',
-      {headers:{'apikey':SKEY,'Authorization':'Bearer '+(jwt||SKEY),'Content-Type':'application/json'}}
-    );
-    if(!resp.ok) return [];
-    var data=await resp.json();
-    if(!Array.isArray(data)||!data.length) return [];
-    return data.map(function(r){
-      var moves=Array.isArray(r.moves)?r.moves:[];
-      var transcript=moves.map(function(m){
-        return (m.who==='a'?(r.student_a_name||'Student A'):
-                m.who==='b'?(r.student_b_name||'Student B'):'Ustadh')+': '+m.text;
-      }).join('\n\n');
-      var synth='';
-      try{ var s=JSON.parse(r.synthesis||'{}'); synth=s.verdict||s.summary||s.deepest_insight||''; }catch(e){}
-      return {
-        id:r.id, title:r.claim,
-        teacherGrade:String(r.grade||''), taughtGrade:String(r.grade||''),
-        subject:'munazara', disc:'hum', juz:'Week '+r.week, scholar:'',
-        keyIdea:r.claim,
-        summary:synth||(moves.length?moves[0].text.slice(0,120)+'\u2026':''),
-        transcript:[{type:'debate',text:transcript}], openQuestion:'',
-        tags:['Munazara','Week '+(r.week||''),'Grade '+(r.grade||'')],
-        teacherName:(r.student_a_name||'')+(r.student_b_name?' vs '+r.student_b_name:''),
-        teacherInitials:'⚖', year:new Date(r.created_at||Date.now()).getFullYear().toString(),
-        views:0, helpful:r.helpful||0, isMunazara:true, fromServer:true
-      };
-    });
-  }catch(e){
-    console.warn('fetchSupabaseDebates error:', e.message||e);
-    return [];
-  }
-}
-
-// ── Sidebar stats: who has verified learning from MY teachings ────────────
-async function updateIsnadStats(){
-  const me = getLearnerIdentity();
-  if(!sb || !me.jwt || !me.name) return;
-  try{
-    var r = await sb.from('transmission_verification')
-      .select('to_name').eq('from_name', me.name).eq('kind','reception').eq('status','verified');
-    if(r.data){
-      var learners = {}; r.data.forEach(function(x){ learners[x.to_name]=1; });
-      var helpedEl = document.getElementById('my-helped');
-      var linksEl  = document.getElementById('my-links');
-      if(helpedEl) helpedEl.textContent = Object.keys(learners).length;
-      if(linksEl)  linksEl.textContent  = r.data.length;
-    }
-  }catch(e){}
-}
-
-// ── Connection status: silent degradation is how bugs hide. Announce it. ──
-function announceConnectionState(){
-  if(!sb){
-    toast('⚠ Offline mode — the Supabase client did not load. Sharing, samāʿ verification and sahifa sync are disabled in this tab.', 6000);
-    return;
-  }
-  if(!localStorage.getItem('how_jwt')){
-    toast('⚠ Not signed in on the platform in this browser — teachings will save locally but will NOT share, seal, or sync until you sign in.', 6000);
-  }
-}
-
-// ── Load on startup: fetch Supabase + merge with local + re-render ────────
-(async function initLibrary(){
-  setTimeout(announceConnectionState, 1200);
-  updateIsnadStats();
-  var sbTeachings = await fetchSupabaseTeachings();
-  var sbDebates   = await fetchSupabaseDebates();
-  var allServer   = sbTeachings.concat(sbDebates);
-  if(!allServer.length) return; // nothing to merge
-
-  // Merge: Supabase teachings first, then local (local may have unpublished)
-  var local = getTeachings();
-  var localIds = new Set(local.map(function(t){ return t.id; }));
-
-  // Add Supabase teachings not already in local
-  var merged = local.concat(
-    allServer.filter(function(t){ return !localIds.has(t.id); })
-  );
-
-  saveTeachings(merged);
-
-  // Re-render current tab with merged data
-  if(typeof renderTab === 'function') renderTab(currentView || 'browse');
-})();
 </script>
 </body>
 </html>

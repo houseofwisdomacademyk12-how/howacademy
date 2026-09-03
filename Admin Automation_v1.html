@@ -18,15 +18,15 @@ body{background:#0f0d1e;color:#e8e4f8;font-family:'DM Sans',sans-serif;height:10
 #progress-row{display:flex;align-items:center;gap:14px;padding:7px 20px;background:#0f0d1e;border-bottom:1px solid #2e2a4a;flex-shrink:0}
 #progress-outer{flex:1;height:3px;background:#2e2a4a;border-radius:2px;overflow:hidden}
 #progress-inner{height:100%;width:0%;background:#7c3aed;border-radius:2px;transition:width .4s}
-#main{display:flex;flex:1 1 auto;min-height:0;overflow:hidden}
-#grade-wrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:auto}
-#grid-header{display:grid;grid-template-columns:44px 48px 48px 48px 22px 48px 48px 48px 48px 48px 48px minmax(92px,1fr);column-gap:7px;min-width:620px;padding:6px 20px;border-bottom:1px solid #2e2a4a;position:sticky;top:0;background:#0f0d1e;z-index:1}
+#main{display:flex;flex:1;overflow:hidden}
+#grade-wrap{flex:1;overflow-y:auto}
+#grid-header{display:grid;grid-template-columns:44px 58px 58px 58px 24px 58px 58px 58px 58px 1fr;column-gap:11px;padding:6px 20px;border-bottom:1px solid #2e2a4a;position:sticky;top:0;background:#0f0d1e;z-index:1}
 #grid-header div{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 #grade-body{}
-.grade-row{display:grid;grid-template-columns:44px 48px 48px 48px 22px 48px 48px 48px 48px 48px 48px minmax(92px,1fr);column-gap:7px;min-width:620px;align-items:center;padding:9px 20px;border-bottom:1px solid #1a1630}
+.grade-row{display:grid;grid-template-columns:44px 58px 58px 58px 24px 58px 58px 58px 58px 1fr;column-gap:11px;align-items:center;padding:9px 20px;border-bottom:1px solid #1a1630}
 .grade-label{font-size:14px;font-weight:700;color:#c8a96e}
-.dots-cell{display:flex;align-items:center;gap:2px}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2e2a4a;flex-shrink:0;transition:background .3s}
+.dots-cell{display:flex;align-items:center;gap:4px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#2e2a4a;flex-shrink:0;transition:background .3s}
 .dot.running{animation:pulse 1s ease-in-out infinite}
 .dot.done-reg{background:#1d6f6f}
 .dot.done-qalam{background:#2dd4bf}.dot.done-s3{background:#c8a96e}
@@ -40,14 +40,13 @@ body{background:#0f0d1e;color:#e8e4f8;font-family:'DM Sans',sans-serif;height:10
 #log-body{flex:1;overflow-y:auto;padding:8px 0}
 .log-entry{display:flex;align-items:flex-start;padding:3px 14px;font-size:10px;line-height:1.5}
 .log-time{color:#3a3860;font-size:9px;margin-right:6px;flex-shrink:0;padding-top:1px}
-.dot.done-pod{background:#e08b4a}
 .lc-ok{color:#2dd4bf}.lc-err{color:#f87171}.lc-warn{color:#c8a96e}.lc-start{color:#c8a96e}.lc-done{color:#2dd4bf}.lc-grade{color:#a78bfa}.lc-info{color:#6a6890}
-#bottom{border-top:2px solid #2e2a4a;flex:0 1 auto;min-height:132px;background:#14112a;display:flex;flex-direction:column;overflow:hidden}
+#bottom{border-top:2px solid #2e2a4a;flex-shrink:0;background:#14112a}
 #tab-btns{display:flex;border-bottom:1px solid #2e2a4a}
 .tab-btn{padding:8px 16px;border:none;background:none;color:#4a4870;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:400;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tab-btn.active{color:#c8a96e;font-weight:700;border-bottom-color:#c8a96e}
 .tab-panel{display:none;padding:10px 20px}
-.tab-panel.active{display:flex;flex-direction:column;gap:8px;max-height:min(220px,32vh);min-height:0;overflow-y:auto}
+.tab-panel.active{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto}
 .sep{width:1px;height:20px;background:#2e2a4a}
 .ctrl-label{font-size:10px;color:#6a6890;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .gen-btn{padding:5px 11px;border-radius:6px;border:1px solid #2e2a4a;background:none;color:#4a4870;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:600;transition:all .15s}
@@ -88,21 +87,6 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
   <div style="display:flex;align-items:center;gap:8px">
     <span class="ctrl-label">Week</span>
     <select id="week-sel"></select>
-    <span class="ctrl-label" style="margin-left:6px">Grade</span>
-    <select id="batch-grade-sel" title="Limit the batch to one grade — for testing" onchange="onBatchScopeChange()">
-      <option value="all">All 13</option>
-      <option value="0">K</option>
-      <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-      <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-      <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-      <option value="10">10</option><option value="11">11</option><option value="12">12</option>
-    </select>
-    <select id="batch-subj-sel" title="Limit the batch to one subject — for testing" onchange="onBatchScopeChange()">
-      <option value="all">All subjects</option>
-      <option value="math">Math</option><option value="science">Science</option>
-      <option value="ela">ELA</option><option value="writing">Writing</option>
-      <option value="social">Social Studies</option>
-    </select>
   </div>
   <div class="sep"></div>
   <div style="display:flex;align-items:center;gap:5px">
@@ -114,8 +98,6 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
     <button class="gen-btn" id="btn-qs1" onclick="toggleGen('genQalamS1','btn-qs1')" style="border-color:#1d6f6f;color:#1d6f6f">Qalam S1</button>
     <button class="gen-btn" id="btn-qs2" onclick="toggleGen('genQalamS2','btn-qs2')" style="border-color:#1d6f6f;color:#1d6f6f">Qalam S2</button>
     <button class="gen-btn" id="btn-qs3" onclick="toggleGen('genQalamS3','btn-qs3')" style="border-color:#c8a96e;color:#c8a96e">Qalam S3</button>
-    <button class="gen-btn" id="btn-ps1" onclick="toggleGen('genPS1','btn-ps1')" style="border-color:#e08b4a;color:#e08b4a">Podcast 1</button>
-    <button class="gen-btn" id="btn-ps2" onclick="toggleGen('genPS2','btn-ps2')" style="border-color:#e08b4a;color:#e08b4a">Podcast 2</button>
   </div>
   <div class="sep"></div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -131,7 +113,6 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
     <input type="checkbox" id="resume-chk" checked onchange="STATE.resumeMode=this.checked" style="accent-color:#c8a96e;cursor:pointer;width:14px;height:14px">
     <label for="resume-chk" style="font-size:11px;color:#9a98b8;cursor:pointer" title="Before running, query Supabase for what already exists this week and skip it">Skip existing</label>
   </div>
-  <button class="action-btn" id="keys-btn" onclick="toggleKeys(event)" style="border:1px solid #2e2a4a;background:none;color:#9a98b8" title="API keys — shared by every tab">🔑 Keys</button>
   <button class="action-btn" onclick="scanExisting()" style="border:1px solid #1d6f6f;background:none;color:#1d6f6f" title="Query Supabase and show what already exists for this week">🔍 Scan database</button>
   <button class="action-btn" onclick="clearProgress()" style="border:1px solid #2e2a4a;background:none;color:#4a4870" title="Reset the grid and log for this week">↺ Clear progress</button>
   <button class="btn-violet" id="run-btn" onclick="handleRun()">▶ Run All Grades</button>
@@ -143,19 +124,6 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
   <div id="progress-outer"><div id="progress-inner"></div></div>
   <span id="stats-label" style="font-size:10px;color:#6a6890;white-space:nowrap">Ready</span>
   <span id="eta-label" style="font-size:10px;color:#6a6890;margin-left:auto;white-space:nowrap"></span>
-</div>
-
-<div id="keys-pop" style="display:none;position:fixed;z-index:60;background:#171432;border:1px solid #2e2a4a;border-radius:10px;padding:13px 15px;box-shadow:0 14px 40px rgba(0,0,0,.6);width:340px;flex-direction:column;gap:9px">
-  <div style="font-size:11px;font-weight:700;color:#c8a96e;letter-spacing:.08em">API KEYS</div>
-  <div style="display:flex;flex-direction:column;gap:4px">
-    <label for="hey-key" style="font-size:10px;color:#6a6890">Heygen — video submission</label>
-    <input type="password" id="hey-key" placeholder="Heygen API key…" oninput="STATE.heygenKey=this.value;saveHeygenCfg({key:this.value})">
-  </div>
-  <div style="display:flex;flex-direction:column;gap:4px">
-    <label for="el-key" style="font-size:10px;color:#6a6890">ElevenLabs — podcast audio &amp; deck narration</label>
-    <input type="password" id="el-key" placeholder="ElevenLabs API key…" oninput="saveElCfg({apiKey:this.value})">
-  </div>
-  <div style="font-size:10px;color:#4a4870;line-height:1.5">Saved in this browser and shared by every tab. The ElevenLabs key is also read from Qalam Heygen if you saved one there.</div>
 </div>
 
 <div id="main">
@@ -170,8 +138,6 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
       <div style="color:#1d6f6f">Qalam S2</div>
       <div style="color:#c8a96e">Qalam S3</div>
       <div style="color:#9d4edd">🎬</div>
-      <div style="color:#e08b4a">PS1</div>
-      <div style="color:#e08b4a">PS2</div>
       <div style="color:#3a3860">Status</div>
     </div>
     <div id="grade-body"></div>
@@ -187,8 +153,6 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
     <button class="tab-btn active" onclick="setTab('wed',this)">📝 Wednesday Review</button>
     <button class="tab-btn" onclick="setTab('mun',this)">🗣 Munazara</button>
     <button class="tab-btn" onclick="setTab('hey',this)">🎬 Heygen</button>
-    <button class="tab-btn" onclick="setTab('pod',this)">🎙 Podcast</button>
-    <button class="tab-btn" onclick="setTab('dk',this)">📄 Decks</button>
   </div>
   <div id="tab-wed" class="tab-panel active">
     <p style="font-size:11px;color:#6a6890;margin:0">Run after Tuesday test — pulls scores from Supabase per grade. Cannot be batch-generated on Saturday.</p>
@@ -201,72 +165,19 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
     </div>
     <div id="mun-grid" style="display:flex;flex-wrap:wrap;gap:10px"></div>
   </div>
-  <div id="tab-pod" class="tab-panel" style="gap:4px;padding-top:6px;padding-bottom:6px">
+  <div id="tab-hey" class="tab-panel">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="ctrl-label" style="min-width:60px">API Key</span>
+      <input type="password" id="hey-key" placeholder="Heygen API key…" style="flex:1" oninput="STATE.heygenKey=this.value;saveHeygenCfg({key:this.value})">
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="ctrl-label" style="min-width:60px">Gap</span>
+      <input type="number" id="hey-gap" min="2" max="120" step="1" value="12" style="width:80px" oninput="var v=Math.max(2,Math.min(120,parseInt(this.value)||12));STATE.heygenGapMs=v*1000;saveHeygenCfg({gapMs:v*1000})">
+      <span style="font-size:11px;color:#6a6890">seconds between submissions — raise this if you keep hitting 429 rate limits</span>
+    </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:11px;font-weight:700;color:#e08b4a;white-space:nowrap">Format</span>
-      <button class="gen-btn" id="podfmt-duo" onclick="setPodFormat('duo')" style="border-color:#e08b4a;color:#e08b4a">Host + student</button>
-      <button class="gen-btn" id="podfmt-solo" onclick="setPodFormat('solo')" style="border-color:#e08b4a;color:#e08b4a">Single narrator</button>
-      <span id="podfmt-note" style="font-size:10px;color:#6a6890;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-      <button class="wed-btn" style="border-color:#e08b4a;color:#e08b4a;white-space:nowrap" onclick="exportAllPodText()">⤓ All .txt</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <span style="font-size:11px;font-weight:700;color:#e08b4a;white-space:nowrap">🔊 Voices</span>
-      <input type="text" id="el-host" placeholder="host voice_id" style="flex:1;min-width:0" oninput="saveElCfg({host:this.value})">
-      <input type="text" id="el-student" placeholder="student voice_id" style="flex:1;min-width:0" oninput="saveElCfg({student:this.value})">
-      <input type="text" id="el-narrator" placeholder="narrator voice_id" style="flex:1;min-width:0;display:none" oninput="saveElCfg({narrator:this.value})">
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <select id="el-grade">
-        <option value="0">K</option><option value="1">1</option><option value="2">2</option>
-        <option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
-        <option value="6">6</option><option value="7">7</option><option value="8">8</option>
-        <option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
-      </select>
-      <select id="el-subj">
-        <option value="math">Math</option><option value="science">Science</option>
-        <option value="ela">ELA</option><option value="writing">Writing</option>
-        <option value="social">Social Studies</option>
-      </select>
-      <select id="el-ps"><option value="1">PS1</option><option value="2">PS2</option></select>
-      <button class="wed-btn" id="el-go" style="border-color:#e08b4a;color:#e08b4a" onclick="elGoFromPicker()">🔊 Generate audio</button>
-      <span id="el-status" style="font-size:10px;color:#6a6890;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-    </div>
-    <div id="pod-grid" style="display:flex;flex-direction:column;gap:5px;padding-right:4px;flex:1 1 auto;min-height:44px;overflow-y:auto"></div>
-  </div>
-  <div id="tab-dk" class="tab-panel" style="gap:5px;padding-top:7px;padding-bottom:7px">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <span style="font-size:11px;font-weight:700;color:#1d6f6f;white-space:nowrap">Sessions</span>
-      <select id="slide-sess-sel">
-        <option value="all">S1 + S2</option>
-        <option value="1">S1 only</option>
-        <option value="2">S2 only</option>
-        <option value="3">S3 only (activity rounds)</option>
-        <option value="123">S1, S2 + S3</option>
-      </select>
-      <button class="action-btn btn-teal" onclick="runSlideGenBatch(true)">🗜 Generate → ZIP</button>
-      <button class="action-btn btn-teal" onclick="runSlideGenBatch(false)">📄 Generate (each)</button>
-      <button class="action-btn btn-teal" onclick="runDeckExport('thursday',true)">📄 Thu → ZIP</button>
-      <button class="action-btn btn-teal" onclick="runDeckExport('wednesday',true)">📄 Wed → ZIP</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <span style="font-size:11px;font-weight:700;color:#e08b4a;white-space:nowrap">🔊 Narrate</span>
-      <input type="text" id="nr-voice" placeholder="narrator voice_id — defaults to the Podcast host voice" style="flex:1;min-width:0" oninput="saveElCfg({deck:this.value})">
-      <button class="action-btn" id="nr-go" style="border:1px solid #e08b4a;background:rgba(224,139,74,.18);color:#f0a868" onclick="batchNarrateDecks()">🔊 Narrate + export</button>
-      <button class="wed-btn" style="border-color:#f87171;color:#f87171" onclick="narrAbort=true">Stop</button>
-      <span id="nr-status" style="font-size:10px;color:#6a6890;white-space:nowrap">Idle</span>
-    </div>
-  </div>
-  <div id="tab-hey" class="tab-panel" style="gap:5px;padding-top:7px;padding-bottom:7px">
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen</button>
       <input type="checkbox" id="hey-serial" checked style="width:auto;accent-color:#c8a96e" onchange="STATE.heygenSerial=this.checked;saveHeygenCfg({serial:this.checked})">
-      <label for="hey-serial" style="font-size:11px;color:#a8a4c8;cursor:pointer;white-space:nowrap">One at a time — wait for each render</label>
-      <span style="font-size:10px;color:#4a4870;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Uses the top-bar Grade / subject scope.</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <span class="ctrl-label" style="white-space:nowrap">Gap</span>
-      <input type="number" id="hey-gap" min="2" max="120" step="1" value="12" style="width:64px" oninput="var v=Math.max(2,Math.min(120,parseInt(this.value)||12));STATE.heygenGapMs=v*1000;saveHeygenCfg({gapMs:v*1000})">
-      <span style="font-size:10px;color:#4a4870;white-space:nowrap">sec — raise if 429s</span>
+      <label for="hey-serial" style="font-size:11px;color:#a8a4c8;cursor:pointer">One at a time — wait for each video to finish rendering before submitting the next</label>
     </div>
     <div class="heygen-grid" id="hey-avatar-grid">
       <span class="heygen-grid-lbl">Subject</span>
@@ -274,22 +185,52 @@ input[type=password],input[type=text],input[type=number]{background:#0f0d1e;bord
       <span class="heygen-grid-lbl">Voice ID</span>
       <span class="heygen-grid-lbl">Avatar Look ID</span>
     </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="ctrl-label" style="min-width:60px">Scope</span>
+      <select id="slide-grade-sel" style="max-width:150px"></select>
+      <select id="slide-subj-sel" style="max-width:150px">
+        <option value="all">All subjects</option>
+        <option value="math">Mathematics</option>
+        <option value="science">Science</option>
+        <option value="ela">ELA / Reading</option>
+        <option value="writing">Writing</option>
+        <option value="social">Social Studies</option>
+      </select>
+      <select id="slide-sess-sel" style="max-width:130px">
+        <option value="all">Both sessions</option>
+        <option value="1">Session 1 only</option>
+        <option value="2">Session 2 only</option>
+        <option value="3">Session 3 only (activity rounds)</option>
+        <option value="123">Sessions 1, 2 + 3</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="action-btn btn-teal" onclick="runSlideGenBatch(false)">📄 Generate Slides (download each)</button>
+      <button class="action-btn btn-teal" onclick="runSlideGenBatch(true)">🗜 Generate + Download as ZIP</button>
+      <button class="action-btn btn-purple" onclick="runHeygenBatch()">🎬 Submit to Heygen (uses Scope)</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="ctrl-label" style="min-width:60px">Other decks</span>
+      <button class="action-btn btn-teal" onclick="runDeckExport('thursday',true)">📄 Thursday Synthesis → ZIP</button>
+      <button class="action-btn btn-teal" onclick="runDeckExport('wednesday',true)">📄 Wednesday Review → ZIP</button>
+    </div>
+    <p style="font-size:10px;color:#4a4870;margin:0">Slides download as HTML — upload to Google Drive and paste URL in HOW platform. Videos submit to Heygen Video Agent. Both respect the Scope selectors above (Heygen ignores the session selector — it generates one intro video per subject).</p>
   </div>
 </div>
 
 <script>
 // ── STATE ────────────────────────────────────────────────────────────────────
 var STATE = {
-  week:1, genS1:true, genS2:true, genTest:true, genThursday:true, genQalamS1:false, genQalamS2:false, genQalamS3:false, genPS1:false, genPS2:false,
+  week:1, genS1:true, genS2:true, genTest:true, genThursday:true, genQalamS1:false, genQalamS2:false, genQalamS3:false,
   broadcastAfter:true, delay:800, isRunning:false,
   authStatus:'checking', householdId:null, studioCardCount:0,
-  podFormat:'duo', heygenKey:'', heygenGapMs:12000, heygenSerial:true, heygenMaxWaitMs:1500000, heygenAvatars:{
+  heygenKey:'', heygenGapMs:12000, heygenSerial:true, heygenMaxWaitMs:1500000, heygenAvatars:{
     math:{avatarId:'',voiceId:'',lookId:''},science:{avatarId:'',voiceId:'',lookId:''},
     ela:{avatarId:'',voiceId:'',lookId:''},writing:{avatarId:'',voiceId:'',lookId:''},
     social:{avatarId:'',voiceId:'',lookId:''},
   },
   resumeMode:true,
-  grades: Array.from({length:13},function(_,i){return{label:i===0?'K':String(i),s1:Array(5).fill('idle'),s2:Array(5).fill('idle'),test:Array(5).fill('idle'),thu:'idle',ps1:Array(5).fill('idle'),ps2:Array(5).fill('idle'),qalamS1:Array(5).fill('idle'),qalamS2:Array(5).fill('idle'),qalamS3:Array(5).fill('idle'),heygen:Array(5).fill('idle'),status:'idle'};}),
+  grades: Array.from({length:13},function(_,i){return{label:i===0?'K':String(i),s1:Array(5).fill('idle'),s2:Array(5).fill('idle'),test:Array(5).fill('idle'),thu:'idle',qalamS1:Array(5).fill('idle'),qalamS2:Array(5).fill('idle'),qalamS3:Array(5).fill('idle'),heygen:Array(5).fill('idle'),status:'idle'};}),
   wedGrades:Array(13).fill('idle'), log:[], stats:{total:0,done:0,errors:0,startTime:null}
 };
 var sb=null, abortFlag=false;
@@ -308,7 +249,7 @@ function saveProgress(){
         savedAt:new Date().toISOString(),
         isRunning:STATE.isRunning,
         stats:STATE.stats,
-        grades:STATE.grades.map(function(g){return{s1:g.s1,s2:g.s2,test:g.test,thu:g.thu,qalamS1:g.qalamS1,qalamS2:g.qalamS2,heygen:g.heygen,ps1:g.ps1,ps2:g.ps2,status:g.status};}),
+        grades:STATE.grades.map(function(g){return{s1:g.s1,s2:g.s2,test:g.test,thu:g.thu,qalamS1:g.qalamS1,qalamS2:g.qalamS2,heygen:g.heygen,status:g.status};}),
         wedGrades:STATE.wedGrades,
         log:STATE.log.slice(0,120)
       }));
@@ -433,10 +374,6 @@ function updateDot(id, status, doneClass){
 }
 function updateGradeRow(gi){
   var gr=STATE.grades[gi];
-  var rowEl=qs('#row-'+gi);
-  if(rowEl) rowEl.style.opacity=gr.dim?'.28':'1';
-  if(!gr.ps1) gr.ps1=Array(5).fill('idle');
-  if(!gr.ps2) gr.ps2=Array(5).fill('idle');
   var sessions=['s1','s2','test'];
   sessions.forEach(function(sess){
     var arr=gr[sess];
@@ -447,8 +384,6 @@ function updateGradeRow(gi){
   gr.qalamS2.forEach(function(st,si){updateDot(dotId('qs2',gi,si),st,'done-qalam');});
   gr.qalamS3.forEach(function(st,si){updateDot(dotId('qs3',gi,si),st,'done-s3');});
   gr.heygen.forEach(function(st,si){updateDot(dotId('hey',gi,si),st,'done-hey');});
-  (gr.ps1||[]).forEach(function(st,si){updateDot(dotId('ps1',gi,si),st,'done-pod');});
-  (gr.ps2||[]).forEach(function(st,si){updateDot(dotId('ps2',gi,si),st,'done-pod');});
   var sc=document.getElementById(statusId(gi));
   if(sc){sc.textContent={idle:'—',running:'Running…',done:'✓ Done',error:'⚠ Error'}[gr.status]||'—';sc.className='status-cell status-'+gr.status;}
 }
@@ -458,7 +393,7 @@ function updateProgress(){
   var pct=t>0?Math.min(100,Math.round(d/t*100)):0;
   qs('#progress-inner').style.width=pct+'%';
   qs('#progress-inner').style.background=e>0?'#c8a96e':'#7c3aed';
-  var sl=t>0?(d+'/'+t+' items · '+e+' errors · '+pct+'%'):'Ready · '+(STATE.genS1?'S1 ':'')+(STATE.genS2?'S2 ':'')+(STATE.genTest?'Test ':'')+(STATE.genThursday?'Thu ':'')+(STATE.genQalamS1?'QS1 ':'')+(STATE.genQalamS2?'QS2 ':'')+(STATE.genQalamS3?'QS3 ':'')+(STATE.genPS1?'PS1 ':'')+(STATE.genPS2?'PS2 ':'')+'· '+batchScope().label;
+  var sl=t>0?(d+'/'+t+' items · '+e+' errors · '+pct+'%'):'Ready · '+(STATE.genS1?'S1 ':'')+(STATE.genS2?'S2 ':'')+(STATE.genTest?'Test ':'')+(STATE.genThursday?'Thu ':'')+(STATE.genQalamS1?'QS1 ':'')+(STATE.genQalamS2?'QS2 ':'')+(STATE.genQalamS3?'QS3 ':'')+'· 13 grades';
   qs('#stats-label').textContent=sl;
   var eta='';
   if(STATE.isRunning&&s.startTime&&d>0){var el=(Date.now()-s.startTime)/1000;var rem=(t-d)*(el/d);eta=rem>60?'~'+Math.ceil(rem/60)+'min remaining':'~'+Math.round(rem)+'s remaining';}
@@ -515,12 +450,6 @@ function initGrid(){
     var heyCell=document.createElement('div'); heyCell.className='dots-cell';
     for(var si=0;si<5;si++){var hd=document.createElement('span');hd.className='dot';hd.id=dotId('hey',gi,si);hd.title=['Math','Sci','ELA','Writ','SS'][si]+' Video: idle';heyCell.appendChild(hd);}
     row.appendChild(heyCell);
-    // Podcast script dots
-    ['ps1','ps2'].forEach(function(sess){
-      var cell=document.createElement('div'); cell.className='dots-cell';
-      for(var si=0;si<5;si++){var d=document.createElement('span');d.className='dot';d.id=dotId(sess,gi,si);d.title=['Math','Sci','ELA','Writ','SS'][si]+' '+sess.toUpperCase()+': idle';cell.appendChild(d);}
-      row.appendChild(cell);
-    });
     // Status
     var st=document.createElement('div'); st.className='status-cell status-idle'; st.id=statusId(gi); st.textContent='—'; row.appendChild(st);
     body.appendChild(row);
@@ -547,40 +476,6 @@ function initMunGrid(){
   });
 }
 
-function initPodGrid(){
-  var grid=qs('#pod-grid'); if(!grid) return;
-  grid.innerHTML='';
-  var ALL=['math','science','ela','writing','social'];
-  var LBL={math:'Math',science:'Sci',ela:'ELA',writing:'Writ',social:'SS'};
-  STATE.grades.forEach(function(gr,gi){
-    var row=document.createElement('div');
-    row.style.cssText='display:flex;gap:16px;align-items:center';
-    var lbl=document.createElement('span');
-    lbl.style.cssText='font-size:11px;font-weight:700;color:#c8a96e;min-width:26px;flex:none';
-    lbl.textContent=(gi===0?'K':'G'+gi);
-    row.appendChild(lbl);
-    [1,2].forEach(function(ps){
-      var cell=document.createElement('div');
-      cell.style.cssText='display:flex;gap:4px;align-items:center;flex:none';
-      var tag=document.createElement('span');
-      tag.style.cssText='font-size:9px;color:#4a4870;font-weight:600;min-width:26px';
-      tag.textContent='PS'+ps;
-      cell.appendChild(tag);
-      ALL.forEach(function(sk){
-        var has=!!readCachedPod(gi,STATE.week,sk,ps);
-        var b=document.createElement('button');
-        b.style.cssText='font-size:9px;padding:2px 7px;border-radius:4px;cursor:'+(has?'pointer':'default')+';font-family:DM Sans,sans-serif;background:none;border:1px solid '+(has?'#e08b4a':'#232040')+';color:'+(has?'#e08b4a':'#332f52');
-        b.textContent=LBL[sk];
-        b.title=has?'Download '+LBL[sk]+' PS'+ps+' script':'Not generated yet';
-        if(has) b.onclick=function(){downloadPodText(gi,STATE.week,sk,ps);};
-        cell.appendChild(b);
-      });
-      row.appendChild(cell);
-    });
-    grid.appendChild(row);
-  });
-}
-
 function initHeygenAvatarRows(){
   var grid=qs('#hey-avatar-grid');
   // remove old rows (keep header row = first 4 children)
@@ -600,41 +495,6 @@ function initHeygenAvatarRows(){
   });
 }
 
-function batchScope(){
-  var g=qs('#batch-grade-sel'), s=qs('#batch-subj-sel');
-  var gv=g?g.value:'all', sv=s?s.value:'all';
-  return {
-    grades: gv==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gv)],
-    subjIdx: sv==='all'?[0,1,2,3,4]:[['math','science','ela','writing','social'].indexOf(sv)],
-    label: (gv==='all'?'13 grades':(gv==='0'?'Kindergarten':'Grade '+gv))+(sv==='all'?'':' · '+sv+' only'),
-    isScoped: gv!=='all'||sv!=='all'
-  };
-}
-function onBatchScopeChange(){
-  var sc=batchScope();
-  STATE.grades.forEach(function(gr,gi){gr.dim=sc.grades.indexOf(gi)===-1;});
-  for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-  updateProgress();
-}
-
-function toggleKeys(ev){
-  var p=qs('#keys-pop'); if(!p) return;
-  if(p.style.display==='flex'){p.style.display='none';return;}
-  var r=qs('#keys-btn').getBoundingClientRect();
-  p.style.display='flex';
-  var w=p.offsetWidth||340;
-  p.style.left=Math.max(10,Math.min(window.innerWidth-w-10,r.left))+'px';
-  p.style.top=(r.bottom+7)+'px';
-  if(ev) ev.stopPropagation();
-  setTimeout(function(){
-    document.addEventListener('click',function close(e){
-      if(p.contains(e.target)||e.target.id==='keys-btn') return;
-      p.style.display='none';
-      document.removeEventListener('click',close);
-    });
-  },0);
-}
-
 function initWeekSelect(){
   var sel=qs('#week-sel'); sel.innerHTML='';
   for(var i=0;i<30;i++){
@@ -652,13 +512,12 @@ function initWeekSelect(){
       g.s1=Array(5).fill('idle');g.s2=Array(5).fill('idle');g.test=Array(5).fill('idle');
       g.thu='idle';g.qalamS1=Array(5).fill('idle');g.qalamS2=Array(5).fill('idle');
       g.heygen=Array(5).fill('idle');g.status='idle';
-      g.ps1=Array(5).fill('idle');g.ps2=Array(5).fill('idle');
     });
     STATE.wedGrades=Array(13).fill('idle');
     STATE.log=[]; STATE.stats={total:0,done:0,errors:0,startTime:null};
     var r=loadProgress();
     for(var gi=0;gi<13;gi++) updateGradeRow(gi);
-    refreshWedBtns(); initPodGrid(); updateLog(); updateProgress();
+    refreshWedBtns(); updateLog(); updateProgress();
     if(r){var d=r.stats||{};addLog('Week '+STATE.week+' — restored '+(d.done||0)+'/'+(d.total||0)+' from '+new Date(r.savedAt).toLocaleString(),'info');}
   };
 }
@@ -669,7 +528,6 @@ function setTab(id, btn){
   qs('#tab-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
   if(id==='mun') initMunGrid();
-  if(id==='pod') initPodGrid();
 }
 
 function toggleGen(key, btnId){
@@ -685,11 +543,6 @@ function toggleGen(key, btnId){
     btn.style.color=STATE[key]?'#2dd4bf':'#1d6f6f';
     btn.style.fontWeight=STATE[key]?'700':'600';
     btn.style.borderColor='#1d6f6f';
-  } else if(key==='genPS1'||key==='genPS2'){
-    btn.style.background=STATE[key]?'rgba(224,139,74,.25)':'none';
-    btn.style.color=STATE[key]?'#f0a868':'#e08b4a';
-    btn.style.borderColor='#e08b4a';
-    btn.style.fontWeight=STATE[key]?'700':'600';
   } else if(key==='genThursday'){
     btn.style.borderColor=STATE[key]?'#9d4edd':'#2e2a4a';
     btn.style.background=STATE[key]?'rgba(157,78,221,.2)':'none';
@@ -718,13 +571,6 @@ function refreshWedBtns(){for(var i=0;i<13;i++) setWedStatus(i, STATE.wedGrades[
 function setQalamStatus(gi,si,sess,status){
   var key=sess===3?'qalamS3':(sess===1?'qalamS1':'qalamS2');
   STATE.grades[gi][key]=STATE.grades[gi][key].slice();
-  STATE.grades[gi][key][si]=status;
-  updateGradeRow(gi);
-  saveProgress();
-}
-function setPodStatus(gi,si,sess,status){
-  var key=sess===2?'ps2':'ps1';
-  STATE.grades[gi][key]=(STATE.grades[gi][key]||Array(5).fill('idle')).slice();
   STATE.grades[gi][key][si]=status;
   updateGradeRow(gi);
   saveProgress();
@@ -1021,8 +867,7 @@ async function runAll(){
   if(!sb){addLog('Not connected to Supabase','err');return;}
   abortFlag=false;
   var resume=STATE.resumeMode;
-  var SC=batchScope(); var nG=SC.grades.length, nS=SC.subjIdx.length;
-  var total=nG*((STATE.genS1?nS*2:0)+(STATE.genS2?nS*2:0)+(STATE.genTest?nS:0)+(STATE.genThursday?1:0)+(STATE.genQalamS1?nS:0)+(STATE.genQalamS2?nS:0)+(STATE.genQalamS3?nS:0)+(STATE.genPS1?nS:0)+(STATE.genPS2?nS:0));
+  var total=13*((STATE.genS1?10:0)+(STATE.genS2?10:0)+(STATE.genTest?5:0)+(STATE.genThursday?1:0)+(STATE.genQalamS1?5:0)+(STATE.genQalamS2?5:0)+(STATE.genQalamS3?5:0));
   STATE.isRunning=true;
   EXISTS=null;
   if(resume){
@@ -1053,16 +898,13 @@ async function runAll(){
     STATE.stats={total:total,done:0,errors:0,startTime:Date.now()};
     STATE.grades.forEach(function(gr){gr.s1=Array(5).fill('idle');gr.s2=Array(5).fill('idle');gr.test=Array(5).fill('idle');gr.thu='idle';gr.status='idle';});
     STATE.log=[];
-    addLog('Week '+week+' — '+total+' items · '+batchScope().label,'start');
+    addLog('Week '+week+' — '+total+' items across 13 grades','start');
   }
   for(var gi=0;gi<13;gi++) updateGradeRow(gi);
   updateLog(); updateProgress(); saveProgress();
   var LS=['math','science','ela','writing','social'];
   var TS=['math','sci','ela','writing','ss'];
-  var SCOPE=batchScope();
-  var inSubj=function(si){return SCOPE.subjIdx.indexOf(si)!==-1;};
   for(var gi=0;gi<13;gi++){
-    if(SCOPE.grades.indexOf(gi)===-1) continue;
     if(abortFlag){addLog('Run cancelled','warn');break;}
     var g=gi, gl=g===0?'K':'G'+g;
     setGradeStatus(gi,'running');
@@ -1071,7 +913,6 @@ async function runAll(){
     if(STATE.genS1){
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(!inSubj(si)) continue;
         if(resume&&isDone(gi,'s1',si,{subj:LS[si],session:1})) continue;
         setSubjStatus(gi,'s1',si,'running');
         try{await generateLesson(g,week,LS[si],1);setSubjStatus(gi,'s1',si,'done');bumpDone();bumpDone();addLog(gl+' · S1 · '+LS[si]+' ✓','ok');}
@@ -1082,7 +923,6 @@ async function runAll(){
     if(STATE.genS2){
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(!inSubj(si)) continue;
         if(resume&&isDone(gi,'s2',si,{subj:LS[si],session:2})) continue;
         setSubjStatus(gi,'s2',si,'running');
         try{await generateLesson(g,week,LS[si],2);setSubjStatus(gi,'s2',si,'done');bumpDone();bumpDone();addLog(gl+' · S2 · '+LS[si]+' ✓','ok');}
@@ -1094,7 +934,6 @@ async function runAll(){
       var testSubjs={};
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(!inSubj(si)) continue;
         if(resume&&isDoneTest(gi,si,TS[si])) continue;
         setSubjStatus(gi,'test',si,'running');
         try{testSubjs[TS[si]]=await generateTestSubject(g,week,TS[si]);setSubjStatus(gi,'test',si,'done');bumpDone();addLog(gl+' · Test · '+TS[si]+' ✓','ok');}
@@ -1112,27 +951,10 @@ async function runAll(){
       if(STATE.delay) await sleep(STATE.delay);
       }
     }
-    for(var ps=1;ps<=2;ps++){
-      if(!(ps===1?STATE.genPS1:STATE.genPS2)) continue;
-      for(var si=0;si<5;si++){
-        if(abortFlag) break;
-        if(!inSubj(si)) continue;
-        var pk=['math','science','ela','writing','social'][si];
-        try{
-          await generatePodcastScript(gi,si,gi,STATE.week,pk,ps);
-          addLog((gi===0?'K':'G'+gi)+' PS'+ps+' '+pk+' ✓','ok'); bumpDone();
-        }catch(e){
-          setPodStatus(gi,si,ps,'error');
-          addLog((gi===0?'K':'G'+gi)+' PS'+ps+' '+pk+' ✗ '+e.message,'err'); bumpError();
-        }
-        await sleep(STATE.delay);
-      }
-    }
     for(var qs=1;qs<=2;qs++){
       if(!(qs===1?STATE.genQalamS1:STATE.genQalamS2)) continue;
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(!inSubj(si)) continue;
         setQalamStatus(gi,si,qs,'running');
         try{await generateAndExportSlides(g,week,LS[si],qs);setQalamStatus(gi,si,qs,'done');bumpDone();addLog(gl+' · Qalam S'+qs+' · '+LS[si]+' \u2713','ok');}
         catch(e){setQalamStatus(gi,si,qs,'error');errs++;bumpError();addLog(gl+' · Qalam S'+qs+' · '+LS[si]+' \u2717 '+e.message,'err');}
@@ -1142,7 +964,6 @@ async function runAll(){
     if(STATE.genQalamS3){
       for(var si=0;si<5;si++){
         if(abortFlag) break;
-        if(!inSubj(si)) continue;
         setQalamStatus(gi,si,3,'running');
         try{await generateAndExportS3(g,week,LS[si]);setQalamStatus(gi,si,3,'done');bumpDone();addLog(gl+' · Qalam S3 · '+LS[si]+' \u2713','ok');}
         catch(e){setQalamStatus(gi,si,3,'error');errs++;bumpError();addLog(gl+' · Qalam S3 · '+LS[si]+' \u2717 '+e.message,'err');}
@@ -1170,378 +991,6 @@ function importStudioCards(){
 }
 
 // ── HEYGEN ───────────────────────────────────────────────────────────────────
-// ── PODCAST SCRIPTS ──────────────────────────────────────────────────────────
-function podCacheKey(g,w,subj,ps){return 'how_pod_'+g+'_'+w+'_'+subj+'_'+ps;}
-function setPodFormat(v){
-  STATE.podFormat=v;
-  try{localStorage.setItem('how_pod_format',v);}catch(e){}
-  ['duo','solo'].forEach(function(k){
-    var b=qs('#podfmt-'+k); if(!b) return;
-    var on=k===v;
-    b.style.background=on?'rgba(224,139,74,.25)':'none';
-    b.style.color=on?'#f0a868':'#e08b4a';
-    b.style.fontWeight=on?'700':'600';
-  });
-  var n=qs('#podfmt-note');
-  if(n) n.textContent=v==='solo'
-    ? 'One narrator throughout — questions are posed and answered by the same voice. Best if you plan to render audio with a single ElevenLabs voice.'
-    : 'A teacher and a student in conversation — the student asks, gets things wrong, and is corrected. Needs two voices for audio.';
-  refreshElStatus();
-}
-
-// ── ELEVENLABS AUDIO ─────────────────────────────────────────────────────────
-function getElCfg(){
-  var c={apiKey:'',host:'',student:'',narrator:''};
-  try{
-    // reuse the key already saved by Qalam Heygen if present
-    var hbs=JSON.parse(localStorage.getItem('hbs_v1')||'{}');
-    if(hbs.elApiKey) c.apiKey=hbs.elApiKey;
-    var own=JSON.parse(localStorage.getItem('how_el_cfg')||'{}');
-    Object.keys(own).forEach(function(k){if(own[k]) c[k]=own[k];});
-  }catch(e){}
-  return c;
-}
-function saveElCfg(patch){
-  try{
-    var d=JSON.parse(localStorage.getItem('how_el_cfg')||'{}');
-    Object.assign(d,patch);
-    localStorage.setItem('how_el_cfg',JSON.stringify(d));
-  }catch(e){}
-  refreshElStatus();
-}
-function refreshElStatus(){
-  var c=getElCfg(), el=qs('#el-status');
-  if(!el) return;
-  var solo=STATE.podFormat==='solo';
-  var need=solo?['narrator']:['host','student'];
-  var missing=[];
-  if(!c.apiKey) missing.push('API key');
-  need.forEach(function(k){if(!c[k]) missing.push(k+' voice');});
-  el.textContent=missing.length?'Needs: '+missing.join(', '):'Ready — '+(solo?'1 voice':'2 voices')+' · one episode ≈ 8,000 characters, downloads as one MP3';
-  el.style.color=missing.length?'#6a6890':'#2dd4bf';
-  ['el-host','el-student'].forEach(function(id){var r=qs('#'+id);if(r)r.style.display=solo?'none':'block';});
-  var nr=qs('#el-narrator'); if(nr) nr.style.display=solo?'block':'none';
-}
-
-function elVoiceFor(speaker){
-  var c=getElCfg(), s=String(speaker||'').toUpperCase();
-  if(STATE.podFormat==='solo'||s==='NARRATOR') return c.narrator||c.host||'';
-  if(s==='STUDENT') return c.student||'';
-  return c.host||'';
-}
-
-// Concatenate MP3 blobs. Players tolerate framed MP3 concatenation.
-function joinMp3(blobs){return new Blob(blobs,{type:'audio/mpeg'});}
-
-async function elSpeak(text,voiceId,apiKey){
-  var r=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+encodeURIComponent(voiceId),{
-    method:'POST',
-    headers:{'xi-api-key':apiKey,'Content-Type':'application/json'},
-    body:JSON.stringify({text:text,model_id:'eleven_multilingual_v2',voice_settings:{stability:.5,similarity_boost:.75}})
-  });
-  if(!r.ok){
-    var raw=await r.text(), msg=raw;
-    try{var e=JSON.parse(raw);msg=(e.detail&&(e.detail.message||e.detail.status||e.detail))||e.message||raw;if(typeof msg==='object')msg=JSON.stringify(msg);}catch(_){}
-    throw new Error(r.status+': '+String(msg).slice(0,180));
-  }
-  return await r.blob();
-}
-
-var elBusy=false;
-async function generatePodAudio(g,w,subjKey,ps){
-  if(elBusy){addLog('Audio already generating — wait for it to finish','warn');return;}
-  var p=readCachedPod(g,w,subjKey,ps);
-  if(!p){addLog('No PS'+ps+' script to voice yet','err');return;}
-  var c=getElCfg();
-  if(!c.apiKey){addLog('Add an ElevenLabs API key in the Podcast tab first','err');return;}
-
-  // flatten to an ordered line list
-  var lines=[];
-  if(p.hook) lines.push({speaker:p.format==='solo'?'NARRATOR':'HOST',text:p.hook});
-  (p.segments||[]).forEach(function(seg){(seg.lines||[]).forEach(function(ln){
-    var t=String(ln.text||'').trim(); if(t) lines.push({speaker:ln.speaker||'HOST',text:t});
-  });});
-  if(p.closingQuestion) lines.push({speaker:p.format==='solo'?'NARRATOR':'HOST',text:p.closingQuestion});
-  if(!lines.length){addLog('Script has no spoken lines','err');return;}
-
-  var savedFmt=STATE.podFormat;
-  if(p.format) STATE.podFormat=p.format;
-  var missing=lines.some(function(l){return !elVoiceFor(l.speaker);});
-  if(missing){STATE.podFormat=savedFmt;addLog('A voice ID is missing for this script\'s format — check the Podcast tab','err');return;}
-
-  var gl=g===0?'K':'G'+g, tag=gl+' PS'+ps+' '+subjKey;
-  var chars=lines.reduce(function(a,l){return a+l.text.length;},0);
-  elBusy=true;
-  var btn=qs('#el-go'); if(btn){btn.disabled=true;}
-  addLog('ElevenLabs — '+tag+': '+lines.length+' lines, ~'+chars.toLocaleString()+' characters','start');
-
-  var out=[], failed=0;
-  try{
-    for(var i=0;i<lines.length;i++){
-      if(abortFlag){addLog('Audio cancelled','warn');break;}
-      var vid=elVoiceFor(lines[i].speaker);
-      var ok=false;
-      for(var att=0;att<3&&!ok;att++){
-        try{ out.push(await elSpeak(lines[i].text,vid,c.apiKey)); ok=true; }
-        catch(e){
-          var rate=/^429/.test(e.message);
-          if(att<2&&(rate||/^5\d\d/.test(e.message))){ await sleep(rate?6000:2000); }
-          else { failed++; addLog(tag+' line '+(i+1)+' ✗ '+e.message,'err'); ok=true; }
-        }
-      }
-      var st=qs('#el-status');
-      if(st){st.textContent='Rendering '+(i+1)+'/'+lines.length+'…';st.style.color='#c8a96e';}
-      await sleep(180);
-    }
-    if(out.length){
-      var name=gl+'-W'+w+'-'+subjKey+'-PS'+ps+'.mp3';
-      var a=document.createElement('a');
-      a.href=URL.createObjectURL(joinMp3(out)); a.download=name;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
-      addLog(tag+' ✓ '+out.length+'/'+lines.length+' lines → '+name+(failed?' ('+failed+' failed)':''),failed?'warn':'ok');
-    } else addLog(tag+' ✗ no audio produced','err');
-  } finally {
-    elBusy=false; STATE.podFormat=savedFmt;
-    if(btn) btn.disabled=false;
-    refreshElStatus();
-  }
-}
-
-function elGoFromPicker(){
-  var g=parseInt(qs('#el-grade').value), ps=parseInt(qs('#el-ps').value);
-  generatePodAudio(g,STATE.week,qs('#el-subj').value,ps);
-}
-
-
-// ── BATCH NARRATED DECKS ─────────────────────────────────────────────────────
-function blobToDataURL(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result);};r.onerror=rej;r.readAsDataURL(b);});}
-
-function narrTextFor(sl){
-  if(sl.narration&&sl.narration.length) return sl.narration.filter(Boolean).join(' ');
-  return [sl.caption,sl.content||sl.question||sl.passage||''].filter(Boolean).join(' ').slice(0,600);
-}
-
-var narrBusy=false, narrAbort=false;
-async function batchNarrateDecks(){
-  if(narrBusy){addLog('Narration already running','warn');return;}
-  var c=getElCfg();
-  var voice=(qs('#nr-voice')&&qs('#nr-voice').value.trim())||c.host||c.narrator;
-  if(!c.apiKey){addLog('Add an ElevenLabs API key in the Podcast tab first','err');return;}
-  if(!voice){addLog('Add a narrator voice ID in the Narrate tab','err');return;}
-
-  var sc=batchScope(), ALL=['math','science','ela','writing','social'];
-  var sesSel=qs('#slide-sess-sel'), sv=sesSel?sesSel.value:'all';
-  var sess=(sv==='1'||sv==='2')?[parseInt(sv)]:[1,2];
-  var w=STATE.week, LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
-
-  // count what we actually have decks for
-  var jobs=[];
-  sc.grades.forEach(function(g){sc.subjIdx.forEach(function(si){sess.forEach(function(sn){
-    var d=readCachedDeck(g,w,ALL[si],sn);
-    if(d&&d.slides&&d.slides.length) jobs.push({g:g,subj:ALL[si],sn:sn,deck:d});
-  });});});
-  if(!jobs.length){addLog('No generated decks in scope — run Qalam S1/S2 first','err');return;}
-
-  var zip=(typeof JSZip!=='undefined')?new JSZip():null;
-  narrBusy=true; narrAbort=false;
-  var btn=qs('#nr-go'); if(btn) btn.disabled=true;
-  var st=qs('#nr-status');
-  var chars=jobs.reduce(function(a,j){
-    return a+(j.deck.slides||[]).reduce(function(b,sl){return b+narrTextFor(sl).length;},0);
-  },0);
-  addLog('Narrating '+jobs.length+' decks — '+sc.label+' · ~'+chars.toLocaleString()+' characters','start');
-
-  var made=0, failedLines=0;
-  try{
-    for(var k=0;k<jobs.length;k++){
-      if(narrAbort||abortFlag){addLog('Narration cancelled','warn');break;}
-      var j=jobs[k], gl=j.g===0?'Kindergarten':'Grade '+j.g, tag=(j.g===0?'K':'G'+j.g)+' S'+j.sn+' '+j.subj;
-      var how=(HOW_CURR[j.g]||{})[w]||{}, juz=JUZ[w-1]||{};
-      // front matter is prepended by the renderer for session 1 — mirror it here so indices line up
-      var full=(j.sn===1?frontMatter(juz,how,LABELS[j.subj]):[]).concat(j.deck.slides||[]);
-      var audio=[];
-      for(var i=0;i<full.length;i++){
-        if(narrAbort||abortFlag) break;
-        var txt=narrTextFor(full[i]);
-        if(!txt){audio.push('');continue;}
-        var got='';
-        for(var att=0;att<3&&!got;att++){
-          try{ got=await blobToDataURL(await elSpeak(txt,voice,c.apiKey)); }
-          catch(e){
-            var rate=/^429/.test(e.message);
-            if(att<2&&(rate||/^5\d\d/.test(e.message))) await sleep(rate?6000:2000);
-            else { failedLines++; addLog(tag+' slide '+(i+1)+' ✗ '+e.message,'err'); got=''; break; }
-          }
-        }
-        audio.push(got);
-        if(st){st.textContent=tag+' — slide '+(i+1)+'/'+full.length+'  ('+(k+1)+'/'+jobs.length+' decks)';st.style.color='#c8a96e';}
-        await sleep(150);
-      }
-      if(narrAbort||abortFlag) break;
-      var html=renderSlideHTML(gl,LABELS[j.subj],'Session '+j.sn,j.deck,juz,how,audio);
-      var fname=(j.g===0?'K':'Grade_'+j.g)+'_'+LABELS[j.subj].replace(/ \//g,'').replace(/ /g,'_')+'_Session_'+j.sn+'_narrated.html';
-      if(zip) zip.file(fname,html);
-      else {
-        var a=document.createElement('a');
-        a.href=URL.createObjectURL(new Blob([html],{type:'text/html'})); a.download=fname;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        await sleep(300);
-      }
-      made++;
-      addLog(tag+' ✓ narrated ('+full.length+' slides)','ok');
-    }
-    if(zip&&made){
-      if(st){st.textContent='Zipping '+made+' decks…';}
-      var out=await zip.generateAsync({type:'blob'});
-      var z=document.createElement('a');
-      z.href=URL.createObjectURL(out); z.download='HOW_W'+w+'_narrated_decks.zip';
-      document.body.appendChild(z); z.click(); document.body.removeChild(z);
-      setTimeout(function(){URL.revokeObjectURL(z.href);},3000);
-    }
-    addLog(made?'✓ '+made+' narrated decks'+(failedLines?' ('+failedLines+' slides silent)':''):'Nothing produced',made?'done':'err');
-  } finally {
-    narrBusy=false;
-    if(btn) btn.disabled=false;
-    if(st){st.textContent=made?made+' decks ready':'Idle';st.style.color=made?'#2dd4bf':'#6a6890';}
-  }
-}
-
-function readCachedPod(g,w,subj,ps){try{return JSON.parse(localStorage.getItem(podCacheKey(g,w,subj,ps))||'null');}catch(e){return null;}}
-
-function buildPodcastPrompt(g,w,subjKey,ps){
-  var how=(HOW_CURR[g]||{})[w]||{};
-  var juz=JUZ[w-1]||{};
-  var gl=g===0?'Kindergarten':'Grade '+g;
-  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
-  var HOW_KEY={math:'math',science:'sci',ela:'ela',writing:'writing',social:'ss'};
-  var topic=how[HOW_KEY[subjKey]]||LABELS[subjKey];
-  var sessionNum=ps===2?2:1;
-  var deck=readCachedDeck(g,w,subjKey,sessionNum);
-
-  var ctx='GRADE: '+gl+'\nSUBJECT: '+LABELS[subjKey]+'\nWEEK: '+w+' of 30\nEPISODE: PS'+ps+' (Session '+sessionNum+' companion)\n\n';
-  ctx+='── THIS WEEK\'s TOPIC ──\n'+topic+'\n\n';
-  ctx+='── SCHOLAR OF THE WEEK ──\n'+(how.scholar||'')+'\nEvery episode must name this scholar and use their actual work. Do NOT substitute another scholar.\n\n';
-  ctx+='── JUZ OF THE WEEK ──\nName: '+(juz.tr||'')+' ('+(juz.meaning||'')+')\nTheme: '+(juz.theme||'')+'\nStory: '+(juz.story||'')+'\nCarrying question: '+(juz.q||'')+'\n\n';
-  if(juz.hadithTr) ctx+='── HADITH OF THE WEEK ──\n"'+juz.hadithTr+'" ('+(juz.hadithSrc||'')+')\n\n';
-  if(how.openingQ) ctx+='── OVERARCHING QUESTION ──\n'+how.openingQ+'\n\n';
-  if(deck&&deck.slides&&deck.slides.length){
-    ctx+='── THE QALAM '+sessionNum+' DECK THE STUDENT ALREADY SAW ──\nTitle: '+(deck.title||'')+'\nObjective: '+(deck.objective||'')+'\nSlides:\n';
-    deck.slides.forEach(function(sl,i){
-      var body=sl.content||sl.passage||sl.question||'';
-      if(Array.isArray(sl.steps)) body+=' | Steps: '+sl.steps.join(' → ');
-      ctx+='  '+(i+1)+'. ['+(sl.type||'')+'] '+(sl.heading||'')+(body?' — '+String(body).slice(0,220):'')+'\n';
-    });
-    ctx+='\nReference specific moments from this deck by name. The student has seen it — build on it, do not re-teach it from zero.\n\n';
-  } else {
-    ctx+='── NOTE ──\nThe Qalam '+sessionNum+' deck has not been generated yet. Write from the topic and sacred layer above.\n\n';
-  }
-  if(ps===2) ctx+='This is the SECOND episode of the week. PS1 already covered Session 1. Mirror its structure for Session 2 content — same shape, new material. Do not repeat PS1\'s examples.\n\n';
-  return ctx;
-}
-
-function podSysPrompt(g){
-  var gl=g===0?'Kindergarten':'Grade '+g;
-  var band=g<=2?'K-2: very short sentences, concrete objects, no abstraction. The student host is 5-7 years old.'
-    :g<=5?'Grades 3-5: plain language, familiar contexts, one idea at a time. The student host is 8-11.'
-    :g<=8?'Grades 6-8: analytical, allows some abstraction and argument. The student host is 11-14.'
-    :'Grades 9-12: rigorous, allows technical vocabulary and genuine intellectual tension. The student host is 14-18.';
-  var solo=STATE.podFormat==='solo';
-  var fmt=solo
-    ? 'FORMAT: ONE voice — a single NARRATOR (a warm teacher, never condescending) speaking directly to the student. There is no second speaker.\n'
-      +'Because there is no student to ask, the NARRATOR poses the questions a real student at '+gl+' level would ask, then answers them — rhetorical questions, second-person address ("you saw this on Monday…"), and pauses to let the listener think. Anticipate the wrong answer out loud ("You might be thinking… and that is close, but…") instead of having someone say it.\n'
-      +'Every "speaker" value must be "NARRATOR". Never emit HOST or STUDENT.\n\n'
-    : 'FORMAT: Two voices — HOST (an adult teacher, warm, never condescending) and STUDENT (a curious learner at '+gl+' level who asks the questions a real student would ask, including the confused ones).\n'
-      +'The STUDENT drives the episode by asking. The HOST answers, but also turns questions back. The student should get something wrong at least once and be corrected gently.\n\n';
-  return 'You are writing a podcast script for the Bayt al-Hikmah K-12 Islamic education platform.\n\n'
-    +fmt
-    +'AUDIENCE: A single student listening alone. Not a parent, not a classroom. Speak to one person.\n'
-    +'LEVEL: '+band+'\n\n'
-    +'LENGTH: 8-10 minutes spoken — roughly 1,300-1,600 words'+(solo?'':' of dialogue')+'. This is a long-form episode, not a summary. Do not compress.\n\n'
-    +'THE JOB OF THIS EPISODE: bring together five threads that the student met separately during the week — the lesson content, the Qalam deck they watched, the theme of the week, the scholar of the week, and the Juz and hadith of the week. By the end the student should feel these were never five things. They were one thing approached from five directions.\n\n'
-    +'RULES:\n'
-    +'- US customary units. US spelling.\n'
-    +'- Written to be SPOKEN. Contractions, short sentences'+(solo?', natural asides':', natural interruptions')+'. No bullet points inside '+(solo?'the narration':'dialogue')+'.\n'
-    +'- Name the scholar, the Name of the week, and the hadith explicitly. Weave them in — never a tacked-on religious coda at the end.\n'
-    +'- The hadith should illuminate the academic content, not decorate it.\n'
-    +'- No sound effects, no music cues, no sponsor reads.\n'
-    +'- Do not invent facts about the scholar. If unsure, stay general about their work.\n\n'
-    +'Return ONLY valid JSON, no markdown fences:\n'
-    +'{\n  "title": "Episode title — evocative, not a topic label",\n'
-    +'  "hook": "One sentence the '+(solo?'narrator':'host')+' opens cold with, before any greeting",\n'
-    +'  "runtime": "9 min",\n'
-    +'  "segments": [\n'
-    +(solo?'    {"name": "Segment name", "lines": [{"speaker":"NARRATOR","text":"..."}]}\n'
-          :'    {"name": "Segment name", "lines": [{"speaker":"HOST","text":"..."},{"speaker":"STUDENT","text":"..."}]}\n')
-    +'  ],\n'
-    +'  "closingQuestion": "The question the student is left sitting with — ties back to the Juz carrying question"\n}\n\n'
-    +'Use 5-7 segments. Suggested arc: the hook and the question → what we actually did this week → where this came from (the scholar) → the turn (the Name of the week reframes the content) → the hadith as the practical edge → what is still open.';
-}
-
-async function generatePodcastScript(gi,si,g,w,subjKey,ps){
-  setPodStatus(gi,si,ps,'running');
-  var raw=await callAPI(podSysPrompt(g), buildPodcastPrompt(g,w,subjKey,ps)+'\nWrite the episode. JSON only.', 6000);
-  var ep=parseJSON(raw);
-  if(!ep||!ep.segments||!ep.segments.length) throw new Error('no segments returned');
-  var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
-  var payload={title:ep.title||'',hook:ep.hook||'',runtime:ep.runtime||'',segments:ep.segments,closingQuestion:ep.closingQuestion||'',
-    grade:g,week:w,subject:subjKey,subjectLabel:LABELS[subjKey],ps:ps,format:STATE.podFormat,savedAt:new Date().toISOString()};
-  try{localStorage.setItem(podCacheKey(g,w,subjKey,ps),JSON.stringify(payload));}catch(e){}
-  setPodStatus(gi,si,ps,'done');
-  initPodGrid();
-  return payload;
-}
-
-function podToText(p){
-  var gl=p.grade===0?'Kindergarten':'Grade '+p.grade;
-  var L=[];
-  L.push(p.title||'Untitled Episode');
-  L.push(gl+'  ·  '+p.subjectLabel+'  ·  Week '+p.week+'  ·  PS'+p.ps+(p.runtime?'  ·  '+p.runtime:''));
-  L.push('');
-  if(p.hook){L.push('COLD OPEN');L.push('HOST:  '+p.hook);L.push('');}
-  (p.segments||[]).forEach(function(seg,i){
-    L.push('');
-    L.push('── '+(i+1)+'. '+(seg.name||'Segment').toUpperCase()+' '+'─'.repeat(Math.max(0,52-String(seg.name||'').length)));
-    L.push('');
-    (seg.lines||[]).forEach(function(ln){
-      var who=(ln.speaker||'HOST').toUpperCase();
-      var text=String(ln.text||'').replace(/\s+/g,' ').trim();
-      var indent=' '.repeat(who.length+3);
-      var words=text.split(' '), line='', out=[];
-      words.forEach(function(word){
-        if((line+' '+word).length>76){out.push(line);line=word;}
-        else line=line?line+' '+word:word;
-      });
-      if(line) out.push(line);
-      L.push(who+':  '+(out[0]||''));
-      out.slice(1).forEach(function(o){L.push(indent+o);});
-      L.push('');
-    });
-  });
-  if(p.closingQuestion){L.push('');L.push('── SIT WITH THIS '+'─'.repeat(46));L.push('');L.push(p.closingQuestion);}
-  L.push('');
-  return L.join('\n');
-}
-
-function downloadPodText(g,w,subjKey,ps){
-  var p=readCachedPod(g,w,subjKey,ps);
-  if(!p){addLog('No PS'+ps+' script for '+(g===0?'K':'G'+g)+' '+subjKey+' yet','err');return;}
-  var name=(g===0?'K':'G'+g)+'-W'+w+'-'+subjKey+'-PS'+ps+'.txt';
-  var blob=new Blob([podToText(p)],{type:'text/plain;charset=utf-8'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
-}
-
-async function exportAllPodText(){
-  var ALL=['math','science','ela','writing','social'];
-  var w=STATE.week, n=0;
-  for(var g=0;g<=12;g++) for(var s=0;s<5;s++) for(var ps=1;ps<=2;ps++){
-    if(readCachedPod(g,w,ALL[s],ps)){downloadPodText(g,w,ALL[s],ps);n++;await sleep(220);}
-  }
-  addLog(n?'Exported '+n+' podcast scripts as .txt':'No podcast scripts generated for Week '+w+' yet', n?'ok':'err');
-}
-
 // ── LOCAL DECK CACHE ───────────────────────────────────────────────────────
 function deckCacheKey(g,w,subject,sessionNum){return 'how_deck_'+g+'_'+w+'_'+subject+'_'+sessionNum;}
 function cacheDeck(g,w,subject,sessionNum,payload){
@@ -1656,8 +1105,12 @@ async function waitForHeygenVideo(vid,label){
 async function runHeygenBatch(){
   if(!STATE.heygenKey){addLog('Set Heygen API key in the Heygen tab first','err');return;}
   var ALL=['math','science','ela','writing','social'];
-  var sc=batchScope();
-  var grades=sc.grades, subjIdx=sc.subjIdx, scopeLbl=sc.label;
+  var gSel=qs('#slide-grade-sel'), sSel=qs('#slide-subj-sel');
+  var gradeScope=gSel?gSel.value:'all';
+  var subjScope=sSel?sSel.value:'all';
+  var grades=gradeScope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gradeScope)];
+  var subjIdx=subjScope==='all'?[0,1,2,3,4]:[ALL.indexOf(subjScope)];
+  var scopeLbl=(gradeScope==='all'?'all grades':(gradeScope==='0'?'Kindergarten':'Grade '+gradeScope))+' · '+(subjScope==='all'?'all subjects':subjScope);
   var n=grades.length*subjIdx.length;
   addLog(STATE.heygenSerial
     ? 'Heygen video batch (serial) — Week '+STATE.week+' — '+scopeLbl+' ('+n+' videos, one at a time — waits for each render to finish)'
@@ -1719,7 +1172,7 @@ function frontMatter(juz,how,subject){
   return out;
 }
 
-function renderSlideHTML(grade,subject,session,deck,juz,how,audio){
+function renderSlideHTML(grade,subject,session,deck,juz,how){
   var COLORS={Mathematics:'#1B2A4A',Science:'#1A3A2A','ELA / Reading':'#3A1A2A',Writing:'#2A2A3A','Social Studies':'#F5EBDD'};
   var ACCENTS={Mathematics:'#F5C842',Science:'#3DD9C5','ELA / Reading':'#F5A0B0',Writing:'#B0A0F5','Social Studies':'#1B7A66'};
   var LIGHT={'Social Studies':1};
@@ -1752,10 +1205,9 @@ function renderSlideHTML(grade,subject,session,deck,juz,how,audio){
     var lead=sl.lead?'<div class="lead">'+sl.lead+'</div>':'';
     var cap=sl.caption?'<div class="cap">'+sl.caption+'</div>':'';
     var narr=(sl.narration&&sl.narration.length)?'<div class="narr"><div class="narr-h">SCRIPT</div>'+sl.narration.map(function(n){return '<div class="narr-l">'+n+'</div>';}).join('')+'</div>':'';
-    var au=(audio&&audio[i])?' data-audio="'+audio[i]+'"':'';
-    return '<div class="slide'+(sl._fm?' fm':'')+'"'+au+' id="s'+i+'"><div class="sn">'+(i+1)+'/'+slides.length+'</div>'+tag+'<h2>'+(sl.heading||sl.type||'')+'</h2>'+cap+lead+(body?'<p>'+body+'</p>':'')+steps+quiz+(sl.parentNote?'<div class="pn">\ud83d\udc64 '+sl.parentNote+'</div>':'')+narr+'</div>';
+    return '<div class="slide'+(sl._fm?' fm':'')+'" id="s'+i+'"><div class="sn">'+(i+1)+'/'+slides.length+'</div>'+tag+'<h2>'+(sl.heading||sl.type||'')+'</h2>'+cap+lead+(body?'<p>'+body+'</p>':'')+steps+quiz+(sl.parentNote?'<div class="pn">\ud83d\udc64 '+sl.parentNote+'</div>':'')+narr+'</div>';
   }).join('');
-  return '<!DOCTYPE html><html><head><meta charset=utf-8><title>'+grade+' \xb7 '+subject+' \xb7 Session '+session+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:'+bg+';color:'+ink+';font-family:Georgia,serif;height:100vh;overflow:hidden}.slide{display:none;height:100vh;padding:60px 80px;flex-direction:column;justify-content:center;position:relative}.slide.active{display:flex}.sn{position:absolute;top:18px;right:24px;font-size:12px;opacity:'+opNum+'}h2{font-size:34px;line-height:1.2;color:'+acc+';margin-bottom:18px}p{font-size:21px;line-height:1.65;max-width:880px}ol{font-size:19px;line-height:1.8;max-width:880px;padding-left:22px}.quiz{margin-top:20px;max-width:880px}.qq{font-size:20px;line-height:1.5;margin-bottom:16px}.qo{display:flex;flex-direction:column;gap:9px}.qb{text-align:left;background:'+sf+';border:1px solid '+ln+';color:'+ink+';padding:13px 17px;border-radius:11px;cursor:pointer;font-size:17px;font-family:inherit;transition:all .15s}.qb:hover:not(.locked){background:'+sfH+'}.qb.ok{background:rgba(45,212,191,.22);border-color:#2dd4bf}.qb.no{background:rgba(248,113,113,.18);border-color:#f87171}.qf{margin-top:13px;font-size:16px;line-height:1.6;opacity:0;transition:opacity .25s}.qf.on{opacity:.85}.narr{display:none;position:fixed;right:22px;bottom:74px;width:330px;max-height:52vh;overflow-y:auto;background:'+narrBg+';border:1px solid '+ln+';border-radius:13px;padding:14px 16px;font-family:system-ui,sans-serif}body.script .slide.active .narr{display:block}.narr-h{font-size:10px;font-weight:700;letter-spacing:.15em;opacity:.5;margin-bottom:9px}.narr-l{font-size:14px;line-height:1.55;opacity:.88;margin-bottom:8px;padding-left:11px;border-left:2px solid '+acc+'}.phase{display:inline-block;align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#fff;padding:5px 13px;border-radius:99px;margin-bottom:15px;font-family:system-ui,sans-serif}.kick{font-size:13px;font-weight:700;letter-spacing:.16em;color:'+acc+';margin-bottom:16px;font-family:system-ui,sans-serif}.cap{font-size:17px;line-height:1.5;opacity:'+opCap+';margin:-8px 0 18px;max-width:820px;font-style:italic}.lead{font-size:26px;line-height:1.45;max-width:860px;margin-bottom:16px;color:'+acc+'}.slide.fm{justify-content:center}.slide.fm h2{font-size:44px;max-width:900px}.pn{margin-top:18px;font-size:14px;opacity:'+opNote+';font-style:italic;border-top:1px solid '+lnF+';padding-top:10px}.bar{position:fixed;top:0;left:0;right:0;height:46px;background:'+barBg+';display:flex;align-items:center;padding:0 22px;font-size:12px;opacity:.65;gap:8px}.nav{position:fixed;bottom:20px;right:22px;display:flex;gap:8px}.nav button{background:'+sf+';border:1px solid '+ln+';color:'+ink+';padding:7px 18px;border-radius:18px;cursor:pointer;font-size:13px}</style></head><body><div class=bar><span style="color:'+acc+'">'+grade+'</span><span style="opacity:.4">\xb7</span>'+subject+'<span style="opacity:.4">\xb7</span>Session '+session+'<span style="opacity:.4">\xb7</span>'+(how.scholar||'')+'</div>'+slideHtml+'<div class=nav>'+(audio?'<button id="pp" onclick="toggleAudio()" title="Play / pause narration (P)">\u25b6</button>':'')+'<button onclick="document.body.classList.toggle(\'script\')" title="Toggle teacher script (N)">\u2261</button><button onclick="prev()">\u2190</button><button onclick="next()">\u2192</button></div><script>var c=0,ss=document.querySelectorAll(".slide");var au=new Audio(),playing=false;function setPP(){var b=document.getElementById("pp");if(b)b.textContent=playing?"\u23f8":"\u25b6";}function playSlide(n){var src=ss[n].dataset.audio;au.pause();if(!src){if(playing)setTimeout(function(){if(playing)next();},2600);return;}au.src=src;au.currentTime=0;if(playing)au.play().catch(function(){});}function quizPending(n){var q=ss[n].querySelector(".quiz");if(!q)return false;return !q.querySelector(".qb.ok");}au.onended=function(){if(!playing)return;if(quizPending(c)){var b=document.getElementById("pp");if(b)b.textContent="\u25b6";return;}next();};function toggleAudio(){playing=!playing;setPP();if(playing)playSlide(c);else au.pause();}function show(n){ss.forEach(function(s,i){s.classList.toggle("active",i===n);});playSlide(n);}function next(){if(c<ss.length-1){c++;show(c);}else{playing=false;setPP();au.pause();}}function prev(){if(c>0){c--;show(c);}}document.querySelectorAll(".quiz").forEach(function(q){var ans=parseInt(q.dataset.a)||0,fb=q.querySelector(".qf");q.querySelectorAll(".qb").forEach(function(b){b.onclick=function(){if(b.classList.contains("locked"))return;var i=parseInt(b.dataset.i),right=i===ans;b.classList.add(right?"ok":"no");if(right){q.querySelectorAll(".qb").forEach(function(x){x.classList.add("locked");});if(playing){setPP();setTimeout(function(){if(playing&&!quizPending(c))next();},1800);}}fb.textContent=(right?"\u2713 ":"\u2717 ")+(b.dataset.fb||(right?"Correct.":"Not quite \u2014 try again."));fb.className="qf on";};});});document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")next();if(e.key==="ArrowLeft")prev();if(e.key==="n"||e.key==="N")document.body.classList.toggle("script");if(e.key==="p"||e.key==="P")toggleAudio();});show(0);<\/script></body></html>';
+  return '<!DOCTYPE html><html><head><meta charset=utf-8><title>'+grade+' \xb7 '+subject+' \xb7 Session '+session+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:'+bg+';color:'+ink+';font-family:Georgia,serif;height:100vh;overflow:hidden}.slide{display:none;height:100vh;padding:60px 80px;flex-direction:column;justify-content:center;position:relative}.slide.active{display:flex}.sn{position:absolute;top:18px;right:24px;font-size:12px;opacity:'+opNum+'}h2{font-size:34px;line-height:1.2;color:'+acc+';margin-bottom:18px}p{font-size:21px;line-height:1.65;max-width:880px}ol{font-size:19px;line-height:1.8;max-width:880px;padding-left:22px}.quiz{margin-top:20px;max-width:880px}.qq{font-size:20px;line-height:1.5;margin-bottom:16px}.qo{display:flex;flex-direction:column;gap:9px}.qb{text-align:left;background:'+sf+';border:1px solid '+ln+';color:'+ink+';padding:13px 17px;border-radius:11px;cursor:pointer;font-size:17px;font-family:inherit;transition:all .15s}.qb:hover:not(.locked){background:'+sfH+'}.qb.ok{background:rgba(45,212,191,.22);border-color:#2dd4bf}.qb.no{background:rgba(248,113,113,.18);border-color:#f87171}.qf{margin-top:13px;font-size:16px;line-height:1.6;opacity:0;transition:opacity .25s}.qf.on{opacity:.85}.narr{display:none;position:fixed;right:22px;bottom:74px;width:330px;max-height:52vh;overflow-y:auto;background:'+narrBg+';border:1px solid '+ln+';border-radius:13px;padding:14px 16px;font-family:system-ui,sans-serif}body.script .slide.active .narr{display:block}.narr-h{font-size:10px;font-weight:700;letter-spacing:.15em;opacity:.5;margin-bottom:9px}.narr-l{font-size:14px;line-height:1.55;opacity:.88;margin-bottom:8px;padding-left:11px;border-left:2px solid '+acc+'}.phase{display:inline-block;align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#fff;padding:5px 13px;border-radius:99px;margin-bottom:15px;font-family:system-ui,sans-serif}.kick{font-size:13px;font-weight:700;letter-spacing:.16em;color:'+acc+';margin-bottom:16px;font-family:system-ui,sans-serif}.cap{font-size:17px;line-height:1.5;opacity:'+opCap+';margin:-8px 0 18px;max-width:820px;font-style:italic}.lead{font-size:26px;line-height:1.45;max-width:860px;margin-bottom:16px;color:'+acc+'}.slide.fm{justify-content:center}.slide.fm h2{font-size:44px;max-width:900px}.pn{margin-top:18px;font-size:14px;opacity:'+opNote+';font-style:italic;border-top:1px solid '+lnF+';padding-top:10px}.bar{position:fixed;top:0;left:0;right:0;height:46px;background:'+barBg+';display:flex;align-items:center;padding:0 22px;font-size:12px;opacity:.65;gap:8px}.nav{position:fixed;bottom:20px;right:22px;display:flex;gap:8px}.nav button{background:'+sf+';border:1px solid '+ln+';color:'+ink+';padding:7px 18px;border-radius:18px;cursor:pointer;font-size:13px}</style></head><body><div class=bar><span style="color:'+acc+'">'+grade+'</span><span style="opacity:.4">\xb7</span>'+subject+'<span style="opacity:.4">\xb7</span>Session '+session+'<span style="opacity:.4">\xb7</span>'+(how.scholar||'')+'</div>'+slideHtml+'<div class=nav><button onclick="document.body.classList.toggle(\'script\')" title="Toggle teacher script (N)">\u2261</button><button onclick="prev()">\u2190</button><button onclick="next()">\u2192</button></div><script>var c=0,ss=document.querySelectorAll(".slide");function show(n){ss.forEach(function(s,i){s.classList.toggle("active",i===n);});}function next(){if(c<ss.length-1){c++;show(c);}}function prev(){if(c>0){c--;show(c);}}document.querySelectorAll(".quiz").forEach(function(q){var ans=parseInt(q.dataset.a)||0,fb=q.querySelector(".qf");q.querySelectorAll(".qb").forEach(function(b){b.onclick=function(){if(b.classList.contains("locked"))return;var i=parseInt(b.dataset.i),right=i===ans;b.classList.add(right?"ok":"no");if(right){q.querySelectorAll(".qb").forEach(function(x){x.classList.add("locked");});}fb.textContent=(right?"\u2713 ":"\u2717 ")+(b.dataset.fb||(right?"Correct.":"Not quite \u2014 try again."));fb.className="qf on";};});});document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")next();if(e.key==="ArrowLeft")prev();if(e.key==="n"||e.key==="N")document.body.classList.toggle("script");});show(0);<\/script></body></html>';
 }
 
 async function generateAndExportSlides(g,w,subjKey,sessionNum,collectOnly){
@@ -1902,7 +1354,9 @@ async function runDeckExport(kind,asZip){
   var cfg=kind==='thursday'
     ? {subject:'synthesis',session:3,label:'Thursday Synthesis'}
     : {subject:'review',   session:4,label:'Wednesday Review'};
-  var grades=batchScope().grades;
+  var gSel=qs('#slide-grade-sel');
+  var scope=gSel?gSel.value:'all';
+  var grades=scope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(scope)];
   var zip=asZip&&typeof JSZip!=='undefined'?new JSZip():null;
   abortFlag=false;
   addLog(cfg.label+' export \u2014 Week '+w+' \u2014 '+grades.length+' grade(s)'+(zip?' \u2192 ZIP':''),'start');
@@ -1930,10 +1384,12 @@ async function runDeckExport(kind,asZip){
 async function runSlideGenBatch(asZip){
   var week=STATE.week;
   var ALL=['math','science','ela','writing','social'];
-  var sc=batchScope(), sesSel=qs('#slide-sess-sel');
+  var gSel=qs('#slide-grade-sel'), sSel=qs('#slide-subj-sel'), sesSel=qs('#slide-sess-sel');
+  var gradeScope=gSel?gSel.value:'all';
+  var subjScope=sSel?sSel.value:'all';
   var sessScope=sesSel?sesSel.value:'all';
-  var grades=sc.grades;
-  var subjs=sc.subjIdx.map(function(i){return ALL[i];});
+  var grades=gradeScope==='all'?Array.from({length:13},function(_,i){return i;}):[parseInt(gradeScope)];
+  var subjs=subjScope==='all'?ALL:[subjScope];
   var sessions=sessScope==='all'?[1,2]:(sessScope==='123'?[1,2,3]:[parseInt(sessScope)]);
   var zip=asZip&&typeof JSZip!=='undefined'?new JSZip():null;
   if(asZip&&!zip){addLog('ZIP library unavailable — falling back to individual downloads','warn');}
@@ -1992,19 +1448,13 @@ window.addEventListener('DOMContentLoaded', function(){
   initGrid();
   initWedBtns();
   initMunGrid();
-  initPodGrid();
-  try{setPodFormat(localStorage.getItem('how_pod_format')||'duo');}catch(e){setPodFormat('duo');}
-  (function(){
-    var c=getElCfg();
-    [['el-key','apiKey'],['el-host','host'],['el-student','student'],['el-narrator','narrator']].forEach(function(p){
-      var el=qs('#'+p[0]); if(el&&c[p[1]]) el.value=c[p[1]];
-    });
-    var nv=qs('#nr-voice'); if(nv) nv.value=c.deck||c.host||c.narrator||'';
-    refreshElStatus();
-  })();
-  onBatchScopeChange();
   loadHeygenCfg();
   initHeygenAvatarRows();
+  (function(){
+    var gs=qs('#slide-grade-sel'); if(!gs) return;
+    gs.innerHTML='<option value="all">All grades</option>';
+    for(var i=0;i<13;i++){var o=document.createElement('option');o.value=String(i);o.textContent=i===0?'Kindergarten':'Grade '+i;gs.appendChild(o);}
+  })();
   // Studio cards
   var sc=loadStudioCards();
   if(sc>0) qs('#studio-btn').textContent='📥 Studio Cards ('+sc+')';
