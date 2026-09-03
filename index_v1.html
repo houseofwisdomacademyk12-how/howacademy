@@ -218,9 +218,28 @@ body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--cream);o
   aspect-ratio:16/9;border-radius:14px;overflow:hidden;
   background:var(--night);
   border:1px solid rgba(29,111,111,.2);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
 }
-.video-frame video{
-  width:100%;height:100%;display:block;object-fit:cover;
+.play-btn{
+  width:68px;height:68px;border-radius:50%;
+  background:rgba(212,175,55,.9);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;position:relative;
+}
+.play-btn:hover{background:var(--gold-warm);transform:scale(1.07);}
+.play-btn::after{
+  content:'';width:0;height:0;border-style:solid;
+  border-width:11px 0 11px 20px;
+  border-color:transparent transparent transparent var(--night);
+  margin-left:4px;
+}
+.video-label{
+  position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.08);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.12);border-radius:20px;
+  padding:.3rem .9rem;font-size:.72rem;color:rgba(255,255,255,.55);
+  white-space:nowrap;
 }
 .video-caption{
   text-align:center;margin-top:1rem;
@@ -384,7 +403,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--cream);o
     <span class="nav-logo-sub" style="font-family:&apos;DM Sans&apos;,sans-serif;font-size:.78rem;font-weight:300;color:rgba(255,255,255,.4);letter-spacing:.06em;">House of Wisdom Academy</span>
   </div>
   <div class="nav-actions">
-    <span class="btn-nav-ghost" style="opacity:.5;cursor:default;">Coming Soon</span>
+    <a href="how_platform.html" class="btn-nav-ghost">Sign in</a>
     <a href="#pricing" class="btn-nav-solid">Free week</a>
   </div>
 </nav>
@@ -515,9 +534,10 @@ body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--cream);o
   <h2 class="heading">A week in the House of Wisdom</h2>
   <p class="subheading">From Saturday night's opening question to Thursday's Muhasaba.</p>
   <div class="video-frame">
-    <iframe src="https://www.youtube.com/embed/AHkWBvUS1ms" title="A week in the House of Wisdom" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;display:block;"></iframe>
+    <div class="play-btn" title="Watch the overview"></div>
+    <div class="video-label">Add your video here · Vimeo or YouTube embed</div>
   </div>
-
+  <p class="video-caption">Platform overview · ~4 min</p>
 </section>
 
 <!-- Testimonials -->
@@ -583,7 +603,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--cream);o
         <li>Lesson generator · assessment suite</li>
         <li>Peer teaching library · Sahifa · Munazara</li>
       </ul>
-      <span class="pricing-cta solid" style="opacity:.5;cursor:default;text-align:center;">Coming Soon</span>
+      <a href="https://buy.stripe.com/aFa28q5Qdd9V5ko1fC5sA00" target="_blank" class="pricing-cta solid">Get started →</a>
     </div>
 
     <!-- Monthly -->
@@ -600,7 +620,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--cream);o
         <li>Lesson generator · assessment suite</li>
         <li>Cancel any time</li>
       </ul>
-      <span class="pricing-cta ghost" style="opacity:.5;cursor:default;text-align:center;">Coming Soon</span>
+      <a href="https://buy.stripe.com/4gMaEWguR6Lx28c0by5sA01" target="_blank" class="pricing-cta ghost">Get started →</a>
     </div>
 
   </div>
@@ -614,7 +634,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--cream);o
     <a href="#approach" class="footer-link">Approach</a>
     <a href="#" class="footer-link">Curriculum</a>
     <a href="#" class="footer-link">Pricing</a>
-    <span class="footer-link" style="opacity:.4;cursor:default;">Coming Soon</span>
+    <a href="how_platform.html" class="footer-link">Sign in</a>
   </nav>
   <p style="font-size:.68rem;color:var(--ink5,#b0a898);margin-top:1rem;text-align:center;">&copy; 2026 House of Wisdom Academy. All rights reserved.</p>
 </footer>
