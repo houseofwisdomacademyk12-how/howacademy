@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Al-Aafiya — Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Spectral:ital,wght@0,500;0,600;1,400&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --ink:#1a1a2e;--ink2:#2e2e44;--ink3:#5a5a78;--ink4:#9a9ab0;--ink5:#d0d0e0;
+  --parchment:#f9f7f4;--parchment-2:#f0ece4;--parchment-3:#e4ddd0;
+  --gold:#d4af37;--gold-l:#e8cc70;--gold-pale:#fdf5d0;
+  --teal:#1d6f6f;--teal-l:#d0eaea;--teal-d:#0d3b3b;
+  --green:#2d6a2d;--green-l:#e0f0e0;
+  --coral:#8b3a2a;--coral-l:#f5e0da;
+  --blue:#1a3d8a;--blue-l:#ddeaf8;
+  --r:10px;--rl:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+/* No-student screen */
+.no-student{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px;text-align:center;background:var(--parchment)}
+.no-student h2{font-family:'Amiri',serif;font-size:1.4rem;color:var(--teal);margin-bottom:10px}
+.no-student p{font-size:.9rem;color:var(--ink3);line-height:1.6}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--teal-d);position:sticky;top:0;z-index:100}
+.topbar-brand{font-family:'Amiri',serif;font-size:1.1rem;color:var(--gold-l)}
+.topbar-sub{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:1px}
+.topbar-student{text-align:right}
+.topbar-name{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.85)}
+.topbar-grade{font-size:.65rem;color:rgba(255,255,255,.4)}
+
+/* Week banner */
+.week-banner{background:linear-gradient(135deg,var(--teal-d),#1a3d1a);padding:14px 18px;display:flex;align-items:center;gap:14px}
+.wb-arabic{font-family:'Amiri',serif;font-size:1.5rem;color:var(--gold-l);line-height:1}
+.wb-info{flex:1;min-width:0}
+.wb-label{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.35);margin-bottom:2px}
+.wb-theme{font-size:.88rem;font-weight:600;color:rgba(255,255,255,.9);line-height:1.3}
+.wb-hadith{font-size:.72rem;color:rgba(255,255,255,.45);font-style:italic;margin-top:3px;line-height:1.4}
+.wb-scholar-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);border-radius:99px;padding:.18rem .7rem;font-size:.68rem;color:var(--gold-l);margin-top:5px}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--parchment-3);background:white;position:sticky;top:48px;z-index:50}
+.tab{flex:1;padding:10px 6px;text-align:center;font-size:.65rem;font-weight:700;color:var(--ink4);border-bottom:2px solid transparent;cursor:pointer;transition:.15s;white-space:nowrap}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.tab-icon{font-size:1rem;display:block;margin-bottom:2px}
+
+/* Tab panels */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.section{padding:16px 16px 28px}
+.section-title{font-family:'Spectral',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:3px}
+.section-sub{font-size:.75rem;color:var(--ink3);margin-bottom:14px;line-height:1.5}
+
+/* Session tab */
+.session-card{margin:14px 16px 0;border-radius:var(--rl);overflow:hidden;background:#1a1a2e;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.session-hdr{padding:12px 16px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between}
+.session-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.35)}
+.session-title{font-size:.9rem;font-weight:700;color:rgba(255,255,255,.9);margin-top:2px;line-height:1.3}
+.session-meta{font-size:.7rem;color:rgba(255,255,255,.35);margin-top:2px}
+.session-play-btn{width:48px;height:48px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.session-play-btn:hover{background:var(--gold-l);transform:scale(1.05)}
+.session-body{padding:14px 16px}
+.no-video{font-size:.8rem;color:rgba(255,255,255,.3);font-style:italic;text-align:center;padding:20px 0}
+video,audio{width:100%;border-radius:10px;margin-bottom:12px}
+
+/* Log fields */
+.log-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.35);display:block;margin-bottom:.35rem}
+.effort-row{display:flex;gap:6px;margin-bottom:12px}
+.effort-btn{flex:1;padding:8px 4px;border:1.5px solid rgba(255,255,255,.12);border-radius:8px;text-align:center;cursor:pointer;font-size:.68rem;font-weight:700;color:rgba(255,255,255,.5);background:rgba(255,255,255,.04);transition:.15s;font-family:inherit}
+.effort-btn.sel{border-color:var(--gold);background:rgba(212,175,55,.15);color:var(--gold-l)}
+.effort-btn .emo{font-size:1rem;display:block;margin-bottom:2px}
+.log-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 11px;font-size:.82rem;color:rgba(255,255,255,.75);font-family:inherit;outline:none}
+.log-input::placeholder{color:rgba(255,255,255,.2)}
+
+/* History strip */
+.history-strip{display:flex;gap:6px;padding:12px 16px 4px;overflow-x:auto}
+.h-dot{flex-shrink:0;width:36px;text-align:center}
+.h-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--parchment-3);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:var(--ink4);margin-bottom:3px}
+.h-circle.done{background:var(--teal);border-color:var(--teal);color:white}
+.h-circle.today{background:var(--gold-pale);border-color:var(--gold);color:var(--coral)}
+.h-day{font-size:.55rem;color:var(--ink4);text-align:center}
+
+/* Movement */
+.move-card{background:white;border:1px solid var(--parchment-3);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.move-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.move-icon{width:36px;height:36px;border-radius:9px;background:var(--green-l);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.move-title{font-size:.88rem;font-weight:700;color:var(--ink)}
+.move-sub{font-size:.7rem;color:var(--ink3);margin-top:1px}
+.move-locked{opacity:.45}
+.wb-label{font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);display:block;margin-bottom:.3rem}
+.wb-input{width:100%;border:none;border-bottom:1.5px solid var(--parchment-3);padding:.25rem 0 .4rem;font-size:.88rem;background:transparent;font-family:inherit;outline:none;color:var(--ink)}
+.wb-textarea{width:100%;border:none;border-bottom:1.5px solid var(--parchment-3);padding:.25rem 0 .4rem;font-size:.88rem;background:transparent;font-family:inherit;outline:none;resize:none;line-height:1.7;color:var(--ink)}
+.wb-effort-row{display:flex;gap:6px;margin-bottom:10px}
+.wb-effort-btn{flex:1;padding:7px 4px;border:1.5px solid var(--parchment-3);border-radius:8px;text-align:center;cursor:pointer;font-size:.67rem;font-weight:700;color:var(--ink3);background:white;transition:.15s;font-family:inherit}
+.wb-effort-btn.sel{border-color:var(--teal);background:var(--teal-l);color:var(--teal-d)}
+.wb-effort-btn .emo{font-size:.95rem;display:block;margin-bottom:2px}
+
+/* Nutrition */
+.food-focus{background:linear-gradient(135deg,#1a2d0d,#0d1a08);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+.food-focus-label{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.35);margin-bottom:5px}
+.food-focus-title{font-family:'Spectral',serif;font-size:.92rem;color:rgba(255,255,255,.9);line-height:1.5;margin-bottom:3px}
+.food-focus-sub{font-size:.73rem;color:rgba(255,255,255,.45);line-height:1.5}
+.recipe-card{background:white;border:1px solid var(--parchment-3);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.rc-top{padding:14px 16px;background:linear-gradient(135deg,#1a2d0d,#0d1a08)}
+.rc-dish{font-family:'Spectral',serif;font-size:1.1rem;color:rgba(255,255,255,.95)}
+.rc-region{font-size:.72rem;color:rgba(255,255,255,.45);margin-top:2px}
+.rc-conn{font-family:'Spectral',serif;font-style:italic;font-size:.82rem;color:var(--ink2);line-height:1.6;background:var(--parchment-2);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 6px 6px 0;margin:12px 0}
+.rc-ingr{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px}
+.rc-ingr-item{font-size:.8rem;color:var(--ink2);padding:4px 7px;background:var(--parchment);border-radius:6px}
+.rc-ingr-item strong{color:var(--ink)}
+.rc-step{display:flex;gap:8px;margin-bottom:7px;font-size:.82rem;color:var(--ink2);line-height:1.5}
+.rc-step-n{width:20px;height:20px;border-radius:50%;background:var(--teal-l);color:var(--teal-d);font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.rc-eng{background:var(--parchment-2);border-radius:8px;padding:10px 13px;margin-top:10px;font-family:'Spectral',serif;font-style:italic;font-size:.85rem;color:var(--ink2);line-height:1.6}
+.rc-eng-label{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);display:block;margin-bottom:4px;font-style:normal;font-family:'DM Sans',sans-serif}
+.hadith-box{background:var(--gold-pale);border:1px solid rgba(212,175,55,.25);border-radius:var(--r);padding:12px 14px;margin-top:12px}
+.hadith-label{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(180,140,20,.7);margin-bottom:5px}
+.hadith-text{font-family:'Spectral',serif;font-style:italic;font-size:.85rem;color:var(--ink2);line-height:1.65}
+
+/* Mindset */
+.mindset-prompt{background:var(--gold-pale);border:1px solid rgba(212,175,55,.25);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
+.mindset-prompt-label{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(180,140,20,.7);margin-bottom:5px}
+.mindset-prompt-q{font-family:'Spectral',serif;font-style:italic;font-size:.88rem;color:var(--ink2);line-height:1.65}
+.mood-row{display:flex;gap:6px;margin-bottom:14px}
+.mood-btn{flex:1;padding:8px 4px;border:1.5px solid var(--parchment-3);border-radius:8px;text-align:center;cursor:pointer;font-size:.67rem;font-weight:700;color:var(--ink3);background:white;transition:.15s;font-family:inherit}
+.mood-btn.sel{border-color:var(--gold);background:var(--gold-pale);color:var(--coral)}
+.mood-btn span{font-size:1rem;display:block;margin-bottom:2px}
+.band-block{margin-top:12px;padding:12px 14px;border-radius:var(--r);border:1px solid var(--parchment-3)}
+
+/* Du'a */
+.dua-page{background:linear-gradient(160deg,var(--teal-d),#0d1a08);border-radius:var(--rl);margin:16px;overflow:hidden}
+.dua-bar{height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold-l),var(--gold),transparent)}
+.dua-body{padding:20px 18px}
+.dua-arabic{font-family:'Amiri',serif;font-size:1.5rem;color:var(--gold-l);text-align:center;margin-bottom:5px;direction:rtl;line-height:1.8}
+.dua-translit{font-size:.7rem;color:rgba(255,255,255,.4);text-align:center;font-style:italic;margin-bottom:3px}
+.dua-translation{font-family:'Spectral',serif;font-size:.82rem;color:rgba(255,255,255,.55);text-align:center;line-height:1.6;margin-bottom:16px}
+.dua-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 13px;font-size:.85rem;color:rgba(255,255,255,.75);font-family:inherit;outline:none;resize:none;line-height:1.7}
+.dua-input::placeholder{color:rgba(255,255,255,.2)}
+.dua-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.3);display:block;margin-bottom:8px}
+.dua-submit{width:100%;margin-top:14px;padding:.75rem;border-radius:10px;border:none;background:linear-gradient(135deg,var(--teal),var(--green));color:#fff;font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit}
+.save-note{font-size:.7rem;color:rgba(255,255,255,.25);text-align:center;margin-top:8px}
+
+/* Misc */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:9px 22px;border-radius:99px;font-size:.82rem;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;white-space:nowrap}
+.toast.show{opacity:1}
+.divider{height:1px;background:var(--parchment-3);margin:14px 0}
+@media(max-width:480px){.tabs{font-size:.6rem}.tab{padding:8px 4px}.tab-icon{font-size:.9rem}}
+</style>
+</head>
+<body>
+
+<!-- No-student screen -->
+<div id="screen-no-student" class="no-student" style="display:none">
+  <div style="font-size:2.5rem;margin-bottom:16px">العافية</div>
+  <h2>Al-Aafiya</h2>
+  <p>Open this from the HOW Academy platform while signed in<br>so your wellness record stays connected to your learning.</p>
+</div>
+
+<!-- Main app -->
+<div id="app" style="display:none">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">العَافِيَة &nbsp;Al-Aafiya</div>
+      <div class="topbar-sub" id="tb-week">Week —</div>
+    </div>
+    <div class="topbar-student">
+      <div class="topbar-name" id="tb-name">—</div>
+      <div class="topbar-grade" id="tb-grade">—</div>
+    </div>
+  </div>
+
+  <!-- Week banner -->
+  <div class="week-banner">
+    <div class="wb-arabic" id="wb-arabic">—</div>
+    <div class="wb-info">
+      <div class="wb-label">Name of the week</div>
+      <div class="wb-theme" id="wb-theme">—</div>
+      <div class="wb-hadith" id="wb-hadith">—</div>
+      <div><span class="wb-scholar-pill">☪ <span id="wb-scholar">—</span> this week</span></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('session')"><span class="tab-icon">▶</span>Session</div>
+    <div class="tab" onclick="showTab('movement')"><span class="tab-icon">🏃</span>Movement</div>
+    <div class="tab" onclick="showTab('nutrition')"><span class="tab-icon">🌿</span>Nutrition</div>
+    <div class="tab" onclick="showTab('mindset')"><span class="tab-icon">🧠</span>Mindset</div>
+    <div class="tab" onclick="showTab('dua')"><span class="tab-icon">🤲</span>Du'a</div>
+  </div>
+
+  <!-- SESSION TAB -->
+  <div class="tab-panel active" id="panel-session">
+    <div class="session-card">
+      <div class="session-hdr">
+        <div>
+          <div class="session-label" id="sess-label">—</div>
+          <div class="session-title" id="sess-title">—</div>
+          <div class="session-meta" id="sess-meta">30 min · teacher-led</div>
+        </div>
+        <button class="session-play-btn" onclick="playSession()" id="sess-play-btn" title="Play session">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#1a1a2e"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+      </div>
+      <div class="session-body">
+        <div id="media-container"></div>
+        <div style="margin-top:4px">
+          <label class="log-label">How did this session feel?</label>
+          <div class="effort-row">
+            <button class="effort-btn" onclick="selEffort(this,'hard')"><span class="emo">😤</span>Hard</button>
+            <button class="effort-btn" onclick="selEffort(this,'good')"><span class="emo">😊</span>Good</button>
+            <button class="effort-btn" onclick="selEffort(this,'easy')"><span class="emo">😌</span>Easy</button>
+          </div>
+          <label class="log-label">One thing I noticed about my body</label>
+          <input class="log-input" id="sess-note" placeholder="I noticed…" oninput="autosaveRecord()">
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div style="padding:12px 16px 4px"><span style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4)">This week</span></div>
+    <div class="history-strip" id="history-strip"></div>
+    <div style="height:16px"></div>
+  </div>
+
+  <!-- MOVEMENT TAB -->
+  <div class="tab-panel" id="panel-movement">
+    <div class="section">
+      <div class="section-title">Movement</div>
+      <div class="section-sub" id="move-sub">This week's sessions</div>
+      <div id="move-cards"></div>
+      <div class="divider"></div>
+      <label class="wb-label">Weekly reflection — how did your body change this week?</label>
+      <textarea class="wb-textarea" id="move-reflection" rows="3" placeholder="This week my body…" oninput="autosaveRecord()"></textarea>
+    </div>
+  </div>
+
+  <!-- NUTRITION TAB -->
+  <div class="tab-panel" id="panel-nutrition">
+    <div class="section">
+      <div class="section-title">Nutrition</div>
+      <div class="section-sub">Not a tracker — a way of thinking about what fuels the body Allah gave you.</div>
+      <!-- Weekly focus from Juz -->
+      <div class="food-focus">
+        <div class="food-focus-label" id="nutr-juz-label">Juz theme</div>
+        <div class="food-focus-title" id="nutr-q">What does a body in this week's state of being need?</div>
+        <div class="food-focus-sub" id="nutr-sub"></div>
+      </div>
+      <!-- Recipe card -->
+      <div id="recipe-container"></div>
+      <!-- Student response -->
+      <div>
+        <label class="wb-label">What I noticed this week about what I eat</label>
+        <textarea class="wb-textarea" id="nutr-note" rows="3" placeholder="I noticed that when I…" oninput="autosaveRecord()"></textarea>
+      </div>
+      <!-- Prophetic hadith on eating -->
+      <div class="hadith-box" style="margin-top:12px">
+        <div class="hadith-label">Prophetic guidance on the body</div>
+        <div class="hadith-text">"Your body has a right over you." — Bukhari</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MINDSET TAB -->
+  <div class="tab-panel" id="panel-mindset">
+    <div class="section">
+      <div class="section-title">Mindset</div>
+      <div class="section-sub">Connected to this week's scholar and Juz theme.</div>
+      <div class="mindset-prompt">
+        <div class="mindset-prompt-label" id="mindset-label">Scholar · Juz theme</div>
+        <div class="mindset-prompt-q" id="mindset-q">Loading…</div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="wb-label">My reflection</label>
+        <textarea class="wb-textarea" id="mindset-note" rows="3" placeholder="I think…" oninput="autosaveRecord()"></textarea>
+      </div>
+      <div class="divider"></div>
+      <label class="wb-label">How is my mind this week?</label>
+      <div class="mood-row">
+        <button class="mood-btn" onclick="selMood(this,'heavy')"><span>🌧</span>Heavy</button>
+        <button class="mood-btn" onclick="selMood(this,'cloudy')"><span>☁️</span>Cloudy</button>
+        <button class="mood-btn" onclick="selMood(this,'clearing')"><span>🌤</span>Clearing</button>
+        <button class="mood-btn" onclick="selMood(this,'clear')"><span>☀️</span>Clear</button>
+      </div>
+      <!-- Dhikr block — appears when mood is selected -->
+      <div id="dhikr-block" style="display:none;background:var(--teal-l);border-radius:var(--r);border:1px solid rgba(29,111,111,.2);padding:4px 8px;margin-bottom:12px"></div>
+      <div id="dhikr-done-note" style="display:none;font-size:.75rem;color:var(--green);text-align:center;margin-bottom:12px;font-weight:600">✓ MashaAllah — completed</div>
+      <!-- Grade-band extra prompt -->
+      <div class="band-block" id="band-block" style="display:none;background:var(--blue-l);border-color:rgba(26,61,138,.15)"></div>
+    </div>
+  </div>
+
+  <!-- DU'A TAB -->
+  <div class="tab-panel" id="panel-dua">
+    <div class="dua-page">
+      <div class="dua-bar"></div>
+      <div class="dua-body">
+        <div style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);text-align:center;margin-bottom:14px">Body Du'a · Week <span id="dua-week">—</span></div>
+        <div class="dua-arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ</div>
+        <div class="dua-translit">Allahumma inni as'aluka al-'aafiyah</div>
+        <div class="dua-translation">"O Allah, I ask You for well-being."<br>The du'a the Prophet ﷺ said was the best to ask for.</div>
+        <div class="divider" style="border-color:rgba(255,255,255,.08)"></div>
+        <label class="dua-label">My du'a for my body this week</label>
+        <textarea class="dua-input" id="dua-text" rows="4" placeholder="Ya Allah, my body needs…&#10;Help me to…&#10;I am grateful for…" oninput="autosaveRecord()"></textarea>
+        <button class="dua-submit" onclick="saveRecord()">✓ Save this week's wellness record</button>
+        <div class="save-note" id="save-note"></div>
+      </div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+var PE_CURR = {
+  1: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Creation & beginnings",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Creation & beginnings",
+    pe3: "U1 Intro to Fitness: Push & Pull — Creation & beginnings",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Creation & beginnings",
+  },
+  2: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Signs & patterns",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Signs & patterns",
+    pe3: "U1 Intro to Fitness: Push & Pull — Signs & patterns",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Signs & patterns",
+  },
+  3: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Structure & foundation",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Structure & foundation",
+    pe3: "U1 Intro to Fitness: Push & Pull — Structure & foundation",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Structure & foundation",
+  },
+  4: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Division & distribution",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Division & distribution",
+    pe3: "U1 Intro to Fitness: Push & Pull — Division & distribution",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Division & distribution",
+  },
+  5: {
+    pe1: "U1 Intro to Fitness: Intro to Physical Fitness — Measurement & proportion",
+    pe2: "U1 Intro to Fitness: Lunge, Hinge & Squat — Measurement & proportion",
+    pe3: "U1 Intro to Fitness: Push & Pull — Measurement & proportion",
+    pe4: "U1 Intro to Fitness: Rotation & Gait — Measurement & proportion",
+  },
+  6: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Knowledge & trust",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Knowledge & trust",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Knowledge & trust",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Knowledge & trust",
+  },
+  7: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Inquiry & observation",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Inquiry & observation",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Inquiry & observation",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Inquiry & observation",
+  },
+  8: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Circles & proportion",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Circles & proportion",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Circles & proportion",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Circles & proportion",
+  },
+  9: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Living systems",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Living systems",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Living systems",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Living systems",
+  },
+  10: {
+    pe1: "U2 Outdoor Activities: Moving in Nature — Change & time",
+    pe2: "U2 Outdoor Activities: Paddling & Water — Change & time",
+    pe3: "U2 Outdoor Activities: Biking & Trails — Change & time",
+    pe4: "U2 Outdoor Activities: Walking & Hiking — Change & time",
+  },
+  11: {
+    pe1: "U3 Sports & Fitness: Field Sports — Language & transmission",
+    pe2: "U3 Sports & Fitness: Court Sports — Language & transmission",
+    pe3: "U3 Sports & Fitness: Target Sports — Language & transmission",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Language & transmission",
+  },
+  12: {
+    pe1: "U3 Sports & Fitness: Field Sports — Order & structure",
+    pe2: "U3 Sports & Fitness: Court Sports — Order & structure",
+    pe3: "U3 Sports & Fitness: Target Sports — Order & structure",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Order & structure",
+  },
+  13: {
+    pe1: "U3 Sports & Fitness: Field Sports — Wisdom & revelation",
+    pe2: "U3 Sports & Fitness: Court Sports — Wisdom & revelation",
+    pe3: "U3 Sports & Fitness: Target Sports — Wisdom & revelation",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Wisdom & revelation",
+  },
+  14: {
+    pe1: "U3 Sports & Fitness: Field Sports — Balance & equilibrium",
+    pe2: "U3 Sports & Fitness: Court Sports — Balance & equilibrium",
+    pe3: "U3 Sports & Fitness: Target Sports — Balance & equilibrium",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Balance & equilibrium",
+  },
+  15: {
+    pe1: "U3 Sports & Fitness: Field Sports — Communication & clarity",
+    pe2: "U3 Sports & Fitness: Court Sports — Communication & clarity",
+    pe3: "U3 Sports & Fitness: Target Sports — Communication & clarity",
+    pe4: "U3 Sports & Fitness: Team Play & Strategy — Communication & clarity",
+  },
+  16: {
+    pe1: "U4 Warming Up: Why We Warm Up — Cycles & repetition",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Cycles & repetition",
+    pe3: "U4 Warming Up: Core Warm-Up — Cycles & repetition",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Cycles & repetition",
+  },
+  17: {
+    pe1: "U4 Warming Up: Why We Warm Up — Islamic scholarship",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Islamic scholarship",
+    pe3: "U4 Warming Up: Core Warm-Up — Islamic scholarship",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Islamic scholarship",
+  },
+  18: {
+    pe1: "U4 Warming Up: Why We Warm Up — Precision & accuracy",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Precision & accuracy",
+    pe3: "U4 Warming Up: Core Warm-Up — Precision & accuracy",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Precision & accuracy",
+  },
+  19: {
+    pe1: "U4 Warming Up: Why We Warm Up — US Civil War & Reconstruction",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — US Civil War & Reconstruction",
+    pe3: "U4 Warming Up: Core Warm-Up — US Civil War & Reconstruction",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — US Civil War & Reconstruction",
+  },
+  20: {
+    pe1: "U4 Warming Up: Why We Warm Up — Force & motion",
+    pe2: "U4 Warming Up: Upper Body & Cool Down — Force & motion",
+    pe3: "U4 Warming Up: Core Warm-Up — Force & motion",
+    pe4: "U4 Warming Up: Lower Body Warm-Up — Force & motion",
+  },
+  21: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Heritage & legacy",
+    pe2: "U5 Your Workout: Core Workout — Heritage & legacy",
+    pe3: "U5 Your Workout: Lower-Body Workout — Heritage & legacy",
+    pe4: "U5 Your Workout: Full-Body Workout — Heritage & legacy",
+  },
+  22: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Transatlantic slave trade",
+    pe2: "U5 Your Workout: Core Workout — Transatlantic slave trade",
+    pe3: "U5 Your Workout: Lower-Body Workout — Transatlantic slave trade",
+    pe4: "U5 Your Workout: Full-Body Workout — Transatlantic slave trade",
+  },
+  23: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Justice & reckoning",
+    pe2: "U5 Your Workout: Core Workout — Justice & reckoning",
+    pe3: "U5 Your Workout: Lower-Body Workout — Justice & reckoning",
+    pe4: "U5 Your Workout: Full-Body Workout — Justice & reckoning",
+  },
+  24: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Complexity & emergence",
+    pe2: "U5 Your Workout: Core Workout — Complexity & emergence",
+    pe3: "U5 Your Workout: Lower-Body Workout — Complexity & emergence",
+    pe4: "U5 Your Workout: Full-Body Workout — Complexity & emergence",
+  },
+  25: {
+    pe1: "U5 Your Workout: Upper-Body Workout — Memory & transmission",
+    pe2: "U5 Your Workout: Core Workout — Memory & transmission",
+    pe3: "U5 Your Workout: Lower-Body Workout — Memory & transmission",
+    pe4: "U5 Your Workout: Full-Body Workout — Memory & transmission",
+  },
+  26: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Evidence & proof",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Evidence & proof",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Evidence & proof",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Evidence & proof",
+  },
+  27: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Reflection & self-knowledge",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Reflection & self-knowledge",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Reflection & self-knowledge",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Reflection & self-knowledge",
+  },
+  28: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — New beginnings",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — New beginnings",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — New beginnings",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — New beginnings",
+  },
+  29: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Completion & approach",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Completion & approach",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Completion & approach",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Completion & approach",
+  },
+  30: {
+    pe1: "U6 Rhythmic Fitness: Squat Melodies — Return & renewal",
+    pe2: "U6 Rhythmic Fitness: Plank Rhythms — Return & renewal",
+    pe3: "U6 Rhythmic Fitness: Push-Up Rhythms — Return & renewal",
+    pe4: "U6 Rhythmic Fitness: Cardio & Movement Groove — Return & renewal",
+  },
+};
+
+var JUZ=[
+{"w":1,"tr":"Al-Khaliq","meaning":"The Creator","theme":"Creation & beginnings","hadithTr":"Actions are judged by intentions","hadithSrc":"Bukhari 1","story":"","q":"What distinguishes the beginning of something genuinely new from the continuation of something old?","quranSurahs":"","quranTheme":"Creation & beginnings","quranRef":"","quranQuestion":"What distinguishes the beginning of something genuinely new from the continuation of something old?"},
+{"w":2,"tr":"Al-Bari","meaning":"The Originator of distinct forms","theme":"Signs & patterns","hadithTr":"The religion is sincere counsel","hadithSrc":"Muslim 55","story":"","q":"At what point does a pattern become a law?","quranSurahs":"","quranTheme":"Signs & patterns","quranRef":"","quranQuestion":"At what point does a pattern become a law?"},
+{"w":3,"tr":"Al-Musawwir","meaning":"The Shaper of forms","theme":"Structure & foundation","hadithTr":"Speak good or remain silent","hadithSrc":"Bukhari 6018","story":"","q":"What is the minimum structure needed to hold something together?","quranSurahs":"","quranTheme":"Structure & foundation","quranRef":"","quranQuestion":"What is the minimum structure needed to hold something together?"},
+{"w":4,"tr":"Al-Razzaq","meaning":"The Provider","theme":"Division & distribution","hadithTr":"None truly believes until he loves for his brother what he loves for himself","hadithSrc":"Bukhari 13","story":"","q":"When resources are limited, what principles should govern their distribution?","quranSurahs":"","quranTheme":"Division & distribution","quranRef":"","quranQuestion":"When resources are limited, what principles should govern their distribution?"},
+{"w":5,"tr":"Al-Alim","meaning":"The All-Knowing","theme":"Measurement & proportion","hadithTr":"Seeking knowledge is an obligation upon every Muslim","hadithSrc":"Ibn Majah 224","story":"","q":"What makes one measurement more trustworthy than another?","quranSurahs":"","quranTheme":"Measurement & proportion","quranRef":"","quranQuestion":"What makes one measurement more trustworthy than another?"},
+{"w":6,"tr":"Al-Sami","meaning":"The All-Hearing","theme":"Knowledge & trust","hadithTr":"The Muslim is one from whose tongue and hand others are safe","hadithSrc":"Bukhari 10","story":"","q":"When should you trust an authority — and when should you verify for yourself?","quranSurahs":"","quranTheme":"Knowledge & trust","quranRef":"","quranQuestion":"When should you trust an authority — and when should you verify for yourself?"},
+{"w":7,"tr":"Al-Basir","meaning":"The All-Seeing","theme":"Inquiry & observation","hadithTr":"Allah is beautiful and loves beauty","hadithSrc":"Muslim 911","story":"","q":"What changes when you watch something carefully for a long time versus looking at it once?","quranSurahs":"","quranTheme":"Inquiry & observation","quranRef":"","quranQuestion":"What changes when you watch something carefully for a long time versus looking at it once?"},
+{"w":8,"tr":"Al-Muhit","meaning":"The All-Encompassing","theme":"Circles & proportion","hadithTr":"The best of you are those who learn and teach","hadithSrc":"Bukhari 5027","story":"","q":"Why did the greatest concentration of scholars in medieval history gather in Baghdad — and what made them great?","quranSurahs":"","quranTheme":"Circles & proportion","quranRef":"","quranQuestion":"Why did the greatest concentration of scholars in medieval history gather in Baghdad — and what made them great?"},
+{"w":9,"tr":"Al-Latif","meaning":"The Subtly Kind","theme":"Living systems","hadithTr":"Allah is gentle and loves gentleness","hadithSrc":"Bukhari 6927","story":"","q":"What is the difference between a living system that is thriving and one that is merely surviving?","quranSurahs":"","quranTheme":"Living systems","quranRef":"","quranQuestion":"What is the difference between a living system that is thriving and one that is merely surviving?"},
+{"w":10,"tr":"Al-Halim","meaning":"The Forbearing","theme":"Change & time","hadithTr":"Whoever does not thank people has not thanked Allah","hadithSrc":"Abu Dawud 4811","story":"","q":"How do you represent something that changes continuously with a tool that records only moments?","quranSurahs":"","quranTheme":"Change & time","quranRef":"","quranQuestion":"How do you represent something that changes continuously with a tool that records only moments?"},
+{"w":11,"tr":"Al-Azim","meaning":"The Magnificent","theme":"Language & transmission","hadithTr":"Be mindful of Allah wherever you are","hadithSrc":"Tirmidhi 1987","story":"","q":"What is lost and what is gained when you translate not just words but an entire way of thinking?","quranSurahs":"","quranTheme":"Language & transmission","quranRef":"","quranQuestion":"What is lost and what is gained when you translate not just words but an entire way of thinking?"},
+{"w":12,"tr":"Al-Ghafur","meaning":"The Most Forgiving","theme":"Order & structure","hadithTr":"Silence is wisdom, yet few practise it","hadithSrc":"Bayhaqi","story":"","q":"Is order discovered or invented — and does the answer matter?","quranSurahs":"","quranTheme":"Order & structure","quranRef":"","quranQuestion":"Is order discovered or invented — and does the answer matter?"},
+{"w":13,"tr":"Al-Hakim","meaning":"The All-Wise","theme":"Wisdom & revelation","hadithTr":"Whoever travels a path seeking knowledge, Allah makes easy a path to Paradise","hadithSrc":"Muslim 2699","story":"","q":"Can knowledge be moral — can knowing something obligate you to do something?","quranSurahs":"","quranTheme":"Wisdom & revelation","quranRef":"","quranQuestion":"Can knowledge be moral — can knowing something obligate you to do something?"},
+{"w":14,"tr":"Al-Wadud","meaning":"The Most Loving","theme":"Balance & equilibrium","hadithTr":"The giving hand is better than the receiving hand","hadithSrc":"Bukhari 1429","story":"","q":"What does it mean to encounter a civilisation that is simultaneously your enemy and your intellectual heir?","quranSurahs":"","quranTheme":"Balance & equilibrium","quranRef":"","quranQuestion":"What does it mean to encounter a civilisation that is simultaneously your enemy and your intellectual heir?"},
+{"w":15,"tr":"Al-Qawiyy","meaning":"The All-Powerful","theme":"Communication & clarity","hadithTr":"Strength is controlling yourself when angry","hadithSrc":"Bukhari 6114","story":"","q":"How did two of the greatest Islamic empires govern diversity — and what can we learn from their approaches?","quranSurahs":"","quranTheme":"Communication & clarity","quranRef":"","quranQuestion":"How did two of the greatest Islamic empires govern diversity — and what can we learn from their approaches?"},
+{"w":16,"tr":"Al-Waliyy","meaning":"The Protecting Friend","theme":"Cycles & repetition","hadithTr":"Permission is three times","hadithSrc":"Bukhari 6245","story":"","q":"Why do civilisations rise and fall — and is the pattern inevitable?","quranSurahs":"","quranTheme":"Cycles & repetition","quranRef":"","quranQuestion":"Why do civilisations rise and fall — and is the pattern inevitable?"},
+{"w":17,"tr":"Al-Karim","meaning":"The Most Generous","theme":"Islamic scholarship","hadithTr":"The most beloved to me are those with the best character","hadithSrc":"Tirmidhi 2018","story":"","q":"Why did it take 1,000 years to correct the ancient Greek theory of vision — and what finally changed it?","quranSurahs":"","quranTheme":"Islamic scholarship","quranRef":"","quranQuestion":"Why did it take 1,000 years to correct the ancient Greek theory of vision — and what finally changed it?"},
+{"w":18,"tr":"Al-Raqib","meaning":"The Watchful","theme":"Precision & accuracy","hadithTr":"The best of people are those most beneficial to people","hadithSrc":"Al-Mu'jam Al-Awsat","story":"","q":"At what point does more precision stop being useful?","quranSurahs":"","quranTheme":"Precision & accuracy","quranRef":"","quranQuestion":"At what point does more precision stop being useful?"},
+{"w":19,"tr":"Al-Wasi","meaning":"The All-Encompassing","theme":"Civil War & Reconstruction","hadithTr":"The believer is the mirror of the believer","hadithSrc":"Abu Dawud 4918","story":"","q":"When a great civilisation ends, what is preserved and what is lost?","quranSurahs":"","quranTheme":"Civil War & Reconstruction","quranRef":"","quranQuestion":"When a great civilisation ends, what is preserved and what is lost?"},
+{"w":20,"tr":"Al-Muqit","meaning":"The Nourisher","theme":"Force & motion","hadithTr":"Allah loves that when you do a deed, you do it with excellence","hadithSrc":"Bayhaqi","story":"","q":"Why does increasing the speed of something also increase the difficulty of stopping it — more than you might expect?","quranSurahs":"","quranTheme":"Force & motion","quranRef":"","quranQuestion":"Why does increasing the speed of something also increase the difficulty of stopping it — more than you might expect?"},
+{"w":21,"tr":"Al-Hasib","meaning":"The Reckoner","theme":"Heritage & legacy","hadithTr":"Whoever has land should cultivate it","hadithSrc":"Bukhari 2340","story":"","q":"What is the difference between preserving something and making it live?","quranSurahs":"","quranTheme":"Heritage & legacy","quranRef":"","quranQuestion":"What is the difference between preserving something and making it live?"},
+{"w":22,"tr":"Al-Muqaddir","meaning":"The Determiner of measure","theme":"Transatlantic slave trade","hadithTr":"No harm shall be inflicted or reciprocated","hadithSrc":"Ibn Majah 2340","story":"","q":"What does justice require when the injustice was done by people who are no longer alive to people who are no longer alive?","quranSurahs":"","quranTheme":"Transatlantic slave trade","quranRef":"","quranQuestion":"What does justice require when the injustice was done by people who are no longer alive to people who are no longer alive?"},
+{"w":23,"tr":"Al-Mubdi","meaning":"The Originator of beginnings","theme":"Justice & reckoning","hadithTr":"No soul will die until it has completed its provision","hadithSrc":"Ibn Hibban","story":"","q":"At what point does optimising one part of a system damage the system as a whole?","quranSurahs":"","quranTheme":"Justice & reckoning","quranRef":"","quranQuestion":"At what point does optimising one part of a system damage the system as a whole?"},
+{"w":24,"tr":"Al-Muid","meaning":"The Restorer","theme":"Complexity & emergence","hadithTr":"Righteousness is good character","hadithSrc":"Muslim 2553","story":"","q":"How does a civilisation transmit what is essential about itself to the next generation — and what can it not transmit?","quranSurahs":"","quranTheme":"Complexity & emergence","quranRef":"","quranQuestion":"How does a civilisation transmit what is essential about itself to the next generation — and what can it not transmit?"},
+{"w":25,"tr":"Al-Muhyi","meaning":"The Giver of life","theme":"Memory & transmission","hadithTr":"Among what continues for a believer after death is knowledge he taught","hadithSrc":"Ibn Majah 242","story":"","q":"Why is a proof in mathematics permanent in a way that a proof in history can never be?","quranSurahs":"","quranTheme":"Memory & transmission","quranRef":"","quranQuestion":"Why is a proof in mathematics permanent in a way that a proof in history can never be?"},
+{"w":26,"tr":"Al-Shahid","meaning":"The Witness","theme":"Evidence & proof","hadithTr":"Whoever's Islam is good, everything about him becomes good","hadithSrc":"Ahmad","story":"","q":"What has this year's learning changed in how you see the world?","quranSurahs":"","quranTheme":"Evidence & proof","quranRef":"","quranQuestion":"What has this year's learning changed in how you see the world?"},
+{"w":27,"tr":"Al-Haqq","meaning":"The Truth","theme":"Reflection & self-knowledge","hadithTr":"Perhaps one who carries knowledge conveys it to one more knowledgeable","hadithSrc":"Tirmidhi 2656","story":"","q":"What thread connects the first week of this year to the last?","quranSurahs":"","quranTheme":"Reflection & self-knowledge","quranRef":"","quranQuestion":"What thread connects the first week of this year to the last?"},
+{"w":28,"tr":"Al-Badi","meaning":"The Incomparable Originator","theme":"New beginnings","hadithTr":"Allah created creation, and kinship stood up seeking refuge from severance","hadithSrc":"Bukhari 5987","story":"","q":"What question do you most want to answer in Grade 8?","quranSurahs":"","quranTheme":"New beginnings","quranRef":"","quranQuestion":"What question do you most want to answer in Grade 8?"},
+{"w":29,"tr":"Al-Sabur","meaning":"The Patient","theme":"Completion & approach","hadithTr":"O Allah, there is no life but the life of the Hereafter","hadithSrc":"Bukhari 2834","story":"","q":"What does completion feel like — and is it different from stopping?","quranSurahs":"","quranTheme":"Completion & approach","quranRef":"","quranQuestion":"What does completion feel like — and is it different from stopping?"},
+{"w":30,"tr":"Al-Awwal · Al-Akhir","meaning":"The First and the Last","theme":"Return & renewal","hadithTr":"Every son of Adam makes mistakes; the best are those who repent","hadithSrc":"Tirmidhi 2499","story":"","q":"What was the first question you carried this year — and what question do you carry forward?","quranSurahs":"","quranTheme":"Return & renewal","quranRef":"","quranQuestion":"What was the first question you carried this year — and what question do you carry forward?"}
+];
+
+
+// ── Supabase ─────────────────────────────────────────────────────────────────
+var _sb = null;
+try {
+  if(typeof supabase !== 'undefined'){
+    _sb = supabase.createClient(
+      'https://apallkuclqcqxnbmjuqu.supabase.co',
+      'sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9'
+    );
+  }
+} catch(e){}
+
+// ── State ────────────────────────────────────────────────────────────────────
+var APP = {
+  student: null,
+  week: 1,
+  grade: 7,
+  band: '68',
+  day: 1,       // 1=Mon,2=Tue,3=Wed,4=Thu
+  juz: {},
+  record: {},   // this week's wellness record
+  effort: null,
+  mood: null,
+  recipe: null,
+};
+
+// ── Grade band helper ────────────────────────────────────────────────────────
+function getBand(g){
+  if(g<=2) return 'k2';
+  if(g<=5) return '35';
+  if(g<=8) return '68';
+  return '912';
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+(async function init(){
+  // Read active student from platform localStorage
+  var raw = null;
+  try{ raw = JSON.parse(localStorage.getItem('how_active_student')||'null'); }catch(e){}
+  if(!raw || !raw.name){
+    document.getElementById('screen-no-student').style.display='flex';
+    return;
+  }
+  APP.student = raw;
+  APP.grade   = parseInt(raw.current_grade || raw.grade || 7) || 7;
+  APP.band    = getBand(APP.grade);
+
+  // Read current week from platform
+  var wRaw = null;
+  try{ wRaw = parseInt(localStorage.getItem('how_current_week')||'1'); }catch(e){}
+  APP.week = wRaw || 1;
+
+  // Determine day of week (1=Mon…4=Thu, clamp to 1-4)
+  var dow = new Date().getDay(); // 0=Sun,1=Mon…5=Fri,6=Sat
+  APP.day = (dow >= 1 && dow <= 4) ? dow : 1;
+
+  // Load JUZ data
+  APP.juz = JUZ[APP.week-1] || {};
+
+  // Load saved record
+  try{
+    var saved = JSON.parse(localStorage.getItem('how_aafiya_w'+APP.week)||'{}');
+    APP.record = saved;
+    APP.effort = saved.effort || null;
+    APP.mood   = saved.mood   || null;
+  }catch(e){}
+
+  // Load recipe
+  try{
+    var recipes = JSON.parse(localStorage.getItem('how_aafiya_recipes')||'{}');
+    APP.recipe = recipes[APP.week] || recipes[String(APP.week)] || null;
+  }catch(e){}
+
+  // Render
+  document.getElementById('app').style.display='block';
+  renderTopBar();
+  renderBanner();
+  renderSession();
+  renderHistory();
+  renderMovement();
+  renderNutrition();
+  renderMindset();
+  renderDua();
+  restoreRecord();
+})();
+
+// ── Top bar ──────────────────────────────────────────────────────────────────
+function renderTopBar(){
+  var s = APP.student;
+  var name = s.name || 'Student';
+  var initials = name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+  document.getElementById('tb-name').textContent  = name;
+  document.getElementById('tb-grade').textContent = (APP.grade===0?'Kindergarten':'Grade '+APP.grade)+' · '+(({k2:'Grow',35:'Build',68:'Build',912:'Thrive'}[APP.band])||'');
+  document.getElementById('tb-week').textContent  = 'Week '+APP.week;
+}
+
+// ── Week banner ──────────────────────────────────────────────────────────────
+function renderBanner(){
+  var j = APP.juz;
+  var ctx = {};
+  try{ ctx = JSON.parse(localStorage.getItem('how_week_context')||'{}'); }catch(e){}
+  var scholar    = ctx.scholar    || '';
+  var juzArabic  = ctx.juzArabic  || j.tr      || '';
+  var juzMeaning = ctx.juzMeaning || j.meaning  || '';
+  var juzTheme   = ctx.juzTheme   || j.theme    || '';
+  var hadith     = ctx.hadith     || j.hadithTr || '';
+  document.getElementById('wb-arabic').textContent  = juzArabic;
+  document.getElementById('wb-theme').textContent   = juzArabic ? (juzArabic+' — '+juzMeaning+' · '+juzTheme) : '';
+  document.getElementById('wb-hadith').textContent  = hadith;
+  document.getElementById('wb-scholar').textContent = scholar || "this week's scholar";
+}
+
+// ── Tab switching ────────────────────────────────────────────────────────────
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(function(t,i){
+    var names=['session','movement','nutrition','mindset','dua'];
+    t.classList.toggle('active', names[i]===name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(function(p){
+    p.classList.toggle('active', p.id==='panel-'+name);
+  });
+}
+
+// ── SESSION TAB ──────────────────────────────────────────────────────────────
+function renderSession(){
+  var w=APP.week, d=APP.day;
+  var pe = PE_CURR[w]||{};
+  var title = pe['pe'+d] || 'Fitness session — see P.E. curriculum';
+  var dayName = ['Monday','Tuesday','Wednesday','Thursday'][d-1]||'Today';
+
+  document.getElementById('sess-label').textContent = dayName+' · Session '+d+' of 4';
+  document.getElementById('sess-title').textContent = title.split(':').slice(1).join(':').trim() || title;
+  document.getElementById('sess-meta').textContent  = '30 min · teacher-led · Week '+w;
+
+  // Check for video URL
+  var lsKey = 'how_pe_w'+w+'_d'+d;
+  var url = '';
+  try{ url = localStorage.getItem(lsKey)||''; }catch(e){}
+  APP._peUrl = url;
+
+  var mc = document.getElementById('media-container');
+  if(!url){
+    mc.innerHTML = '<div class="no-video">No video set for this session yet.<br>Your facilitator will add one.</div>';
+  } else {
+    // Render inline (collapsed until play pressed)
+    mc.innerHTML = '';
+  }
+
+  // Restore effort
+  if(APP.effort){
+    document.querySelectorAll('.effort-btn').forEach(function(btn){
+      btn.classList.toggle('sel', btn.onclick&&btn.onclick.toString().includes("'"+APP.effort+"'"));
+    });
+  }
+  if(APP.record.sessNote){
+    document.getElementById('sess-note').value = APP.record.sessNote;
+  }
+}
+
+function playSession(){
+  var url = APP._peUrl;
+  var mc  = document.getElementById('media-container');
+  if(!url){ toast('No video set for this session'); return; }
+  var isAudio = /\.(mp3|m4a|wav|ogg)$/i.test(url);
+  if(isAudio){
+    mc.innerHTML = '<audio controls autoplay src="'+url+'" style="width:100%;border-radius:10px;margin-bottom:12px"></audio>';
+  } else {
+    mc.innerHTML = '<video controls autoplay playsinline src="'+url+'" style="width:100%;border-radius:10px;margin-bottom:12px"></video>';
+  }
+}
+
+function selEffort(btn, val){
+  document.querySelectorAll('.effort-btn').forEach(function(b){ b.classList.remove('sel'); });
+  btn.classList.add('sel');
+  APP.effort = val;
+  autosaveRecord();
+}
+
+// ── HISTORY STRIP ────────────────────────────────────────────────────────────
+function renderHistory(){
+  var days = ['Mon','Tue','Wed','Thu'];
+  var html = '';
+  days.forEach(function(day,i){
+    var dayIdx = i+1;
+    var isToday = dayIdx === APP.day;
+    var rec = APP.record['day'+dayIdx] || {};
+    var done = !!rec.effort;
+    html += '<div class="h-dot"><div class="h-circle'+(done?' done':isToday?' today':'')+'">'+day+'</div><div class="h-day">'+(isToday?'Today':day)+'</div></div>';
+  });
+  // Week history
+  html += '<div style="flex-shrink:0;width:1px;background:var(--parchment-3);margin:0 8px"></div>';
+  for(var back=3;back>=0;back--){
+    var pw = APP.week - back;
+    if(pw<1) continue;
+    var pRec = {};
+    try{ pRec = JSON.parse(localStorage.getItem('how_aafiya_w'+pw)||'{}'); }catch(e){}
+    var hasPrev = !!pRec.savedAt;
+    html += '<div class="h-dot"><div class="h-circle'+(hasPrev?' done':'')+'">'+pw+'</div><div class="h-day">Wk '+pw+'</div></div>';
+  }
+  document.getElementById('history-strip').innerHTML = html;
+}
+
+// ── MOVEMENT TAB ─────────────────────────────────────────────────────────────
+function renderMovement(){
+  var w = APP.week;
+  var pe = PE_CURR[w]||{};
+  var bandLabel = {k2:'Grow · K–2',35:'Build · 3–5',68:'Build · 6–8',912:'Thrive · 9–12'}[APP.band]||'';
+  document.getElementById('move-sub').textContent = bandLabel+' · Week '+w+' movement sessions';
+  var html = '';
+  ['Monday','Tuesday','Wednesday','Thursday'].forEach(function(day,i){
+    var d = i+1;
+    var key = 'pe'+d;
+    var title = (pe[key]||'Fitness session').split(':').slice(1).join(':').trim() || pe[key]||'Fitness session';
+    var isFuture = d > APP.day;
+    var savedEffort = (APP.record['day'+d]||{}).effort;
+    html += '<div class="move-card'+(isFuture?' move-locked':'')+'">'+
+      '<div class="move-header">'+
+        '<div class="move-icon">🏃</div>'+
+        '<div><div class="move-title">Session '+d+' · '+day+'</div>'+
+        '<div class="move-sub">'+title+(isFuture?' — not yet':'')+'</div></div>'+
+      '</div>';
+    if(!isFuture){
+      html += '<div class="wb-effort-row">'+
+        ['Hard','Good','Easy'].map(function(lbl,ei){
+          var val=['hard','good','easy'][ei];
+          var emos=['😤','😊','😌'][ei];
+          return '<button class="wb-effort-btn'+(savedEffort===val?' sel':'')+'" onclick="selDayEffort(this,'+d+',\''+val+'\')">'+'<span class="emo">'+emos+'</span>'+lbl+'</button>';
+        }).join('')+
+      '</div>';
+      html += '<label class="wb-label">What I noticed</label>'+
+        '<input class="wb-input" id="move-note-'+d+'" placeholder="I noticed…" value="'+esc((APP.record['day'+d]||{}).note||'')+'" oninput="autosaveRecord()">';
+    }
+    html += '</div>';
+  });
+  document.getElementById('move-cards').innerHTML = html;
+  if(APP.record.moveReflection){
+    var el = document.getElementById('move-reflection');
+    if(el) el.value = APP.record.moveReflection;
+  }
+}
+
+function selDayEffort(btn, day, val){
+  var row = btn.closest('.wb-effort-row');
+  row.querySelectorAll('.wb-effort-btn').forEach(function(b){ b.classList.remove('sel'); });
+  btn.classList.add('sel');
+  if(!APP.record['day'+day]) APP.record['day'+day]={};
+  APP.record['day'+day].effort = val;
+  autosaveRecord();
+}
+
+// ── NUTRITION TAB ────────────────────────────────────────────────────────────
+function renderNutrition(){
+  var j = APP.juz;
+  // Focus question from Juz theme
+  var focusQ = generateNutrFocus(j.theme||'');
+  document.getElementById('nutr-juz-label').textContent = 'Week '+APP.week+' focus · '+(j.theme||'');
+  document.getElementById('nutr-q').textContent = focusQ;
+  document.getElementById('nutr-sub').textContent = 'Al-'+j.tr+' — '+j.meaning+'. Notice how what you eat shapes your ability to be present this week.';
+
+  // Recipe
+  var rc = document.getElementById('recipe-container');
+  if(APP.recipe){
+    rc.innerHTML = buildRecipeHTML(APP.recipe);
+  } else {
+    rc.innerHTML = '<div style="font-size:.8rem;color:var(--ink3);font-style:italic;padding:12px 0">No recipe set for this week yet — your facilitator will add it.</div>';
+  }
+
+  if(APP.record.nutrNote){
+    var el = document.getElementById('nutr-note');
+    if(el) el.value = APP.record.nutrNote;
+  }
+}
+
+function generateNutrFocus(theme){
+  var map = {
+    'Creation & beginnings':  'What does a body at the beginning of its day need to begin well?',
+    'Patterns & structure':   'Which foods in your life follow a consistent pattern — and which break it?',
+    'Form & function':        'What shape is your plate this week — and what does that shape do to your energy?',
+    'Healing & restoration':  'What food or practice has helped your body recover or rest?',
+    'Order & system':         'What is your most consistent eating habit — and is it serving you?',
+    'Light & perception':     'What do you eat that sharpens your thinking — and what dulls it?',
+    'Sustenance & trust':     'What does your body ask for when you are tired — and do you listen?',
+    'Scale & vastness':       'What is the smallest food habit that makes the biggest difference?',
+    'Journey & provision':    'What would you pack if you were travelling for a week — what is essential?',
+    'Accountability & civilisation': 'What does a civilisation eat — and what does that say about it?',
+  };
+  return map[theme] || 'What does your body need most this week — and are you giving it that?';
+}
+
+function buildRecipeHTML(r){
+  var engBandLabel = {k2:'K–2',35:'3–5',68:'6–8',912:'9–12'}[APP.band]||'';
+  var engText = (r.engagement&&r.engagement[APP.band]) || '';
+  var html = '<div class="recipe-card">'+
+    '<div class="rc-top">'+
+      '<div class="rc-dish">'+esc(r.dish||'')+'</div>'+
+      '<div class="rc-region">'+esc(r.region||'')+'</div>'+
+    '</div>'+
+    '<div style="padding:14px 16px">';
+  if(r.connection) html += '<div class="rc-conn">'+esc(r.connection)+'</div>';
+  if(r.ingredients&&r.ingredients.length){
+    html += '<div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin-bottom:6px">Ingredients</div>'+
+      '<div class="rc-ingr">';
+    r.ingredients.forEach(function(ing){
+      html += '<div class="rc-ingr-item"><strong>'+esc(ing.qty)+'</strong> '+esc(ing.item)+'</div>';
+    });
+    html += '</div>';
+  }
+  if(r.steps&&r.steps.length){
+    html += '<div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);margin:10px 0 6px">Method</div>';
+    r.steps.forEach(function(s,i){
+      html += '<div class="rc-step"><div class="rc-step-n">'+(i+1)+'</div><div>'+esc(s)+'</div></div>';
+    });
+  }
+  if(engText){
+    html += '<div class="rc-eng"><span class="rc-eng-label">'+engBandLabel+' — your connection</span>'+esc(engText)+'</div>';
+  }
+  html += '</div></div>';
+  return html;
+}
+
+// ── MINDSET TAB ──────────────────────────────────────────────────────────────
+function renderMindset(){
+  var j = APP.juz;
+  // Mindset prompt varies by grade band
+  var prompts = {
+    k2:  'This week we are thinking about '+j.theme+'. What is one thing your body can do that makes you happy?',
+    35:  j.tr+' means '+j.meaning+'. What is one thing your body is getting better at — something you could not do before?',
+    68:  'Al-'+j.tr+' — '+j.meaning+'. Your body and mind grow the same way — through consistent effort. What did you persist through this week?',
+    912: 'Al-'+j.tr+' — '+j.meaning+'. Ibn Sina wrote that the body and soul are inseparable. Where did you feel that connection most clearly this week?',
+  };
+  var _mCtx={}; try{_mCtx=JSON.parse(localStorage.getItem('how_week_context')||'{}');}catch(e){}
+  var _mScholar=_mCtx.scholar||'';
+  document.getElementById('mindset-label').textContent = (_mScholar?_mScholar+' · ':'')+(j.theme||'');
+  document.getElementById('mindset-q').textContent = prompts[APP.band] || prompts['68'];
+
+  // Grade-band block
+  var bb = document.getElementById('band-block');
+  var bandExtras = {
+    k2:  null,
+    35:  {label:'3–5 · Build', q:'Draw or write: what does a strong body feel like from the inside?'},
+    68:  {label:'6–8 · Build', q:'Physical and mental strength grow the same way. Name one habit this week that built both.'},
+    912: {label:'9–12 · Thrive', q:'The Prophet ﷺ was described as having strong physical presence. How does physical discipline connect to character? Give one specific example.'},
+  };
+  var extra = bandExtras[APP.band];
+  if(extra){
+    bb.style.display='block';
+    bb.innerHTML = '<div style="font-size:.68rem;font-weight:700;color:var(--blue);margin-bottom:5px">'+extra.label+'</div>'+
+      '<div style="font-size:.82rem;color:var(--ink2);line-height:1.6;margin-bottom:8px">'+extra.q+'</div>'+
+      '<input class="wb-input" id="mindset-band" placeholder="My answer…" oninput="autosaveRecord()" value="'+esc(APP.record.mindsetBand||'')+'"><br>';
+  } else {
+    bb.style.display='none';
+  }
+
+  if(APP.mood){
+    document.querySelectorAll('.mood-btn').forEach(function(b){
+      var matches = b.querySelector('span')&&
+        {heavy:'🌧',cloudy:'☁️',clearing:'🌤',clear:'☀️'}[APP.mood]===b.querySelector('span').textContent;
+      if(matches) b.classList.add('sel');
+    });
+  }
+  if(APP.record.mindsetNote){ var el=document.getElementById('mindset-note'); if(el) el.value=APP.record.mindsetNote; }
+  // Restore mood + dhikr if previously saved
+  if(APP.mood){
+    var savedBtn=null;
+    document.querySelectorAll('.mood-btn').forEach(function(b){
+      var matches={heavy:'🌧',cloudy:'☁️',clearing:'🌤',clear:'☀️'}[APP.mood];
+      if(b.querySelector('span')&&b.querySelector('span').textContent===matches){ b.classList.add('sel'); savedBtn=b; }
+    });
+  }
+  if(APP.record.dhikrDone){
+    var dn=document.getElementById('dhikr-done-note'); if(dn) dn.style.display='block';
+  }
+}
+
+function selMood(btn, val){
+  document.querySelectorAll('.mood-btn').forEach(function(b){ b.classList.remove('sel'); });
+  btn.classList.add('sel');
+  APP.mood = val;
+  autosaveRecord();
+  // Show dhikr connected to mood
+  var DHIKR = {
+    heavy:    { arabic:'سُبْحَانَ اللَّه',  translit:'Subhanallah',   count:33, meaning:'Glory be to Allah' },
+    cloudy:   { arabic:'سُبْحَانَ اللَّه',  translit:'Subhanallah',   count:33, meaning:'Glory be to Allah' },
+    clearing: { arabic:'اَلْحَمْدُ لِلَّه', translit:'Alhamdulillah', count:33, meaning:'All praise is for Allah' },
+    clear:    { arabic:'اَللَّهُ أَكْبَر',   translit:'Allahu Akbar',  count:33, meaning:'Allah is the Greatest' },
+  };
+  var d = DHIKR[val];
+  if(!d) return;
+  var el = document.getElementById('dhikr-block');
+  if(!el) return;
+  el.style.display = 'block';
+  el.innerHTML =
+    '<div style="text-align:center;padding:16px 0 8px">' +
+      '<div style="font-family:Amiri,serif;font-size:1.8rem;color:var(--teal-d);line-height:1.6;margin-bottom:4px">'+d.arabic+'</div>' +
+      '<div style="font-size:.8rem;font-weight:700;color:var(--teal);letter-spacing:.04em;margin-bottom:2px">'+d.translit+'</div>' +
+      '<div style="font-size:.72rem;color:var(--ink3);font-style:italic;margin-bottom:14px">'+d.meaning+'</div>' +
+      '<div style="font-size:.78rem;color:var(--ink4);margin-bottom:12px">Say it <strong style="color:var(--ink)">'+d.count+' times</strong> — slowly, with presence</div>' +
+      '<div id="dhikr-counter-row" style="display:flex;align-items:center;justify-content:center;gap:14px">' +
+        '<button onclick="dhikrTap()" style="width:64px;height:64px;border-radius:50%;border:none;background:var(--teal);color:white;font-size:1.3rem;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(29,111,111,.3);transition:.1s" id="dhikr-tap-btn">١</button>' +
+        '<div style="text-align:left">' +
+          '<div id="dhikr-count-display" style="font-size:2rem;font-weight:800;color:var(--ink);line-height:1">0</div>' +
+          '<div style="font-size:.65rem;color:var(--ink4);text-transform:uppercase;letter-spacing:.06em">/ '+d.count+'</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  APP._dhikrTarget = d.count;
+  APP._dhikrCount  = 0;
+  updateDhikrDisplay();
+}
+
+// Arabic numerals for counter
+var ARABIC_NUMS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+function toArabicNums(n){
+  return String(n).split('').map(function(d){ return ARABIC_NUMS[parseInt(d)]||d; }).join('');
+}
+
+function dhikrTap(){
+  if(!APP._dhikrTarget) return;
+  APP._dhikrCount = Math.min((APP._dhikrCount||0)+1, APP._dhikrTarget);
+  updateDhikrDisplay();
+  if(APP._dhikrCount >= APP._dhikrTarget) dhikrComplete();
+}
+
+function updateDhikrDisplay(){
+  var el = document.getElementById('dhikr-count-display');
+  var btn = document.getElementById('dhikr-tap-btn');
+  if(el) el.textContent = APP._dhikrCount;
+  if(btn) btn.textContent = toArabicNums(APP._dhikrCount+1 <= APP._dhikrTarget ? APP._dhikrCount+1 : APP._dhikrTarget);
+  // Progress colour
+  var pct = APP._dhikrTarget ? APP._dhikrCount/APP._dhikrTarget : 0;
+  if(btn){
+    if(pct >= 1) btn.style.background = 'var(--green)';
+    else if(pct >= 0.5) btn.style.background = 'var(--teal)';
+    else btn.style.background = 'var(--teal)';
+  }
+}
+
+function dhikrComplete(){
+  var btn = document.getElementById('dhikr-tap-btn');
+  if(btn){ btn.textContent='✓'; btn.style.background='var(--green)'; btn.disabled=true; }
+  var note = document.getElementById('dhikr-done-note');
+  if(note) note.style.display='block';
+  APP.record.dhikrDone = true;
+  autosaveRecord();
+}
+
+// ── DU'A TAB ─────────────────────────────────────────────────────────────────
+function renderDua(){
+  document.getElementById('dua-week').textContent = APP.week;
+  if(APP.record.duaText){
+    var el=document.getElementById('dua-text'); if(el) el.value=APP.record.duaText;
+  }
+}
+
+// ── Record save/restore ───────────────────────────────────────────────────────
+function collectRecord(){
+  var r = Object.assign({}, APP.record);
+  r.week    = APP.week;
+  r.grade   = APP.grade;
+  r.effort  = APP.effort;
+  r.mood    = APP.mood;
+  // Session
+  var sn=document.getElementById('sess-note'); if(sn) r.sessNote=sn.value;
+  // Movement
+  for(var d=1;d<=4;d++){
+    var mn=document.getElementById('move-note-'+d);
+    if(mn){ if(!r['day'+d]) r['day'+d]={}; r['day'+d].note=mn.value; }
+  }
+  var mr=document.getElementById('move-reflection'); if(mr) r.moveReflection=mr.value;
+  // Nutrition
+  var nn=document.getElementById('nutr-note'); if(nn) r.nutrNote=nn.value;
+  // Mindset
+  var mdn=document.getElementById('mindset-note'); if(mdn) r.mindsetNote=mdn.value;
+  // mindset-help removed — dhikr covers it
+  var mdb=document.getElementById('mindset-band'); if(mdb) r.mindsetBand=mdb.value;
+  // Dhikr completion
+  if(APP.record.dhikrDone) r.dhikrDone=true;
+  // Du'a
+  var dt=document.getElementById('dua-text'); if(dt) r.duaText=dt.value;
+  return r;
+}
+
+function restoreRecord(){
+  // Values restored inline by each renderer
+}
+
+var _autoTimer=null;
+function autosaveRecord(){
+  clearTimeout(_autoTimer);
+  _autoTimer = setTimeout(function(){
+    APP.record = collectRecord();
+    localStorage.setItem('how_aafiya_w'+APP.week, JSON.stringify(APP.record));
+  }, 800);
+}
+
+async function saveRecord(){
+  APP.record = collectRecord();
+  APP.record.savedAt = new Date().toISOString();
+  localStorage.setItem('how_aafiya_w'+APP.week, JSON.stringify(APP.record));
+  renderHistory();
+  toast('✓ Wellness record saved');
+  // Supabase sync
+  var jwt = null;
+  try{ jwt = localStorage.getItem('how_jwt'); }catch(e){}
+  if(_sb && jwt){
+    try{
+      await _sb.from('wellness').upsert({
+        student_id:   (APP.student||{}).id||null,
+        week:         APP.week,
+        grade:        APP.grade,
+        effort:       APP.record.effort,
+        mood:         APP.record.mood,
+        sess_note:    APP.record.sessNote||'',
+        nutr_note:    APP.record.nutrNote||'',
+        mindset_note: APP.record.mindsetNote||'',
+        dua_text:     APP.record.duaText||'',
+        dhikr_done:   APP.record.dhikrDone||false,
+        saved_at:     APP.record.savedAt,
+        record_json:  APP.record,
+      },{onConflict:'student_id,week'});
+    }catch(e){ console.warn('Wellness sync failed:', e.message); }
+  }
+  document.getElementById('save-note').textContent = 'Saved '+(new Date()).toLocaleTimeString();
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+</script>
+</body>
+</html>

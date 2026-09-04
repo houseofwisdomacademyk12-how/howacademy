@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio Card Generator — Bayt al-Hikmah</title>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#1a1a2e;color:#f0ece4;min-height:100vh}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+/* Sidebar */
+.sidebar{background:#12122a;border-right:1px solid #2a2a4a;overflow-y:auto;position:sticky;top:0;height:100vh}
+.sidebar-head{padding:20px 16px 16px;border-bottom:1px solid #2a2a4a}
+.sidebar-title{font-family:'Spectral',serif;font-size:16px;font-weight:600;color:#f0ece4;margin-bottom:4px}
+.sidebar-sub{font-size:11px;color:#9a9ab0}
+.progress-bar{height:3px;background:#2a2a4a;margin-top:10px;border-radius:2px}
+.progress-fill{height:100%;background:#1d6f6f;border-radius:2px;transition:width .3s}
+.progress-label{font-size:10px;color:#9a9ab0;margin-top:4px}
+
+.week-list{padding:8px 0}
+.week-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;font-size:12px;color:#9a9ab0}
+.week-item:hover{background:#1a1a3a;color:#f0ece4}
+.week-item.active{background:#1a1a3a;border-left-color:#1d6f6f;color:#f0ece4}
+.week-item.done{color:#1d6f6f}
+.week-item.done .wi-status{color:#1d6f6f}
+.week-item.error{color:#c0522a}
+.wi-num{font-size:10px;font-weight:800;color:#9a9ab0;width:22px;flex-shrink:0}
+.wi-disc{font-size:10px;opacity:.7}
+.wi-status{margin-left:auto;font-size:14px}
+
+/* Main */
+.main{padding:32px 36px;overflow-y:auto}
+.main-head{margin-bottom:24px}
+.main-title{font-family:'Spectral',serif;font-size:22px;font-weight:600;margin-bottom:4px}
+.main-sub{font-size:13px;color:#9a9ab0}
+
+/* API key row */
+.api-row{display:flex;gap:8px;margin-bottom:24px;align-items:center}
+.api-input{flex:1;padding:9px 12px;background:#252540;border:1px solid #3a3a5c;border-radius:6px;font-size:13px;color:#f0ece4;font-family:inherit}
+.api-input:focus{outline:none;border-color:#1d6f6f}
+.btn{padding:9px 18px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-teal{background:#1d6f6f;color:white}
+.btn-gold{background:#d4af37;color:#1a1a2e}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-outline{background:transparent;border:1px solid #3a3a5c;color:#9a9ab0}
+.btn-outline:hover{border-color:#1d6f6f;color:#f0ece4}
+.btn-danger{background:#7a2e2e;color:white}
+
+/* Prompt card */
+.prompt-card{background:#252540;border:1px solid #3a3a5c;border-radius:10px;padding:20px;margin-bottom:20px}
+.prompt-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#9a9ab0;margin-bottom:6px}
+.prompt-text{font-family:'Spectral',serif;font-size:14px;line-height:1.75;color:#c8c0d8;font-style:italic}
+.prompt-meta{margin-top:10px;display:flex;gap:12px;flex-wrap:wrap}
+.pmeta{font-size:11px;color:#9a9ab0}
+.pmeta strong{color:#d4af37}
+
+/* Generate button area */
+.gen-area{display:flex;gap:10px;align-items:center;margin-bottom:24px}
+.gen-status{font-size:12px;color:#9a9ab0;margin-left:4px}
+
+/* Result card */
+.result-card{background:#252540;border:1px solid #3a3a5c;border-radius:10px;overflow:hidden;margin-bottom:24px}
+.result-band{height:4px;background:linear-gradient(90deg,#1d6f6f,#d4af37)}
+.result-body{padding:20px}
+
+.field-group{margin-bottom:18px}
+.field-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#9a9ab0;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.field-edit{font-size:10px;color:#1d6f6f;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400}
+.field-value{font-size:13px;color:#c8c0d8;line-height:1.65}
+textarea.field-value{width:100%;background:#1a1a2e;border:1px solid #3a3a5c;border-radius:6px;padding:8px 10px;color:#f0ece4;font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;min-height:80px}
+textarea.field-value:focus{outline:none;border-color:#1d6f6f}
+
+.materials-list{display:flex;flex-wrap:wrap;gap:6px}
+.mat-chip{background:#1a1a2e;border:1px solid #3a3a5c;border-radius:14px;padding:3px 10px;font-size:11px;color:#c8c0d8;cursor:pointer}
+.mat-chip.essential{border-color:#d4af37;color:#d4af37}
+.mat-chip:hover{border-color:#1d6f6f}
+
+.steps-list{list-style:none}
+.step-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.step-n{width:22px;height:22px;border-radius:50%;background:#3a3a5c;color:#9a9ab0;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-t{font-size:13px;color:#c8c0d8;line-height:1.6}
+.step-t strong{color:#f0ece4}
+
+.diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.diff-cell{background:#1a1a2e;border-radius:6px;padding:10px;border-top:2px solid}
+.diff-k4{border-color:#1d6f6f}.diff-m58{border-color:#d4af37}.diff-h912{border-color:#5c2080}
+.diff-grade{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.diff-k4 .diff-grade{color:#1d6f6f}.diff-m58 .diff-grade{color:#d4af37}.diff-h912 .diff-grade{color:#8a40b8}
+.diff-text{font-size:11px;color:#9a9ab0;line-height:1.5}
+
+.safety-box{background:#3a1a1a;border:1px solid #7a2e2e;border-radius:6px;padding:10px 12px;font-size:12px;color:#e8a0a0;line-height:1.6}
+.sahifa-box{background:#1a2a1a;border:1px solid #2a4a2a;border-radius:6px;padding:10px 12px;font-size:12px;color:#a0c8a0;line-height:1.7}
+
+/* Action row */
+.action-row{display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid #3a3a5c}
+
+/* Export */
+.export-section{background:#252540;border:1px solid #3a3a5c;border-radius:10px;padding:20px;margin-bottom:24px}
+.export-title{font-size:14px;font-weight:700;color:#f0ece4;margin-bottom:8px}
+.export-sub{font-size:12px;color:#9a9ab0;margin-bottom:12px}
+.export-stats{display:flex;gap:16px;margin-bottom:12px}
+.estat{text-align:center}
+.estat-n{font-size:24px;font-weight:800;color:#1d6f6f}
+.estat-l{font-size:11px;color:#9a9ab0}
+
+/* Spinner */
+.spinner{width:16px;height:16px;border:2px solid #3a3a5c;border-top-color:#1d6f6f;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty state */
+.empty{text-align:center;padding:48px 24px;color:#9a9ab0}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:14px;line-height:1.6}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1d6f6f;color:white;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-head">
+    <div class="sidebar-title">Studio Card Generator</div>
+    <div class="sidebar-sub">Bayt al-Hikmah · 30 unique prompts</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-label" id="progress-label">0 / 30 complete</div>
+  </div>
+  <div class="week-list" id="week-list"></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="main-head">
+    <h1 class="main-title">Studio Card Generator</h1>
+    <p class="main-sub">Generate, review, and approve all 30 studio cards. Cards are saved to localStorage as you approve them. Export JSON when done.</p>
+  </div>
+
+  <!-- API Key -->
+  <div class="api-row">
+    <input class="api-input" type="password" id="api-key" placeholder="sk-ant-… Anthropic API key" />
+    <button class="btn btn-teal btn-sm" onclick="saveKey()">Save key</button>
+    <span id="key-status" style="font-size:11px;color:#9a9ab0"></span>
+  </div>
+
+  <!-- Export section -->
+  <div class="export-section">
+    <div class="export-title">Progress & Export</div>
+    <div class="export-sub">Approved cards are saved in your browser. Export the JSON file when all 30 are done — it can then be merged into HOW_CURR.</div>
+    <div class="export-stats">
+      <div class="estat"><div class="estat-n" id="stat-done">0</div><div class="estat-l">Approved</div></div>
+      <div class="estat"><div class="estat-n" id="stat-pending" style="color:#9a9ab0">30</div><div class="estat-l">Remaining</div></div>
+      <div class="estat"><div class="estat-n" id="stat-gen" style="color:#d4af37">0</div><div class="estat-l">Generated</div></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-teal btn-sm" onclick="generateAll()">⚡ Generate all remaining</button>
+      <button class="btn btn-gold btn-sm" onclick="exportJSON()">📥 Export approved cards JSON</button>
+      <button class="btn btn-outline btn-sm" onclick="clearAll()">Clear all</button>
+    </div>
+  </div>
+
+  <!-- Card area -->
+  <div id="card-area">
+    <div class="empty">
+      <div class="empty-icon">🏗</div>
+      <div class="empty-text">Select a week from the sidebar to generate its studio card,<br>or click "Generate all remaining" to run all 30.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────
+const PROMPTS = {
+  1:{week:1,discipline:'Cartography',scholar:'Al-Idrisi',prompt:'[Cartography] Your world, your map: Draw a map of a place you know completely from memory. Include everything that matters to you, not just what would appear on an official map. Label it. Compare it with another student\'s map of the same place — what did each of you include that the other did not?',math:'Counting and number sense',sci:'Observing the world using five senses'},
+  2:{week:2,discipline:'Geometry',scholar:'Al-Biruni',prompt:'[Geometry] Pattern hunting: Find three patterns in the physical space around you that repeat. Document each: draw it, name it, describe the rule that generates it. Then make your own pattern that follows a rule you invent.',math:'Place value and number patterns',sci:'Patterns in nature'},
+  3:{week:3,discipline:'Architecture',scholar:'Ibn Rushd',prompt:'[Architecture] Build a load-bearing structure: Using only paper and tape, build the tallest structure that can support a book for 30 seconds. Document each attempt: what failed, what you changed, what worked. Ibn Rushd would have called this iterative reasoning.',math:'Measurement and estimation',sci:'Forces — push, pull, and balance'},
+  4:{week:4,discipline:'Geometry',scholar:'Al-Khwarizmi',prompt:'[Geometry] The mathematics of fair sharing: Using compass and straightedge only, divide a circle into equal parts: first 2, then 4, then 8. Now attempt 3 and 6. Document: which divisions are geometrically exact? Which require approximation? Why?',math:'Fractions and equal parts',sci:'Symmetry in nature'},
+  5:{week:5,discipline:'Astronomy',scholar:'Al-Kashi',prompt:'[Astronomy] Measure the same thing five ways: Choose one object. Measure it using five different methods or tools. Record every measurement and its source of error. Calculate the mean. Write: what does the spread of your measurements tell you about the difference between precision and accuracy?',math:'Measurement — length, mass, volume',sci:'Scientific method — observation and measurement'},
+  6:{week:6,discipline:'Calligraphy',scholar:'Ibn Khaldun',prompt:'[Calligraphy] The art of the question: Write the opening question for this week in your best handwriting — or attempt Arabic calligraphy. The goal is not beautiful letters but letters written with full attention. Reflect: what happened when your attention wandered?',math:'Number operations — the language of mathematics',sci:'Communication in science'},
+  7:{week:7,discipline:'Optics',scholar:'Ibn al-Haytham',prompt:'[Optics] Build a camera obscura: Build a pinhole camera using a cardboard box or tube. Observe what it projects. Document: is the image right-side up or inverted? What does this tell you about how light travels? This is exactly the experiment Ibn al-Haytham performed in his darkened room in 1011 CE.',math:'Area — counting square units',sci:'Ibn al-Haytham and the scientific method'},
+  8:{week:8,discipline:'Astronomy',scholar:'Al-Battani',prompt:'[Astronomy] The compass and the circle: Using compass and straightedge only: construct a circle, inscribe a regular hexagon, then a twelve-pointed star. Measure the circumference with string and compare to 2πr. Document the method Al-Battani would have used.',math:'Circles — circumference, area, π',sci:'Celestial measurement'},
+  9:{week:9,discipline:'Pharmacy',scholar:'Ibn Sina',prompt:'[Pharmacy] A living system in miniature: Set up a terrarium or small garden — soil, at least one plant, drainage. Observe it daily for one week. Document: what does it need to survive? What happens if one element is missing? Ibn Sina\'s Canon of Medicine began with observation of living systems.',math:'Data collection and simple graphs',sci:'Living systems — what plants need'},
+  10:{week:10,discipline:'Natural History',scholar:'Al-Masudi',prompt:'[Natural History] Document change: Choose one thing in the natural world that changes across the week — a plant, the sky at a fixed time, shadow length, temperature. Measure and record it every day. At the end: what stayed constant? What changed?',math:'Time — measuring and recording',sci:'Change over time in natural systems'},
+  11:{week:11,discipline:'Calligraphy',scholar:'Hunayn ibn Ishaq',prompt:'[Calligraphy] Translate without words: Take a concept from this week\'s lessons — any subject — and communicate it without using any language. Diagrams, symbols, objects, gesture. Test it: can another person decode your meaning? Hunayn ibn Ishaq translated Greek knowledge into Arabic — he knew that translation is always interpretation.',math:'Mathematical notation as language',sci:'Scientific diagrams and visual communication'},
+  12:{week:12,discipline:'Natural History',scholar:'Al-Jahiz',prompt:'[Natural History] Your own classification system: Collect 20 natural objects or images. Create your own classification system from first principles. Justify every category boundary. Then look up how Al-Jahiz classified similar objects. Where does your system agree? Where does it diverge?',math:'Sets and sorting',sci:'Classification in biology'},
+  13:{week:13,discipline:'Architecture',scholar:'Al-Ghazali',prompt:'[Architecture] Structure that embodies wisdom: Design (on paper) a space for learning — a room, a garden, a courtyard. Every design decision must be justified: why this size, why this light, why this material? Al-Ghazali wrote about the conditions that make knowledge possible. Make those conditions physical.',math:'Scale and proportion',sci:'Environment and its effect on living things'},
+  14:{week:14,discipline:'Pharmacy',scholar:'Jabir ibn Hayyan',prompt:'[Pharmacy] Observable reactions: Combine at least three safe household materials and record what happens: colour change, temperature change, gas production, texture change, smell. Document each combination like Jabir ibn Hayyan would: materials, quantities, procedure, result. Which changes were reversible? Which were not?',math:'Ratios and proportional reasoning',sci:'Chemical and physical changes'},
+  15:{week:15,discipline:'Calligraphy',scholar:'Ibn al-Nafis',prompt:'[Calligraphy] Communicate without shared language: You must communicate a scientific concept to someone who does not share your language. You may use diagrams, symbols, mathematical notation, and objects — but no words. Create the artefact. Test it: can another student decode your meaning?',math:'Mathematical symbols as universal language',sci:'Scientific communication'},
+  16:{week:16,discipline:'Astronomy',scholar:'Al-Tusi',prompt:'[Astronomy] Model the Tusi couple: Using two circles of the right sizes (one twice the radius of the other), show how Al-Tusi proved that linear motion can be produced from two circular motions. Build it with cardboard and a pin. Document what you observe.',math:'Circles and rotation',sci:'Planetary motion models'},
+  17:{week:17,discipline:'Cartography',scholar:'Ibn Battuta',prompt:'[Cartography] Map the knowledge journey: Create a map — not of a place, but of a journey through knowledge. Map this year\'s learning: what were the territories? What were the borders? What remained unexplored? Ibn Battuta mapped 120,000km of the known world. Map what you know.',math:'Coordinate systems and scale',sci:'Systems thinking'},
+  18:{week:18,discipline:'Astronomy',scholar:'Al-Kashi',prompt:'[Astronomy] Precision construction: Using compass and straightedge, construct a regular pentagon. Document every step. Measure the resulting angles. Al-Kashi calculated π to 16 decimal places — precision was his discipline. How close did your construction come to the theoretical 108°?',math:'Angles and polygon properties',sci:'Precision in scientific measurement'},
+  19:{week:19,discipline:'Cartography',scholar:'Ibn Majid',prompt:'[Cartography] Map an unknown territory: Choose a space you have never mapped — the inside of a drawer, the floor plan of a room from memory, a route you walk without thinking. Map it. Then walk/check it. What did you get wrong? What did your memory emphasize?',math:'Scale drawing',sci:'Systematic observation'},
+  20:{week:20,discipline:'Engineering',scholar:'Al-Jazari',prompt:'[Engineering] Build a redirecting machine: Build a device — from any available materials — that redirects force: a lever, a pulley, a ramp, a waterwheel, a crank. The device must visibly change the direction or magnitude of a force. Document the mechanical principle.',math:'Forces and mechanical advantage',sci:'Simple machines'},
+  21:{week:21,discipline:'Architecture',scholar:'Ibn Battuta',prompt:'[Architecture] Archive this year: Create an archive of your work from this academic year — select, organize, and present it. An archive is not a collection; it is an argument about what mattered. Justify every inclusion. Ibn Battuta\'s Rihla was an archive of 30 years of travel.',math:'Organization and categorization',sci:'Documentation in science'},
+  22:{week:22,discipline:'Geometry',scholar:'Al-Maqrizi',prompt:'[Geometry] The geometry of justice: Design a system for distributing a resource — water, light, space, food — among people with different needs. The system must be geometrically describable. Draw it. Justify why it is fair. Al-Maqrizi wrote about distribution of resources in 15th century Egypt.',math:'Ratio, proportion, and fair division',sci:'Resource distribution in ecosystems'},
+  23:{week:23,discipline:'Engineering',scholar:'Fatima al-Fihri',prompt:'[Engineering] Build from no instructions: You will be given materials and a constraint but no instructions: the structure must hold weight AND span a gap. Figure out the rest. Fatima al-Fihri built the world\'s first university without a precedent to follow.',math:'Structural reasoning and estimation',sci:'Engineering design process'},
+  24:{week:24,discipline:'Natural History',scholar:'Ibn Khaldun',prompt:'[Natural History] Restore something: Take something broken, worn, or neglected and restore it — repair an object, revive a plant, clean and document an artefact. Document the before, the process, the after. Ibn Khaldun wrote that civilisations decline and can be restored. What did restoration require?',math:'Before and after — measurement and change',sci:'Decomposition and restoration in nature'},
+  25:{week:25,discipline:'Calligraphy',scholar:'Ibn al-Haytham',prompt:'[Calligraphy] Teach through making: Make something — a diagram, a model, a labelled illustration — that teaches one concept from this year to someone who has not studied it. No words of explanation allowed beyond labels. Test it: does the object teach without you present?',math:'Mathematical visualization',sci:'Scientific models and their purpose'},
+  26:{week:26,discipline:'Geometry',scholar:'Al-Khwarizmi',prompt:'[Geometry] Physical proof: Choose a geometric theorem and prove it physically — not on paper, but with objects, string, shadows, or measurement. The Pythagorean theorem can be proved with square tiles. What can you prove with what you have?',math:'Geometric proof and reasoning',sci:'Empirical verification'},
+  27:{week:27,discipline:'Optics',scholar:'Al-Farabi',prompt:'[Optics] Light and truth: Create an optical illusion — a drawing, an arrangement of objects, or a mirror setup — that makes something appear to be what it is not. Document: what does the eye believe? What does the mind know? Al-Farabi distinguished between what the senses report and what reason concludes.',math:'Geometry of reflection and refraction',sci:'Perception vs reality in observation'},
+  28:{week:28,discipline:'Calligraphy',scholar:'Al-Idrisi',prompt:'[Calligraphy] Create a new symbol: Invent a symbol — a single mark — that encodes a complex idea from this year\'s learning. The symbol must be drawable in one stroke, universally readable by anyone who knows the rule, and memorable. Document the rule. Test it.',math:'Symbolic representation in mathematics',sci:'Scientific notation and symbols'},
+  29:{week:29,discipline:'Architecture',scholar:'Al-Biruni',prompt:'[Architecture] Complete an unfinished project: Return to a project from earlier this year that you abandoned or left incomplete. Finish it — or document honestly why it cannot be finished and what would be required. Al-Biruni spent 40 years on some of his calculations.',math:'Persistence and iteration in problem-solving',sci:'Long-term scientific observation'},
+  30:{week:30,discipline:'Astronomy',scholar:'Al-Battani',prompt:'[Astronomy] The year as a circle: Create a visual representation of this entire academic year as a single circle — the weeks, the scholars, the themes, the connections you see now that you did not see in September. The circle is Al-Battani\'s instrument. Make it yours.',math:'Data visualization and synthesis',sci:'Systems and cycles in nature'},
+};
+
+const SYSTEM_PROMPT = `You are generating studio cards for Bayt al-Hikmah, a K-12 Islamic homeschool platform. Each studio card expands a single studioActivation prompt into a complete facilitation guide for a hands-on making session.
+
+Return ONLY valid JSON in this exact schema — no markdown, no explanation:
+{
+  "week": number,
+  "discipline": string,
+  "scholar": string,
+  "title": string (5 words max, evocative title for the session),
+  "prompt": string (the original prompt text, unchanged),
+  "time": {
+    "prepare": number (minutes to gather materials),
+    "make": number (minutes for the main activity),
+    "document": number (minutes for writing/drawing documentation),
+    "total": number
+  },
+  "materials": {
+    "essential": [string] (must-have items, 4-8),
+    "helpful": [string] (nice-to-have items, 2-4)
+  },
+  "safety": string or null (safety note if needed, null if none),
+  "steps": [
+    {"n": number, "title": string, "text": string}
+  ] (5-7 steps, each with a short title and 1-3 sentence instruction),
+  "differentiation": {
+    "k4": string (Grades K-4 adaptation, 2-3 sentences),
+    "m58": string (Grades 5-8 adaptation, 2-3 sentences),
+    "h912": string (Grades 9-12 adaptation, 2-3 sentences)
+  },
+  "sahifaPrompt": string (2-3 sentence Sahifa entry starter with blanks for student to complete, written in first person, connects to the scholar)
+}
+
+Guidelines:
+- Materials must be genuinely available in a typical home — no specialist equipment
+- Time estimates must be realistic for a homeschool session (one adult, one or two students)
+- Steps must be facilitation guidance, not instructions the student reads — they address the facilitator
+- Differentiation must actually differ across bands — K-4 observes, 5-8 analyzes, 9-12 extends to formal reasoning
+- Sahifa prompt must name the scholar and leave 1-2 blanks for the student to complete from their own experience
+- Safety note only if genuinely needed (chemicals, sharp tools, heat, darkness) — do not invent warnings`;
+
+// ── State ─────────────────────────────────────────────────────
+const S = {
+  cards: {},       // week → approved card
+  generated: {},   // week → generated (pending review) card
+  current: null,   // current week being viewed
+  apiKey: '',
+  generating: false,
+};
+
+// ── Init ──────────────────────────────────────────────────────
+function init(){
+  // Load from localStorage
+  try{
+    const saved = JSON.parse(localStorage.getItem('how_studio_cards')||'{}');
+    S.cards = saved;
+  }catch(e){}
+  try{
+    const key = localStorage.getItem('how_api_key')||localStorage.getItem('studio_gen_key')||'';
+    if(key){ S.apiKey=key; document.getElementById('api-key').value=key; updateKeyStatus(); }
+  }catch(e){}
+  renderSidebar();
+  updateStats();
+}
+
+function saveKey(){
+  const k = document.getElementById('api-key').value.trim();
+  S.apiKey = k;
+  try{ localStorage.setItem('studio_gen_key',k); localStorage.setItem('how_api_key',k); }catch(e){}
+  updateKeyStatus();
+  toast('API key saved');
+}
+
+function updateKeyStatus(){
+  const el = document.getElementById('key-status');
+  el.textContent = S.apiKey ? '✓ Key ready' : 'No key — enter key to generate';
+  el.style.color = S.apiKey ? '#1d6f6f' : '#9a9ab0';
+}
+
+// ── Sidebar ───────────────────────────────────────────────────
+function renderSidebar(){
+  const list = document.getElementById('week-list');
+  list.innerHTML = '';
+  const done = Object.keys(S.cards).length;
+  document.getElementById('progress-fill').style.width = (done/30*100)+'%';
+  document.getElementById('progress-label').textContent = done+' / 30 complete';
+
+  for(let w=1;w<=30;w++){
+    const p = PROMPTS[w];
+    const approved = !!S.cards[w];
+    const generated = !!S.generated[w];
+    const item = document.createElement('div');
+    item.className = 'week-item'+(approved?' done':'')+(S.current===w?' active':'');
+    item.onclick = ()=>selectWeek(w);
+    item.innerHTML = `<span class="wi-num">W${String(w).padStart(2,'0')}</span>
+      <span class="wi-disc">${p.discipline} · ${p.scholar.split(' ').pop()}</span>
+      <span class="wi-status">${approved?'✓':generated?'·':''}</span>`;
+    list.appendChild(item);
+  }
+}
+
+function selectWeek(w){
+  S.current = w;
+  renderSidebar();
+  renderCard(w);
+}
+
+// ── Card rendering ────────────────────────────────────────────
+function renderCard(w){
+  const area = document.getElementById('card-area');
+  const p = PROMPTS[w];
+  const approved = S.cards[w];
+  const generated = S.generated[w];
+  const card = approved || generated;
+
+  let html = `<div class="prompt-card">
+    <div class="prompt-label">Week ${w} · ${p.discipline} Studio · ${p.scholar}</div>
+    <div class="prompt-text">${p.prompt.replace(/^\[\w[\w\s]*\]\s*/,'')}</div>
+    <div class="prompt-meta">
+      <span class="pmeta">Math context <strong>${p.math}</strong></span>
+      <span class="pmeta">Science context <strong>${p.sci}</strong></span>
+    </div>
+  </div>`;
+
+  html += `<div class="gen-area">`;
+  if(!S.apiKey){
+    html += `<span class="gen-status">Enter API key above to generate</span>`;
+  } else if(!card){
+    html += `<button class="btn btn-teal" onclick="generateOne(${w})" id="gen-btn-${w}">⚡ Generate studio card</button>`;
+  } else if(generated && !approved){
+    html += `<button class="btn btn-teal btn-sm" onclick="generateOne(${w})" id="gen-btn-${w}">↺ Regenerate</button>
+      <span class="gen-status">Generated — review and approve below</span>`;
+  } else if(approved){
+    html += `<button class="btn btn-outline btn-sm" onclick="generateOne(${w})" id="gen-btn-${w}">↺ Regenerate</button>
+      <span class="gen-status" style="color:#1d6f6f">✓ Approved</span>`;
+  }
+  html += `</div>`;
+
+  if(card){
+    html += renderCardData(card, w, !!approved);
+  }
+
+  area.innerHTML = html;
+}
+
+function renderCardData(card, w, approved){
+  const mats_essential = (card.materials?.essential||[]).map(m=>`<span class="mat-chip essential">${m}</span>`).join('');
+  const mats_helpful = (card.materials?.helpful||[]).map(m=>`<span class="mat-chip">${m}</span>`).join('');
+  const steps = (card.steps||[]).map(s=>`<li class="step-row"><div class="step-n">${s.n}</div><div class="step-t"><strong>${s.title}.</strong> ${s.text}</div></li>`).join('');
+
+  return `<div class="result-card">
+    <div class="result-band"></div>
+    <div class="result-body">
+
+      <div class="field-group">
+        <div class="field-label">Title <span class="field-edit" onclick="editField(${w},'title')">edit</span></div>
+        <div class="field-value" id="f-${w}-title">${card.title||''}</div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Time</div>
+        <div class="field-value" style="display:flex;gap:16px;flex-wrap:wrap">
+          ${card.time?`<span>Prepare: <strong style="color:#f0ece4">${card.time.prepare}m</strong></span>
+          <span>Make: <strong style="color:#f0ece4">${card.time.make}m</strong></span>
+          <span>Document: <strong style="color:#f0ece4">${card.time.document}m</strong></span>
+          <span>Total: <strong style="color:#d4af37">${card.time.total}m</strong></span>`:'—'}
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Materials — Essential <span class="field-edit" onclick="editField(${w},'materials')">edit</span></div>
+        <div class="materials-list">${mats_essential}</div>
+        ${mats_helpful?`<div class="field-label" style="margin-top:8px">Helpful</div><div class="materials-list">${mats_helpful}</div>`:''}
+      </div>
+
+      ${card.safety?`<div class="field-group">
+        <div class="field-label">Safety</div>
+        <div class="safety-box">${card.safety}</div>
+      </div>`:''}
+
+      <div class="field-group">
+        <div class="field-label">Facilitation steps <span class="field-edit" onclick="editField(${w},'steps')">edit</span></div>
+        <ul class="steps-list">${steps}</ul>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Differentiation</div>
+        <div class="diff-grid">
+          <div class="diff-cell diff-k4"><div class="diff-grade">Grades K–4</div><div class="diff-text">${card.differentiation?.k4||''}</div></div>
+          <div class="diff-cell diff-m58"><div class="diff-grade">Grades 5–8</div><div class="diff-text">${card.differentiation?.m58||''}</div></div>
+          <div class="diff-cell diff-h912"><div class="diff-grade">Grades 9–12</div><div class="diff-text">${card.differentiation?.h912||''}</div></div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Sahifa entry prompt <span class="field-edit" onclick="editField(${w},'sahifaPrompt')">edit</span></div>
+        <div class="sahifa-box">${card.sahifaPrompt||''}</div>
+      </div>
+
+      <div class="action-row">
+        ${approved
+          ? `<button class="btn btn-outline btn-sm" onclick="unapprove(${w})">Unapprove</button>`
+          : `<button class="btn btn-danger btn-sm" onclick="discard(${w})">Discard</button>
+             <button class="btn btn-gold" onclick="approve(${w})">✓ Approve this card</button>`
+        }
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Generation ────────────────────────────────────────────────
+async function generateOne(w){
+  if(!S.apiKey){ toast('Enter API key first'); return; }
+  const btn = document.getElementById(`gen-btn-${w}`);
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Generating…'; }
+
+  const p = PROMPTS[w];
+  const userMsg = `Generate a complete studio card for Week ${w}.
+
+Discipline: ${p.discipline}
+Scholar: ${p.scholar}
+Studio prompt: ${p.prompt}
+Math context (Grade 7): ${p.math}
+Science context (Grade 7): ${p.sci}
+
+Remember: materials must be available in a typical home. Steps address the facilitator, not the student.`;
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,system:SYSTEM_PROMPT,messages:[{role:'user',content:userMsg}]})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'API error');
+    const raw = data.content[0].text.replace(/```json|```/g,'').trim();
+    const card = JSON.parse(raw);
+    card.week = w;
+    S.generated[w] = card;
+    toast(`Week ${w} generated`);
+    renderCard(w);
+    renderSidebar();
+    updateStats();
+  }catch(e){
+    toast('Error: '+e.message);
+    if(btn){ btn.disabled=false; btn.innerHTML='⚡ Generate studio card'; }
+  }
+}
+
+async function generateAll(){
+  if(!S.apiKey){ toast('Enter API key first'); return; }
+  if(S.generating){ toast('Already generating…'); return; }
+  S.generating = true;
+  const remaining = [];
+  for(let w=1;w<=30;w++){ if(!S.cards[w]) remaining.push(w); }
+  toast(`Generating ${remaining.length} cards…`);
+  for(const w of remaining){
+    await generateOne(w);
+    await new Promise(r=>setTimeout(r,1200)); // rate limit buffer
+  }
+  S.generating = false;
+  toast('All cards generated — review and approve');
+}
+
+// ── Approve / discard ─────────────────────────────────────────
+function approve(w){
+  const card = S.generated[w] || S.cards[w];
+  if(!card){ toast('No card to approve'); return; }
+  S.cards[w] = card;
+  delete S.generated[w];
+  save();
+  renderCard(w);
+  renderSidebar();
+  updateStats();
+  toast(`Week ${w} approved ✓`);
+  // Auto-advance to next unapproved
+  for(let n=w+1;n<=30;n++){ if(!S.cards[n]){ selectWeek(n); break; } }
+}
+
+function unapprove(w){
+  S.generated[w] = S.cards[w];
+  delete S.cards[w];
+  save();
+  renderCard(w);
+  renderSidebar();
+  updateStats();
+}
+
+function discard(w){
+  delete S.generated[w];
+  renderCard(w);
+  updateStats();
+}
+
+function editField(w, field){
+  const card = S.generated[w] || S.cards[w];
+  if(!card) return;
+  let current = '';
+  if(field==='title') current = card.title||'';
+  else if(field==='sahifaPrompt') current = card.sahifaPrompt||'';
+  else if(field==='materials') current = JSON.stringify(card.materials, null, 2);
+  else if(field==='steps') current = JSON.stringify(card.steps, null, 2);
+
+  const newVal = prompt(`Edit ${field}:`, current);
+  if(newVal===null) return;
+  try{
+    if(field==='materials'||field==='steps') card[field] = JSON.parse(newVal);
+    else card[field] = newVal;
+    if(S.cards[w]) S.cards[w] = card;
+    else S.generated[w] = card;
+    save();
+    renderCard(w);
+  }catch(e){ toast('Invalid JSON'); }
+}
+
+// ── Storage ───────────────────────────────────────────────────
+function save(){
+  try{ localStorage.setItem('how_studio_cards', JSON.stringify(S.cards)); }catch(e){ toast('Storage error'); }
+}
+
+function clearAll(){
+  if(!confirm('Clear all approved cards? This cannot be undone.')) return;
+  S.cards = {}; S.generated = {};
+  save();
+  renderSidebar();
+  updateStats();
+  document.getElementById('card-area').innerHTML = '<div class="empty"><div class="empty-icon">🏗</div><div class="empty-text">All cleared. Select a week to begin.</div></div>';
+  toast('Cleared');
+}
+
+function updateStats(){
+  const done = Object.keys(S.cards).length;
+  const gen = Object.keys(S.generated).length;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-pending').textContent = 30-done;
+  document.getElementById('stat-gen').textContent = gen;
+}
+
+// ── Export ────────────────────────────────────────────────────
+function exportJSON(){
+  const done = Object.keys(S.cards).length;
+  if(done===0){ toast('No approved cards to export'); return; }
+
+  // Build output: { week: card, ... } sorted by week
+  const output = {};
+  for(let w=1;w<=30;w++){
+    if(S.cards[w]) output[w] = S.cards[w];
+  }
+
+  const blob = new Blob([JSON.stringify(output, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `how_studio_cards_${done}of30_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${done} cards`);
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+let _tt;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+init();
+</script>
+</body>
+</html>

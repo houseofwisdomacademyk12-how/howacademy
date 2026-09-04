@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HOW Al-Aafiya — Recipe Card Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Spectral:ital,wght@0,500;1,400&family=Amiri&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a2e;--ink2:#2e2e44;--ink3:#5a5a78;--ink4:#9a9ab0;--ink5:#d0d0e0;
+  --parchment:#f9f7f4;--parchment-2:#f0ece4;--parchment-3:#e4ddd0;
+  --gold:#d4af37;--gold-l:#e8cc70;--gold-pale:#fdf5d0;
+  --teal:#1d6f6f;--teal-l:#d0eaea;--teal-d:#0d3b3b;
+  --green:#2d6a2d;--green-l:#e0f0e0;
+  --coral:#8b3a2a;--r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--parchment-2);color:var(--ink);min-height:100vh}
+
+/* ── Layout ── */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--teal-d);padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.main{padding:24px;max-width:800px}
+
+/* ── Sidebar ── */
+.sb-title{padding:0 16px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-title h1{font-family:'Amiri',serif;font-size:1.05rem;color:var(--gold-l);line-height:1.3}
+.sb-title p{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:4px}
+.sb-progress{padding:10px 16px;font-size:.65rem;color:rgba(255,255,255,.4)}
+.sb-progress strong{color:var(--gold-l);font-size:.85rem}
+.week-list{flex:1;padding:8px 0}
+.week-item{display:flex;align-items:center;gap:8px;padding:6px 16px;cursor:pointer;transition:.1s}
+.week-item:hover{background:rgba(255,255,255,.06)}
+.week-item.active{background:rgba(255,255,255,.1)}
+.week-item.approved .wk-dot{background:var(--gold);color:var(--ink)}
+.week-item.has-draft .wk-dot{background:rgba(255,255,255,.25)}
+.wk-dot{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.4);flex-shrink:0}
+.wk-info{flex:1;min-width:0}
+.wk-scholar{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-dish{font-size:.62rem;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-badge{font-size:.55rem;font-weight:700;padding:.1rem .45rem;border-radius:99px}
+.wk-badge.app{background:var(--gold);color:var(--ink)}
+.wk-badge.dft{background:rgba(255,255,255,.15);color:rgba(255,255,255,.5)}
+
+/* ── Export/Import bar ── */
+.action-bar{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.btn-export{width:100%;padding:8px;border-radius:8px;border:none;background:var(--gold);color:var(--ink);font-weight:800;font-size:.78rem;cursor:pointer;font-family:inherit}
+.btn-import{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.7);font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit}
+.progress-bar{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:6px}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:.3s}
+
+/* ── Main area ── */
+.week-header{margin-bottom:20px}
+.week-header h2{font-family:'Spectral',serif;font-size:1.3rem;font-weight:500;color:var(--ink)}
+.week-header .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.meta-pill{display:inline-flex;align-items:center;gap:4px;background:white;border:1px solid var(--parchment-3);border-radius:99px;padding:.2rem .7rem;font-size:.68rem;font-weight:600;color:var(--ink3)}
+.meta-pill .flag{font-size:.85rem}
+
+/* ── Context box (read-only context fed to AI) ── */
+.context-box{background:white;border:1px solid var(--parchment-3);border-radius:var(--r);padding:14px 16px;margin-bottom:16px}
+.context-box h3{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ink4);margin-bottom:10px}
+.ctx-row{display:flex;gap:8px;margin-bottom:6px;font-size:.8rem}
+.ctx-label{font-weight:700;color:var(--ink3);min-width:100px;flex-shrink:0}
+.ctx-val{color:var(--ink2);line-height:1.5}
+
+/* ── Generate button ── */
+.gen-row{display:flex;gap:10px;margin-bottom:20px}
+.btn-gen{flex:1;padding:11px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--teal),var(--green));color:white;font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-gen:hover{opacity:.9}
+.btn-gen:disabled{opacity:.5;cursor:not-allowed}
+.btn-approve{padding:11px 20px;border-radius:10px;border:none;background:var(--gold);color:var(--ink);font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-approve:disabled{opacity:.4;cursor:not-allowed}
+.btn-clear{padding:11px 14px;border-radius:10px;border:1.5px solid var(--parchment-3);background:white;color:var(--ink3);font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit}
+
+/* ── Card preview ── */
+.recipe-card{background:white;border:1px solid var(--parchment-3);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.rc-top{padding:18px 20px;background:linear-gradient(135deg,#1a2d0d,#0d1a08);position:relative}
+.rc-top-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.35);margin-bottom:5px}
+.rc-dish{font-family:'Spectral',serif;font-size:1.4rem;font-weight:600;color:rgba(255,255,255,.95);line-height:1.2;margin-bottom:4px}
+.rc-region{font-size:.78rem;color:rgba(255,255,255,.5)}
+.rc-juz{position:absolute;top:14px;right:16px;font-family:'Amiri',serif;font-size:1.1rem;color:var(--gold-l);opacity:.7}
+.rc-body{padding:16px 20px}
+.rc-section{margin-bottom:16px}
+.rc-section h4{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ink4);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--parchment-3)}
+.rc-connection{font-family:'Spectral',serif;font-style:italic;font-size:.88rem;color:var(--ink2);line-height:1.65;background:var(--parchment-2);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 6px 6px 0}
+.rc-ingr-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.rc-ingr-item{font-size:.82rem;color:var(--ink2);padding:4px 6px;background:var(--parchment);border-radius:6px}
+.rc-ingr-item strong{color:var(--ink);font-weight:600}
+.rc-steps{counter-reset:step}
+.rc-step{display:flex;gap:10px;margin-bottom:8px;font-size:.85rem;color:var(--ink2);line-height:1.5}
+.rc-step-n{width:22px;height:22px;border-radius:50%;background:var(--teal-l);color:var(--teal-d);font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.engagement-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.eng-tab{padding:4px 12px;border-radius:99px;border:1.5px solid var(--parchment-3);font-size:.68rem;font-weight:700;cursor:pointer;color:var(--ink3);background:white;transition:.1s}
+.eng-tab.active{background:var(--teal);border-color:var(--teal);color:white}
+.eng-text{font-family:'Spectral',serif;font-size:.88rem;color:var(--ink2);line-height:1.65;padding:10px 12px;background:var(--parchment-2);border-radius:8px}
+
+/* ── Edit overlay ── */
+.edit-panel{background:white;border:1px solid var(--parchment-3);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.edit-panel h3{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ink4);margin-bottom:12px}
+.edit-row{margin-bottom:12px}
+.edit-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);display:block;margin-bottom:.3rem}
+.edit-input{width:100%;border:1.5px solid var(--parchment-3);border-radius:8px;padding:8px 11px;font-size:.85rem;font-family:inherit;color:var(--ink);outline:none;transition:.15s}
+.edit-input:focus{border-color:var(--teal)}
+.edit-textarea{width:100%;border:1.5px solid var(--parchment-3);border-radius:8px;padding:8px 11px;font-size:.85rem;font-family:inherit;color:var(--ink);outline:none;resize:vertical;line-height:1.6;transition:.15s}
+.edit-textarea:focus{border-color:var(--teal)}
+
+/* ── Status ── */
+.status{font-size:.75rem;color:var(--ink3);padding:4px 0}
+.status.ok{color:var(--green)}
+.status.err{color:var(--coral)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--parchment-3);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:9px 20px;border-radius:99px;font-size:.82rem;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="shell">
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+  <div class="sb-title">
+    <h1>العافية<br>Recipe Generator</h1>
+    <p>30 weeks · one recipe each · curated by you</p>
+  </div>
+  <div class="sb-progress">
+    <strong id="approved-count">0</strong> / 30 approved
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="week-list" id="week-list">
+    <!-- populated by JS -->
+  </div>
+  <div class="action-bar"><div style="margin-bottom:8px"><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:4px">Anthropic API Key</div><div style="display:flex;gap:4px"><input type="password" id="api-key" placeholder="sk-ant-…" style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:6px 8px;font-size:.72rem;color:white;font-family:inherit;outline:none"><button onclick="saveKey()" style="padding:6px 10px;border-radius:6px;border:none;background:var(--teal);color:white;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit">Save</button></div><div id="key-status" style="font-size:.62rem;color:rgba(255,255,255,.3);margin-top:3px"></div></div>
+    <button class="btn-export" style="background:var(--teal);margin-bottom:4px" onclick="generateAll()">⚡ Generate all remaining</button><button class="btn-export" onclick="exportRecipes()">⬇ Export approved recipes</button><button class="btn-import" style="margin-bottom:4px" onclick="clearAllDrafts()">✕ Clear all drafts</button>
+    <label class="btn-import" style="display:block;text-align:center;cursor:pointer">
+      ⬆ Import recipes JSON
+      <input type="file" accept=".json" style="display:none" onchange="importRecipes(this)">
+    </label>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main" id="main">
+  <div style="color:var(--ink3);font-size:.9rem;padding:40px 0 0;text-align:center">Select a week from the sidebar to begin.</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Week context data ────────────────────────────────────────────────────────
+const WEEKS = {
+  1:{scholar:'Al-Idrisi',region:'Morocco / North Africa',discipline:'Cartography',juzArabic:'Al-Khaliq',juzMeaning:'The Creator',juzTheme:'Creation & beginnings',hadith:'Actions are judged by intentions',math:'Proportional relationships',ss:'Medieval Islamic world'},
+  2:{scholar:'Al-Biruni',region:'Central Asia (modern Uzbekistan)',discipline:'Mathematics',juzArabic:'Al-Bari',juzMeaning:'The Originator',juzTheme:'Patterns & structure',hadith:'At what point does a pattern become a law',math:'Rates & ratios',ss:'The scientific method'},
+  3:{scholar:'Ibn Rushd',region:'Andalusia (southern Spain)',discipline:'Philosophy',juzArabic:'Al-Musawwir',juzMeaning:'The Fashioner',juzTheme:'Form & function',hadith:'Wisdom is the lost property of the believer',math:'Geometry — angles & shape',ss:'The translation movement'},
+  4:{scholar:'Ibn Sina',region:'Persia (modern Iran)',discipline:'Medicine',juzArabic:'Al-Ghaffar',juzMeaning:'The Forgiver',juzTheme:'Healing & restoration',hadith:'There is no disease that Allah has created without a cure',math:'Fractions & parts',ss:'The Islamic Golden Age'},
+  5:{scholar:'Al-Khwarizmi',region:'Central Asia / Baghdad',discipline:'Mathematics',juzArabic:'Al-Qahhar',juzMeaning:'The Subduer',juzTheme:'Order & system',hadith:'The best of deeds are those done consistently',math:'Expressions & algebra',ss:'House of Wisdom — Bayt al-Hikma'},
+  6:{scholar:'Ibn al-Haytham',region:'Basra / Egypt',discipline:'Optics & Physics',juzArabic:'Al-Wahhab',juzMeaning:'The Bestower',juzTheme:'Light & perception',hadith:'Seek knowledge from the cradle to the grave',math:'Linear equations',ss:'Scientific observation in Islamic tradition'},
+  7:{scholar:'Al-Ghazali',region:'Khorasan (modern Iran)',discipline:'Philosophy',juzArabic:'Al-Razzaq',juzMeaning:'The Provider',juzTheme:'Sustenance & trust',hadith:'Tie your camel, then put your trust in Allah',math:'Statistics & data',ss:'Scholastic tradition — jurisprudence'},
+  8:{scholar:'Al-Battani',region:'Harran (modern Turkey)',discipline:'Astronomy',juzArabic:'Al-Muhit',juzMeaning:'The All-Encompassing',juzTheme:'Scale & vastness',hadith:'The sun and moon follow their courses',math:'Functions & graphs',ss:'Astronomy in the Islamic world'},
+  9:{scholar:'Ibn Battuta',region:'Morocco (travelled entire Islamic world)',discipline:'Geography',juzArabic:'Al-Muqit',juzMeaning:'The Sustainer',juzTheme:'Journey & provision',hadith:'Travel — for in travel there are five benefits',math:'Distance & coordinate systems',ss:'Trade routes of the Islamic world'},
+  10:{scholar:'Ibn Khaldun',region:'Tunisia / North Africa',discipline:'History & Sociology',juzArabic:'Al-Hasib',juzMeaning:'The Reckoner',juzTheme:'Accountability & civilisation',hadith:'The best of you are those who are best in character',math:'Systems of equations',ss:'Rise and fall of civilisations'},
+  11:{scholar:'Al-Jazari',region:'Jazira (modern Turkey/Iraq border)',discipline:'Engineering',juzArabic:'Al-Jalil',juzMeaning:'The Majestic',juzTheme:'Craft & mastery',hadith:'Allah loves that when you do something, you do it with excellence',math:'Volume & capacity',ss:'Medieval Islamic engineering'},
+  12:{scholar:'Jabir ibn Hayyan',region:'Kufa (modern Iraq)',discipline:'Chemistry',juzArabic:'Al-Karim',juzMeaning:'The Generous',juzTheme:'Transformation & giving',hadith:'The generous one is near to Allah',math:'Rates of change',ss:'Early Islamic chemistry & alchemy'},
+  13:{scholar:'Al-Farabi',region:'Central Asia / Baghdad',discipline:'Music & Philosophy',juzArabic:'Al-Raqib',juzMeaning:'The Watchful',juzTheme:'Attention & presence',hadith:'Be mindful of Allah and He will be mindful of you',math:'Sequences & patterns',ss:'Music theory in the Islamic world'},
+  14:{scholar:'Al-Kindi',region:'Basra / Baghdad',discipline:'Philosophy',juzArabic:'Al-Mujib',juzMeaning:'The Responsive',juzTheme:'Dialogue & response',hadith:'None of you believes until he loves for his brother what he loves for himself',math:'Proof & logic',ss:'Translation movement — Greek to Arabic'},
+  15:{scholar:'Ibn al-Nafis',region:'Damascus / Egypt',discipline:'Medicine',juzArabic:'Al-Qawiyy',juzMeaning:'The All-Powerful',juzTheme:'Strength & resilience',hadith:'The strong believer is better than the weak believer',math:'Percentages & proportions',ss:'Islamic medicine — hospitals & care'},
+  16:{scholar:'Al-Masudi',region:'Baghdad (travelled Africa, India)',discipline:'Geography',juzArabic:'Al-Matin',juzMeaning:'The Firm',juzTheme:'Rootedness & stability',hadith:'Hold to this community and its leadership',math:'Probability',ss:'African kingdoms in the Islamic world'},
+  17:{scholar:'Al-Tusi',region:'Khorasan / Persia',discipline:'Astronomy',juzArabic:'Al-Waliyy',juzMeaning:'The Protecting Friend',juzTheme:'Guidance & protection',hadith:'Allah is with those who are patient',math:'Trigonometry introduction',ss:'Mongol invasion & preservation of knowledge'},
+  18:{scholar:'Al-Jahiz',region:'Basra (modern Iraq)',discipline:'Natural history',juzArabic:'Al-Hamid',juzMeaning:'The Praiseworthy',juzTheme:'Gratitude & observation',hadith:'Whoever does not thank people has not thanked Allah',math:'Natural numbers & number theory',ss:'Natural history in Islamic scholarship'},
+  19:{scholar:'Al-Maqrizi',region:'Cairo / Egypt',discipline:'History',juzArabic:'Al-Muhsi',juzMeaning:'The All-Knowing Counter',juzTheme:'Record & memory',hadith:'Write down knowledge',math:'Data & statistics',ss:'Mamluk Egypt & economic history'},
+  20:{scholar:'Fatima al-Fihri',region:'Morocco (Fez)',discipline:'Education',juzArabic:'Al-Mubdi',juzMeaning:'The Originator',juzTheme:'Beginning & foundation',hadith:'Seeking knowledge is an obligation upon every Muslim',math:'Geometric proofs',ss:'History of Islamic education — al-Qarawiyyin'},
+  21:{scholar:'Al-Kashi',region:'Persia / Samarkand',discipline:'Mathematics',juzArabic:'Al-Muid',juzMeaning:'The Restorer',juzTheme:'Return & renewal',hadith:'Every act of service has a return',math:'Pi & circular measurement',ss:'Timurid renaissance — Samarkand'},
+  22:{scholar:'Al-Maqrizi',region:'Cairo / Egypt',discipline:'Economics',juzArabic:'Al-Muqaddir',juzMeaning:'The Determiner of measure',juzTheme:'Measure & worth',hadith:'The seller and the buyer have the option of cancelling',math:'Financial mathematics',ss:'Islamic economic principles'},
+  23:{scholar:'Ibn Majid',region:'Oman / Arabian Peninsula',discipline:'Navigation',juzArabic:'Al-Ali',juzMeaning:'The Most High',juzTheme:'Direction & elevation',hadith:'Whoever takes a path in pursuit of knowledge',math:'Angles & bearings',ss:'Age of exploration — Indian Ocean trade'},
+  24:{scholar:'Hunayn ibn Ishaq',region:'Hira (modern Iraq)',discipline:'Medicine & Translation',juzArabic:'Al-Kabir',juzMeaning:'The Most Great',juzTheme:'Scale & significance',hadith:'Wisdom is the lost property of the believer',math:'Scale & ratio',ss:'The translation movement — Syriac to Arabic'},
+  25:{scholar:'Al-Biruni',region:'Central Asia (modern Uzbekistan)',discipline:'Anthropology',juzArabic:'Al-Hafiz',juzMeaning:'The Preserver',juzTheme:'Memory & preservation',hadith:'The best of you are those who learn the Quran',math:'Coordinate geometry',ss:'Al-Biruni and the study of India'},
+  26:{scholar:'Ibn Sina',region:'Persia (modern Iran)',discipline:'Philosophy',juzArabic:'Al-Muqit',juzMeaning:'The Nourisher',juzTheme:'Sustenance of mind & body',hadith:'The body has a right over you',math:'Advanced algebra',ss:'Avicenna\'s Canon — medicine as system'},
+  27:{scholar:'Al-Khwarizmi',region:'Central Asia / Baghdad',discipline:'Mathematics',juzArabic:'Al-Shahid',juzMeaning:'The Witness',juzTheme:'Presence & accountability',hadith:'Act as though you see Allah',math:'Quadratic equations',ss:'Baghdad under Harun al-Rashid'},
+  28:{scholar:'Ibn Rushd',region:'Andalusia (southern Spain)',discipline:'Philosophy',juzArabic:'Al-Haqq',juzMeaning:'The Truth',juzTheme:'Truth & certainty',hadith:'Honesty leads to righteousness',math:'Mathematical proof & logic',ss:'Reconquista & preservation of Islamic knowledge'},
+  29:{scholar:'Al-Ghazali',region:'Khorasan (modern Iran)',discipline:'Spirituality',juzArabic:'Al-Wakil',juzMeaning:'The Trustee',juzTheme:'Trust & letting go',hadith:'Put your trust in Allah',math:'Calculus introduction — limits',ss:'Crusades & Islamic intellectual response'},
+  30:{scholar:'Al-Battani',region:'Harran (modern Turkey)',discipline:'Astronomy',juzArabic:'Al-Awwal · Al-Akhir',juzMeaning:'The First and the Last',juzTheme:'Beginning & end — return',hadith:'The best of deeds are those done consistently, even if small',math:'Review & synthesis',ss:'Legacy of the Islamic Golden Age'}
+};
+
+const API_URL = 'https://api.anthropic.com/v1/messages';
+const MODEL   = 'claude-sonnet-4-6';
+
+// ── State ────────────────────────────────────────────────────────────────────
+var S = {
+  week:      1,
+  recipes:   {},   // approved
+  drafts:    {},   // generated but not approved
+  editing:   null, // week being edited
+  apiKey:    '',
+  generating:false,
+};
+
+// Load from localStorage
+try { S.recipes = JSON.parse(localStorage.getItem('how_aafiya_recipes')||'{}'); } catch(e){}
+try { S.drafts  = JSON.parse(localStorage.getItem('how_aafiya_drafts')||'{}');  } catch(e){}
+try { var _k=localStorage.getItem('how_api_key')||localStorage.getItem('recipe_gen_key')||'';
+      if(_k){ S.apiKey=_k; } } catch(e){}
+try { S.drafts  = JSON.parse(localStorage.getItem('how_aafiya_drafts')||'{}');  } catch(e){}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+function renderSidebar(){
+  var approved = Object.keys(S.recipes).length;
+  document.getElementById('approved-count').textContent = approved;
+  document.getElementById('progress-fill').style.width  = (approved/30*100)+'%';
+
+  var html = '';
+  for(var w=1; w<=30; w++){
+    var d     = WEEKS[w];
+    var isApp = !!S.recipes[w];
+    var isDft = !!S.drafts[w];
+    var dish  = (S.recipes[w]||S.drafts[w]||{}).dish || '';
+    var cls   = 'week-item'+(w===S.week?' active':'')+(isApp?' approved':isDft?' has-draft':'');
+    html += '<div class="'+cls+'" onclick="selectWeek('+w+')">'+
+      '<div class="wk-dot">'+(isApp?'✓':isDft?'~':w)+'</div>'+
+      '<div class="wk-info">'+
+        '<div class="wk-scholar">W'+w+' · '+d.scholar+'</div>'+
+        '<div class="wk-dish">'+(dish||d.region)+'</div>'+
+      '</div>'+
+      (isApp?'<span class="wk-badge app">✓</span>':isDft?'<span class="wk-badge dft">draft</span>':'')+
+    '</div>';
+  }
+  document.getElementById('week-list').innerHTML = html;
+}
+
+// ── Week view ─────────────────────────────────────────────────────────────────
+function selectWeek(w){
+  S.week = w;
+  S.editing = null;
+  renderSidebar();
+  renderMain();
+}
+
+function renderMain(){
+  var w    = S.week;
+  var ctx  = WEEKS[w];
+  var rec  = S.recipes[w] || S.drafts[w] || null;
+  var main = document.getElementById('main');
+
+  var html = '';
+
+  // ── Week header
+  html += '<div class="week-header">'+
+    '<h2>Week '+w+' — '+ctx.scholar+'</h2>'+
+    '<div class="meta">'+
+      '<span class="meta-pill"><span class="flag">🌍</span> '+ctx.region+'</span>'+
+      '<span class="meta-pill"><span class="flag">☪</span> '+ctx.juzArabic+' — '+ctx.juzMeaning+'</span>'+
+      '<span class="meta-pill"><span class="flag">📐</span> '+ctx.discipline+'</span>'+
+    '</div>'+
+  '</div>';
+
+  // ── Context box (read-only, fed to AI)
+  html += '<div class="context-box">'+
+    '<h3>Context sent to AI</h3>'+
+    '<div class="ctx-row"><span class="ctx-label">Scholar</span><span class="ctx-val">'+ctx.scholar+'</span></div>'+
+    '<div class="ctx-row"><span class="ctx-label">Region</span><span class="ctx-val">'+ctx.region+'</span></div>'+
+    '<div class="ctx-row"><span class="ctx-label">Juz name</span><span class="ctx-val">'+ctx.juzArabic+' — '+ctx.juzMeaning+' · '+ctx.juzTheme+'</span></div>'+
+    '<div class="ctx-row"><span class="ctx-label">Hadith</span><span class="ctx-val">'+ctx.hadith+'</span></div>'+
+    '<div class="ctx-row"><span class="ctx-label">Math topic</span><span class="ctx-val">'+ctx.math+'</span></div>'+
+    '<div class="ctx-row"><span class="ctx-label">Social Studies</span><span class="ctx-val">'+ctx.ss+'</span></div>'+
+  '</div>';
+
+  // ── Action buttons
+  var isApp = !!S.recipes[w];
+  html += '<div class="gen-row">'+
+    '<button class="btn-gen" id="btn-gen" onclick="generateRecipe()">'+
+      (rec ? '↺ Regenerate' : '✦ Generate Recipe for Week '+w)+
+    '</button>'+
+    '<button class="btn-approve" id="btn-approve" onclick="approveRecipe()" '+(rec?'':'disabled')+'>'+
+      (isApp ? '✓ Approved' : 'Approve →')+'</button>'+
+    (rec?'<button class="btn-clear" onclick="clearDraft()">✕</button>':'')+
+  '</div>';
+  html += '<div class="status" id="gen-status"></div>';
+
+  // ── Recipe card (if generated)
+  if(rec) html += buildRecipeCard(rec, w);
+
+  main.innerHTML = html;
+
+  // Restore engagement tab
+  if(rec) setEngTab('k2');
+}
+
+// ── Recipe card renderer ─────────────────────────────────────────────────────
+function buildRecipeCard(r, w){
+  var html = '<div class="recipe-card">'+
+    '<div class="rc-top">'+
+      '<div class="rc-top-label">Week '+w+' Recipe · '+WEEKS[w].region+'</div>'+
+      '<div class="rc-dish">'+r.dish+'</div>'+
+      '<div class="rc-region">'+r.region+'</div>'+
+      '<div class="rc-juz">'+WEEKS[w].juzArabic+'</div>'+
+    '</div>'+
+    '<div class="rc-body">';
+
+  // Connection
+  if(r.connection){
+    html += '<div class="rc-section"><h4>Scholar connection</h4>'+
+      '<div class="rc-connection">'+r.connection+'</div></div>';
+  }
+  if(r.juzConnection){
+    html += '<div class="rc-section"><h4>Juz connection</h4>'+
+      '<div class="rc-connection" style="border-color:var(--teal)">'+r.juzConnection+'</div></div>';
+  }
+
+  // Ingredients
+  if(r.ingredients&&r.ingredients.length){
+    html += '<div class="rc-section"><h4>Ingredients</h4><div class="rc-ingr-grid">';
+    r.ingredients.forEach(function(ing){
+      html += '<div class="rc-ingr-item"><strong>'+ing.qty+'</strong> '+ing.item+'</div>';
+    });
+    html += '</div></div>';
+  }
+
+  // Steps
+  if(r.steps&&r.steps.length){
+    html += '<div class="rc-section"><h4>Method</h4><div class="rc-steps">';
+    r.steps.forEach(function(s,i){
+      html += '<div class="rc-step"><div class="rc-step-n">'+(i+1)+'</div><div>'+s+'</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // Engagement — grade band tabs
+  if(r.engagement){
+    html += '<div class="rc-section"><h4>Grade-band engagement</h4>'+
+      '<div class="engagement-tabs">'+
+        '<div class="eng-tab active" id="etab-k2" onclick="setEngTab(\'k2\')">K–2</div>'+
+        '<div class="eng-tab" id="etab-35" onclick="setEngTab(\'35\')">3–5</div>'+
+        '<div class="eng-tab" id="etab-68" onclick="setEngTab(\'68\')">6–8</div>'+
+        '<div class="eng-tab" id="etab-912" onclick="setEngTab(\'912\')">9–12</div>'+
+      '</div>'+
+      '<div class="eng-text" id="eng-text">'+(r.engagement.k2||'—')+'</div>'+
+    '</div>';
+  }
+
+  html += '</div></div>';
+
+  // Edit panel (inline edit fields)
+  html += buildEditPanel(r, w);
+
+  return html;
+}
+
+function buildEditPanel(r, w){
+  return '<div class="edit-panel">'+
+    '<h3>Edit before approving</h3>'+
+    '<div class="edit-row"><label class="edit-label">Dish name</label>'+
+      '<input class="edit-input" id="ed-dish" value="'+esc(r.dish||'')+'"></div>'+
+    '<div class="edit-row"><label class="edit-label">Region</label>'+
+      '<input class="edit-input" id="ed-region" value="'+esc(r.region||'')+'"></div>'+
+    '<div class="edit-row"><label class="edit-label">Scholar connection</label>'+
+      '<textarea class="edit-textarea" id="ed-connection" rows="2">'+esc(r.connection||'')+'</textarea></div>'+
+    '<div class="edit-row"><label class="edit-label">Juz connection</label>'+
+      '<textarea class="edit-textarea" id="ed-juz-connection" rows="2">'+esc(r.juzConnection||'')+'</textarea></div>'+
+    '<div class="edit-row"><label class="edit-label">K–2 engagement</label>'+
+      '<textarea class="edit-textarea" id="ed-k2" rows="2">'+esc((r.engagement&&r.engagement.k2)||'')+'</textarea></div>'+
+    '<div class="edit-row"><label class="edit-label">3–5 engagement</label>'+
+      '<textarea class="edit-textarea" id="ed-35" rows="2">'+esc((r.engagement&&r.engagement['35'])||'')+'</textarea></div>'+
+    '<div class="edit-row"><label class="edit-label">6–8 engagement</label>'+
+      '<textarea class="edit-textarea" id="ed-68" rows="2">'+esc((r.engagement&&r.engagement['68'])||'')+'</textarea></div>'+
+    '<div class="edit-row"><label class="edit-label">9–12 engagement</label>'+
+      '<textarea class="edit-textarea" id="ed-912" rows="2">'+esc((r.engagement&&r.engagement['912'])||'')+'</textarea></div>'+
+    '<button class="btn-approve" style="width:100%;margin-top:4px" onclick="applyEdits()">Apply edits &amp; approve →</button>'+
+  '</div>';
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function setEngTab(band){
+  ['k2','35','68','912'].forEach(function(b){
+    var t=document.getElementById('etab-'+b);
+    if(t) t.className='eng-tab'+(b===band?' active':'');
+  });
+  var rec = S.recipes[S.week]||S.drafts[S.week];
+  if(rec&&rec.engagement){
+    var el=document.getElementById('eng-text');
+    if(el) el.textContent=rec.engagement[band]||'—';
+  }
+}
+
+// ── Generate ─────────────────────────────────────────────────────────────────
+async function generateRecipe(){
+  var w   = S.week;
+  var ctx = WEEKS[w];
+  var btn = document.getElementById('btn-gen');
+  var st  = document.getElementById('gen-status');
+  if(btn) btn.disabled = true;
+  if(st)  st.innerHTML = '<span class="spinner"></span> Generating…';
+
+  var sys = 'You are a culinary and educational content designer for a K-12 Islamic homeschool platform. '+
+    'Generate one recipe card that connects to the scholar\'s region and the week\'s educational context. '+
+    'The recipe must be:\n'+
+    '- From the scholar\'s home region or the lands they studied\n'+
+    '- Halal and wholesome\n'+
+    '- Practically cookable by a family at home\n'+
+    '- Connected meaningfully (not superficially) to the Juz theme and scholar\n'+
+    '- Grade-band engagement questions must connect to actual curriculum topics where possible\n\n'+
+    'Return ONLY valid JSON — no markdown, no explanation:\n'+
+    '{\n'+
+    '  "dish": "Dish name",\n'+
+    '  "region": "Country or region",\n'+
+    '  "connection": "2 sentences: scholar → dish. Specific and meaningful.",\n'+
+    '  "juzConnection": "2 sentences: how preparing/eating this dish connects to the Juz theme.",\n'+
+    '  "ingredients": [{"qty": "1 cup", "item": "red lentils"}, ...],\n'+
+    '  "steps": ["Step 1 text", "Step 2 text", ...],\n'+
+    '  "engagement": {\n'+
+    '    "k2": "Counting/sensory/simple observation prompt — 1 sentence",\n'+
+    '    "35": "Measurement/fraction/simple ratio prompt — 1 sentence, connect to math if possible",\n'+
+    '    "68": "Proportion/ratio/scaling prompt — 1 sentence, connect to math curriculum topic",\n'+
+    '    "912": "Historical/cultural/analytical prompt — 1 sentence, connect to social studies"\n'+
+    '  }\n'+
+    '}';
+
+  var usr = 'Week '+w+' recipe context:\n'+
+    'Scholar: '+ctx.scholar+'\n'+
+    'Scholar\'s region: '+ctx.region+'\n'+
+    'Discipline: '+ctx.discipline+'\n'+
+    'Juz name: '+ctx.juzArabic+' — '+ctx.juzMeaning+'\n'+
+    'Juz theme: '+ctx.juzTheme+'\n'+
+    'Hadith this week: '+ctx.hadith+'\n'+
+    'Math topic (Grade 7): '+ctx.math+'\n'+
+    'Social Studies topic: '+ctx.ss+'\n\n'+
+    'Generate one recipe from '+ctx.region+' that connects to '+ctx.scholar+'\'s work.';
+
+  try{
+    if(!S.apiKey){ setStatus('Enter your API key first','err'); if(btn) btn.disabled=false; return; }
+    var resp = await fetch(API_URL,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':S.apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:MODEL,max_tokens:1200,system:sys,messages:[{role:'user',content:usr}]})
+    });
+    var data = await resp.json();
+    var raw  = (data.content&&data.content[0]&&data.content[0].text)||'';
+    raw = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    var recipe = JSON.parse(raw);
+    recipe.week = w;
+    S.drafts[w] = recipe;
+    localStorage.setItem('how_aafiya_drafts', JSON.stringify(S.drafts));
+    if(st) st.className='status ok'; if(st) st.textContent='✓ Generated — review and approve below.';
+    renderMain();
+    renderSidebar();
+  } catch(e){
+    if(st){ st.className='status err'; st.textContent='Error: '+e.message; }
+    if(btn) btn.disabled=false;
+  }
+}
+
+// ── Approve / edit / clear ────────────────────────────────────────────────────
+function approveRecipe(){
+  var w   = S.week;
+  var rec = S.recipes[w]||S.drafts[w];
+  if(!rec){ toast('Nothing to approve yet'); return; }
+  S.recipes[w] = rec;
+  delete S.drafts[w];
+  persist();
+  toast('✓ Week '+w+' approved');
+  renderMain();
+  renderSidebar();
+}
+
+function applyEdits(){
+  var w   = S.week;
+  var rec = JSON.parse(JSON.stringify(S.recipes[w]||S.drafts[w]||{}));
+  var g = function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
+  rec.dish           = g('ed-dish')       ||rec.dish;
+  rec.region         = g('ed-region')     ||rec.region;
+  rec.connection     = g('ed-connection') ||rec.connection;
+  rec.juzConnection  = g('ed-juz-connection')||rec.juzConnection;
+  if(!rec.engagement) rec.engagement={};
+  rec.engagement.k2  = g('ed-k2')  ||rec.engagement.k2;
+  rec.engagement['35'] = g('ed-35')||rec.engagement['35'];
+  rec.engagement['68'] = g('ed-68')||rec.engagement['68'];
+  rec.engagement['912']= g('ed-912')||rec.engagement['912'];
+  S.recipes[w] = rec;
+  delete S.drafts[w];
+  persist();
+  toast('✓ Week '+w+' edited and approved');
+  renderMain();
+  renderSidebar();
+}
+
+function clearDraft(){
+  var w = S.week;
+  delete S.drafts[w];
+  localStorage.setItem('how_aafiya_drafts', JSON.stringify(S.drafts));
+  renderMain();
+  renderSidebar();
+}
+
+// ── Export / Import ───────────────────────────────────────────────────────────
+function exportRecipes(){
+  var done = Object.keys(S.recipes).length;
+  if(!done){ toast('No approved recipes yet'); return; }
+  var blob = new Blob([JSON.stringify(S.recipes,null,2)],{type:'application/json'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download= 'how_aafiya_recipes_'+done+'of30_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported '+done+' recipes');
+}
+
+function importRecipes(input){
+  var file = input.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var imported = JSON.parse(e.target.result);
+      Object.assign(S.recipes, imported);
+      persist();
+      toast('✓ Imported '+Object.keys(imported).length+' recipes');
+      renderMain();
+      renderSidebar();
+    } catch(ex){ toast('Import failed: '+ex.message); }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// ── Persist ───────────────────────────────────────────────────────────────────
+function persist(){
+  localStorage.setItem('how_aafiya_recipes', JSON.stringify(S.recipes));
+  localStorage.setItem('how_aafiya_drafts',  JSON.stringify(S.drafts));
+}
+
+// ── API key ─────────────────────────────────────────────────────────────────
+function saveKey(){
+  var k=document.getElementById('api-key').value.trim();
+  S.apiKey=k;
+  try{ if(k){ localStorage.setItem('how_api_key',k); localStorage.setItem('recipe_gen_key',k); }
+       else{ localStorage.removeItem('recipe_gen_key'); } }catch(e){}
+  updateKeyStatus();
+  toast(k?'✓ API key saved':'Key cleared');
+}
+
+function updateKeyStatus(){
+  var el=document.getElementById('key-status'); if(!el) return;
+  el.textContent = S.apiKey ? '✓ Key set — ready to generate' : 'No key — paste your Anthropic API key above';
+  el.style.color = S.apiKey ? 'rgba(100,220,100,.7)' : 'rgba(255,100,100,.6)';
+}
+
+function setStatus(msg, type){
+  var el=document.getElementById('gen-status'); if(!el) return;
+  el.className='status'+(type?' '+type:'');
+  el.textContent=msg;
+}
+
+// ── Generate All ─────────────────────────────────────────────────────────────
+async function generateAll(){
+  if(!S.apiKey){ toast('Enter your API key first'); return; }
+  if(S.generating){ toast('Already generating…'); return; }
+  var remaining=[];
+  for(var w=1;w<=30;w++){ if(!S.recipes[w]&&!S.drafts[w]) remaining.push(w); }
+  if(!remaining.length){ toast('All weeks already have a draft or approval'); return; }
+  S.generating=true;
+  toast('Generating '+remaining.length+' recipes… this will take a few minutes');
+  for(var i=0;i<remaining.length;i++){
+    var w=remaining[i];
+    selectWeek(w);
+    await generateRecipe();
+    // Rate limit pause
+    await new Promise(function(r){ setTimeout(r,1500); });
+  }
+  S.generating=false;
+  toast('✓ Done — review and approve each week');
+  renderSidebar();
+}
+
+function clearAllDrafts(){
+  if(!confirm('Clear all unapproved drafts?')) return;
+  S.drafts={};
+  localStorage.removeItem('how_aafiya_drafts');
+  toast('Drafts cleared');
+  renderMain();
+  renderSidebar();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+// Restore API key to input
+var _ki=document.getElementById('api-key'); if(_ki&&S.apiKey) _ki.value=S.apiKey;
+updateKeyStatus();
+renderSidebar();
+selectWeek(1);
+</script>
+</body>
+</html>
