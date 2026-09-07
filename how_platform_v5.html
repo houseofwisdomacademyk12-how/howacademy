@@ -5179,7 +5179,7 @@ async function sendMurshid(){
     if(!_mJwt){ addMsg('Please sign in to use the Murshid.','ai'); return; }
     const res=await fetch(API_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_mJwt},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-6',
         max_tokens:350,
@@ -8152,7 +8152,7 @@ async function ustadhSend(){
   try{
     const _qaJwt=localStorage.getItem('how_jwt');
     if(!_qaJwt){ if(thinking) thinking.remove(); return; }
-    var r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_qaJwt},body:JSON.stringify({model:MODEL,max_tokens:600,system:sys,messages:history})});
+    var r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:600,system:sys,messages:history})});
     var d=await r.json();
     var ans=(d.content||[]).map(function(b){return b.text||'';}).join('').trim();
     if(thinking) thinking.remove();
@@ -10216,7 +10216,7 @@ async function munCallAPI(sys, usr, maxTokens){
   if(!_munJwt) return null;
   var resp=await fetch(API_URL,{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+_munJwt},
+    headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens:maxTokens||800,

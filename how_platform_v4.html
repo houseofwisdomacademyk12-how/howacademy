@@ -11894,8 +11894,8 @@ async function buildParentReports(students, currentWeek){
   try {
     var _hJwt = localStorage.getItem('how_jwt');
     var _hHid = localStorage.getItem('how_household_id');
-    if(_hJwt && _hHid && typeof supabaseClient !== 'undefined' && supabaseClient) {
-      var _hRes = await supabaseClient
+    if(_hJwt && _hHid && typeof sb !== 'undefined' && sb) {
+      var _hRes = await sb
         .from('halaqa_transcript')
         .select('id,question,theme,student_name,grade,summary,turns,duration_min,saved_at')
         .eq('household_id', _hHid)

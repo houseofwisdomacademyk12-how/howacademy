@@ -8472,6 +8472,8 @@ function getSysPrompt(s){
   base+='3. The opening question provided is the week central inquiry — it appears on the PROVOCATION slide (slide 2), not the title slide.\n';
   base+='4. Islamic names in word problems: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha, Sara, Tariq.\n';
   base+='5. This is a LAUNCH deck — it introduces the concept and hands off to independent inquiry. Keep it concise.\n';
+  base+='6. LESSON TITLE: You MUST use the Subject topic for this session text from the context as the lesson title and title slide heading — verbatim. Do not rename or reframe it.\n';
+  base+='7. CROSS-CURRICULAR CONNECTIONS come ONLY from: the Juz theme, the Hadith of the week, and the Scholar of the week. Never reframe the subject topic itself to create connections.\n';
   base+='6. UNITS: This platform serves students in the United States. Use US customary units in ALL content, examples, word problems, and measurements — inches, feet, yards, miles, ounces, pounds, tons, cups, pints, quarts, gallons, degrees Fahrenheit. NEVER use metric units (cm, m, km, g, kg, mL, L, °C) unless the lesson topic is explicitly about the metric/SI system itself. Use US spelling (color, meter, liter) throughout.\n';
   var p={
     math:base+'SUBJECT: Mathematics. Use the Worked Example format. Show the historical context for WHY this mathematics was developed. The scholar in the context invented or advanced this specific area of mathematics — make that connection explicit in the Real-World Connection slide.',
@@ -8489,7 +8491,7 @@ function getSysPrompt(s){
 }
 
 function getDeckSchema(s){
-  var b='{\n  "title":"string",\n  "objective":"string",\n  "slides":[\n    {"type":"title","heading":"...","objective":"...","juzTheme":"...","juzArabic":"..."},\n    {"type":"provocation","heading":"Opening Question","question":"The exact openingQ from context — a question that opens the mind before teaching begins","parentNote":"Do not answer this yet. Let it sit. Students write a quick first response."},\n';
+  var b='{\n  "title":"Use the Subject topic for this session from the context — copy it verbatim, do not rename or reframe",\n  "objective":"string",\n  "slides":[\n    {"type":"title","heading":"Use the Subject topic for this session from the context — verbatim","objective":"...","juzTheme":"Cross-curricular connection via Juz/hadith/scholar only","juzArabic":"..."},\n    {"type":"provocation","heading":"Opening Question","question":"The exact openingQ from context — a question that opens the mind before teaching begins","parentNote":"Do not answer this yet. Let it sit. Students write a quick first response."},\n';
   var j='    {"type":"juz","arabic":"Arabic text of the Name e.g. المُحِيط","name":"Name transliteration and meaning e.g. Al-Muhit — The All-Encompassing","story":"The story paragraph about this Name exactly as provided in context","reflection":"The carrying question exactly as provided in context"}\n  ]\n}';
   if(s==='math')return b+'    {"type":"content","heading":"Concept","content":"2-3 sentences","example":"example","visual":"garden","parentNote":"Teaching tip"},\n    {"type":"worked","heading":"Worked Example 1","content":"Brief","steps":["Step 1","Step 2","Step 3"],"parentNote":"Common error"},\n    {"type":"worked","heading":"Worked Example 2","steps":["Step 1","Step 2"],"parentNote":"Mastery looks like"},\n    {"type":"activity","heading":"Your Turn","question":"Practice problem","parentNote":"Expected answer"},\n    {"type":"content","heading":"Real-World Connection","content":"2 sentences","scholarNote":"Islamic connection"},\n'+j;
   if(s==='ela')return b+'    {"type":"content","heading":"Vocabulary","content":"4 words with definitions","parentNote":"Tip"},\n    {"type":"passage","heading":"The Text","passage":"Original 4-6 sentence Islamic passage","parentNote":"Reading notes"},\n    {"type":"discussion","heading":"First Read","question":"Literal question","parentNote":"Listen for"},\n    {"type":"discussion","heading":"Second Read","question":"Craft question","parentNote":"Tip"},\n    {"type":"discussion","heading":"Discussion","question":"Rich open question","parentNote":"Facilitate"},\n'+j;
@@ -8794,7 +8796,7 @@ function openPres(){
   var _prefix=[];
   if(_vid&&_vid.url) _prefix.push({type:'video',heading:_vid.t||'Video Resource',content:l.title,url:_vid.url});
   if(_pdf&&_pdf.url) _prefix.push({type:'pdf',heading:'Worked Examples',content:l.title,url:_pdf.url});
-  if(S.mode==='teachit'||_schedRole==='student'||_schedRole==='child'||S.role==='student'){
+  if((S.mode==='teachit'||_schedRole==='student'||_schedRole==='child'||S.role==='student') && S.grade>2){
     _prefix.push({type:'teach_it',heading:'Now Teach It',content:l.title});
   }
   if(_schedRole==='facilitator'||_schedRole==='prep'){

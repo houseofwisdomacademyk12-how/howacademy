@@ -282,6 +282,7 @@ video,audio{width:100%;border-radius:10px;margin-bottom:12px}
       <div class="divider"></div>
       <label class="wb-label">How is my mind this week?</label>
       <div class="mood-row">
+        <button class="mood-btn" onclick="selMood(this,'heavy')"><span>🌧</span>Heavy</button>
         <button class="mood-btn" onclick="selMood(this,'cloudy')"><span>☁️</span>Cloudy</button>
         <button class="mood-btn" onclick="selMood(this,'clearing')"><span>🌤</span>Clearing</button>
         <button class="mood-btn" onclick="selMood(this,'clear')"><span>☀️</span>Clear</button>
@@ -668,8 +669,8 @@ function renderSession(){
   document.getElementById('sess-title').textContent = title.split(':').slice(1).join(':').trim() || title;
   document.getElementById('sess-meta').textContent  = '30 min · teacher-led · Week '+w;
 
-  // Check for video URL — grade-specific
-  var lsKey = 'how_pe_w'+w+'_g'+APP.grade+'_d'+d;
+  // Check for video URL
+  var lsKey = 'how_pe_w'+w+'_d'+d;
   var url = '';
   try{ url = localStorage.getItem(lsKey)||''; }catch(e){}
   APP._peUrl = url;
@@ -899,7 +900,7 @@ function renderMindset(){
   if(APP.mood){
     var savedBtn=null;
     document.querySelectorAll('.mood-btn').forEach(function(b){
-      var matches={cloudy:'☁️',clearing:'🌤',clear:'☀️'}[APP.mood];
+      var matches={heavy:'🌧',cloudy:'☁️',clearing:'🌤',clear:'☀️'}[APP.mood];
       if(b.querySelector('span')&&b.querySelector('span').textContent===matches){ b.classList.add('sel'); savedBtn=b; }
     });
   }
@@ -915,6 +916,7 @@ function selMood(btn, val){
   autosaveRecord();
   // Show dhikr connected to mood
   var DHIKR = {
+    heavy:    { arabic:'سُبْحَانَ اللَّه',  translit:'Subhanallah',   count:33, meaning:'Glory be to Allah' },
     cloudy:   { arabic:'سُبْحَانَ اللَّه',  translit:'Subhanallah',   count:33, meaning:'Glory be to Allah' },
     clearing: { arabic:'اَلْحَمْدُ لِلَّه', translit:'Alhamdulillah', count:33, meaning:'All praise is for Allah' },
     clear:    { arabic:'اَللَّهُ أَكْبَر',   translit:'Allahu Akbar',  count:33, meaning:'Allah is the Greatest' },
