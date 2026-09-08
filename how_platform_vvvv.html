@@ -1507,7 +1507,7 @@ body.how-admin .how-admin-grid{display:grid!important;}
 
 #lg-root .child-canvas-view{margin:.5rem 1.25rem .75rem;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
 
-#lg-root .child-canvas-view img{display:block;width:100%;height:auto;}
+#lg-root .child-canvas-view img{display:block;max-width:100%;height:auto;}
 
 #lg-root /* ── Workbook pages ─────────────────────────────── */
 .wb-wrap{display:flex;flex-direction:column;gap:.85rem;}
@@ -7023,7 +7023,7 @@ function renderSlide(sl, idx, total){
       body+=renderSketch(sl.sketch);
     }
     if(sl.annotation){
-      body+=renderPeerAnnotation(sl.annotation, sl.peer||'Peer');
+      body+=renderPeerAnnotation(sl.annotation, sl.peer||(typeof getPeerPersona!=='undefined'?getPeerPersona(S&&S.grade||0,S&&S.subj||'math'):'Peer note'));
     }
     if(sl.type==='title'&&sl.peer){
       body+='<div class="peer-byline">📖 Taught by '+sl.peer+'</div>';
@@ -7133,20 +7133,15 @@ function attachCanvas(idx){
   var ctx=canvas.getContext('2d');
   // Resize to wrap width, taller for usability
   var wrap=document.getElementById('cwrap-'+idx);
-  // Set bitmap to a good resolution — CSS will scale it proportionally
-  // using width:100% so sx=sy always — no squish on save/restore
-  var ww = wrap ? (wrap.offsetWidth || 0) : 0;
-  canvas.width  = ww > 20 ? ww : 600;  // bitmap width
-  canvas.height = Math.max(Math.round(canvas.width * 0.42), 220);
-  // CSS: width:100% of container, height auto from bitmap ratio
-  // This ensures sx=sy so coordinates are symmetric
-  canvas.style.width  = '100%';
-  canvas.style.height = 'auto';
-  canvas.style.display = 'block';
-  canvas.style.maxWidth  = '';
-  canvas.style.maxHeight = '';
-  canvas.style.objectFit = '';
-  canvas.style.cursor = 'crosshair';
+  var ww=wrap?(wrap.offsetWidth||600):600;
+  canvas.width=ww;
+  canvas.height=Math.max(Math.round(ww*0.42),220);
+  canvas.style.width=canvas.width+'px';
+  canvas.style.height=canvas.height+'px';
+  canvas.style.maxWidth='100%';
+  canvas.style.maxHeight='';
+  canvas.style.objectFit='';
+  canvas.style.cursor='crosshair';
 
   var state={
     ctx:ctx,drawing:false,color:'#1d6f6f',tool:'pen',size:3,
@@ -9040,29 +9035,8 @@ function getSlideCount(grade){var g=parseInt(grade)||0;return g<=5?7:g<=8?9:12;}
 // ── Sketch renderer ──────────────────────────────────────────────────────────
 function renderSketch(sk){
   if(!sk||!sk.type||sk.type==='none') return '';
-
-  // Dynamic width based on content type
-  var W=340, H=220;
-  if(sk.type==='table'){
-    var cols=(sk.headers||[]).length||2;
-    var rows=(sk.rows||[]).length||0;
-    // Auto-size: give each column enough room
-    var maxCellLen = 1;
-    (sk.headers||[]).forEach(function(h){ maxCellLen=Math.max(maxCellLen,String(h).length); });
-    (sk.rows||[]).forEach(function(r){ r.forEach(function(cell){ maxCellLen=Math.max(maxCellLen,String(cell).length); }); });
-    var cw3 = Math.max(70, Math.min(120, maxCellLen * 7));
-    W = Math.max(340, cols * cw3 + 40);
-    H = Math.max(160, (rows+2)*30+40);
-  }
-  if(sk.type==='number_line'){
-    var range=(sk.max||5)-(sk.min||-5);
-    var markCount=(sk.marks||[]).length;
-    // Give more width for wide ranges or many marks
-    W = Math.max(340, Math.min(520, range*30+80));
-    H = 140;
-  }
-
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:'+H+'px">';
+  var W=340,H=220,svg='';
+  svg+='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:220px">';
   svg+='<defs><filter id="hw"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="5" result="n"></feTurbulence>';
   svg+='<feDisplacementMap in="SourceGraphic" in2="n" scale="1.2" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap></filter></defs>';
   var f='filter="url(#hw)"';
@@ -9113,114 +9087,50 @@ function renderSketch(sk){
   }
 
   else if(sk.type==='number_line'){
-    var mn=sk.min||-5,mx2=sk.max||5;
-    // Auto-zoom: if marks cluster in a small area, zoom into them
-    var marks2=sk.marks||[];
-    if(marks2.length>0){
-      var markVals=marks2.map(function(m){ return parseFloat(m.value)||0; });
-      var markMin=Math.min.apply(null,markVals);
-      var markMax=Math.max.apply(null,markVals);
-      var markRange=markMax-markMin;
-      var totalRange=mx2-mn;
-      // Zoom in if marks occupy less than 35% of the span
-      if(markRange>=0 && markRange<totalRange*0.35){
-        var pad3=Math.max(markRange*0.8,0.6);
-        mn=Math.floor((markMin-pad3)*4)/4;
-        mx2=Math.ceil((markMax+pad3)*4)/4;
-      }
-    }
-    // Size width to the range
-    var displayRange=mx2-mn;
-    W=Math.max(300,Math.min(480,displayRange*50+80));
-    H=150;
-    svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:'+H+'px">';
-    svg+='<defs><filter id="hw"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="5" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="1.2" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap></filter></defs>';
-    var pad2=44,y0=H/2,sc2=(W-2*pad2)/(mx2-mn);
-    svg+='<g filter="url(#hw)">';
+    var mn=sk.min||-5,mx2=sk.max||5,pad2=40,y0=H/2,sc2=(W-2*pad2)/(mx2-mn);
+    svg+='<g '+f+'>';
     svg+='<line x1="'+pad2+'" y1="'+y0+'" x2="'+(W-pad2)+'" y2="'+y0+'" stroke="#333" stroke-width="2"></line>';
     svg+='<polygon points="'+(W-pad2)+','+(y0-4)+' '+(W-pad2+8)+','+y0+' '+(W-pad2)+','+(y0+4)+'" fill="#333"></polygon>';
     (sk.highlighted||[]).forEach(function(h){
-      var hx1=pad2+(Math.max(h.from,mn)-mn)*sc2;
-      var hx2=pad2+(Math.min(h.to,mx2)-mn)*sc2;
-      svg+='<line x1="'+hx1.toFixed(1)+'" y1="'+y0+'" x2="'+hx2.toFixed(1)+'" y2="'+y0+'" stroke="#1d6f6f" stroke-width="5" opacity=".4"></line>';
+      svg+='<line x1="'+(pad2+(h.from-mn)*sc2).toFixed(1)+'" y1="'+y0+'" x2="'+(pad2+(h.to-mn)*sc2).toFixed(1)+'" y2="'+y0+'" stroke="#1d6f6f" stroke-width="5" opacity=".4"></line>';
     });
-    // Integer ticks — only those in range
-    var step=displayRange>6?Math.ceil(displayRange/6):1;
-    var firstInt=Math.ceil(mn);
-    for(var i2=firstInt;i2<=Math.floor(mx2);i2+=step){
-      if(i2<mn||i2>mx2) continue;
+    for(var i2=mn;i2<=mx2;i2++){
       var tx=(pad2+(i2-mn)*sc2).toFixed(1);
       svg+='<line x1="'+tx+'" y1="'+(y0-6)+'" x2="'+tx+'" y2="'+(y0+6)+'" stroke="#333" stroke-width="1.5"></line>';
       svg+='<text x="'+tx+'" y="'+(y0+18)+'" text-anchor="middle" font-size="10" fill="#333" font-family="Caveat,cursive">'+i2+'</text>';
     }
-    // Marks — alternate above/below to prevent overlap
-    marks2.forEach(function(m,mi){
-      var val=parseFloat(m.value)||0;
-      if(val<mn||val>mx2) return;
-      var mx3=(pad2+(val-mn)*sc2).toFixed(1);
-      var above=(mi%2===0);
-      var labelY=above?(y0-22):(y0+30);
+    (sk.marks||[]).forEach(function(m){
+      var mx3=(pad2+(m.value-mn)*sc2).toFixed(1);
       if(m.type==='open'){
-        svg+='<circle cx="'+mx3+'" cy="'+y0+'" r="6" fill="white" stroke="#1d6f6f" stroke-width="2"></circle>';
+        svg+='<circle cx="'+mx3+'" cy="'+y0+'" r="6" fill="white" stroke="#1d6f6f" stroke-width="2" filter="url(#hw)"></circle>';
       } else {
-        svg+='<circle cx="'+mx3+'" cy="'+y0+'" r="6" fill="#1d6f6f" stroke="white" stroke-width="1.5"></circle>';
+        svg+='<circle cx="'+mx3+'" cy="'+y0+'" r="6" fill="#1d6f6f" stroke="white" stroke-width="1.5" filter="url(#hw)"></circle>';
       }
-      if(m.label){
-        svg+='<line x1="'+mx3+'" y1="'+(above?y0-7:y0+7)+'" x2="'+mx3+'" y2="'+(above?labelY+3:labelY-3)+'" stroke="#1d6f6f" stroke-width="1" stroke-dasharray="2,2"></line>';
-        svg+='<text x="'+mx3+'" y="'+labelY+'" text-anchor="middle" font-size="11" fill="#1d6f6f" font-weight="700" font-family="Caveat,cursive">'+m.label+'</text>';
-      }
+      if(m.label) svg+='<text x="'+mx3+'" y="'+(y0-14)+'" text-anchor="middle" font-size="10" fill="#1d6f6f" font-weight="700" font-family="Caveat,cursive">'+m.label+'</text>';
     });
     svg+='</g>';
   }
+
   else if(sk.type==='table'){
-    var hdrs=sk.headers||[],rows=sk.rows||[];
-    var cols=hdrs.length||2;
-    // Estimate column width from longest content
-    var maxCellLen=1;
-    hdrs.forEach(function(h){ maxCellLen=Math.max(maxCellLen,String(h).length); });
-    rows.forEach(function(r){ r.forEach(function(cell){ maxCellLen=Math.max(maxCellLen,String(cell).length); }); });
-    var cw2=Math.max(80,Math.min(130,maxCellLen*6.5));
-    W=Math.max(340,cols*cw2+40);
-    // Header rows may need 2 lines — taller row height
-    var rh2=28, hdrH=44; // header taller for wrapping
-    H=Math.max(160,hdrH+(rows.length)*rh2+40);
-    svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:'+H+'px">';
-    svg+='<defs><filter id="hw"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="5" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="1.2" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap></filter></defs>';
-    var sx2=20,sy2=10;
-    svg+='<g font-family="Caveat,cursive">';
+    var hdrs=sk.headers||[],rows=sk.rows||[],cols=hdrs.length||2;
+    var cw2=Math.min(80,(W-40)/cols),rh2=28,sx2=20,sy2=20;
+    svg+='<g font-size="11" fill="#333">';
     hdrs.forEach(function(h,i){
-      svg+='<rect x="'+(sx2+i*cw2)+'" y="'+sy2+'" width="'+cw2+'" height="'+hdrH+'" fill="#1d6f6f" rx="3" filter="url(#hw)"></rect>';
-      // Word-wrap header text into 2 lines
-      var words=String(h).split(' ');
-      var lines=[],cur='';
-      var maxChars=Math.floor(cw2/6.5);
-      words.forEach(function(w){
-        if((cur?cur+' '+w:w).length<=maxChars){ cur=cur?cur+' '+w:w; }
-        else { if(cur) lines.push(cur); cur=w; }
-      });
-      if(cur) lines.push(cur);
-      if(lines.length===1){
-        svg+='<text x="'+(sx2+i*cw2+cw2/2)+'" y="'+(sy2+hdrH/2+4)+'" text-anchor="middle" fill="white" font-weight="700" font-size="10">'+lines[0]+'</text>';
-      } else {
-        lines.slice(0,3).forEach(function(ln,li){
-          var lineY=sy2+(hdrH/(lines.length+1))*(li+1)+3;
-          svg+='<text x="'+(sx2+i*cw2+cw2/2)+'" y="'+lineY+'" text-anchor="middle" fill="white" font-weight="700" font-size="9">'+ln+'</text>';
-        });
-      }
+      svg+='<rect x="'+(sx2+i*cw2)+'" y="'+sy2+'" width="'+cw2+'" height="'+rh2+'" fill="#1d6f6f" rx="3" filter="url(#hw)"></rect>';
+      svg+='<text x="'+(sx2+i*cw2+cw2/2)+'" y="'+(sy2+19)+'" text-anchor="middle" fill="white" font-weight="700">'+h+'</text>';
     });
     rows.forEach(function(row,ri){
-      var ry2=sy2+hdrH+ri*rh2;
+      var ry2=sy2+(ri+1)*rh2;
       row.forEach(function(cell,ci){
         var bg=ri%2===0?'#f0ece4':'#fff';
         svg+='<rect x="'+(sx2+ci*cw2)+'" y="'+ry2+'" width="'+cw2+'" height="'+rh2+'" fill="'+bg+'" stroke="#ddd" stroke-width=".8"></rect>';
-        svg+='<text x="'+(sx2+ci*cw2+cw2/2)+'" y="'+(ry2+rh2/2+4)+'" text-anchor="middle" font-size="10" fill="#333">'+String(cell)+'</text>';
+        svg+='<text x="'+(sx2+ci*cw2+cw2/2)+'" y="'+(ry2+18)+'" text-anchor="middle">'+cell+'</text>';
       });
     });
-    if(sk.annotation){
-      svg+='<text x="'+sx2+'" y="'+(sy2+hdrH+rows.length*rh2+18)+'" fill="#1d6f6f" font-size="10" font-weight="700">'+sk.annotation+'</text>';
-    }
+    if(sk.annotation) svg+='<text x="'+sx2+'" y="'+(sy2+(rows.length+1)*rh2+16)+'" fill="#1d6f6f" font-size="10" font-family="Caveat,cursive" font-weight="700">'+sk.annotation+'</text>';
     svg+='</g>';
   }
+
   else if(sk.type==='wave'){
     var amp2=(sk.amplitude||2)*25,per2=(sk.period||4)*40,cx3=H/2,tot2=per2*2,sx3=(W-tot2)/2;
     var pts4=[];
@@ -9267,7 +9177,7 @@ function renderSketch(sk){
 
 function renderPeerAnnotation(text,persona){
   if(!text) return '';
-  var name=persona||'Peer';
+  var name=persona||(typeof getPeerPersona==='function'?getPeerPersona(S&&S.grade||0,S&&S.subj||'math'):'Peer');
   return '<div class="peer-annotation"><div class="peer-annotation-label">\u270F\uFE0F '+name+'</div>'+text+'</div>';
 }
 
@@ -9962,11 +9872,6 @@ function presRender(slides){
     }
     if(sl.content) html+='<div style="margin-top:.75rem;font-size:.85rem;color:var(--ink3,#5a5a78)">'+sl.content+'</div>';
     html+='</div>';
-  } else if(sl.type==='compiled_lesson'){
-    html=renderCompiledLesson(sl);
-    // Compiled lesson needs its own scroll container
-    card.style.overflowY='auto';
-    card.style.maxHeight='calc(100vh - 120px)';
   } else {
     html='<div class="pres-heading">'+(sl.heading||'')+'</div>';
     if(sl.content) html+='<div class="pres-content">'+sl.content+'</div>';
@@ -9978,10 +9883,6 @@ function presRender(slides){
     var a=annots();
     if(a.drawings&&a.drawings[i]) html+='<div class="pres-annot-img"><img src="'+a.drawings[i]+'" alt="Drawing"></div>';
     if(a.notes&&a.notes[i]) html+='<div class="pres-annot-note">'+a.notes[i]+'</div>';
-  }
-  if(sl.type!=='compiled_lesson'){
-    card.style.overflowY='';
-    card.style.maxHeight='';
   }
   card.innerHTML=html;
   if(note) note.textContent=sl.parentNote||'';
