@@ -445,12 +445,26 @@ async function generateRecipe(){
     });
     var data = await resp.json();
     var raw  = (data.content&&data.content[0]&&data.content[0].text)||'';
-    raw = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-    // Remove control characters and smart quotes
-    raw = raw.replace(/[\x00-\x09\x0b-\x1f\x7f]/g,'');
-    raw = raw.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
-    // Remove trailing commas
-    raw = raw.replace(/,(\s*[}\]])/g,'$1');
+    // Repair common AI JSON errors before parsing
+    raw=raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    raw=raw.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
+    raw=raw.replace(/,(\s*[}\]])/g,'$1');
+    // Walk chars: escape literal newlines/tabs inside string values
+    var _out='',_inStr=false,_esc=false;
+    for(var _i=0;_i<raw.length;_i++){
+      var _ch=raw[_i];
+      if(_esc){_out+=_ch;_esc=false;continue;}
+      if(_ch==='\\'){_esc=true;_out+=_ch;continue;}
+      if(_ch==='"'){_inStr=!_inStr;_out+=_ch;continue;}
+      if(_inStr){
+        if(_ch==='\n'){_out+='\\n';continue;}
+        if(_ch==='\r'){_out+='\\r';continue;}
+        if(_ch==='\t'){_out+='\\t';continue;}
+        if(_ch.charCodeAt(0)<32){continue;}
+      }
+      _out+=_ch;
+    }
+    raw=_out;
     var recipe = JSON.parse(raw);
     recipe.week = w;
     S.drafts[w] = recipe;

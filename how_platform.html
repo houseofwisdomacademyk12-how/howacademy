@@ -8762,20 +8762,32 @@ async function generateWeek(){
 }
 
 
-// ── Robust JSON cleaner for AI responses ─────────────────────────────────────
+// ── Robust JSON repairer for AI responses ───────────────────────────────────
 function cleanAIJson(raw){
   if(!raw) return '{}';
   // Strip markdown fences
-  var s = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-  // Remove control characters inside strings (newlines, tabs within JSON string values)
-  s = s.replace(/[\x00-\x09\x0b-\x1f\x7f]/g,'');
-  // Replace smart quotes with straight quotes
-  s = s.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
-  // Remove trailing commas before } or ]
-  s = s.replace(/,(\s*[}\]])/g,'$1');
-  // Try parse as-is first
-  try { return s; } catch(e) {}
-  return s;
+  var s=raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+  // Smart quotes → straight
+  s=s.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
+  // Trailing commas before } or ]
+  s=s.replace(/,(\s*[}\]])/g,'$1');
+  // Walk character-by-character: inside strings, escape literal newlines/tabs/CR
+  // This is the primary cause of 'Unterminated string' errors from AI output
+  var out='', inStr=false, esc=false;
+  for(var i=0;i<s.length;i++){
+    var ch=s[i];
+    if(esc){ out+=ch; esc=false; continue; }
+    if(ch==='\\'){  esc=true; out+=ch; continue; }
+    if(ch==='"'){  inStr=!inStr; out+=ch; continue; }
+    if(inStr){
+      if(ch==='\n'){ out+='\\n'; continue; }
+      if(ch==='\r'){ out+='\\r'; continue; }
+      if(ch==='\t'){ out+='\\t'; continue; }
+      if(ch.charCodeAt(0)<32){ continue; } // drop other control chars
+    }
+    out+=ch;
+  }
+  return out;
 }
 
 async function generate(){
