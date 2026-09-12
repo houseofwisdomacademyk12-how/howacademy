@@ -1455,9 +1455,22 @@ async function publishTeaching(){
     helpful: 0,
     is_published: true,
   };
-  teachings.push(entry);
-  saveTeachings(teachings);
+  // Strip drawing data URLs from localStorage copy to prevent QuotaExceededError
+  // Drawings are large base64 strings — they go to Supabase; localStorage keeps metadata only
+  const entryForStorage = Object.assign({}, entry, {
+    annotatedSlides: (entry.annotatedSlides||[]).map(function(sl){
+      return Object.assign({}, sl, {drawing: sl.drawing ? '[drawing]' : ''});
+    })
+  });
+  try{
+    teachings.push(entryForStorage);
+    saveTeachings(teachings);
+  } catch(e){
+    toast('⚠ Could not save locally — '+e.message);
+    return;
+  }
   switchTab(document.querySelector('[data-tab=browse]'));
+  toast('✓ Teaching saved to library');
   // Push to the shared table so the Map and other devices can see it.
   const shared = await pushTeachingToSupabase(entry);
   if(shared && shared.id){
@@ -1816,9 +1829,15 @@ async function _howGeneratePrompts(n){
                  band==='68'?'Ages 11-14, thoughtful language':
                  'Ages 14-18, full intellectual depth';
 
-  var sys = 'You are helping a student prepare to teach a slide from their lesson deck. ' +
-    'Generate prompts for the HOW Approach — a structured teaching framework. ' +
-    'The student\'s grade band is: '+bandDesc+'. ' +
+  var sys = 'You are writing prompts for a student who is teaching this slide to their peers. ' +
+    'The student already learned this content — now they are recording their own teaching of it. ' +
+    'Write all work prompts in the second person, directed at the student as the teacher: ' +
+    '"Write your own example...", "Explain in your own words...", "Describe how this connects to..." — ' +
+    'NEVER use "Ask students to...", "Have students...", or classroom-teacher language. ' +
+    'The three approaches are fixed: Give a new example / Explain why it matters / Connect to what you know. ' +
+    'Your job is only to write the specific work1 and work2 prompts for each approach, ' +
+    'tailored to this exact slide type and subject. ' +
+    'Grade band of the student teacher: '+bandDesc+'. ' +
     'Return ONLY valid JSON. No markdown, no backticks, no explanation.';
 
   var prompt = isJuz ?

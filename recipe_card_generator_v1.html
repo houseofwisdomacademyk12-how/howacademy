@@ -424,12 +424,7 @@ async function generateRecipe(){
     'Hadith this week: '+ctx.hadith+'\n'+
     'Math topic (Grade 7): '+ctx.math+'\n'+
     'Social Studies topic: '+ctx.ss+'\n\n'+
-    'Generate one recipe from '+ctx.region+' that connects to '+ctx.scholar+'\'s work.\n'+
-    'VARIETY RULES:\n'+
-    '- Do NOT generate lentil soup, lentil dishes, wheat pudding, or rice pudding.\n'+
-    '- Choose a dish that is distinctive to the scholar\'s specific region and era.\n'+
-    '- Prefer dishes that are less commonly known — not generic Middle Eastern staples.\n'+
-    '- If a dish has already been generated this session, choose something different.';
+    'Generate one recipe from '+ctx.region+' that connects to '+ctx.scholar+'\'s work.';
 
   try{
     if(!S.apiKey){ setStatus('Enter your API key first','err'); if(btn) btn.disabled=false; return; }
@@ -441,16 +436,11 @@ async function generateRecipe(){
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
-      body:JSON.stringify({model:MODEL,max_tokens:1500,system:sys,messages:[{role:'user',content:usr}]})
+      body:JSON.stringify({model:MODEL,max_tokens:1200,system:sys,messages:[{role:'user',content:usr}]})
     });
     var data = await resp.json();
     var raw  = (data.content&&data.content[0]&&data.content[0].text)||'';
     raw = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-    // Remove control characters and smart quotes
-    raw = raw.replace(/[\x00-\x09\x0b-\x1f\x7f]/g,'');
-    raw = raw.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
-    // Remove trailing commas
-    raw = raw.replace(/,(\s*[}\]])/g,'$1');
     var recipe = JSON.parse(raw);
     recipe.week = w;
     S.drafts[w] = recipe;
