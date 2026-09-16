@@ -5327,7 +5327,7 @@ function renderScheduleDay(day){
     sun:`<div class="timeline">
       <span class="studio-arc">يوم الأحد — Week opening · Session 1</span>
       <div class="trow"><div class="ttime">Fajr</div><div class="tblock bsal"><p class="tb-title">✦ Week opening</p><p class="tb-sub">The week opened Saturday night. This is where it steps into motion.</p><button class="tb-launch tl-gold" onclick="openWeekCard()">✦ Week card</button>${btn('Open Sacred Layer','sacred','tl-sacred')}</div></div>
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bsal"><p class="tb-title">الحلقة — The halaqa opens</p><p class="tb-sub">Circle opens. Scholar of the week. Opening question. Pre-answer written in silence.</p>${btn('Open Sahifa','sahifa-sun','tl-sahifa')}</div></div>
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bsal"><p class="tb-title">الحلقة — The halaqa opens</p><p class="tb-sub">Circle opens. Scholar of the week. Opening question. Pre-answer written in silence.</p>${btn('Open Halaqa','halaqa','tl-sahifa')}</div></div>
       <div class="trow"><div class="ttime">8:50</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS1?'<span class="tb-done">✓</span>':''} Session 1</p><p class="tb-sub">${week&&week["math"]?week["math"].substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS1?btn('Open deck','deck','tl-teal',{subj:'math',session:1}):btn('Generate Session 1','gen','tl-gold')}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'math',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">9:45</div><div class="tblock bcor"><p class="tb-title">Science${hasS1?'<span class="tb-done">✓</span>':''} Session 1</p><p class="tb-sub">${week&&week["sci"]?week["sci"].substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS1?btn('Open deck','deck','tl-teal',{subj:'sci',session:1}):btn('Generate Session 1','gen','tl-gold')}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'sci',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">10:40</div><div class="tblock bfre"><p class="tb-title">Break — studios open, unstructured</p></div></div>
@@ -9938,7 +9938,7 @@ function openPres(){
   var _prefix=[];
   if(_vid&&_vid.url) _prefix.push({type:'video',heading:_vid.t||'Video Resource',content:l.title,url:_vid.url});
   if(_pdf&&_pdf.url) _prefix.push({type:'pdf',heading:'Worked Examples',content:l.title,url:_pdf.url});
-  if((S.mode==='teachit'||_schedRole==='student'||_schedRole==='child'||S.role==='student') && S.grade>2){
+  if((S.mode==='teachit'||_schedRole==='student'||_schedRole==='child'||S.role==='student')){
     _prefix.push(buildCompiledSlide(l));
     _prefix.push({type:'teach_it',heading:'Now Teach It',content:l.title});
     _presSlides=_prefix;
