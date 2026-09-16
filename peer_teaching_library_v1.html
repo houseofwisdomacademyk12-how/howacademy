@@ -575,9 +575,48 @@ const SEED = [
 // The samāʿ verification panel is suppressed for example teachings.
 SEED.forEach(function(t){ t.isExample = true; });
 
+// ── Server teachings cache (published by household from Supabase) ─────────────
+var _serverTeachings = [];
+var _serverFetched = false;
+
+async function loadServerTeachings(){
+  if(!sb) return;
+  try{
+    // Fetch ALL published teachings across all households
+    // RLS must allow SELECT on is_published=true rows for any user
+    var res = await sb.from('teaching')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', {ascending:false})
+      .limit(200);
+    if(res.data && res.data.length){
+      // Merge: server teachings that aren't already local
+      var localIds = new Set(getTeachings().map(function(t){ return t.id; }));
+      var newFromServer = res.data.filter(function(r){ return !localIds.has(r.id); });
+      _serverTeachings = newFromServer.map(function(r){
+        return Object.assign({}, r, {
+          fromSupabase: true,
+          teacherInitials: (r.teacher_name||'?').split(' ').map(function(w){ return w[0]||''; }).join('').toUpperCase().slice(0,2),
+          teacherName:    r.teacher_name||'Unknown',
+          teacherGrade:   r.teacher_grade||'',
+          taughtGrade:    r.taught_grade||'',
+          subject:        r.subject||'other',
+          keyIdea:        r.key_idea||'',
+          annotatedSlides:r.annotated_slides||[],
+          openQuestion:   r.open_question||'',
+          disc:           {math:'math',science:'sky',ela:'eng',writing:'eng',social:'hum'}[r.subject]||'eng',
+        });
+      });
+    }
+  }catch(e){ console.warn('Could not load server teachings:', e.message); }
+}
+
 function getAllTeachings(){
   const stored = getTeachings();
-  return [...SEED, ...stored];
+  // Merge local + server, dedup by id
+  var seen = new Set(stored.map(function(t){ return t.id; }));
+  var serverNew = _serverTeachings.filter(function(t){ return !seen.has(t.id); });
+  return [...SEED, ...stored, ...serverNew];
 }
 
 // ── COUNTS ─────────────────────────────────────────────────────────
@@ -637,6 +676,12 @@ function filterGrade(btn){
 
 // ── BROWSE ────────────────────────────────────────────────────────
 function renderBrowse(mc, filter, gradeFilter, searchTerm){
+  if(!_serverFetched){
+    _serverFetched = true;
+    loadServerTeachings().then(function(){
+      renderBrowse(document.getElementById('tab-content'), currentFilter, currentGradeFilter, null);
+    }).catch(function(){});
+  }
   let teachings = getAllTeachings();
   if(filter && filter!=='all'){
     if(filter==='studio') teachings = teachings.filter(t=>t.tags&&t.tags.some(g=>g.toLowerCase().includes('studio')));
@@ -1684,26 +1729,40 @@ function renderAnnotatedDeck(t){
   const slides = t.annotatedSlides || [];
   if(!slides.length) return '<p style="color:#888;font-size:13px;padding:12px 0">No slide annotations saved.</p>';
 
-  // Store on window for navigation
-  window._libDeck = window._libDeck || {};
-  window._libDeck[t.id] = { slides, idx: 0 };
-
-  return `
-    <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <span id="slide-ctr-${t.id}" style="font-size:12px;color:#888">Slide 1 of ${slides.length}</span>
-        <div style="display:flex;gap:8px">
-          <button onclick="libSlideNav('${t.id}',-1)"
-            style="background:var(--teal,#1d6f6f);color:white;border:none;border-radius:6px;padding:4px 16px;cursor:pointer;font-size:15px;font-weight:700">←</button>
-          <button onclick="libSlideNav('${t.id}',1)"
-            style="background:var(--teal,#1d6f6f);color:white;border:none;border-radius:6px;padding:4px 16px;cursor:pointer;font-size:15px;font-weight:700">→</button>
-        </div>
-      </div>
-      <div id="slide-view-${t.id}"
-        style="background:#faf8f4;border:1px solid #e4ddd0;border-radius:10px;padding:18px;min-height:180px">
-        ${renderOneAnnotatedSlide(slides[0], 0)}
-      </div>
-    </div>`;
+  // Compiled scrollable view — all slides at once
+  var html = '<div style="display:flex;flex-direction:column;gap:12px">';
+  slides.forEach(function(s, i){
+    if(!s||!s.type) return;
+    if(s.type==='title'||s.type==='teach_it') return;
+    var bg = s.type==='juz'?'linear-gradient(135deg,#1a1a2e,#2a2a4e)':
+             s.type==='provocation'?'#f9f5ec':'#fff';
+    var col = s.type==='juz'?'white':'#1a1a2e';
+    html += '<div style="background:'+bg+';border:1px solid #e4ddd0;border-radius:10px;padding:14px 16px">';
+    if(s.heading){
+      html += '<p style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:'+(s.type==='juz'?'rgba(255,255,255,.5)':'#1d6f6f')+';margin:0 0 6px">'+s.heading+'</p>';
+    }
+    if(s.content||s.passage){
+      html += '<p style="font-size:.88rem;line-height:1.7;color:'+col+';margin:0 0 8px">'+(s.content||s.passage)+'</p>';
+    }
+    if(s.example){
+      html += '<div style="background:#f0ece4;border-radius:6px;padding:6px 10px;font-size:.85rem;color:#333;margin-bottom:8px">'+s.example+'</div>';
+    }
+    if(s.question){
+      html += '<p style="font-size:.9rem;font-weight:600;color:#1a1a2e;font-style:italic;margin:6px 0">'+s.question+'</p>';
+    }
+    if(s.annotation){
+      html += '<div style="background:#f9f5ec;border-left:3px solid #1d6f6f;border-radius:0 6px 6px 0;padding:6px 10px;font-size:.8rem;color:#555;margin-top:8px">✏️ '+s.annotation+'</div>';
+    }
+    // Canvas drawing
+    if(s.drawings && s.drawings.length){
+      s.drawings.forEach(function(d){
+        html += '<img src="'+d+'" alt="Drawing" style="max-width:100%;height:auto;display:block;border-radius:6px;margin-top:8px">';
+      });
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
 }
 
 function renderOneAnnotatedSlide(sl, idx){

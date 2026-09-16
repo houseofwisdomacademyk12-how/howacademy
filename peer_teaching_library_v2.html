@@ -1485,6 +1485,35 @@ async function publishTeaching(){
 
 // Insert a locally-recorded teaching into the shared `teaching` table.
 // Returns {id} on success, {reason} on failure — never silent.
+
+// ── Person table: find existing or create new ────────────────────────────────
+async function findOrCreatePerson(name, grade, role){
+  if(!sb||!name) return null;
+  var hid = localStorage.getItem('how_household_id');
+  if(!hid) return null;
+  var personRole = role||'student';
+  // Upsert on unique index (household_id, name) — returns id whether insert or existing
+  try{
+    var res = await sb.from('person')
+      .upsert(
+        { household_id: hid, name: name, grade: grade||null, role: personRole },
+        { onConflict: 'household_id,name' }
+      )
+      .select('id')
+      .single();
+    if(res.data && res.data.id) return res.data.id;
+    // Upsert may not return on conflict in some versions — fall back to select
+    var sel = await sb.from('person')
+      .select('id')
+      .eq('household_id', hid)
+      .eq('name', name)
+      .single();
+    return sel.data ? sel.data.id : null;
+  }catch(e){
+    return null;
+  }
+}
+
 async function pushTeachingToSupabase(t){
   if(!sb) return { reason:'Supabase client did not load in this tab.' };
   var jwt = localStorage.getItem('how_jwt');
