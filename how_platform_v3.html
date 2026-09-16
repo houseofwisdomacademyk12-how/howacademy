@@ -391,7 +391,6 @@ body.landing-mode #p-landing{padding:0!important;height:100%}
 .tl-sacred{background:#5c2080!important}
 .tl-studio{background:#2a5a2a!important}
 .tl-peer{background:#1a3d8a!important}
-.tl-sp{background:#3a4a9a!important;color:white!important}
 .tl-sahifa{background:#7a2e1e!important}
 .tb-done{display:inline-block;font-size:10px;font-weight:700;color:#1d6f6f;background:#d0eaea;border-radius:8px;padding:1px 7px;margin-left:6px;vertical-align:middle}
 .timeline{position:relative;padding-left:104px}
@@ -3802,8 +3801,6 @@ async function schedLaunch(action, opts){
 
   } else if(action==='isnad'){
     window.open('how_isnad.html','_blank');
-  } else if(action==='scholarpath'){
-    window.open('scholarpath.html','_blank');
   }
 }
 
@@ -5333,25 +5330,25 @@ function renderScheduleDay(day){
     </div>`,
 
     mon:`<div class="timeline">
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS1?'<span class="tb-done">✓ Session 1</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS1?btn('Open deck','deck','tl-teal',{subj:'math',session:1}):btn('Generate Session 1','gen','tl-gold')}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'math',session:1}):''}</div></div>
-      <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">Science${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS1?btn('Open deck','deck','',{subj:'sci',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'sci',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS1?'<span class="tb-done">✓ Session 1</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','tl-teal',{subj:'math',session:1}):btn('Generate Session 1','gen','tl-gold')}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'math',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">Science${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'sci',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'sci',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">10:00</div><div class="tblock bfre"><p class="tb-title">Break — studios open, unstructured</p></div></div>
-      <div class="trow"><div class="ttime">10:30</div><div class="tblock bcor"><p class="tb-title">ELA / Reading${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ela?week.ela.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS1?btn('Open deck','deck','',{subj:'ela',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ela',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">10:30</div><div class="tblock bcor"><p class="tb-title">ELA / Reading${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ela?week.ela.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'ela',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ela',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
-      <div class="trow"><div class="ttime">13:15</div><div class="tblock bcor"><p class="tb-title">Writing${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS1?btn('Open deck','deck','',{subj:'writing',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'writing',session:1}):''}</div></div>
-      <div class="trow"><div class="ttime">14:00</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS1?btn('Open deck','deck','',{subj:'ss',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ss',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">13:15</div><div class="tblock bcor"><p class="tb-title">Writing${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'writing',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'writing',session:1}):''}</div></div>
+      <div class="trow"><div class="ttime">14:00</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS1?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS1?btn('Open deck','deck','',{subj:'ss',session:1}):''}${hasS1?btn('Workbook','workbook','tl-peer',{subj:'ss',session:1}):''}</div></div>
       <div class="trow"><div class="ttime">14:45</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
       <div class="trow" data-eod="1"><div class="ttime">15:05</div><div class="tblock bpe"><p class="tb-title">Physical Education — Session 1</p><p class="tb-sub">${getPE(week&&week.w||1,1)||'Fitness session — see P.E. curriculum'}</p><div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">${ btn('Al-Aafiya','aafiya','tl-teal') }</div><span class="tb-tag">30 min · teacher-led</span></div></div>
     </div>`,
 
     tue:`<div class="timeline">
-      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS2?'<span class="tb-done">✓ Session 2</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS2?btn('Open deck','deck','tl-teal',{subj:'math',session:2}):btn('Generate Session 2','gen','tl-gold')}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'math',session:2}):''}</div></div>
-      <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">Science${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS2?btn('Open deck','deck','',{subj:'sci',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'sci',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">8:00</div><div class="tblock bcor"><p class="tb-title">Mathematics${hasS2?'<span class="tb-done">✓ Session 2</span>':''}</p><p class="tb-sub">${week&&week.math?week.math.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','tl-teal',{subj:'math',session:2}):btn('Generate Session 2','gen','tl-gold')}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'math',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">9:00</div><div class="tblock bcor"><p class="tb-title">Science${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.sci?week.sci.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'sci',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'sci',session:2}):''}</div></div>
       <div class="trow"><div class="ttime">10:00</div><div class="tblock bfre"><p class="tb-title">Break — studios open, unstructured</p></div></div>
-      <div class="trow"><div class="ttime">10:30</div><div class="tblock bcor"><p class="tb-title">ELA / Reading${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ela?week.ela.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS2?btn('Open deck','deck','',{subj:'ela',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ela',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">10:30</div><div class="tblock bcor"><p class="tb-title">ELA / Reading${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ela?week.ela.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'ela',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ela',session:2}):''}</div></div>
       <div class="trow"><div class="ttime">12:10</div><div class="tblock blun"><p class="tb-title">Dhuhr &amp; lunch</p></div></div>
-      <div class="trow"><div class="ttime">13:00</div><div class="tblock bcor"><p class="tb-title">Writing${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS2?btn('Open deck','deck','',{subj:'writing',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'writing',session:2}):''}</div></div>
-      <div class="trow"><div class="ttime">13:45</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${btn('Open ScholarPath','scholarpath','tl-sp')}${hasS2?btn('Open deck','deck','',{subj:'ss',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ss',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">13:00</div><div class="tblock bcor"><p class="tb-title">Writing${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.writing?week.writing.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'writing',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'writing',session:2}):''}</div></div>
+      <div class="trow"><div class="ttime">13:45</div><div class="tblock bcor"><p class="tb-title">Social Studies${hasS2?'<span class="tb-done">✓</span>':''}</p><p class="tb-sub">${week&&week.ss?week.ss.substring(0,100):'—'}</p>${hasS2?btn('Open deck','deck','',{subj:'ss',session:2}):''}${hasS2?btn('Workbook','workbook','tl-peer',{subj:'ss',session:2}):''}</div></div>
       <div class="trow"><div class="ttime">14:30</div><div class="tblock bpeer"><p class="tb-title">Peer teaching preparation &amp; recording</p><span class="tb-tag">Library grows here</span>${btn('Open Peer Library','peer','tl-peer')}</div></div>
       <div class="trow"><div class="ttime">14:50</div><div class="tblock bsah"><p class="tb-title">Sahifa — daily entry · 20 min</p><p class="tb-sub">Did the Name appear anywhere today?</p><span class="tb-tag">Non-negotiable</span>${btn('Open Sahifa','sahifa','tl-sahifa')}</div></div>
       <div class="trow" data-eod="1"><div class="ttime">15:10</div><div class="tblock bpe"><p class="tb-title">Physical Education — Session 2</p><p class="tb-sub">${getPE(week&&week.w||1,2)||'Fitness session — see P.E. curriculum'}</p><div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">${ btn('Al-Aafiya','aafiya','tl-teal') }</div><span class="tb-tag">30 min · teacher-led</span></div></div>
@@ -8761,70 +8758,6 @@ async function generateWeek(){
   silentSyncAllLessons(g, w, 1); // auto-sync session 1 for all subjects — non-blocking
 }
 
-
-// ── Robust JSON repairer for AI responses ───────────────────────────────────
-function cleanAIJson(raw){
-  if(!raw) return '{}';
-  // Strip markdown fences
-  var s=raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-  // Smart quotes → straight
-  s=s.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
-  // Trailing commas before } or ]
-  s=s.replace(/,(\s*[}\]])/g,'$1');
-  // Walk character-by-character: inside strings, escape literal newlines/tabs/CR
-  // This is the primary cause of 'Unterminated string' errors from AI output
-  var out='', inStr=false, esc=false;
-  for(var i=0;i<s.length;i++){
-    var ch=s[i];
-    if(esc){ out+=ch; esc=false; continue; }
-    if(ch==='\\'){  esc=true; out+=ch; continue; }
-    if(ch==='"'){  inStr=!inStr; out+=ch; continue; }
-    if(inStr){
-      if(ch==='\n'){ out+='\\n'; continue; }
-      if(ch==='\r'){ out+='\\r'; continue; }
-      if(ch==='\t'){ out+='\\t'; continue; }
-      if(ch.charCodeAt(0)<32){ continue; } // drop other control chars
-    }
-    out+=ch;
-  }
-  return out;
-}
-
-
-// ── Safe JSON parser: clean + repair truncated AI responses ──────────────────
-function safeParseJSON(raw){
-  var s = cleanAIJson(raw);
-  // First try: clean parse
-  try{ return JSON.parse(s); }catch(e){}
-  // Second try: repair truncated JSON (find last complete structure)
-  var inStr=false,esc=false,stack=[],lastSafe=-1;
-  for(var i=0;i<s.length;i++){
-    var ch=s[i];
-    if(esc){esc=false;continue;}
-    if(ch==='\\'){esc=true;continue;}
-    if(ch==='"'){inStr=!inStr;continue;}
-    if(inStr) continue;
-    if(ch==='{'||ch==='[') stack.push(ch==='{'?'}':']');
-    else if(ch==='}'||ch===']') stack.pop();
-    else if(ch===','&&stack.length) lastSafe=i;
-  }
-  var body=lastSafe>0?s.slice(0,lastSafe):s;
-  // Recompute open brackets for the trimmed body
-  inStr=false;esc=false;stack=[];
-  for(var j=0;j<body.length;j++){
-    var c2=body[j];
-    if(esc){esc=false;continue;}
-    if(c2==='\\'){esc=true;continue;}
-    if(c2==='"'){inStr=!inStr;continue;}
-    if(inStr) continue;
-    if(c2==='{'||c2==='[') stack.push(c2==='{'?'}':']');
-    else if(c2==='}'||c2===']') stack.pop();
-  }
-  if(inStr) body+='"';
-  while(stack.length) body+=stack.pop();
-  try{ return JSON.parse(body); }catch(e2){ return {}; }
-}
-
 async function generate(){
   if(S.subj==='synthesis'){ generateThursday(); return; }
   var btn=document.getElementById('gen-btn');
@@ -8942,11 +8875,11 @@ async function generate(){
   var gp=getGradePrefix(g);
   try{
     if(msg)msg.textContent='Generating lesson deck… (1/2)';
-    var dRaw=await callAPI(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(s)+'\n\nJSON only.',Math.min(getSlideCount(g)*700+2000,8000));
-    var deck=safeParseJSON(dRaw);
+    var dRaw=await callAPI(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(s)+'\n\nJSON only.');
+    var deck=JSON.parse(dRaw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim());
     if(msg)msg.textContent='Generating student workbook… (2/2)';
     var wRaw=await callAPI(sys,gp+'Generate the student workbook:\n\n'+ctx+'\nLesson: '+(deck.title||topic)+'\n\n'+getWBSchema(s,g)+'\n\nJSON only — return object with single "workbook" key.');
-    var wb=safeParseJSON(wRaw);
+    var wb=JSON.parse(wRaw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim());
     var rawSlides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
     // Overwrite juz slide fields with exact platform data — never trust AI to get these right
     if(sessionNum===1){
@@ -9242,65 +9175,49 @@ function renderSketch(sk){
   else if(sk.type==='table'){
     var hdrs=sk.headers||[],rows=sk.rows||[];
     var cols=hdrs.length||2;
-    // Helper: wrap text into lines given max chars per line
-    function wrapCellText(text,maxChars){
-      var words=String(text).split(' ');
-      var lines=[],cur='';
-      words.forEach(function(w){
-        var candidate=cur?cur+' '+w:w;
-        if(candidate.length<=maxChars){cur=candidate;}
-        else{if(cur) lines.push(cur); cur=w;}
-      });
-      if(cur) lines.push(cur);
-      return lines.length?lines:[''];
-    }
-    // Column width: fit total SVG width
-    var cw2=Math.max(80,Math.min(130,Math.floor((W-40)/cols)));
-    var maxCharsPerCell=Math.max(8,Math.floor(cw2/6.5));
-    var lineH=14, cellPad=8;
-    // Pre-calculate lines for every cell to know row heights
-    var hdrLines=hdrs.map(function(h){return wrapCellText(h,maxCharsPerCell);});
-    var hdrH=(Math.max.apply(null,hdrLines.map(function(l){return l.length;}))||1)*lineH+cellPad*2;
-    var rowLinesData=rows.map(function(row){
-      return row.map(function(cell){return wrapCellText(cell,maxCharsPerCell);});
-    });
-    var rowHeights=rowLinesData.map(function(rowLines){
-      var maxL=Math.max.apply(null,rowLines.map(function(l){return l.length;}));
-      return Math.max(1,maxL)*lineH+cellPad*2;
-    });
-    // Total height
-    var totalH=hdrH+rowHeights.reduce(function(a,b){return a+b;},0)+30;
+    // Estimate column width from longest content
+    var maxCellLen=1;
+    hdrs.forEach(function(h){ maxCellLen=Math.max(maxCellLen,String(h).length); });
+    rows.forEach(function(r){ r.forEach(function(cell){ maxCellLen=Math.max(maxCellLen,String(cell).length); }); });
+    var cw2=Math.max(80,Math.min(130,maxCellLen*6.5));
     W=Math.max(340,cols*cw2+40);
-    H=Math.max(160,totalH);
-    svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:'+Math.min(H,320)+'px">';
+    // Header rows may need 2 lines — taller row height
+    var rh2=28, hdrH=44; // header taller for wrapping
+    H=Math.max(160,hdrH+(rows.length)*rh2+40);
+    svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:'+H+'px">';
     svg+='<defs><filter id="hw"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="5" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="1.2" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap></filter></defs>';
     var sx2=20,sy2=10;
     svg+='<g font-family="Caveat,cursive">';
-    // Header row
     hdrs.forEach(function(h,i){
-      svg+='<rect x="'+(sx2+i*cw2)+'" y="'+sy2+'" width="'+cw2+'" height="'+hdrH+'" fill="#1d6f6f" rx="3"></rect>';
-      var lines=hdrLines[i];
-      lines.forEach(function(ln,li){
-        var ty=sy2+cellPad+(li+0.75)*lineH+(hdrH-cellPad*2-lines.length*lineH)/2;
-        svg+='<text x="'+(sx2+i*cw2+cw2/2)+'" y="'+ty.toFixed(1)+'" text-anchor="middle" fill="white" font-weight="700" font-size="9">'+ln+'</text>';
+      svg+='<rect x="'+(sx2+i*cw2)+'" y="'+sy2+'" width="'+cw2+'" height="'+hdrH+'" fill="#1d6f6f" rx="3" filter="url(#hw)"></rect>';
+      // Word-wrap header text into 2 lines
+      var words=String(h).split(' ');
+      var lines=[],cur='';
+      var maxChars=Math.floor(cw2/6.5);
+      words.forEach(function(w){
+        if((cur?cur+' '+w:w).length<=maxChars){ cur=cur?cur+' '+w:w; }
+        else { if(cur) lines.push(cur); cur=w; }
       });
-    });
-    // Data rows
-    var curY=sy2+hdrH;
-    rowLinesData.forEach(function(rowLines,ri){
-      var rh=rowHeights[ri];
-      rowLines.forEach(function(lines,ci){
-        var bg=ri%2===0?'#f0ece4':'#fff';
-        svg+='<rect x="'+(sx2+ci*cw2)+'" y="'+curY+'" width="'+cw2+'" height="'+rh+'" fill="'+bg+'" stroke="#ddd" stroke-width=".8"></rect>';
-        lines.forEach(function(ln,li){
-          var ty=curY+cellPad+(li+0.75)*lineH+(rh-cellPad*2-lines.length*lineH)/2;
-          svg+='<text x="'+(sx2+ci*cw2+cw2/2)+'" y="'+ty.toFixed(1)+'" text-anchor="middle" font-size="9" fill="#333">'+ln+'</text>';
+      if(cur) lines.push(cur);
+      if(lines.length===1){
+        svg+='<text x="'+(sx2+i*cw2+cw2/2)+'" y="'+(sy2+hdrH/2+4)+'" text-anchor="middle" fill="white" font-weight="700" font-size="10">'+lines[0]+'</text>';
+      } else {
+        lines.slice(0,3).forEach(function(ln,li){
+          var lineY=sy2+(hdrH/(lines.length+1))*(li+1)+3;
+          svg+='<text x="'+(sx2+i*cw2+cw2/2)+'" y="'+lineY+'" text-anchor="middle" fill="white" font-weight="700" font-size="9">'+ln+'</text>';
         });
+      }
+    });
+    rows.forEach(function(row,ri){
+      var ry2=sy2+hdrH+ri*rh2;
+      row.forEach(function(cell,ci){
+        var bg=ri%2===0?'#f0ece4':'#fff';
+        svg+='<rect x="'+(sx2+ci*cw2)+'" y="'+ry2+'" width="'+cw2+'" height="'+rh2+'" fill="'+bg+'" stroke="#ddd" stroke-width=".8"></rect>';
+        svg+='<text x="'+(sx2+ci*cw2+cw2/2)+'" y="'+(ry2+rh2/2+4)+'" text-anchor="middle" font-size="10" fill="#333">'+String(cell)+'</text>';
       });
-      curY+=rh;
     });
     if(sk.annotation){
-      svg+='<text x="'+sx2+'" y="'+(curY+16)+'" fill="#1d6f6f" font-size="10" font-weight="700">'+sk.annotation+'</text>';
+      svg+='<text x="'+sx2+'" y="'+(sy2+hdrH+rows.length*rh2+18)+'" fill="#1d6f6f" font-size="10" font-weight="700">'+sk.annotation+'</text>';
     }
     svg+='</g>';
   }
