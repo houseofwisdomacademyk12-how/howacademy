@@ -620,7 +620,8 @@ var _serverFetched = false;
 async function loadServerTeachings(){
   if(!sb) return;
   try{
-    // All published teachings across all households (RLS confirmed working)
+    // Fetch ALL published teachings across all households
+    // RLS must allow SELECT on is_published=true rows for any user
     var res = await sb.from('teaching')
       .select('*')
       .eq('is_published', true)
@@ -1792,9 +1793,11 @@ function renderAnnotatedDeck(t){
     if(s.annotation){
       html += '<div style="background:#f9f5ec;border-left:3px solid #1d6f6f;border-radius:0 6px 6px 0;padding:6px 10px;font-size:.8rem;color:#555;margin-top:8px">✏️ '+s.annotation+'</div>';
     }
-    // Canvas drawing (stored as s.drawing singular)
-    if(s.drawing){
-      html += '<img src="'+s.drawing+'" alt="Drawing" style="max-width:100%;height:auto;display:block;border-radius:6px;margin-top:8px">';
+    // Canvas drawing
+    if(s.drawings && s.drawings.length){
+      s.drawings.forEach(function(d){
+        html += '<img src="'+d+'" alt="Drawing" style="max-width:100%;height:auto;display:block;border-radius:6px;margin-top:8px">';
+      });
     }
     html += '</div>';
   });
@@ -2796,157 +2799,6 @@ try{
 }catch(e){}
 </script>
 
-<script>
-// ── PTL Ustadh feedback ───────────────────────────────────────────────────────
-var _ptlUstadhHistory = [];
-
-function ptlToggleUstadh(){
-  var d = document.getElementById('ptl-udh-drawer');
-  if(d) d.classList.toggle('open');
-}
-
-function ptlAddMsg(text, cls){
-  var box = document.getElementById('ptl-udh-msgs');
-  if(!box) return;
-  var el = document.createElement('div');
-  el.className = 'ptl-udh-msg ' + cls;
-  el.textContent = text;
-  box.appendChild(el);
-  box.scrollTop = box.scrollHeight;
-  return el;
-}
-
-async function ptlCallAPI(sys, usr){
-  var key = '';
-  try{ key = localStorage.getItem('how_api_key')||''; }catch(e){}
-  var body = JSON.stringify({
-    model:'claude-sonnet-4-6', max_tokens:500,
-    system: sys,
-    messages: [{role:'user', content: usr}]
-  });
-  var r;
-  if(key){
-    r = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json',
-               'anthropic-dangerous-direct-browser-access':'true',
-               'anthropic-version':'2023-06-01','x-api-key':key},
-      body: body
-    });
-  } else {
-    r = await fetch('https://how-proxy-production.up.railway.app/api/generate', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: body
-    });
-  }
-  if(!r.ok) throw new Error('API error ' + r.status);
-  var data = await r.json();
-  return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
-}
-
-async function ptlGetSlideFeedback(n){
-  var saved = _howResponses[n] || {};
-  var deckSlides = draftTeaching._howDeckSlides || [];
-  var deckSlide  = deckSlides[n-1] || null;
-  var slideHeading = deckSlide ? (deckSlide.heading||'Slide '+n) : ('Slide '+n);
-  var work1 = (document.getElementById('how-w1-'+n)||{}).value || saved.work1 || '';
-  var work2 = (document.getElementById('how-w2-'+n)||{}).value || saved.work2 || '';
-  var slideContent = deckSlide ? (deckSlide.content||deckSlide.passage||'') : '';
-  var approachLabel = '';
-  try{
-    var cache = _howAICache[n]||{};
-    var apps = (cache.prompts||{}).approaches||[];
-    if(saved.approachIdx!==undefined) approachLabel = (apps[saved.approachIdx]||{}).label||'';
-  }catch(e){}
-
-  if(!work1.trim() && !work2.trim()){
-    toast('Write your response first, then ask for feedback');
-    return;
-  }
-
-  var drawer = document.getElementById('ptl-udh-drawer');
-  var ctx    = document.getElementById('ptl-udh-ctx');
-  if(drawer && !drawer.classList.contains('open')) ptlToggleUstadh();
-  if(ctx) ctx.textContent = 'Slide ' + n + ' · ' + slideHeading;
-
-  var thinking = ptlAddMsg('Reading your teaching…', 'ai thinking');
-
-  var sys = 'You are Ustadh, a wise and warm teacher at House of Wisdom Academy. '
-    + 'A student is recording a peer teaching slide by slide. '
-    + 'Speak directly to this student, not to a facilitator or parent. '
-    + 'Your tone is that of a mentor who believes in them. '
-    + 'For this slide: name one thing they did well, one thing that could be clearer, '
-    + 'and one concrete suggestion for next time. '
-    + 'Be specific — quote their actual words when you can. '
-    + 'Keep your response to 100 words. Write in flowing sentences, no bullet points.';
-
-  var usr = 'Subject: ' + (draftTeaching.subject||'')
-    + '\nSlide ' + n + ': ' + slideHeading
-    + '\nSlide content: ' + slideContent
-    + (approachLabel ? '\nApproach chosen: ' + approachLabel : '')
-    + '\nStudent wrote:\n' + work1
-    + (work2 ? '\n' + work2 : '');
-
-  _ptlUstadhHistory = [{role:'user', content: usr}];
-
-  try{
-    var raw = await ptlCallAPI(sys, usr);
-    if(thinking) thinking.remove();
-    ptlAddMsg(raw, 'ai');
-    _ptlUstadhHistory.push({role:'assistant', content: raw});
-  }catch(e){
-    if(thinking) thinking.remove();
-    ptlAddMsg('Sorry, could not get feedback: ' + e.message, 'ai');
-  }
-}
-
-async function ptlUstadhSend(){
-  var inp = document.getElementById('ptl-udh-input');
-  var btn = document.getElementById('ptl-udh-send');
-  if(!inp || !inp.value.trim()) return;
-  var msg = inp.value.trim();
-  inp.value = '';
-  ptlAddMsg(msg, 'user');
-  _ptlUstadhHistory.push({role:'user', content: msg});
-  if(btn) btn.disabled = true;
-  var thinking = ptlAddMsg('Thinking…', 'ai thinking');
-
-  var sys = 'You are Ustadh, a wise and warm mentor at House of Wisdom Academy. '
-    + 'You are in a follow-up conversation with a student about their peer teaching. '
-    + 'Continue the conversation naturally. Be specific and encouraging. 80 words max.';
-
-  var messages = _ptlUstadhHistory.slice();
-  var body = JSON.stringify({
-    model:'claude-sonnet-4-6', max_tokens:400,
-    system: sys, messages: messages
-  });
-  try{
-    var key = ''; try{ key=localStorage.getItem('how_api_key')||''; }catch(e){}
-    var r;
-    if(key){
-      r = await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json',
-                 'anthropic-dangerous-direct-browser-access':'true',
-                 'anthropic-version':'2023-06-01','x-api-key':key},
-        body: body
-      });
-    } else {
-      r = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
-        method:'POST', headers:{'Content-Type':'application/json'}, body: body
-      });
-    }
-    var data = await r.json();
-    var reply = (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
-    if(thinking) thinking.remove();
-    ptlAddMsg(reply, 'ai');
-    _ptlUstadhHistory.push({role:'assistant', content: reply});
-  }catch(e){
-    if(thinking) thinking.remove();
-    ptlAddMsg('Could not reach Ustadh: ' + e.message, 'ai');
-  }
-  if(btn) btn.disabled = false;
-}
-</script>
 <!-- Ustadh feedback drawer -->
 <button class="ptl-ustadh-fab" id="ptl-udh-fab" onclick="ptlToggleUstadh()">
   <span>☪</span><span>Get Feedback</span>
