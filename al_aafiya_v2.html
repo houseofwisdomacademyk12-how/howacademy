@@ -552,7 +552,7 @@ var APP = {
   week: 1,
   grade: 7,
   band: '68',
-  day: 1,       // 1=Sun,2=Mon,3=Tue,4=Wed
+  day: 1,       // 1=Mon,2=Tue,3=Wed,4=Thu
   juz: {},
   record: {},   // this week's wellness record
   effort: null,
@@ -567,14 +567,6 @@ function getBand(g){
   if(g<=8) return '68';
   return '912';
 }
-function getLevel(g){
-  if(g<=3) return 'grow';
-  if(g<=8) return 'build';
-  return 'thrive';
-}
-var LEVEL_LABELS = {grow:'🌱 Grow',build:'🏗 Build',thrive:'🌟 Thrive'};
-var LEVEL_GRADES = {grow:'K–3 · Ages 5–8',build:'Grades 4–8 · Ages 8–12',thrive:'Grades 9–12 · Ages 12–18'};
-
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 (async function init(){
@@ -594,15 +586,9 @@ var LEVEL_GRADES = {grow:'K–3 · Ages 5–8',build:'Grades 4–8 · Ages 8–1
   try{ wRaw = parseInt(localStorage.getItem('how_current_week')||'1'); }catch(e){}
   APP.week = wRaw || 1;
 
-  // Use schedule-passed day first, fall back to clock
-  var _passedDay = null;
-  try{ _passedDay = parseInt(localStorage.getItem('how_pe_day'))||null; localStorage.removeItem('how_pe_day'); }catch(e){}
-  if(_passedDay && _passedDay >= 1 && _passedDay <= 4){
-    APP.day = _passedDay;
-  } else {
-    var dow = new Date().getDay(); // 0=Sun,1=Mon…5=Fri,6=Sat
-    APP.day = (dow >= 1 && dow <= 4) ? dow : 1;
-  }
+  // Determine day of week (1=Mon…4=Thu, clamp to 1-4)
+  var dow = new Date().getDay(); // 0=Sun,1=Mon…5=Fri,6=Sat
+  APP.day = (dow >= 1 && dow <= 4) ? dow : 1;
 
   // Load JUZ data
   APP.juz = JUZ[APP.week-1] || {};
@@ -676,20 +662,25 @@ function renderSession(){
   var w=APP.week, d=APP.day;
   var pe = PE_CURR[w]||{};
   var title = pe['pe'+d] || 'Fitness session — see P.E. curriculum';
-  var dayName = ['Sunday','Monday','Tuesday','Wednesday'][d-1]||'Today';
+  var dayName = ['Monday','Tuesday','Wednesday','Thursday'][d-1]||'Today';
 
   document.getElementById('sess-label').textContent = dayName+' · Session '+d+' of 4';
   document.getElementById('sess-title').textContent = title.split(':').slice(1).join(':').trim() || title;
   document.getElementById('sess-meta').textContent  = '30 min · teacher-led · Week '+w;
 
-  // Fetch video URL from Supabase (level-scoped, not grade-specific)
+  // Check for video URL — grade-specific
+  var lsKey = 'how_pe_w'+w+'_g'+APP.grade+'_d'+d;
+  var url = '';
+  try{ url = localStorage.getItem(lsKey)||''; }catch(e){}
+  APP._peUrl = url;
+
   var mc = document.getElementById('media-container');
-  mc.innerHTML = '<div class="no-video" style="opacity:.5">Loading video…</div>';
-  var level = getLevel(APP.grade);
-  fetchPeVideo(level, w, d).then(function(url){
-    APP._peUrl = url;
-    renderPeMedia(url);
-  });
+  if(!url){
+    mc.innerHTML = '<div class="no-video">No video set for this session yet.<br>Your facilitator will add one.</div>';
+  } else {
+    // Render inline (collapsed until play pressed)
+    mc.innerHTML = '';
+  }
 
   // Restore effort
   if(APP.effort){
@@ -723,7 +714,7 @@ function selEffort(btn, val){
 
 // ── HISTORY STRIP ────────────────────────────────────────────────────────────
 function renderHistory(){
-  var days = ['Sun','Mon','Tue','Wed'];
+  var days = ['Mon','Tue','Wed','Thu'];
   var html = '';
   days.forEach(function(day,i){
     var dayIdx = i+1;
@@ -752,7 +743,7 @@ function renderMovement(){
   var bandLabel = {k2:'Grow · K–2',35:'Build · 3–5',68:'Build · 6–8',912:'Thrive · 9–12'}[APP.band]||'';
   document.getElementById('move-sub').textContent = bandLabel+' · Week '+w+' movement sessions';
   var html = '';
-  ['Sunday','Monday','Tuesday','Wednesday'].forEach(function(day,i){
+  ['Monday','Tuesday','Wednesday','Thursday'].forEach(function(day,i){
     var d = i+1;
     var key = 'pe'+d;
     var title = (pe[key]||'Fitness session').split(':').slice(1).join(':').trim() || pe[key]||'Fitness session';
@@ -969,7 +960,7 @@ function updateDhikrDisplay(){
   var el = document.getElementById('dhikr-count-display');
   var btn = document.getElementById('dhikr-tap-btn');
   if(el) el.textContent = APP._dhikrCount;
-  if(btn) btn.textContent = toArabicNums(APP._dhikrCount);
+  if(btn) btn.textContent = toArabicNums(APP._dhikrCount+1 <= APP._dhikrTarget ? APP._dhikrCount+1 : APP._dhikrTarget);
   // Progress colour
   var pct = APP._dhikrTarget ? APP._dhikrCount/APP._dhikrTarget : 0;
   if(btn){
@@ -1075,175 +1066,6 @@ function toast(msg){
   t.textContent=msg; t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); }, 2400);
 }
-
-// ── PE Video — Supabase fetch ─────────────────────────────────────────────────
-async function fetchPeVideo(level, week, session){
-  try{
-    if(typeof _sb === 'undefined' || !_sb) return '';
-    var res = await _sb.from('pe_video')
-      .select('url')
-      .eq('level', level)
-      .eq('week', week)
-      .eq('session', session)
-      .maybeSingle();
-    return (res.data && res.data.url) ? res.data.url : '';
-  }catch(e){ return ''; }
-}
-
-function driveEmbedUrl(raw){
-  // Convert any Google Drive share/view/edit URL to embed preview URL
-  var m = raw.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/);
-  if(m) return 'https://drive.google.com/file/d/'+m[1]+'/preview';
-  return raw; // pass through non-Drive URLs
-}
-
-function renderPeMedia(url){
-  var mc = document.getElementById('media-container');
-  if(!mc) return;
-  if(!url){
-    mc.innerHTML = '<div class="no-video">No video for this session yet.<br>Check back soon.</div>';
-    return;
-  }
-  var embed = driveEmbedUrl(url);
-  mc.innerHTML =
-    '<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;background:#000">'+
-    '<iframe src="'+embed+'" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" '+
-    'allow="autoplay" allowfullscreen></iframe></div>';
-}
-
-// ── Admin — PE video URL manager ──────────────────────────────────────────────
-function isAdmin(){
-  try{ return localStorage.getItem('how_profile_role')==='admin'; }catch(e){ return false; }
-}
-
-function initAdminUI(){
-  if(!isAdmin()) return;
-  // Add gear button to header
-  var hdr = document.querySelector('.aaf-hdr') || document.body;
-  var gear = document.createElement('button');
-  gear.id = 'pe-admin-gear';
-  gear.innerHTML = '⚙';
-  gear.title = 'Manage PE videos (admin)';
-  gear.style.cssText = 'position:fixed;top:14px;right:14px;z-index:999;background:rgba(255,255,255,.15);'+
-    'border:none;color:white;font-size:1.2rem;border-radius:50%;width:36px;height:36px;cursor:pointer;'+
-    'display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
-  gear.onclick = function(){ openPeAdmin(); };
-  document.body.appendChild(gear);
-}
-
-function openPeAdmin(){
-  var overlay = document.getElementById('pe-admin-overlay');
-  if(overlay){ overlay.style.display='flex'; loadAdminPanel(); return; }
-
-  overlay = document.createElement('div');
-  overlay.id = 'pe-admin-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);'+
-    'display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
-  overlay.innerHTML =
-    '<div style="background:#fff;border-radius:16px;max-width:680px;width:100%;padding:24px;position:relative">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">'+
-        '<div><h2 style="font-size:1.1rem;font-weight:800;margin:0">PE Video URLs</h2>'+
-        '<p style="font-size:.75rem;color:#888;margin:4px 0 0">Paste Google Drive share links — auto-converted to embed format</p></div>'+
-        '<button onclick="closePeAdmin()" style="background:#f0f0f0;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700">✕ Close</button>'+
-      '</div>'+
-      '<div style="display:flex;gap:8px;margin-bottom:16px" id="pe-admin-level-tabs">'+
-        '<button class="pe-lvl-tab active" data-lvl="grow" onclick="setAdminLevel(\'grow\',this)">🌱 Grow</button>'+
-        '<button class="pe-lvl-tab" data-lvl="build" onclick="setAdminLevel(\'build\',this)">🏗 Build</button>'+
-        '<button class="pe-lvl-tab" data-lvl="thrive" onclick="setAdminLevel(\'thrive\',this)">🌟 Thrive</button>'+
-      '</div>'+
-      '<div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">'+
-        '<label style="font-size:.8rem;font-weight:700">Week</label>'+
-        '<select id="pe-admin-week" onchange="loadAdminPanel()" style="border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:.85rem">'+
-          [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]
-            .map(function(w){return '<option value="'+w+'">Week '+w+'</option>';}).join('')+
-        '</select>'+
-      '</div>'+
-      '<div id="pe-admin-sessions"></div>'+
-    '</div>'+
-    '<style>'+
-    '.pe-lvl-tab{padding:6px 16px;border:1.5px solid #e0e0e0;border-radius:20px;background:#fff;cursor:pointer;font-size:.82rem;font-weight:700;color:#555}'+
-    '.pe-lvl-tab.active{background:#1d6f6f;color:#fff;border-color:#1d6f6f}'+
-    '</style>';
-  document.body.appendChild(overlay);
-  window._peAdminLevel = 'grow';
-  loadAdminPanel();
-}
-
-function closePeAdmin(){
-  var o = document.getElementById('pe-admin-overlay');
-  if(o) o.style.display='none';
-}
-
-function setAdminLevel(lvl, btn){
-  window._peAdminLevel = lvl;
-  document.querySelectorAll('.pe-lvl-tab').forEach(function(b){
-    b.classList.toggle('active', b.dataset.lvl===lvl);
-  });
-  loadAdminPanel();
-}
-
-async function loadAdminPanel(){
-  var level = window._peAdminLevel || 'grow';
-  var weekEl = document.getElementById('pe-admin-week');
-  var week = weekEl ? parseInt(weekEl.value)||1 : 1;
-  var sess = document.getElementById('pe-admin-sessions');
-  if(!sess) return;
-
-  sess.innerHTML = '<p style="font-size:.8rem;color:#aaa">Loading…</p>';
-
-  // Fetch existing URLs for this level+week
-  var existing = {};
-  try{
-    var res = await _sb.from('pe_video').select('session,url')
-      .eq('level',level).eq('week',week);
-    if(res.data) res.data.forEach(function(r){ existing[r.session]=r.url||''; });
-  }catch(e){}
-
-  var html = '';
-  for(var s=1;s<=4;s++){
-    var val = existing[s]||'';
-    html +=
-      '<div style="margin-bottom:14px">'+
-        '<label style="font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#1d6f6f;display:block;margin-bottom:5px">'+
-          'Session '+s+'</label>'+
-        '<div style="display:flex;gap:8px">'+
-          '<input id="pe-url-'+s+'" type="text" value="'+val.replace(/"/g,'&quot;')+'" '+
-            'placeholder="Paste Google Drive share URL…" '+
-            'style="flex:1;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:.82rem">'+
-          '<button onclick="savePeUrl('+s+')" '+
-            'style="padding:8px 16px;background:#1d6f6f;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.82rem">'+
-            'Save</button>'+
-        '</div>'+
-        (val?'<p style="font-size:.7rem;color:#1d6f6f;margin:3px 0 0">✓ URL set — <a href="'+driveEmbedUrl(val)+'" target="_blank" style="color:#1d6f6f">preview</a></p>':'<p style="font-size:.7rem;color:#bbb;margin:3px 0 0">No URL yet</p>')+
-      '</div>';
-  }
-  sess.innerHTML = html;
-}
-
-async function savePeUrl(session){
-  var level = window._peAdminLevel || 'grow';
-  var weekEl = document.getElementById('pe-admin-week');
-  var week = weekEl ? parseInt(weekEl.value)||1 : 1;
-  var input = document.getElementById('pe-url-'+session);
-  if(!input) return;
-  var url = input.value.trim();
-
-  try{
-    var res = await _sb.from('pe_video').upsert({
-      level: level, week: week, session: session,
-      url: url, updated_at: new Date().toISOString()
-    }, {onConflict:'level,week,session'});
-    if(res.error) throw res.error;
-    input.style.borderColor = '#1d6f6f';
-    setTimeout(function(){ input.style.borderColor=''; loadAdminPanel(); }, 800);
-  }catch(e){
-    alert('Save failed: '+e.message);
-  }
-}
-
-// Init admin UI on load
-document.addEventListener('DOMContentLoaded', function(){ initAdminUI(); });
-
 </script>
 </body>
 </html>

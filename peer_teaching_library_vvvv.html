@@ -860,22 +860,8 @@ function teachingCard(t){
 // ── DETAIL ────────────────────────────────────────────────────────
 function openTeaching(id){
   const all = getAllTeachings();
-  let t = all.find(x=>x.id===id);
+  const t = all.find(x=>x.id===id);
   if(!t) return;
-  // If drawings are placeholders, fetch full data from Supabase first
-  const hasPlaceholders = (t.annotatedSlides||[]).some(function(s){ return s.drawing==='[drawing]'; });
-  if(hasPlaceholders && sb && t.id && /^[0-9a-f-]{36}$/.test(t.id)){
-    sb.from('teaching').select('annotated_slides').eq('id',t.id).single().then(function(res){
-      if(res.data && res.data.annotated_slides){
-        t = Object.assign({},t,{annotatedSlides:res.data.annotated_slides});
-      }
-      _renderTeachingDetail(t);
-    }).catch(function(){ _renderTeachingDetail(t); });
-    return;
-  }
-  _renderTeachingDetail(t);
-}
-function _renderTeachingDetail(t){
   const mc = document.getElementById('tab-content');
   const discClass = 'badge-disc-'+t.disc;
   const avatarColors = {math:['#EEEDFE','#3C3489'],sky:['#E1F5EE','#085041'],eng:['#FAEEDA','#633806'],med:['#E6F1FB','#0C447C'],hum:['#FAECE7','#712B13']};
@@ -1814,8 +1800,8 @@ function renderAnnotatedDeck(t){
     if(s.annotation){
       html += '<div style="background:#f9f5ec;border-left:3px solid #1d6f6f;border-radius:0 6px 6px 0;padding:6px 10px;font-size:.8rem;color:#555;margin-top:8px">✏️ '+s.annotation+'</div>';
     }
-    // Canvas drawing — only render if it's a real data URI (not '[drawing]' placeholder)
-    if(s.drawing && s.drawing.startsWith('data:')){
+    // Canvas drawing — use data-drawing to avoid innerHTML truncation of long base64
+    if(s.drawing){
       var dIdx = drawingIndex++;
       drawingData.push(s.drawing);
       html += '<img id="ptl-drw-'+dIdx+'" alt="Drawing" style="max-width:100%;height:auto;display:block;border-radius:6px;margin-top:8px">';

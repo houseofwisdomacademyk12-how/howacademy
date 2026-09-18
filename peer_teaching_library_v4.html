@@ -860,22 +860,8 @@ function teachingCard(t){
 // ── DETAIL ────────────────────────────────────────────────────────
 function openTeaching(id){
   const all = getAllTeachings();
-  let t = all.find(x=>x.id===id);
+  const t = all.find(x=>x.id===id);
   if(!t) return;
-  // If drawings are placeholders, fetch full data from Supabase first
-  const hasPlaceholders = (t.annotatedSlides||[]).some(function(s){ return s.drawing==='[drawing]'; });
-  if(hasPlaceholders && sb && t.id && /^[0-9a-f-]{36}$/.test(t.id)){
-    sb.from('teaching').select('annotated_slides').eq('id',t.id).single().then(function(res){
-      if(res.data && res.data.annotated_slides){
-        t = Object.assign({},t,{annotatedSlides:res.data.annotated_slides});
-      }
-      _renderTeachingDetail(t);
-    }).catch(function(){ _renderTeachingDetail(t); });
-    return;
-  }
-  _renderTeachingDetail(t);
-}
-function _renderTeachingDetail(t){
   const mc = document.getElementById('tab-content');
   const discClass = 'badge-disc-'+t.disc;
   const avatarColors = {math:['#EEEDFE','#3C3489'],sky:['#E1F5EE','#085041'],eng:['#FAEEDA','#633806'],med:['#E6F1FB','#0C447C'],hum:['#FAECE7','#712B13']};
@@ -1790,7 +1776,6 @@ function renderAnnotatedDeck(t){
   if(!slides.length) return '<p style="color:#888;font-size:13px;padding:12px 0">No slide annotations saved.</p>';
 
   // Compiled scrollable view — all slides at once
-  var drawingData = []; var drawingIndex = 0;
   var html = '<div style="display:flex;flex-direction:column;gap:12px">';
   slides.forEach(function(s, i){
     if(!s||!s.type) return;
@@ -1814,25 +1799,13 @@ function renderAnnotatedDeck(t){
     if(s.annotation){
       html += '<div style="background:#f9f5ec;border-left:3px solid #1d6f6f;border-radius:0 6px 6px 0;padding:6px 10px;font-size:.8rem;color:#555;margin-top:8px">✏️ '+s.annotation+'</div>';
     }
-    // Canvas drawing — only render if it's a real data URI (not '[drawing]' placeholder)
-    if(s.drawing && s.drawing.startsWith('data:')){
-      var dIdx = drawingIndex++;
-      drawingData.push(s.drawing);
-      html += '<img id="ptl-drw-'+dIdx+'" alt="Drawing" style="max-width:100%;height:auto;display:block;border-radius:6px;margin-top:8px">';
+    // Canvas drawing (stored as s.drawing singular)
+    if(s.drawing){
+      html += '<img src="'+s.drawing+'" alt="Drawing" style="max-width:100%;height:auto;display:block;border-radius:6px;margin-top:8px">';
     }
     html += '</div>';
   });
   html += '</div>';
-  // Schedule drawing injection after innerHTML is set
-  if(drawingData.length){
-    var _drawings = drawingData.slice();
-    setTimeout(function(){
-      _drawings.forEach(function(src, i){
-        var el = document.getElementById('ptl-drw-'+i);
-        if(el && src) el.src = src;
-      });
-    }, 50);
-  }
   return html;
 }
 

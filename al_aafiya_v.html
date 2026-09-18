@@ -552,7 +552,7 @@ var APP = {
   week: 1,
   grade: 7,
   band: '68',
-  day: 1,       // 1=Sun,2=Mon,3=Tue,4=Wed
+  day: 1,       // 1=Mon,2=Tue,3=Wed,4=Thu
   juz: {},
   record: {},   // this week's wellness record
   effort: null,
@@ -594,15 +594,9 @@ var LEVEL_GRADES = {grow:'K–3 · Ages 5–8',build:'Grades 4–8 · Ages 8–1
   try{ wRaw = parseInt(localStorage.getItem('how_current_week')||'1'); }catch(e){}
   APP.week = wRaw || 1;
 
-  // Use schedule-passed day first, fall back to clock
-  var _passedDay = null;
-  try{ _passedDay = parseInt(localStorage.getItem('how_pe_day'))||null; localStorage.removeItem('how_pe_day'); }catch(e){}
-  if(_passedDay && _passedDay >= 1 && _passedDay <= 4){
-    APP.day = _passedDay;
-  } else {
-    var dow = new Date().getDay(); // 0=Sun,1=Mon…5=Fri,6=Sat
-    APP.day = (dow >= 1 && dow <= 4) ? dow : 1;
-  }
+  // Determine day of week (1=Mon…4=Thu, clamp to 1-4)
+  var dow = new Date().getDay(); // 0=Sun,1=Mon…5=Fri,6=Sat
+  APP.day = (dow >= 1 && dow <= 4) ? dow : 1;
 
   // Load JUZ data
   APP.juz = JUZ[APP.week-1] || {};
@@ -676,7 +670,7 @@ function renderSession(){
   var w=APP.week, d=APP.day;
   var pe = PE_CURR[w]||{};
   var title = pe['pe'+d] || 'Fitness session — see P.E. curriculum';
-  var dayName = ['Sunday','Monday','Tuesday','Wednesday'][d-1]||'Today';
+  var dayName = ['Monday','Tuesday','Wednesday','Thursday'][d-1]||'Today';
 
   document.getElementById('sess-label').textContent = dayName+' · Session '+d+' of 4';
   document.getElementById('sess-title').textContent = title.split(':').slice(1).join(':').trim() || title;
@@ -723,7 +717,7 @@ function selEffort(btn, val){
 
 // ── HISTORY STRIP ────────────────────────────────────────────────────────────
 function renderHistory(){
-  var days = ['Sun','Mon','Tue','Wed'];
+  var days = ['Mon','Tue','Wed','Thu'];
   var html = '';
   days.forEach(function(day,i){
     var dayIdx = i+1;
@@ -752,7 +746,7 @@ function renderMovement(){
   var bandLabel = {k2:'Grow · K–2',35:'Build · 3–5',68:'Build · 6–8',912:'Thrive · 9–12'}[APP.band]||'';
   document.getElementById('move-sub').textContent = bandLabel+' · Week '+w+' movement sessions';
   var html = '';
-  ['Sunday','Monday','Tuesday','Wednesday'].forEach(function(day,i){
+  ['Monday','Tuesday','Wednesday','Thursday'].forEach(function(day,i){
     var d = i+1;
     var key = 'pe'+d;
     var title = (pe[key]||'Fitness session').split(':').slice(1).join(':').trim() || pe[key]||'Fitness session';

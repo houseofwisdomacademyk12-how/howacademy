@@ -308,6 +308,59 @@ textarea.field{resize:vertical;line-height:1.65}
 @media(max-width:600px){
 }
 
+
+/* ── Ustadh peer synthesis card ───────────────────────────────── */
+.ustadh-peer-card{background:linear-gradient(135deg,#f0f8f8,#e8f4f0);border:1.5px solid #b8ddd8;border-radius:14px;padding:16px 18px;margin-top:16px;}
+.ustadh-peer-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ustadh-peer-avatar{width:32px;height:32px;border-radius:50%;background:#1d6f6f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ustadh-peer-name{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#1d6f6f;}
+.ustadh-peer-sub{font-size:.68rem;color:#7aada8;margin-top:1px;}
+.ustadh-peer-text{font-size:.92rem;line-height:1.75;color:#1a1a2e;font-style:italic;}
+.ustadh-peer-loading{display:flex;align-items:center;gap:10px;padding:10px 0;color:#7aada8;font-size:.85rem;font-style:italic;}
+.ustadh-peer-dot{width:6px;height:6px;border-radius:50%;background:#1d6f6f;animation:udot .9s infinite alternate;}
+.ustadh-peer-dot:nth-child(2){animation-delay:.3s;}
+.ustadh-peer-dot:nth-child(3){animation-delay:.6s;}
+@keyframes udot{from{opacity:.2}to{opacity:1}}
+.ustadh-peer-nav{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+
+
+/* ── Ustadh feedback drawer (PTL) ─────────────────────────────── */
+.ptl-ustadh-fab{position:fixed;bottom:1.5rem;right:1.25rem;height:40px;border-radius:20px;
+  padding:0 16px 0 12px;display:none;align-items:center;gap:8px;
+  background:#1d6f6f;border:none;color:#fff;
+  box-shadow:0 4px 16px rgba(29,111,111,.35);z-index:900;cursor:pointer;
+  font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.ptl-ustadh-fab.visible{display:flex;}
+.ptl-ustadh-drawer{position:fixed;right:0;top:0;bottom:0;width:min(360px,100vw);
+  background:#fff;border-left:1px solid #e4ddd0;
+  box-shadow:-4px 0 24px rgba(0,0,0,.1);z-index:1000;
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);}
+.ptl-ustadh-drawer.open{transform:translateX(0);}
+.ptl-udh-hdr{display:flex;align-items:center;gap:.65rem;padding:.85rem 1rem;
+  border-bottom:1px solid #e4ddd0;background:#1d6f6f;color:#fff;flex-shrink:0;}
+.ptl-udh-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ptl-udh-title{font-weight:800;font-size:.88rem;}
+.ptl-udh-sub{font-size:.7rem;opacity:.75;}
+.ptl-udh-close{margin-left:auto;background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;opacity:.75;}
+.ptl-udh-close:hover{opacity:1;}
+.ptl-udh-ctx{padding:.45rem 1rem;background:#f0f8f8;border-bottom:1px solid #e4ddd0;
+  font-size:.7rem;color:#1d6f6f;font-weight:700;flex-shrink:0;}
+.ptl-udh-msgs{flex:1;overflow-y:auto;padding:.75rem 1rem;display:flex;flex-direction:column;gap:.65rem;}
+.ptl-udh-msg{max-width:90%;padding:.6rem .85rem;border-radius:12px;font-size:.85rem;line-height:1.6;}
+.ptl-udh-msg.user{background:#1d6f6f;color:#fff;align-self:flex-end;border-radius:12px 12px 2px 12px;}
+.ptl-udh-msg.ai{background:#f9f5ec;color:#1a1a2e;align-self:flex-start;border-radius:12px 12px 12px 2px;border:1px solid #e4ddd0;}
+.ptl-udh-msg.thinking{opacity:.6;font-style:italic;}
+.ptl-udh-input-row{display:flex;gap:.5rem;padding:.75rem 1rem;border-top:1px solid #e4ddd0;flex-shrink:0;}
+.ptl-udh-input{flex:1;padding:.5rem .75rem;border:1.5px solid #e4ddd0;border-radius:20px;
+  font-size:.88rem;resize:none;max-height:100px;line-height:1.5;font-family:inherit;}
+.ptl-udh-input:focus{outline:none;border-color:#1d6f6f;}
+.ptl-udh-send{width:34px;height:34px;border-radius:50%;background:#1d6f6f;border:none;
+  color:#fff;font-size:.95rem;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;cursor:pointer;transition:opacity .15s;}
+.ptl-udh-send:hover{opacity:.85;}
+.ptl-udh-send:disabled{opacity:.35;cursor:not-allowed;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -575,9 +628,50 @@ const SEED = [
 // The samāʿ verification panel is suppressed for example teachings.
 SEED.forEach(function(t){ t.isExample = true; });
 
+// ── Server teachings cache (published by household from Supabase) ─────────────
+var _serverTeachings = [];
+var _serverFetched = false;
+
+async function loadServerTeachings(){
+  if(!sb){ console.warn('PTL: Supabase client not available'); return; }
+  try{
+    console.log('PTL: Fetching published teachings from server...');
+    var res = await sb.from('teaching')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', {ascending:false})
+      .limit(200);
+    console.log('PTL: Server response:', res.error ? 'ERROR: '+res.error.message : (res.data ? res.data.length+' teachings' : 'null data'));
+    if(res.error){ console.error('PTL fetch error:', res.error); return; }
+    if(res.data && res.data.length){
+      // Include ALL server teachings — don't dedupe by local ID since they're from other households
+      var localIds = new Set(getTeachings().map(function(t){ return t.id; }));
+      var newFromServer = res.data.filter(function(r){ return !localIds.has(r.id); });
+      _serverTeachings = newFromServer.map(function(r){
+        return Object.assign({}, r, {
+          fromSupabase: true,
+          teacherInitials: (r.teacher_name||'?').split(' ').map(function(w){ return w[0]||''; }).join('').toUpperCase().slice(0,2),
+          teacherName:    r.teacher_name||'Unknown',
+          teacherGrade:   r.teacher_grade||'',
+          taughtGrade:    r.taught_grade||'',
+          subject:        r.subject||'other',
+          keyIdea:        r.key_idea||'',
+          annotatedSlides:r.annotated_slides||[],
+        isTeachIt:!!(r.annotated_slides&&r.annotated_slides.length),
+          openQuestion:   r.open_question||'',
+          disc:           {math:'math',science:'sky',ela:'eng',writing:'eng',social:'hum'}[r.subject]||'eng',
+        });
+      });
+    }
+  }catch(e){ console.warn('Could not load server teachings:', e.message); }
+}
+
 function getAllTeachings(){
   const stored = getTeachings();
-  return [...SEED, ...stored];
+  // Merge local + server, dedup by id
+  var seen = new Set(stored.map(function(t){ return t.id; }));
+  var serverNew = _serverTeachings.filter(function(t){ return !seen.has(t.id); });
+  return [...SEED, ...stored, ...serverNew];
 }
 
 // ── COUNTS ─────────────────────────────────────────────────────────
@@ -601,6 +695,8 @@ function switchTab(btn){
   document.querySelectorAll('.topnav-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   currentView = btn.dataset.tab;
+  // Reset server fetch flag when opening Browse so fresh data loads each visit
+  if(currentView === 'browse') _serverFetched = false;
   const sidebar = document.getElementById('sidebar');
   const body    = document.getElementById('main-body');
   const hasSidebar = ['browse','mine'].includes(currentView);
@@ -637,6 +733,13 @@ function filterGrade(btn){
 
 // ── BROWSE ────────────────────────────────────────────────────────
 function renderBrowse(mc, filter, gradeFilter, searchTerm){
+  var _fab=document.getElementById('ptl-udh-fab'); if(_fab) _fab.classList.remove('visible');
+  if(!_serverFetched){
+    _serverFetched = true;
+    loadServerTeachings().then(function(){
+      renderBrowse(document.getElementById('tab-content'), currentFilter, currentGradeFilter, null);
+    }).catch(function(){});
+  }
   let teachings = getAllTeachings();
   if(filter && filter!=='all'){
     if(filter==='studio') teachings = teachings.filter(t=>t.tags&&t.tags.some(g=>g.toLowerCase().includes('studio')));
@@ -646,9 +749,9 @@ function renderBrowse(mc, filter, gradeFilter, searchTerm){
   if(searchTerm) {
     const s = searchTerm.toLowerCase();
     teachings = teachings.filter(t=>
-      t.title.toLowerCase().includes(s)||
-      t.summary.toLowerCase().includes(s)||
-      t.keyIdea.toLowerCase().includes(s)||
+      (t.title||'').toLowerCase().includes(s)||
+      (t.summary||'').toLowerCase().includes(s)||
+      (t.keyIdea||'').toLowerCase().includes(s)||
       (t.tags&&t.tags.some(tag=>tag.toLowerCase().includes(s)))||
       (t.scholar&&t.scholar.toLowerCase().includes(s))
     );
@@ -659,6 +762,8 @@ function renderBrowse(mc, filter, gradeFilter, searchTerm){
     <p class="page-kicker">The school's living textbook</p>
     <h1 class="page-title">Peer teaching library</h1>
     <p class="page-sub">Teachings recorded by students for students. Find the concept you need — explained by someone who understood it recently enough to remember what was confusing.</p>
+    <button id="ptl-refresh-btn" onclick="ptlRefreshLibrary()" style="margin-top:10px;padding:6px 16px;background:#1d6f6f;color:white;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer">↻ Refresh library</button>
+    <span id="ptl-refresh-status" style="font-size:.75rem;color:#888;margin-left:8px"></span>
   </div>
 
   <div class="stats-row">
@@ -770,8 +875,22 @@ function teachingCard(t){
 // ── DETAIL ────────────────────────────────────────────────────────
 function openTeaching(id){
   const all = getAllTeachings();
-  const t = all.find(x=>x.id===id);
+  let t = all.find(x=>x.id===id);
   if(!t) return;
+  // If drawings are placeholders, fetch full data from Supabase first
+  const hasPlaceholders = (t.annotatedSlides||[]).some(function(s){ return s.drawing==='[drawing]'; });
+  if(hasPlaceholders && sb && t.id && /^[0-9a-f-]{36}$/.test(t.id)){
+    sb.from('teaching').select('annotated_slides').eq('id',t.id).single().then(function(res){
+      if(res.data && res.data.annotated_slides){
+        t = Object.assign({},t,{annotatedSlides:res.data.annotated_slides});
+      }
+      _renderTeachingDetail(t);
+    }).catch(function(){ _renderTeachingDetail(t); });
+    return;
+  }
+  _renderTeachingDetail(t);
+}
+function _renderTeachingDetail(t){
   const mc = document.getElementById('tab-content');
   const discClass = 'badge-disc-'+t.disc;
   const avatarColors = {math:['#EEEDFE','#3C3489'],sky:['#E1F5EE','#085041'],eng:['#FAEEDA','#633806'],med:['#E6F1FB','#0C447C'],hum:['#FAECE7','#712B13']};
@@ -812,7 +931,7 @@ function openTeaching(id){
 
   <div class="detail-section">
     <span class="detail-section-label">${t.isTeachIt ? 'Annotated lesson deck' : 'Teaching transcript — how it actually went'}</span>
-    ${t.isTeachIt && t.annotatedSlides && t.annotatedSlides.length
+    ${t.annotatedSlides && t.annotatedSlides.length
       ? renderAnnotatedDeck(t)
       : `<div class="transcript">
           ${(t.transcript||[]).map(b=>`<div class="bubble ${b.type}">${b.text}</div>`).join('')}
@@ -1276,6 +1395,7 @@ function saveRecStep1(){
     _howSlide = 1;
     _howResponses = {};
     _howAICache = {};
+    _ustadhResponses = {};
     draftTeaching.annotatedSlides = [];
     renderHOWStep();
   } else {
@@ -1570,6 +1690,7 @@ async function pushTeachingToSupabase(t){
 
 // ── MY TEACHINGS ──────────────────────────────────────────────────
 function renderMine(mc){
+  var _fab=document.getElementById('ptl-udh-fab'); if(_fab) _fab.classList.remove('visible');
   const mine = getTeachings();
   mc.innerHTML = `
   <div class="page-header">
@@ -1684,26 +1805,51 @@ function renderAnnotatedDeck(t){
   const slides = t.annotatedSlides || [];
   if(!slides.length) return '<p style="color:#888;font-size:13px;padding:12px 0">No slide annotations saved.</p>';
 
-  // Store on window for navigation
-  window._libDeck = window._libDeck || {};
-  window._libDeck[t.id] = { slides, idx: 0 };
-
-  return `
-    <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <span id="slide-ctr-${t.id}" style="font-size:12px;color:#888">Slide 1 of ${slides.length}</span>
-        <div style="display:flex;gap:8px">
-          <button onclick="libSlideNav('${t.id}',-1)"
-            style="background:var(--teal,#1d6f6f);color:white;border:none;border-radius:6px;padding:4px 16px;cursor:pointer;font-size:15px;font-weight:700">←</button>
-          <button onclick="libSlideNav('${t.id}',1)"
-            style="background:var(--teal,#1d6f6f);color:white;border:none;border-radius:6px;padding:4px 16px;cursor:pointer;font-size:15px;font-weight:700">→</button>
-        </div>
-      </div>
-      <div id="slide-view-${t.id}"
-        style="background:#faf8f4;border:1px solid #e4ddd0;border-radius:10px;padding:18px;min-height:180px">
-        ${renderOneAnnotatedSlide(slides[0], 0)}
-      </div>
-    </div>`;
+  // Compiled scrollable view — all slides at once
+  var drawingData = []; var drawingIndex = 0;
+  var html = '<div style="display:flex;flex-direction:column;gap:12px">';
+  slides.forEach(function(s, i){
+    if(!s||!s.type) return;
+    if(s.type==='title'||s.type==='teach_it') return;
+    var bg = s.type==='juz'?'linear-gradient(135deg,#1a1a2e,#2a2a4e)':
+             s.type==='provocation'?'#f9f5ec':'#fff';
+    var col = s.type==='juz'?'white':'#1a1a2e';
+    html += '<div style="background:'+bg+';border:1px solid #e4ddd0;border-radius:10px;padding:14px 16px">';
+    if(s.heading){
+      html += '<p style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:'+(s.type==='juz'?'rgba(255,255,255,.5)':'#1d6f6f')+';margin:0 0 6px">'+s.heading+'</p>';
+    }
+    if(s.content||s.passage){
+      html += '<p style="font-size:.88rem;line-height:1.7;color:'+col+';margin:0 0 8px">'+(s.content||s.passage)+'</p>';
+    }
+    if(s.example){
+      html += '<div style="background:#f0ece4;border-radius:6px;padding:6px 10px;font-size:.85rem;color:#333;margin-bottom:8px">'+s.example+'</div>';
+    }
+    if(s.question){
+      html += '<p style="font-size:.9rem;font-weight:600;color:#1a1a2e;font-style:italic;margin:6px 0">'+s.question+'</p>';
+    }
+    if(s.annotation){
+      html += '<div style="background:#f9f5ec;border-left:3px solid #1d6f6f;border-radius:0 6px 6px 0;padding:6px 10px;font-size:.8rem;color:#555;margin-top:8px">✏️ '+s.annotation+'</div>';
+    }
+    // Canvas drawing — only render if it's a real data URI (not '[drawing]' placeholder)
+    if(s.drawing && s.drawing.startsWith('data:')){
+      var dIdx = drawingIndex++;
+      drawingData.push(s.drawing);
+      html += '<img id="ptl-drw-'+dIdx+'" alt="Drawing" style="max-width:100%;height:auto;display:block;border-radius:6px;margin-top:8px">';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  // Schedule drawing injection after innerHTML is set
+  if(drawingData.length){
+    var _drawings = drawingData.slice();
+    setTimeout(function(){
+      _drawings.forEach(function(src, i){
+        var el = document.getElementById('ptl-drw-'+i);
+        if(el && src) el.src = src;
+      });
+    }, 50);
+  }
+  return html;
 }
 
 function renderOneAnnotatedSlide(sl, idx){
@@ -1767,6 +1913,8 @@ var HOW_SLIDE_TYPES = {
 function renderHOWStep(){
   var body = document.getElementById('record-body');
   if(!body) return;
+  // Show feedback FAB during slide recording
+  var fab=document.getElementById('ptl-udh-fab'); if(fab) fab.classList.add('visible');
 
   var total = 8;
   var dots = '';
@@ -1802,6 +1950,23 @@ function renderHOWStep(){
         _renderedSlide +
         '</div>';
     }
+  } else {
+    // No deck pre-loaded — show guidance per slide type
+    var _guidance = [
+      'State the lesson title clearly. What concept are you teaching?',
+      'What question opens the thinking? What should your student be wondering by the end?',
+      'Explain the core concept in your own words.',
+      'Show a worked example or source material that demonstrates the concept.',
+      'Give a deeper example or a more challenging application.',
+      'Describe an activity or discussion the student can do to practise.',
+      'What question will you leave them with to think about further?',
+      'Connect this to the scholar and the Juz theme for this week.'
+    ];
+    var _hint = _guidance[_howSlide-1] || 'What will you cover on this slide?';
+    slideContentHTML = '<div style="background:#f9f5ec;border:1px solid #e8e0d0;border-radius:10px;padding:14px 16px;margin-bottom:16px">' +
+      '<p style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#1d6f6f;margin-bottom:6px">Guide for this slide</p>' +
+      '<p style="font-size:.88rem;color:#5a5a78;line-height:1.6;font-style:italic">'+_hint+'</p>' +
+      '</div>';
   }
 
   el.innerHTML =
@@ -2039,10 +2204,12 @@ function _howWorkHTML(n, app, band, appIdx){
     '</div>';
 
   // Save + next
-  html += '<div style="display:flex;gap:8px;margin-top:4px">';
+  html += '<div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">';
   html += '<button class="btn primary" onclick="_howSaveSlide('+n+')">'+
     (n<8 ? 'Save & next slide →' : 'Save & finish →') + '</button>';
   if(n>1) html += '<button class="btn" onclick="_howBack()">← Back</button>';
+  html += '<button class="btn" style="background:#f0f8f8;border:1.5px solid #1d6f6f;color:#1d6f6f" '+
+    'onclick="ptlGetSlideFeedback('+n+')">☪ Get Feedback</button>';
   html += '</div>';
 
   html += '</div>'; // how-work-area
@@ -2166,23 +2333,8 @@ function _howSaveSlide(n){
   if(existing >= 0) draftTeaching.annotatedSlides[existing] = slide;
   else draftTeaching.annotatedSlides.push(slide);
 
-  if(n < 8){
-    _howSlide = n + 1;
-    renderHOWStep();
-    // Init canvas after render
-    setTimeout(function(){ _howInitCanvas(_howSlide); }, 100);
-  } else {
-    // Done with all slides — build key idea and summary from paragraphs
-    var paras = [];
-    for(var i=1;i<=8;i++){
-      if(_howResponses[i] && _howResponses[i].paragraph) paras.push(_howResponses[i].paragraph);
-    }
-    draftTeaching.keyIdea = paras[0] || '';
-    draftTeaching.summary = paras.join(' ');
-    draftTeaching.isTeachIt = true;
-    // Go to open question step
-    recStep = 4; renderRecordStep();
-  }
+  // Call Ustadh peer synthesis instead of advancing immediately
+  _ustadhSynthesizeSlide(n, slide);
 }
 
 // ── Back navigation ───────────────────────────────────────────────────────────
@@ -2695,5 +2847,444 @@ try{
   }
 }catch(e){}
 </script>
+
+<script>
+// ── PTL Browse refresh ───────────────────────────────────────────────────────
+async function ptlRefreshLibrary(){
+  var btn = document.getElementById("ptl-refresh-btn");
+  var status = document.getElementById("ptl-refresh-status");
+  if(btn) btn.disabled = true;
+  if(status) status.textContent = "Fetching from server...";
+  _serverTeachings = [];
+  _serverFetched = false;
+  try{
+    await loadServerTeachings();
+    var mc = document.getElementById("tab-content");
+    if(mc) renderBrowse(mc, currentFilter, currentGradeFilter, null);
+    var count = _serverTeachings.length;
+    if(status) status.textContent = count > 0 ? count + " from server" : "No server teachings found";
+  }catch(e){
+    if(status) status.textContent = "Error: " + e.message;
+  }
+  if(btn) btn.disabled = false;
+}
+
+// ── Ustadh peer synthesis — fires automatically after each slide save ─────────
+var _ustadhResponses = {};
+
+async function _ustadhSynthesizeSlide(n, slide){
+  // Show loading card in the slide body area
+  var body = document.getElementById('how-slide-body');
+  if(body){
+    body.innerHTML =
+      '<div class="ustadh-peer-card">' +
+        '<div class="ustadh-peer-hdr">' +
+          '<div class="ustadh-peer-avatar">☪</div>' +
+          '<div><div class="ustadh-peer-name">Ustadh</div>' +
+          '<div class="ustadh-peer-sub">reading your teaching…</div></div>' +
+        '</div>' +
+        '<div class="ustadh-peer-loading">' +
+          '<div class="ustadh-peer-dot"></div>' +
+          '<div class="ustadh-peer-dot"></div>' +
+          '<div class="ustadh-peer-dot"></div>' +
+          '<span>Understanding what you just taught…</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // Build context
+  var deckSlides = draftTeaching._howDeckSlides || [];
+  var deckSlide  = deckSlides[n-1] || null;
+  var objective  = deckSlide ? (deckSlide.objective || deckSlide.content || '') : '';
+  var slideType  = HOW_SLIDE_TYPES[n] || 'content';
+  var grade      = draftTeaching.taughtGrade || draftTeaching.teacherGrade || 7;
+  var subject    = draftTeaching.subject || 'math';
+  var scholar    = draftTeaching.scholar || '';
+
+  var sys =
+    'You are Ustadh — a peer student who was just taught this slide. ' +
+    'Your only job: rephrase what was just taught to you as if you understood it. ' +
+    'Speak like a curious peer, Grade ' + grade + ' level, kid-friendly language. ' +
+    'If the student used a good example, echo it back in your rephrasing. ' +
+    'Do NOT evaluate. Do NOT say "great job", "well done", or give any feedback at all. ' +
+    'Start with something natural like "Oh so...", "So basically...", or "I get it now —". ' +
+    'Keep it to 2-3 sentences. This will become part of the teaching summary.';
+
+  var usr =
+    'Subject: ' + subject +
+    '\nSlide type: ' + slideType +
+    (objective ? '\nLearning objective: ' + objective : '') +
+    (scholar ? '\nScholar context: ' + scholar : '') +
+    '\n\nWhat the student taught:\n' + slide.content +
+    (slide.studentNote ? '\n\nExtra note: ' + slide.studentNote : '');
+
+  var responseText = '';
+  try{
+    var key = ''; try{ key = localStorage.getItem('how_api_key')||''; }catch(e){}
+    var reqBody = JSON.stringify({
+      model:'claude-sonnet-4-6', max_tokens:200,
+      system: sys,
+      messages:[{role:'user', content:usr}]
+    });
+    var r;
+    if(key){
+      r = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',
+                 'anthropic-dangerous-direct-browser-access':'true',
+                 'anthropic-version':'2023-06-01','x-api-key':key},
+        body:reqBody
+      });
+    } else {
+      r = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:reqBody
+      });
+    }
+    var data = await r.json();
+    responseText = (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+  }catch(e){
+    responseText = 'I think I follow — you were teaching about ' + (slide.heading||slideType.toLowerCase()) + '. Let me try the next part.';
+  }
+
+  // Store response
+  _ustadhResponses[n] = responseText;
+
+  // Show response card with navigation
+  var isLast = (n >= 8);
+  var nextLabel = isLast ? 'Finish teaching →' : 'Next slide →';
+  var nextFn    = isLast ? '_ustadhFinishHOW()' : '_ustadhNextSlide('+n+')';
+
+  if(body){
+    body.innerHTML =
+      '<div class="ustadh-peer-card">' +
+        '<div class="ustadh-peer-hdr">' +
+          '<div class="ustadh-peer-avatar">☪</div>' +
+          '<div><div class="ustadh-peer-name">Ustadh</div>' +
+          '<div class="ustadh-peer-sub">understood · slide ' + n + ' of 8</div></div>' +
+        '</div>' +
+        '<p class="ustadh-peer-text">' + responseText + '</p>' +
+        '<div class="ustadh-peer-nav">' +
+          '<button class="btn primary" onclick="' + nextFn + '">' + nextLabel + '</button>' +
+          '<button class="btn" style="border:1.5px solid #c0392b;color:#c0392b" onclick="_ustadhCorrect(' + n + ')">That\'s not right</button>' +
+          (n > 1 ? '<button class="btn" onclick="_howBack()">← Back</button>' : '') +
+        '</div>' +
+      '</div>';
+  }
+}
+
+function _ustadhNextSlide(n){
+  _howSlide = n + 1;
+  renderHOWStep();
+  setTimeout(function(){ _howInitCanvas(_howSlide); }, 100);
+}
+
+function _ustadhFinishHOW(){
+  // Build summary from Ustadh responses (all 8 slides)
+  var summaryParts = [];
+  for(var i=1;i<=8;i++){
+    if(_ustadhResponses[i]) summaryParts.push(_ustadhResponses[i]);
+  }
+  // Fallback to student paragraphs if Ustadh responses missing
+  if(!summaryParts.length){
+    for(var j=1;j<=8;j++){
+      if(_howResponses[j] && _howResponses[j].paragraph) summaryParts.push(_howResponses[j].paragraph);
+    }
+  }
+  draftTeaching.keyIdea  = summaryParts[0] || '';
+  draftTeaching.summary  = summaryParts.join(' ');
+  draftTeaching.isTeachIt = true;
+  recStep = 4; renderRecordStep();
+}
+
+
+async function _ustadhCorrect(n){
+  var body = document.getElementById('how-slide-body');
+  if(!body) return;
+
+  // Show correction prompt
+  body.innerHTML =
+    '<div class="ustadh-peer-card">' +
+      '<div class="ustadh-peer-hdr">' +
+        '<div class="ustadh-peer-avatar">☪</div>' +
+        '<div><div class="ustadh-peer-name">Ustadh</div>' +
+        '<div class="ustadh-peer-sub">asking for clarification</div></div>' +
+      '</div>' +
+      '<p class="ustadh-peer-text">What did I get wrong? Try explaining it differently.</p>' +
+      '<textarea id="ustadh-correction-'+n+'" rows="3" style="width:100%;margin-top:10px;padding:8px 10px;' +
+        'border:1.5px solid #b8ddd8;border-radius:8px;font-size:.88rem;line-height:1.6;' +
+        'font-family:inherit;resize:none;" placeholder="Explain it again in your own words…"></textarea>' +
+      '<div class="ustadh-peer-nav" style="margin-top:10px">' +
+        '<button class="btn primary" onclick="_ustadhRetry('+n+')">Send correction →</button>' +
+      '</div>' +
+    '</div>';
+
+  var ta = document.getElementById('ustadh-correction-'+n);
+  if(ta) ta.focus();
+}
+
+async function _ustadhRetry(n){
+  var ta = document.getElementById('ustadh-correction-'+n);
+  if(!ta || !ta.value.trim()){ toast('Write your correction first.'); return; }
+  var correction = ta.value.trim();
+
+  var body = document.getElementById('how-slide-body');
+  if(body){
+    body.innerHTML =
+      '<div class="ustadh-peer-card">' +
+        '<div class="ustadh-peer-hdr">' +
+          '<div class="ustadh-peer-avatar">☪</div>' +
+          '<div><div class="ustadh-peer-name">Ustadh</div>' +
+          '<div class="ustadh-peer-sub">trying again…</div></div>' +
+        '</div>' +
+        '<div class="ustadh-peer-loading">' +
+          '<div class="ustadh-peer-dot"></div>' +
+          '<div class="ustadh-peer-dot"></div>' +
+          '<div class="ustadh-peer-dot"></div>' +
+          '<span>Let me try again…</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  var grade   = draftTeaching.taughtGrade || draftTeaching.teacherGrade || 7;
+  var subject = draftTeaching.subject || 'math';
+  var prevResponse = _ustadhResponses[n] || '';
+
+  var sys =
+    'You are Ustadh — a peer student who misunderstood the first explanation. ' +
+    'The student has now corrected you. ' +
+    'Rephrase the concept again using their correction. ' +
+    'Acknowledge what you got wrong in one short phrase, then re-express the idea correctly. ' +
+    'Grade ' + grade + ' level, kid-friendly. Do NOT evaluate. ' +
+    'Start with something like "Oh right, so..." or "Ah — so it\'s not... it\'s...". ' +
+    '2-3 sentences. This replaces your previous response in the summary.';
+
+  var usr =
+    'Subject: ' + subject +
+    '\nYour previous (wrong) response: ' + prevResponse +
+    '\nStudent\'s correction: ' + correction;
+
+  var responseText = '';
+  try{
+    var key = ''; try{ key = localStorage.getItem('how_api_key')||''; }catch(e){}
+    var reqBody = JSON.stringify({
+      model:'claude-sonnet-4-6', max_tokens:200,
+      system: sys,
+      messages:[{role:'user', content:usr}]
+    });
+    var r;
+    if(key){
+      r = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',
+                 'anthropic-dangerous-direct-browser-access':'true',
+                 'anthropic-version':'2023-06-01','x-api-key':key},
+        body: reqBody
+      });
+    } else {
+      r = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:reqBody
+      });
+    }
+    var data = await r.json();
+    responseText = (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+  }catch(e){
+    responseText = 'Ah right — I think I understand better now. Thanks for the correction.';
+  }
+
+  // Replace stored response with corrected version
+  _ustadhResponses[n] = responseText;
+
+  var isLast = (n >= 8);
+  var nextLabel = isLast ? 'Finish teaching →' : 'Next slide →';
+  var nextFn    = isLast ? '_ustadhFinishHOW()' : '_ustadhNextSlide('+n+')';
+
+  if(body){
+    body.innerHTML =
+      '<div class="ustadh-peer-card" style="border-color:#1d6f6f">' +
+        '<div class="ustadh-peer-hdr">' +
+          '<div class="ustadh-peer-avatar">☪</div>' +
+          '<div><div class="ustadh-peer-name">Ustadh</div>' +
+          '<div class="ustadh-peer-sub">got it now · slide ' + n + ' of 8</div></div>' +
+        '</div>' +
+        '<p class="ustadh-peer-text">' + responseText + '</p>' +
+        '<div class="ustadh-peer-nav">' +
+          '<button class="btn primary" onclick="' + nextFn + '">' + nextLabel + '</button>' +
+          (n > 1 ? '<button class="btn" onclick="_howBack()">← Back</button>' : '') +
+        '</div>' +
+      '</div>';
+  }
+}
+
+
+// ── PTL Ustadh feedback ───────────────────────────────────────────────────────
+var _ptlUstadhHistory = [];
+
+function ptlToggleUstadh(){
+  var d = document.getElementById('ptl-udh-drawer');
+  if(d) d.classList.toggle('open');
+}
+
+function ptlAddMsg(text, cls){
+  var box = document.getElementById('ptl-udh-msgs');
+  if(!box) return;
+  var el = document.createElement('div');
+  el.className = 'ptl-udh-msg ' + cls;
+  el.textContent = text;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+  return el;
+}
+
+async function ptlCallAPI(sys, usr){
+  var key = '';
+  try{ key = localStorage.getItem('how_api_key')||''; }catch(e){}
+  var body = JSON.stringify({
+    model:'claude-sonnet-4-6', max_tokens:500,
+    system: sys,
+    messages: [{role:'user', content: usr}]
+  });
+  var r;
+  if(key){
+    r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json',
+               'anthropic-dangerous-direct-browser-access':'true',
+               'anthropic-version':'2023-06-01','x-api-key':key},
+      body: body
+    });
+  } else {
+    r = await fetch('https://how-proxy-production.up.railway.app/api/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: body
+    });
+  }
+  if(!r.ok) throw new Error('API error ' + r.status);
+  var data = await r.json();
+  return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+}
+
+async function ptlGetSlideFeedback(n){
+  var saved = _howResponses[n] || {};
+  var deckSlides = draftTeaching._howDeckSlides || [];
+  var deckSlide  = deckSlides[n-1] || null;
+  var slideHeading = deckSlide ? (deckSlide.heading||'Slide '+n) : ('Slide '+n);
+  var work1 = (document.getElementById('how-w1-'+n)||{}).value || saved.work1 || '';
+  var work2 = (document.getElementById('how-w2-'+n)||{}).value || saved.work2 || '';
+  var slideContent = deckSlide ? (deckSlide.content||deckSlide.passage||'') : '';
+  var approachLabel = '';
+  try{
+    var cache = _howAICache[n]||{};
+    var apps = (cache.prompts||{}).approaches||[];
+    if(saved.approachIdx!==undefined) approachLabel = (apps[saved.approachIdx]||{}).label||'';
+  }catch(e){}
+
+  if(!work1.trim() && !work2.trim()){
+    toast('Write your response first, then ask for feedback');
+    return;
+  }
+
+  var drawer = document.getElementById('ptl-udh-drawer');
+  var ctx    = document.getElementById('ptl-udh-ctx');
+  if(drawer && !drawer.classList.contains('open')) ptlToggleUstadh();
+  if(ctx) ctx.textContent = 'Slide ' + n + ' · ' + slideHeading;
+
+  var thinking = ptlAddMsg('Reading your teaching…', 'ai thinking');
+
+  var sys = 'You are Ustadh, a wise and warm teacher at House of Wisdom Academy. '
+    + 'A student is recording a peer teaching slide by slide. '
+    + 'Speak directly to this student, not to a facilitator or parent. '
+    + 'Your tone is that of a mentor who believes in them. '
+    + 'For this slide: name one thing they did well, one thing that could be clearer, '
+    + 'and one concrete suggestion for next time. '
+    + 'Be specific — quote their actual words when you can. '
+    + 'Keep your response to 100 words. Write in flowing sentences, no bullet points.';
+
+  var usr = 'Subject: ' + (draftTeaching.subject||'')
+    + '\nSlide ' + n + ': ' + slideHeading
+    + '\nSlide content: ' + slideContent
+    + (approachLabel ? '\nApproach chosen: ' + approachLabel : '')
+    + '\nStudent wrote:\n' + work1
+    + (work2 ? '\n' + work2 : '');
+
+  _ptlUstadhHistory = [{role:'user', content: usr}];
+
+  try{
+    var raw = await ptlCallAPI(sys, usr);
+    if(thinking) thinking.remove();
+    ptlAddMsg(raw, 'ai');
+    _ptlUstadhHistory.push({role:'assistant', content: raw});
+  }catch(e){
+    if(thinking) thinking.remove();
+    ptlAddMsg('Sorry, could not get feedback: ' + e.message, 'ai');
+  }
+}
+
+async function ptlUstadhSend(){
+  var inp = document.getElementById('ptl-udh-input');
+  var btn = document.getElementById('ptl-udh-send');
+  if(!inp || !inp.value.trim()) return;
+  var msg = inp.value.trim();
+  inp.value = '';
+  ptlAddMsg(msg, 'user');
+  _ptlUstadhHistory.push({role:'user', content: msg});
+  if(btn) btn.disabled = true;
+  var thinking = ptlAddMsg('Thinking…', 'ai thinking');
+
+  var sys = 'You are Ustadh, a wise and warm mentor at House of Wisdom Academy. '
+    + 'You are in a follow-up conversation with a student about their peer teaching. '
+    + 'Continue the conversation naturally. Be specific and encouraging. 80 words max.';
+
+  var messages = _ptlUstadhHistory.slice();
+  var body = JSON.stringify({
+    model:'claude-sonnet-4-6', max_tokens:400,
+    system: sys, messages: messages
+  });
+  try{
+    var key = ''; try{ key=localStorage.getItem('how_api_key')||''; }catch(e){}
+    var r;
+    if(key){
+      r = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',
+                 'anthropic-dangerous-direct-browser-access':'true',
+                 'anthropic-version':'2023-06-01','x-api-key':key},
+        body: body
+      });
+    } else {
+      r = await fetch('https://how-proxy-production.up.railway.app/api/generate',{
+        method:'POST', headers:{'Content-Type':'application/json'}, body: body
+      });
+    }
+    var data = await r.json();
+    var reply = (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    if(thinking) thinking.remove();
+    ptlAddMsg(reply, 'ai');
+    _ptlUstadhHistory.push({role:'assistant', content: reply});
+  }catch(e){
+    if(thinking) thinking.remove();
+    ptlAddMsg('Could not reach Ustadh: ' + e.message, 'ai');
+  }
+  if(btn) btn.disabled = false;
+}
+</script>
+<!-- Ustadh feedback drawer -->
+<button class="ptl-ustadh-fab" id="ptl-udh-fab" onclick="ptlToggleUstadh()">
+  <span>☪</span><span>Get Feedback</span>
+</button>
+<div class="ptl-ustadh-drawer" id="ptl-udh-drawer">
+  <div class="ptl-udh-hdr">
+    <div class="ptl-udh-avatar">☪</div>
+    <div><div class="ptl-udh-title">Ustadh</div><div class="ptl-udh-sub">Feedback on your teaching</div></div>
+    <button class="ptl-udh-close" onclick="ptlToggleUstadh()">✕</button>
+  </div>
+  <div class="ptl-udh-ctx" id="ptl-udh-ctx">Slide feedback</div>
+  <div class="ptl-udh-msgs" id="ptl-udh-msgs"></div>
+  <div class="ptl-udh-input-row">
+    <textarea class="ptl-udh-input" id="ptl-udh-input" rows="1"
+      placeholder="Ask a follow-up question…"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ptlUstadhSend();}"></textarea>
+    <button class="ptl-udh-send" id="ptl-udh-send" onclick="ptlUstadhSend()">➤</button>
+  </div>
+</div>
+
 </body>
 </html>

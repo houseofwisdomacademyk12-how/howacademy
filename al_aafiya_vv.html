@@ -552,7 +552,7 @@ var APP = {
   week: 1,
   grade: 7,
   band: '68',
-  day: 1,       // 1=Sun,2=Mon,3=Tue,4=Wed
+  day: 1,       // 1=Mon,2=Tue,3=Wed,4=Thu
   juz: {},
   record: {},   // this week's wellness record
   effort: null,
@@ -723,7 +723,7 @@ function selEffort(btn, val){
 
 // ── HISTORY STRIP ────────────────────────────────────────────────────────────
 function renderHistory(){
-  var days = ['Sun','Mon','Tue','Wed'];
+  var days = ['Mon','Tue','Wed','Thu'];
   var html = '';
   days.forEach(function(day,i){
     var dayIdx = i+1;
@@ -752,7 +752,7 @@ function renderMovement(){
   var bandLabel = {k2:'Grow · K–2',35:'Build · 3–5',68:'Build · 6–8',912:'Thrive · 9–12'}[APP.band]||'';
   document.getElementById('move-sub').textContent = bandLabel+' · Week '+w+' movement sessions';
   var html = '';
-  ['Sunday','Monday','Tuesday','Wednesday'].forEach(function(day,i){
+  ['Monday','Tuesday','Wednesday','Thursday'].forEach(function(day,i){
     var d = i+1;
     var key = 'pe'+d;
     var title = (pe[key]||'Fitness session').split(':').slice(1).join(':').trim() || pe[key]||'Fitness session';
