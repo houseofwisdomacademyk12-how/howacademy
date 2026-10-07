@@ -1,0 +1,2272 @@
+{
+  "1": {
+    "week": 1,
+    "discipline": "Cartography",
+    "scholar": "Al-Idrisi",
+    "title": "Your World, Your Map",
+    "prompt": "[Cartography] Your world, your map: Draw a map of a place you know completely from memory. Include everything that matters to you, not just what would appear on an official map. Label it. Compare it with another student's map of the same place — what did each of you include that the other did not?",
+    "time": {
+      "prepare": 5,
+      "make": 40,
+      "document": 15,
+      "total": 60
+    },
+    "materials": {
+      "essential": [
+        "Large blank paper (A3, butcher paper, or taped A4 sheets)",
+        "Pencils",
+        "Coloured pencils, markers, or crayons",
+        "Ruler or straight edge",
+        "Eraser",
+        "Pen for final labelling"
+      ],
+      "helpful": [
+        "Compass or small circle-drawing tool for a decorative wind rose",
+        "Watercolour paints or diluted food colouring for shading",
+        "Sticky notes for revision before inking",
+        "A printed or online example of an Al-Idrisi map for inspiration"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Open with Al-Idrisi",
+        "text": "Before any drawing begins, spend two or three minutes telling the student about Muhammad al-Idrisi, the twelfth-century geographer who drew his famous world map from interviews and travellers' accounts rather than satellite data. Ask the student: if Al-Idrisi had to rely on people's memories and lived experience, what does that tell us about what maps really are? Let the conversation settle the idea that a map is always someone's point of view."
+      },
+      {
+        "n": 2,
+        "title": "Choose the Place",
+        "text": "Invite the student to name one place they know deeply from personal experience — their home, a grandparent's house, a local park, a masjid, or a favourite street. Emphasise that they must draw it entirely from memory without looking at photos or online maps. If two students are working together, confirm that both choose the same place so the comparison in Step 5 is meaningful."
+      },
+      {
+        "n": 3,
+        "title": "Sense-Inventory Before Drawing",
+        "text": "Ask the student to close their eyes for sixty seconds and mentally walk through the place using all five senses — what they see, hear, smell, feel underfoot, and even taste (if relevant). Prompt them to whisper or jot a quick list of five to ten things that come to mind. This activates sensory memory and encourages them to map beyond the visual, connecting to the Grade 7 science context of observing through the senses."
+      },
+      {
+        "n": 4,
+        "title": "Draft and Draw",
+        "text": "Have the student begin lightly in pencil, placing the most important feature first rather than trying to get the boundary right. Encourage them to include personal landmarks — the tree they always climb, where a smell changes, a corner that feels safe or spooky — alongside physical features. Circulate and ask open questions: 'Is there anything you felt or heard in that spot that you could show somehow?' Prompt labelling as they go so nothing is forgotten."
+      },
+      {
+        "n": 5,
+        "title": "Compare and Count",
+        "text": "Once both maps are complete (or if only one student, produce your own quick sketch of the same place as facilitator), lay them side by side. Ask students to count the total number of labelled features on each map, then identify items that appear on one map but not the other. Connect this to the Grade 7 number sense context by asking: how many features are shared, how many are unique to each, and what fraction of the total does each category represent? Let the numbers tell a story about perspective."
+      },
+      {
+        "n": 6,
+        "title": "Add a Legend and North Arrow",
+        "text": "Guide the student to add a simple map legend explaining any symbols they invented and a north arrow or decorative wind rose in the style of historical Islamic cartography. If the student enjoys the aesthetic, show them how Al-Idrisi oriented his map with south at the top, and offer the option to flip their map as a deliberate choice — a good entry point for discussing how orientation is a convention, not a fact."
+      },
+      {
+        "n": 7,
+        "title": "Document and Reflect",
+        "text": "Give the student fifteen minutes for written or drawn documentation in their Sahifa. Prompt them to answer at least two of the following: What did I include that surprised me? What did I leave out, and why? What does the other map reveal that mine does not? What would Al-Idrisi think of my method? Collect both maps and documentation together so the comparison is preserved."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should focus on drawing three to five big things they love about the place, using pictures more than words, and labelling with your help. Skip the fraction comparison — instead, simply count together how many things each map has and celebrate what is different as a discovery rather than an analysis.",
+      "m58": "Students in this band should aim for fifteen or more labelled features and attempt the fraction and set comparison in Step 5 independently, recording their arithmetic in the Sahifa. Encourage them to experiment with a simple scale — for example, deciding that one hand-width on the page equals ten metres — and to reflect on where their memory was confident versus uncertain.",
+      "h912": "Older students should research Al-Idrisi's method of compiling the Tabula Rogeriana from informant interviews and write a short comparison between that epistemology and their own memory-based process. They should also formalise the Step 5 comparison using set notation (A ∩ B, A \\ B) and consider what systematic biases might explain which features each mapper included or omitted."
+    },
+    "sahifaPrompt": "Al-Idrisi built his map of the world from the memories and stories of travellers — and today I built a map from my own memory of ___. When I compared my map with another, I noticed that I had included ___ but they had not, which made me think that a map always shows ___.",
+    "townSystem": "navigation",
+    "townNeed": "The town has land but no one has mapped it. Before roads, water sources, or building sites can be planned, someone needs to draw what exists from memory and lived knowledge."
+  },
+  "2": {
+    "week": 2,
+    "discipline": "Geometry",
+    "scholar": "Al-Biruni",
+    "title": "Rules Hidden in Patterns",
+    "prompt": "[Geometry] Pattern hunting: Find three patterns in the physical space around you that repeat. Document each: draw it, name it, describe the rule that generates it. Then make your own pattern that follows a rule you invent.",
+    "time": {
+      "prepare": 5,
+      "make": 35,
+      "document": 15,
+      "total": 55
+    },
+    "materials": {
+      "essential": [
+        "Blank white paper (at least 4 sheets)",
+        "Pencil and eraser",
+        "Colored pencils or markers",
+        "Ruler",
+        "Clipboard or hard book surface for drawing on the go",
+        "Pencil sharpener"
+      ],
+      "helpful": [
+        "Compass or circular lid for drawing curves",
+        "Graph paper for the invented pattern",
+        "Smartphone or tablet to photograph found patterns",
+        "Sticky notes for quick labeling"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Frame the Hunt",
+        "text": "Before releasing the student, spend two minutes introducing Al-Biruni as a scholar who traveled widely and recorded the world's patterns with disciplined observation. Ask the student: 'What do you think a pattern needs in order to count as a pattern — what makes it a rule, not just a coincidence?' Let them answer briefly, then tell them they are about to do exactly what Al-Biruni did — go look, record precisely, and figure out the rule."
+      },
+      {
+        "n": 2,
+        "title": "Scout the Space",
+        "text": "Send the student on a 5-minute walk through the home or outdoor area with clipboard and pencil only — no drawing yet. Ask them to point out (or photograph) at least five candidate patterns before committing to three. Encourage them to look at flooring tiles, brickwork, fabric weave, leaf arrangements, stair railings, window grilles, or any surface with repetition. Walk alongside them and resist naming patterns for them — instead ask, 'What is repeating? What stays the same each time?'"
+      },
+      {
+        "n": 3,
+        "title": "Document Three Patterns",
+        "text": "Have the student settle at a work surface and draw each of the three chosen patterns on separate areas of the page or on separate sheets. For each pattern, prompt them to: (1) give it a name they invent, (2) draw enough of it to show the repeat unit clearly, and (3) write one sentence stating the rule — for example, 'Every time the shape turns 90 degrees and shifts one unit right, it repeats.' Do not correct their rules yet; let them articulate what they see before any refinement."
+      },
+      {
+        "n": 4,
+        "title": "Name the Rule Precisely",
+        "text": "Once all three are drawn, sit with the student and read each rule sentence aloud together. Ask probing questions: 'Could someone who has never seen this pattern draw it perfectly from your rule alone?' If not, help them revise the language — focusing on what changes, what stays the same, and what the unit of repeat is. This is the geometric heart of the session: a pattern is only as clear as its generative rule."
+      },
+      {
+        "n": 5,
+        "title": "Invent an Original Pattern",
+        "text": "Ask the student to write their rule before they draw a single mark — the rule comes first, the pattern follows. Encourage them to combine at least two operations (for example, reflect then translate, or rotate then color-alternate). Provide graph paper or a ruler to support precision. Once the rule is written, they may begin drawing the pattern and should extend it for at least six repetitions to prove the rule holds."
+      },
+      {
+        "n": 6,
+        "title": "Test the Rule",
+        "text": "When the invented pattern is complete, ask the student to cover their drawing and read only their rule aloud. You — or a sibling — attempt to re-draw the pattern from the rule alone. Compare results. Where the two drawings diverge, the rule needs tightening. This testing loop mirrors Al-Biruni's empirical method: observation and description must be precise enough that another person can reproduce the result."
+      },
+      {
+        "n": 7,
+        "title": "Reflect and Document",
+        "text": "Direct the student to the Sahifa documentation phase. Ask them to write or draw a brief reflection connecting what they found to Al-Biruni's work — specifically his practice of recording natural and geometric patterns across cultures. Prompt: 'Which of your three found patterns do you think Al-Biruni would have found most interesting, and why?' Allow 10–15 minutes for written or illustrated Sahifa entry."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should focus on finding and drawing two patterns rather than three, and can state their rule verbally while the facilitator scribes it for them. For the invented pattern, offer a simple constraint such as 'use only triangles and squares' to scaffold the rule-making without requiring abstract language.",
+      "m58": "Students in this band should connect pattern rules to numeric descriptions — for example, identifying that a tile pattern repeats every 4 units and linking that to place-value ideas about grouping and periodicity. Their invented pattern rule must be written in words and also expressed as a simple numeric or step sequence before drawing begins.",
+      "h912": "High-school students should attempt to classify each found pattern using basic transformation vocabulary — translation, reflection, rotation, or glide reflection — and discuss whether any patterns belong to the same symmetry family. Their invented pattern should be accompanied by a formal rule written as a transformation sequence, and they should consider whether their pattern could tile an infinite plane without gaps or overlaps."
+    },
+    "sahifaPrompt": "Al-Biruni believed that careful observation was the beginning of all knowledge. Today I found a pattern in _______ and discovered that its rule is _______. This made me think that patterns in the world around me are really _______ waiting to be named.",
+    "townSystem": "infrastructure",
+    "townNeed": "The town council needs to tile the central courtyard without gaps or waste. They need someone who can find the pattern that fits any space, so every project can repeat it."
+  },
+  "3": {
+    "week": 3,
+    "discipline": "Architecture",
+    "scholar": "Ibn Rushd",
+    "title": "Paper Towers, Reasoned Failures",
+    "prompt": "[Architecture] Build a load-bearing structure: Using only paper and tape, build the tallest structure that can support a book for 30 seconds. Document each attempt: what failed, what you changed, what worked. Ibn Rushd would have called this iterative reasoning.",
+    "time": {
+      "prepare": 10,
+      "make": 35,
+      "document": 15,
+      "total": 60
+    },
+    "materials": {
+      "essential": [
+        "20–30 sheets of standard printer paper",
+        "Masking tape or clear tape (one roll)",
+        "A hardcover book (the load — roughly 500g)",
+        "Ruler or measuring tape",
+        "Pencil",
+        "Notebook or blank paper for documentation",
+        "Flat hard surface (table or floor)"
+      ],
+      "helpful": [
+        "Scissors (to pre-cut tape strips)",
+        "Sticky notes for labeling each attempt",
+        "Smartphone timer for the 30-second test",
+        "Graph paper for sketching designs"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Frame the Challenge",
+        "text": "Before touching materials, tell the student that Ibn Rushd — the 12th-century Andalusian philosopher and physician — argued that careful observation and repeated testing were the path to truth. Explain that today every failure is data, not defeat. Ask the student to predict out loud: what shape do they think will be strongest, and why?"
+      },
+      {
+        "n": 2,
+        "title": "Attempt One — Instinct Build",
+        "text": "Give the student 10 sheets of paper and tape and let them build freely for 8 minutes without guidance. Their first instinct is the baseline. When they are ready, place the book on top and start the timer together. Whether it stands or falls, immediately prompt the student to write or sketch in their notebook: what happened, and one word describing why."
+      },
+      {
+        "n": 3,
+        "title": "Analyze the Forces",
+        "text": "Pause the building and sit with the student for 3–4 minutes. Ask: where did the structure buckle — top, middle, or base? Introduce the words compression (the book pushing down) and tension (the paper being stretched or pulled). Help the student identify which part of their structure experienced each force. This is the 'Rushd moment' — observation before the next experiment."
+      },
+      {
+        "n": 4,
+        "title": "Redesign and Attempt Two",
+        "text": "Invite the student to change one deliberate thing based on their analysis — a wider base, rolled columns instead of flat sheets, triangular bracing — and build a second structure with a fresh set of paper. Encourage them to say aloud what they changed and why before they start taping. Document the new height with the ruler and run the 30-second book test again."
+      },
+      {
+        "n": 5,
+        "title": "Iterate at Least Once More",
+        "text": "Prompt a third attempt, and a fourth if time allows. Each time, hold the student to the same rhythm: observe → hypothesize → build → test → record. Resist the urge to suggest specific fixes; instead ask questions such as 'What do you think is carrying most of the weight right now?' so the reasoning stays the student's own."
+      },
+      {
+        "n": 6,
+        "title": "Measure and Compare",
+        "text": "Once the session is complete, have the student use the ruler to record the height of every structure that survived 30 seconds. Together, look at the numbers: did height increase across attempts? By how much? If comfortable with Grade 7 math, invite the student to calculate the ratio of height to sheets of paper used — a simple efficiency index they invented themselves."
+      },
+      {
+        "n": 7,
+        "title": "Write the Sahifa Entry",
+        "text": "Settle the student with their notebook for the final 15 minutes and read the Sahifa prompt aloud. Ask them to write continuously without stopping — first impressions are most honest. When finished, invite them to share one sentence if they wish, but do not require it. Display or store the tallest successful structure alongside the documentation as a physical record of their iterative reasoning."
+      }
+    ],
+    "differentiation": {
+      "k4": "Give younger students pre-rolled paper tubes secured with tape so they start with columns rather than flat sheets, reducing fine-motor frustration. Limit documentation to a simple drawing of each attempt with a smiley or sad face for 'worked' or 'fell.' Focus the conversation on push and pull with hands-on demonstration rather than the vocabulary of compression and tension.",
+      "m58": "Students should measure and record height, number of sheets used, and time-to-failure for every attempt in a simple table, practicing estimation and unit accuracy. Introduce the concept of load distribution and ask them to identify the weakest point before each test, then verify whether their prediction was correct. Encourage at least four distinct attempts with a written hypothesis before each one.",
+      "h912": "Challenge students to sketch a formal force diagram for their best structure, labeling compressive and tensile members and estimating the approximate load in newtons using the book's mass. Ask them to write a short paragraph connecting Ibn Rushd's method of reconciling observed evidence with reasoned principle to the engineering design loop they just practiced. Extend further by calculating structural efficiency as load supported divided by mass of paper used."
+    },
+    "sahifaPrompt": "Ibn Rushd believed that truth is found not in a single brilliant idea but in the patient work of testing, failing, and revising. Today I built _______ structures, and the moment I understood something new was when _______. If Ibn Rushd had watched my hands at the table, I think he would have said _______ about the way I reasoned through failure.",
+    "townSystem": "housing",
+    "townNeed": "A new shelter concept failed during construction — the roof collapsed. The town needs a record of what failed and why, so the next builder doesn't repeat the mistake."
+  },
+  "4": {
+    "week": 4,
+    "discipline": "Geometry",
+    "scholar": "Al-Khwarizmi",
+    "title": "Dividing Circles with Precision",
+    "prompt": "[Geometry] The mathematics of fair sharing: Using compass and straightedge only, divide a circle into equal parts: first 2, then 4, then 8. Now attempt 3 and 6. Document: which divisions are geometrically exact? Which require approximation? Why?",
+    "time": {
+      "prepare": 5,
+      "make": 40,
+      "document": 15,
+      "total": 60
+    },
+    "materials": {
+      "essential": [
+        "Compass (student compass with pencil insert)",
+        "Ruler or straightedge",
+        "Pencil",
+        "At least 5 sheets of plain white paper",
+        "Eraser",
+        "Colored pencils or markers (at least 2 colors)"
+      ],
+      "helpful": [
+        "Protractor (for verification only, not construction)",
+        "Tracing paper or thin paper for overlay comparisons",
+        "Calculator",
+        "Compass with a locking screw to hold radius"
+      ]
+    },
+    "safety": "Remind the student that compass points are sharp. Always hold the compass by the top and keep the point directed downward and away from hands when not in use.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Stage",
+        "text": "Before the student touches materials, briefly share that Al-Khwarizmi worked in the House of Wisdom in Baghdad, where precise geometric construction was considered a form of ordered thinking — a way of finding truth. Ask the student: 'If you had to share a round flatbread perfectly equally, how would you start?' Let their answer guide the opening energy of the session."
+      },
+      {
+        "n": 2,
+        "title": "Draw and Halve",
+        "text": "Have the student draw a circle of comfortable size (radius roughly 5 cm works well). Guide them to draw a diameter — a straight line through the center — and observe that this produces 2 equal parts. Then prompt them to construct a perpendicular bisector of that diameter using only the compass and ruler: place the compass at each end of the diameter and draw intersecting arcs above and below, then connect those intersection points. This produces 4 equal parts. Ask: 'What angle is at the center of each section?'"
+      },
+      {
+        "n": 3,
+        "title": "Double Again to Eight",
+        "text": "On a fresh circle, guide the student to repeat the process, then bisect each of the four arcs to produce 8 equal sections. Encourage them to color alternating sections to make the symmetry visible. Pause and ask: 'Could we keep doubling forever? What pattern do you notice in the angles — 180, 90, 45...?'"
+      },
+      {
+        "n": 4,
+        "title": "Attempt Thirds",
+        "text": "Now invite the student to try dividing a new circle into 3 equal parts using only the compass and ruler, without measuring. Most students will struggle — let them try freely for 3 to 5 minutes. Then, if needed, share the classic construction: set the compass to the circle's radius, place the point on any point of the circle, and step around the circumference — this marks exactly 6 points, giving 6 equal divisions. Connecting every other point gives 3. Let the student discover this rather than telling them outright if possible."
+      },
+      {
+        "n": 5,
+        "title": "Compare and Question",
+        "text": "Place all completed circles side by side. Ask the student to use the protractor — now, as a checking tool only — to measure the central angles in each diagram. Guide them to notice that the 2, 4, 6, and 8 divisions check out perfectly (or very nearly so given drawing precision), while any freehand attempt at 3 without the radius trick will show error. Pose the central question: 'Why can we divide exactly by 2 and 3 with a compass, but not by 5 or 7? What is special about those numbers?'"
+      },
+      {
+        "n": 6,
+        "title": "Document the Investigation",
+        "text": "Give the student 15 minutes to complete their Sahifa entry and annotate their circle drawings. Ask them to label each circle with: the number of divisions, the central angle, and whether the construction is exact or approximate. Encourage them to write one sentence explaining, in their own words, why powers of 2 and divisions using the radius feel 'natural' to a compass."
+      },
+      {
+        "n": 7,
+        "title": "Close with Connection",
+        "text": "End by showing the student examples of geometric patterns in Islamic tilework or architecture (a quick image search for 'Islamic geometric pattern' will yield many). Ask them to identify which circle divisions they see. Connect this to Al-Khwarizmi's world: mathematics was not separate from beauty or from fair dealing — the word 'algebra' itself comes from his book title, and geometry was its visual twin."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should focus only on the 2 and 4 divisions, using a pre-drawn circle traced from a cup or jar lid. The facilitator guides the ruler placement while the student draws. The key discovery is simply: 'a straight line through the middle makes two equal parts, and two lines make four.' Coloring the sections and counting them is the core documentation task.",
+      "m58": "Students work independently through all divisions — 2, 4, 8, 3, and 6 — and use the protractor to verify their angles, recording results in a simple table (divisions / central angle / exact or approximate). They should articulate in writing why the radius-stepping method works for 6 divisions, connecting it to the relationship between a circle's radius and its circumference.",
+      "h912": "After completing all constructions, students research which regular polygons are constructible with compass and straightedge (the Gauss-Wantzel theorem) and write a short reflection on why 5-divisions require approximation while 3 and 6 do not. They should connect the concept of constructibility to the idea of irrational numbers and explain why a 360° angle cannot always be divided into whole-number-degree sectors using only exact Euclidean tools."
+    },
+    "sahifaPrompt": "Al-Khwarizmi believed that mathematics reveals the hidden order within creation. Today, when I tried to divide my circle into equal parts, I discovered that ___________________. The division that surprised me most was ___________________, because I expected it to be easy, but I found that...",
+    "townSystem": "infrastructure",
+    "townNeed": "The town's water wheel needs equal portions divided among five neighborhoods. Someone must divide a circle precisely so every family gets a fair share — no guessing."
+  },
+  "5": {
+    "week": 5,
+    "discipline": "Astronomy",
+    "scholar": "Al-Kashi",
+    "title": "Five Ways to Know",
+    "prompt": "[Astronomy] Measure the same thing five ways: Choose one object. Measure it using five different methods or tools. Record every measurement and its source of error. Calculate the mean. Write: what does the spread of your measurements tell you about the difference between precision and accuracy?",
+    "time": {
+      "prepare": 10,
+      "make": 35,
+      "document": 15,
+      "total": 60
+    },
+    "materials": {
+      "essential": [
+        "One medium object to measure (a hardcover book works well)",
+        "Ruler or standard measuring tape",
+        "A piece of string and a separate ruler to measure it",
+        "Your hand span (palm width or finger length as a unit)",
+        "A strip of paper marked with a pencil as a makeshift scale",
+        "Pencil and notebook or graph paper",
+        "Calculator (or scratch paper for arithmetic)"
+      ],
+      "helpful": [
+        "A second household measuring tape for comparison",
+        "Printed grid paper to help visualize spread",
+        "Colored pencils to mark each method's result on a number line"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Stage",
+        "text": "Before anything is measured, tell the student that Al-Kashi spent years refining astronomical calculations — computing pi to sixteen decimal places — because he understood that every tiny measurement error compounds. Ask: 'Why would an astronomer in Samarkand care about the thickness of an astrolabe's ring?' Let the student sit with that before choosing their object."
+      },
+      {
+        "n": 2,
+        "title": "Choose and Commit",
+        "text": "Have the student select one object and one dimension — the length of a hardcover book along its spine is ideal. Emphasize that the dimension cannot change between measurements; the object stays flat on the table. Record the object and dimension at the top of the notebook page before any measuring begins."
+      },
+      {
+        "n": 3,
+        "title": "Measure Five Ways",
+        "text": "Guide the student through five distinct methods: (1) ruler held flat, read to the nearest millimeter; (2) string laid along the edge, then measured against the ruler; (3) hand-span units, counting fractions carefully; (4) a paper strip marked with a pencil notch and then measured; (5) a second measuring tape or re-measurement with eyes closed on the ruler to test reading bias. After each method, pause — ask the student to name one thing that could have introduced error before moving to the next."
+      },
+      {
+        "n": 4,
+        "title": "Build the Error Log",
+        "text": "Direct the student to make a two-column table: Method and Measurement, with a third column titled Likely Error Source. Help them articulate specific errors — not just 'I might have made a mistake' but 'the string may have stretched slightly' or 'my hand-span unit is not consistent across repetitions.' This language of named, bounded uncertainty is exactly Al-Kashi's habit of mind."
+      },
+      {
+        "n": 5,
+        "title": "Calculate the Mean and the Spread",
+        "text": "Have the student add all five measurements and divide by five to find the mean. Then ask them to find the range: the highest minus the lowest value. If the student is ready, prompt them to mark all five values on a hand-drawn number line so the spread is visible as a physical gap, not just an abstract number."
+      },
+      {
+        "n": 6,
+        "title": "The Precision vs. Accuracy Discussion",
+        "text": "Ask: 'If three of your measurements cluster tightly together but far from what the ruler says, what does that tell you?' Let the student struggle with this before introducing the terms. Precision is about repeatability — how close measurements are to each other. Accuracy is about truth — how close they are to the actual value. Encourage the student to decide which of their five methods was most precise and which was most likely most accurate, and whether those are the same method."
+      },
+      {
+        "n": 7,
+        "title": "Document and Reflect",
+        "text": "Give the student fifteen quiet minutes to write their reflection and complete their Sahifa entry. The written response should address the prompt's final question directly: what does the spread tell us? Encourage them to connect to Al-Kashi — someone who trusted calculation enough to correct the measurements of scholars before him. Ask: 'What would you need to trust your own numbers?'"
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should focus on just three methods — ruler, string, and hand-span — and draw pictures of each tool rather than writing an error column. The facilitator names the error sources aloud together with the child, and the 'mean' concept can be simplified to 'which answer is in the middle of all our guesses?' No formal vocabulary is required; the goal is noticing that different tools give different answers.",
+      "m58": "Students in this band complete all five methods independently, write their own error sources, and calculate the mean and range without facilitation. Push them to convert all measurements to the same unit (millimeters) before averaging, and introduce the terms precision and accuracy explicitly after their reflection is written — checking their intuitive definitions against the formal ones.",
+      "h912": "Older students should calculate not just the mean and range but also identify which measurements they would exclude as outliers and justify why. Challenge them to research the concept of significant figures and rewrite all five measurements with appropriate sig-fig notation. As an extension, ask them to write a paragraph arguing whether a single highly accurate measurement is more valuable than five clustered precise ones — a genuine debate in metrology that Al-Kashi implicitly engaged every time he revised a table."
+    },
+    "sahifaPrompt": "Al-Kashi never trusted a single calculation — he checked and rechecked until the numbers earned his confidence. Today I measured _______ five different ways and found that my results spread across a range of _______. What this spread taught me about the difference between precision and accuracy is that",
+    "townSystem": "navigation",
+    "townNeed": "The town sits at a crossroads and travelers arrive with five different methods for finding direction. The town needs someone to test all five and decide which one is reliable."
+  },
+  "6": {
+    "week": 6,
+    "discipline": "Calligraphy",
+    "scholar": "Ibn Khaldun",
+    "title": "Letters Written With Attention",
+    "prompt": "[Calligraphy] The art of the question: Write the opening question for this week in your best handwriting — or attempt Arabic calligraphy. The goal is not beautiful letters but letters written with full attention. Reflect: what happened when your attention wandered?",
+    "time": {
+      "prepare": 5,
+      "make": 30,
+      "document": 10,
+      "total": 45
+    },
+    "materials": {
+      "essential": [
+        "Plain white paper (at least 4 sheets)",
+        "Black fine-tip marker or felt-tip pen",
+        "Pencil for light practice lines",
+        "Ruler",
+        "A printed or written copy of the week's opening question to reference",
+        "Eraser"
+      ],
+      "helpful": [
+        "Calligraphy or broad-nib marker (available at craft or stationery stores)",
+        "A printed Arabic alphabet guide (freely available online)",
+        "A small cup of water if using brush pens",
+        "Scrap paper for warm-up attempts"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Intention",
+        "text": "Before any pen touches paper, ask your student to sit quietly for thirty seconds and think about what the opening question of the week actually means to them. Explain that Ibn Khaldun wrote in his Muqaddimah that crafts — including writing — are perfected only through repeated, deliberate practice. Today the aim is not a beautiful product but a fully attentive process."
+      },
+      {
+        "n": 2,
+        "title": "Warm Up the Hand",
+        "text": "Have the student fill one sheet of scrap paper with slow, deliberate loops, lines, and curves — no letters yet, just mark-making. Encourage them to notice the difference between a rushed mark and a careful one. Point out how their grip, posture, and breathing all affect the line."
+      },
+      {
+        "n": 3,
+        "title": "Rule Light Guidelines",
+        "text": "Help the student use the ruler and pencil to draw two or three light horizontal guidelines on a fresh sheet, spaced about 1.5 centimetres apart. These baselines keep writing steady and give the student something to be intentional about — staying on the line is itself an act of attention."
+      },
+      {
+        "n": 4,
+        "title": "Write the Question — First Pass",
+        "text": "Ask the student to write the opening question of the week once, in their best handwriting (or, if attempting Arabic, to copy letter by letter from the reference guide). Instruct them not to erase or fix anything mid-line — just keep moving with as much care as they can. When they finish, ask them to circle any letter where their attention clearly slipped."
+      },
+      {
+        "n": 5,
+        "title": "Write the Question — Second Pass",
+        "text": "Have the student write the question a second time on a fresh sheet. This time, invite them to pause for one full breath before each word. You may gently time-keep if needed. Afterward, place both versions side by side and ask the student to describe, without judgment, what is different between them."
+      },
+      {
+        "n": 6,
+        "title": "Discuss the Wandering",
+        "text": "Facilitate a short conversation: When did attention drift — at the start, middle, or end? Did a harder letter pull focus away from meaning, or did meaning pull focus away from the letter? Draw a connection to mathematical notation and scientific communication: a misplaced symbol or a sloppy unit label carries real consequences, just as a lost letter changes a word."
+      },
+      {
+        "n": 7,
+        "title": "Choose and Frame the Final Version",
+        "text": "Ask the student to choose which version — first or second pass, or even a single line from either — they feel best represents their most attentive moment. They may wish to trace lightly over it in pen to finish, then add their name and the date. Place it aside for documentation while you move on to the Sahifa entry."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should write only the key question word or a single short sentence rather than the full question. Focus entirely on one letter they find beautiful or tricky, drawing it large and slow three times. Skip the Arabic option and let them illustrate the meaning of the word alongside their handwriting.",
+      "m58": "Students in this band should attempt the full question in careful handwriting and optionally copy two or three Arabic letters from the alphabet guide, connecting them into a short word. Ask them to write a one-sentence observation connecting the idea of 'attention in writing' to the precision required in mathematical notation — for example, the difference between 2³ and 23.",
+      "h912": "Older students should attempt a full line of Arabic script using the reference guide, working letter by letter, and then write a short analytical paragraph (three to five sentences) comparing the discipline of calligraphy to the conventions of scientific or mathematical communication. They should engage with Ibn Khaldun's concept of malaka — the habitual skill built through repetition — and argue whether attention or repetition is the more foundational requirement."
+    },
+    "sahifaPrompt": "Ibn Khaldun believed that true skill in any craft — including writing — is built letter by letter, through habits of care. Today when I wrote the question with full attention, I noticed __________. The moment my attention wandered was when __________, and that taught me something about how I communicate in mathematics and science too.",
+    "townSystem": "knowledge",
+    "townNeed": "The town's records are written in rushed, inconsistent handwriting. Before knowledge can be shared across households, someone must establish a legible standard."
+  },
+  "7": {
+    "week": 7,
+    "discipline": "Optics",
+    "scholar": "Ibn al-Haytham",
+    "title": "Light's Secret Upside-Down Room",
+    "prompt": "[Optics] Build a pinhole camera using a cardboard box or tube. Observe what it projects. Document: is the image right-side up or inverted? What does this tell you about how light travels? This is exactly the experiment Ibn al-Haytham performed in his darkened room in 1011 CE.",
+    "time": {
+      "prepare": 10,
+      "make": 35,
+      "document": 15,
+      "total": 60
+    },
+    "materials": {
+      "essential": [
+        "Shoebox or cereal box with lid (or any opaque cardboard box)",
+        "Pin or sharp pencil tip (for making the pinhole)",
+        "Aluminum foil (a small square, roughly 5 cm × 5 cm)",
+        "Tape (masking or packing tape)",
+        "Scissors",
+        "Sheet of white paper or tracing paper",
+        "Dark blanket or towel (to block ambient light)",
+        "A bright outdoor scene or lamp to project"
+      ],
+      "helpful": [
+        "Black paint or black construction paper to line the inside of the box",
+        "Ruler (for measuring and squaring the hole)",
+        "Magnifying glass (to inspect the projected image more closely)",
+        "Pencil and graph paper (for the area documentation sketch)"
+      ]
+    },
+    "safety": "Use caution when handling scissors and the pin near young children. The pin should be used only by or with direct adult supervision for Grades K-4.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Prepare the Dark Chamber",
+        "text": "Help the student cut or punch a small square hole (about 2 cm × 2 cm) in the center of one short end of the box. On the opposite short end, cut a larger viewing window (about 6 cm × 8 cm) and tape a sheet of white or tracing paper over it — this is the projection screen. If time allows, encourage the student to line the inside of the box with black paper to reduce reflected light and sharpen the image."
+      },
+      {
+        "n": 2,
+        "title": "Make the Pinhole",
+        "text": "Have the student cut a piece of aluminum foil slightly larger than the small square hole and tape it tightly over the hole from the outside. Then, using a pin or sharp pencil tip, let the student press a single tiny hole through the center of the foil. Emphasize that smaller is sharper — the hole should be just barely visible when held to light."
+      },
+      {
+        "n": 3,
+        "title": "Enter the Darkness",
+        "text": "Bring the assembled box to a dimly lit room, or help the student drape a dark blanket over their head and the viewing-screen end of the box to block ambient light. Point the pinhole end toward a bright window, outdoor scene, or a lamp with a clear shape. Give the student a moment to let their eyes adjust — this mirrors Ibn al-Haytham's own practice of waiting for his darkened room to come into focus."
+      },
+      {
+        "n": 4,
+        "title": "Observe and Question",
+        "text": "Ask the student to describe what they see on the white paper screen without leading them. Prompt with open questions: 'Which direction is the tree leaning?' or 'Where is the lamp in the image compared to where it is in the room?' Allow the student to discover the inversion before naming it. If the image is faint, try moving closer to the light source or enlarging the pinhole slightly."
+      },
+      {
+        "n": 5,
+        "title": "Trace and Measure",
+        "text": "While the image is projected, invite the student to lightly trace the outline of what they see on the paper screen with a pencil. After the session, lay this tracing over graph paper (or draw a grid on it) and count the square units inside the traced shape. Connect this directly to the Grade 7 area concept: the traced image is a real, measurable projection with calculable area."
+      },
+      {
+        "n": 6,
+        "title": "Explain the Optics",
+        "text": "Guide the student to reason through why the image is inverted by asking them to imagine two light rays — one from the top of the object and one from the bottom — each traveling in a straight line through the single pinhole. Use your finger to trace the crossing paths in the air. Introduce Ibn al-Haytham's key insight: light travels in straight lines, and the pinhole forces rays to cross, flipping the image."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Bring the student out of the dark space and give them 15 minutes to complete their Sahifa entry while the experience is fresh. Encourage them to tape or glue their tracing onto the page, annotate the inversion with arrows, and respond to the prompt below. Remind them that Ibn al-Haytham's greatness lay not just in observing but in writing down exactly what he saw and why."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should skip the box construction and instead use a ready-made paper-towel tube with foil and a pinhole on one end — simpler to hold and aim. Focus entirely on the observation experience: ask them to draw the projected image and circle which way is 'up.' Adult does all cutting and pinhole-making.",
+      "m58": "Students build the full box camera independently with light facilitation guidance. After observing, they draw a ray diagram showing two labeled light rays crossing at the pinhole to explain the inversion, and calculate the area of their traced projected image in square centimeters using the grid method.",
+      "h912": "Students extend the experiment by testing two or three different pinhole sizes and documenting how image brightness and sharpness change, forming a testable hypothesis beforehand. They write a structured lab report in the style of Ibn al-Haytham's Kitab al-Manazir — observation, hypothesis, evidence, conclusion — and derive the relationship between pinhole size, image clarity, and light intensity qualitatively."
+    },
+    "sahifaPrompt": "Today I built the same dark chamber that Ibn al-Haytham built in 1011 CE, and I discovered that the image on my screen was _______________. This happened because light travels in _______________ lines, which means that when I look at the world through a single point, everything _______________. Ibn al-Haytham wrote down exactly what he observed instead of just accepting what others believed, and the thing I noticed today that surprised me most was _______________.",
+    "townSystem": "research",
+    "townNeed": "The town's meeting hall is too dark to use after noon. Someone needs to understand how light moves through openings and design a solution before the next gathering."
+  },
+  "8": {
+    "week": 8,
+    "discipline": "Astronomy",
+    "scholar": "Al-Battani",
+    "title": "Stars Drawn in Circles",
+    "prompt": "[Astronomy] The compass and the circle: Using compass and straightedge only: construct a circle, inscribe a regular hexagon, then a twelve-pointed star. Measure the circumference with string and compare to 2πr. Define the method Al-Battani would have used.",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 15,
+      "total": 70
+    },
+    "materials": {
+      "essential": [
+        "Compass (school geometry compass)",
+        "Ruler or straightedge",
+        "Pencil",
+        "Plain white paper (at least two sheets)",
+        "Thin string or thread (at least 30 cm)",
+        "Scissors",
+        "Calculator",
+        "Pen for documentation"
+      ],
+      "helpful": [
+        "Colored pencils or fine-tip markers",
+        "Tape to hold string ends while measuring",
+        "Graph paper for the documentation page",
+        "A second compass if two students are working"
+      ]
+    },
+    "safety": "Remind the student that the compass point is sharp. It should rest against a folded piece of card or scrap paper when not in use, and should never be carried point-up.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Radius",
+        "text": "Invite the student to choose a radius — somewhere between 5 cm and 8 cm works well on standard paper. Have them set the compass to that measurement against the ruler, then record the radius in their Sahifa before drawing anything. Explain that Al-Battani's astronomical tables depended on fixing a unit of measure first, just as they are doing now."
+      },
+      {
+        "n": 2,
+        "title": "Draw the Circle and Locate Six Points",
+        "text": "Ask the student to place the compass point anywhere on the paper, draw a full circle, and mark the center. Without changing the compass width, have them walk the compass around the circumference, marking where each arc intersects the circle — this produces exactly six equally spaced points. Pause here and ask why this works: the radius fits into the circumference six times exactly, a fact ancient astronomers knew and used."
+      },
+      {
+        "n": 3,
+        "title": "Inscribe the Hexagon",
+        "text": "Guide the student to connect every adjacent point around the circle with a straightedge, forming a regular hexagon. Then have them connect every other point to form an equilateral triangle, and then the remaining three points for the second triangle — the two overlapping triangles are the skeleton of the twelve-pointed star. Encourage them to use colored pencils to distinguish the hexagon, the two triangles, and the star outline before moving on."
+      },
+      {
+        "n": 4,
+        "title": "Complete the Twelve-Pointed Star",
+        "text": "Show the student how to extend the sides of each equilateral triangle slightly beyond the circle to create the classic twelve-pointed star (alternatively, they may connect every fifth point for a different star form — both are valid). Have them label each of the twelve outer points 1 through 12, noting the connection to clock faces and the twelve months, both of which Al-Battani worked with in his astronomical calendar."
+      },
+      {
+        "n": 5,
+        "title": "Measure the Circumference with String",
+        "text": "Ask the student to lay the string carefully around the outside of the circle, following the pencil line as closely as possible, then cut or mark the string at the point where it meets its own start. Have them straighten the string against the ruler and record the measured circumference. Now ask them to calculate the theoretical circumference using 2πr and compare the two values — guide them to express the difference as a percentage error and to speculate about sources of imprecision."
+      },
+      {
+        "n": 6,
+        "title": "Document Al-Battani's Method",
+        "text": "Ask the student to write a short paragraph in their Sahifa explaining how Al-Battani — working in ninth-century Raqqa without a calculator — would have carried out an equivalent measurement to determine the size of a celestial circle. Prompt them to think about what tools he had (astrolabe, gnomon, geometric tables), what he was measuring (arcs of the sky, not paper), and why precision mattered for predicting planetary positions and prayer times."
+      },
+      {
+        "n": 7,
+        "title": "Reflect and Display",
+        "text": "Have the student hold their finished construction at arm's length and observe how many lines of symmetry it contains, then count the regions the star divides the circle into. Invite them to share one thing that surprised them. If the construction is clean, consider hanging it — the geometric beauty of the work is itself a form of documentation."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should skip the star construction and focus only on drawing the circle and marking the six hexagon points with the compass. Use a pre-cut length of string taped to the circle's edge so they can see it wrap around, and let them simply compare 'long' and 'short' rather than calculating percentage error. Narrate Al-Battani's story aloud while they work rather than asking them to write it.",
+      "m58": "Students in this band should complete the full construction and calculate 2πr using their measured radius, then compute the percentage difference between the string measurement and the formula. Ask them to write two to three sentences connecting the geometric idea of π to the real act of measuring curved lines, and to explain in their own words why astronomers needed precise circle measurements.",
+      "h912": "Older students should complete the construction and then derive why the compass-step hexagon construction works algebraically, using the relationship between the radius and the chord length. Ask them to research Al-Battani's specific value for the solar year or the obliquity of the ecliptic and to explain in a paragraph how geometric circle measurement contributed to that precision. They should also calculate the theoretical side length of the inscribed hexagon and verify it against their drawing."
+    },
+    "sahifaPrompt": "Today I worked the way Al-Battani worked — using only a compass and a straight edge to find the shape hidden inside a circle. When I measured the circumference with string, I found it was ______, and the formula 2πr gave me ______. The difference made me think about how Al-Battani must have felt when his measurements of the sky were slightly off, because ______.",
+    "townSystem": "navigation",
+    "townNeed": "The town plans a journey to trade with a distant settlement. Someone must plot the route using star positions so the travelers can navigate by night."
+  },
+  "9": {
+    "week": 9,
+    "discipline": "Pharmacy",
+    "scholar": "Ibn Sina",
+    "title": "Living System in Miniature",
+    "prompt": "[Pharmacy] A living system in miniature: Set up a terrarium or small garden — soil, at least one plant, drainage. Observe it daily for one week. Document: what does it need to survive? What happens if one element is missing? Ibn Sina's Canon of Medicine began with observation of living systems.",
+    "time": {
+      "prepare": 15,
+      "make": 45,
+      "document": 20,
+      "total": 80
+    },
+    "materials": {
+      "essential": [
+        "A clear glass jar, plastic bottle, or reused container (at least 1-liter size)",
+        "Potting soil or garden soil",
+        "Small stones, gravel, or broken crockery for drainage layer",
+        "One small plant (seedling, herb cutting, or houseplant division)",
+        "Water",
+        "Observation notebook or printed log sheet",
+        "Pencil or pen",
+        "Ruler (for measuring plant height)"
+      ],
+      "helpful": [
+        "Activated charcoal or crushed charcoal from a fireplace (keeps soil fresh)",
+        "A second identical container to set up a 'control' with one element missing",
+        "Small spray bottle for misting",
+        "Colored pencils for botanical sketches"
+      ]
+    },
+    "safety": "Wash hands after handling soil. If using a glass jar, handle with care and supervise younger students around it.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Frame the Inquiry",
+        "text": "Before touching any materials, ask your student: 'Ibn Sina spent years observing plants for their medicinal properties — what do you think he would have needed to know about a plant before using it as medicine?' Let the student speculate freely. Then introduce today's question: what does a living system need, and what happens when one thing is taken away?"
+      },
+      {
+        "n": 2,
+        "title": "Build the Layers",
+        "text": "Guide your student to assemble the terrarium in layers: drainage stones at the bottom (roughly 2–3 cm), then soil on top (at least 8–10 cm). Explain that each layer has a job — invite the student to predict what would happen to the plant if the drainage layer were missing before they add it. If you have a second container, set it up without drainage to test that prediction over the week."
+      },
+      {
+        "n": 3,
+        "title": "Plant and Name",
+        "text": "Have the student make a small well in the soil, place the plant gently, and firm the soil around its roots. Once it is planted, ask the student to give their living system a name and record it in the observation notebook. Water lightly — just enough to moisten, not flood. Point out that Ibn Sina gave every substance in his Canon a detailed description; naming and describing carefully is the first act of a scholar."
+      },
+      {
+        "n": 4,
+        "title": "Design the Observation Log",
+        "text": "Together, design a daily log with at least four columns: date, plant height (cm), a sketch or written description of the leaves and soil surface, and a 'needs' column where the student notes what they gave the plant that day (water, sunlight, nothing). For grades 5 and above, add a fifth column for a 1–10 'health rating' so data can later be graphed. Place the log next to the terrarium so daily observation becomes a habit."
+      },
+      {
+        "n": 5,
+        "title": "Introduce the Missing Element",
+        "text": "On Day 3 or 4, prompt your student to deliberately withhold one element — most easily, move the terrarium away from light for one day, or skip watering. Ask the student to predict in writing what they expect to observe before doing it. This is the heart of the inquiry: Ibn Sina's method moved from observation to hypothesis to test. Ensure the student records both the prediction and the actual result."
+      },
+      {
+        "n": 6,
+        "title": "Graph and Interpret",
+        "text": "At the end of the week, sit with your student and turn the log data into a simple line graph: days on the x-axis, plant height (or health rating) on the y-axis. Ask: 'Where does the line change? What happened that day?' Help the student draw a conclusion in one sentence — not just what happened, but why. Connect this back to Ibn Sina: a physician who understood plants had to understand the conditions that made them thrive or fail."
+      },
+      {
+        "n": 7,
+        "title": "Document and Reflect",
+        "text": "Give the student 15–20 minutes to write their Sahifa entry and complete a final botanical sketch of their plant with labeled parts. Encourage them to write one thing that surprised them and one question they still have. Close by asking: 'If you were Ibn Sina writing the Canon, what would you write about this plant — and what warning would you include about what it needs to remain medicinal?'"
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should focus on sensory observation rather than measurement — have them describe the soil by touch, smell the plant, and draw a detailed picture each day rather than filling in a data table. Use three simple question prompts per day: 'What do you see? What did you give it today? Does it look happy or sad?' The facilitator can scribe answers while the student draws.",
+      "m58": "Students in this band should manage the full observation log independently and be responsible for completing their own line graph at the week's end. Introduce the concept of a 'variable' — only one element should change at a time — and ask them to write a one-paragraph hypothesis before the missing-element experiment, then a one-paragraph conclusion after. Connect the data to the Grade 7 math context by discussing what the slope of their graph line tells them.",
+      "h912": "Older students should research Ibn Sina's specific method of classifying plants in the Canon of Medicine (by temperament, degree, and action) and attempt to classify their own plant using his framework. They should write a formal lab report structure — question, hypothesis, method, results, conclusion — and include a section reflecting on the limits of single-observation science. Challenge them to propose a follow-up experiment that would make their findings more reliable."
+    },
+    "sahifaPrompt": "Ibn Sina believed that a physician must first be a careful observer of the natural world before they can understand how to heal. This week I built a living system and watched it every day. I noticed that my plant most needed _______ to stay healthy, and when I removed _______, here is what happened: ...",
+    "townSystem": "health",
+    "townNeed": "The town's healer is away for three weeks. Someone must tend the medicinal garden and record exactly which plant is which so no wrong remedy is given."
+  },
+  "10": {
+    "week": 10,
+    "discipline": "Natural History",
+    "scholar": "Al-Masudi",
+    "title": "One Week, One Thing",
+    "prompt": "[Natural History] Document change: Choose one thing in the natural world that changes across the week — a plant, the sky at a fixed time, shadow length, temperature. Measure and record it every day. At the end: what stayed constant? What changed?",
+    "time": {
+      "prepare": 10,
+      "make": 70,
+      "document": 20,
+      "total": 100
+    },
+    "materials": {
+      "essential": [
+        "Notebook or blank paper folded into a daily log booklet",
+        "Pencil and at least one colored pencil or marker",
+        "Ruler (for measuring shadow length or plant height)",
+        "Clock or phone (to observe at the same time each day)",
+        "One chosen subject: a potted plant, a window-facing outdoor view, or a sunny patch of floor for shadow work",
+        "Thermometer (if tracking temperature — a basic indoor/outdoor one works)"
+      ],
+      "helpful": [
+        "Graph paper or a printed grid for plotting measurements",
+        "Tape or a small sticker to mark a fixed observation spot on the floor or windowsill",
+        "Camera or phone for daily photographs alongside written notes",
+        "A second color of pen to mark the 'same' things versus the 'changed' things in final review"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Choose and Commit",
+        "text": "On Day 1, help the student select one subject they can return to at the same time each day for seven days. Emphasize that the subject must be accessible every day without fail — a houseplant on the windowsill or a shadow cast by a fixed object is more reliable than outdoor weather. Have the student write the subject's name and its location at the top of their log before anything else."
+      },
+      {
+        "n": 2,
+        "title": "Set the Conditions",
+        "text": "Before the first measurement, work with the student to mark exactly where they will stand or sit to observe, and note the time. If tracking a shadow, use a small sticker or pencil dot on the floor as a standing marker. Consistency of position and time is what makes the data meaningful — draw the student's attention to this as the 'rule of the experiment.'"
+      },
+      {
+        "n": 3,
+        "title": "Make the First Record",
+        "text": "Guide the student through a thorough Day 1 entry: a labeled sketch or measurement, a written description using at least three sensory or numerical details, and the exact time. This first entry sets the baseline everything else will be compared against, so encourage more detail than feels necessary — Al-Masudi's own geographical accounts were exhaustive precisely because he knew future comparisons depended on the quality of the original record."
+      },
+      {
+        "n": 4,
+        "title": "Return Daily",
+        "text": "For Days 2 through 6, your main role is simply to prompt the return visit at the same time. If the student resists or forgets, frame it as the hardest part of any naturalist's practice — showing up even when nothing seems to be happening. Encourage brief notes even on 'boring' days, as those flat entries often become the most interesting in retrospect."
+      },
+      {
+        "n": 5,
+        "title": "Look for Pattern Mid-Week",
+        "text": "Around Day 4, pause before the observation and ask the student what they expect to see before they look. Have them write the prediction in their log, then record what they actually observe. This mid-point check builds the habit of hypothesis-making that turns raw recording into scientific thinking."
+      },
+      {
+        "n": 6,
+        "title": "The Final Comparison",
+        "text": "On Day 7, after the final entry is complete, invite the student to lay all seven records side by side and read across them. Ask two questions aloud: 'What changed?' and 'What stayed the same?' Have them draw a simple two-column list or underline constants in one color and changes in another. Prompt them to consider whether the constants are just as interesting as the changes — Al-Masudi believed that what endures across time reveals something essential about a place or thing."
+      },
+      {
+        "n": 7,
+        "title": "Write the Synthesis",
+        "text": "Close the session by having the student write a short paragraph — three to five sentences — summarizing what their week of observation revealed. Encourage them to write it as if reporting to someone who was not there, just as Al-Masudi wrote for readers who had never visited the lands he described. This paragraph becomes the anchor for their Sahifa entry."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should focus on drawing rather than measuring, producing a picture-log where they sketch what they see each day and circle anything that looks different from the day before. At the end of the week, the facilitator reads the entries aloud together and the child points to what changed. Keep the subject simple and visually dramatic — a flower bud opening or a shadow growing longer works better than temperature.",
+      "m58": "Students in this band should take at least one numerical measurement per day (height in centimeters, shadow length in centimeters, or temperature in degrees) alongside their sketch and description. At the end of the week, they should plot their measurements on a simple hand-drawn line graph and identify whether the change appears steady, sudden, or random — connecting directly to the Grade 7 math context of measuring and recording over time.",
+      "h912": "Older students should design their log like a formal field study: recording units, potential sources of measurement error, and controlled versus uncontrolled variables each day. In the final synthesis, they should write a short analysis distinguishing between natural variation and directional change, and consider what additional data would be needed to determine whether an observed trend would continue — connecting their work to how Al-Masudi cross-referenced accounts from multiple sources before drawing conclusions."
+    },
+    "sahifaPrompt": "Al-Masudi traveled across three continents recording what he observed so that patterns invisible to any single traveler would become visible across all of his accounts. After seven days of watching ______________, I noticed that what changed was ______________, but what stayed constant was ______________. This made me think that constancy might be just as worth recording as change, because ______________.",
+    "townSystem": "food",
+    "townNeed": "The town's food supply is stable but no one has observed what actually grows in the surrounding land. Someone needs to spend one week documenting one plant or creature in full."
+  },
+  "11": {
+    "week": 11,
+    "discipline": "Calligraphy",
+    "scholar": "Hunayn ibn Ishaq",
+    "title": "Translation Without Words",
+    "prompt": "[Calligraphy] Translate without words: Take a concept from this week's lessons — any subject — and communicate it without using any language. Diagrams, symbols, objects, gesture. Test it: can another person decode your meaning? Hunayn ibn Ishaq translated Greek knowledge into Arabic — he knew that translation is always interpretation.",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 10,
+      "total": 65
+    },
+    "materials": {
+      "essential": [
+        "paper (several sheets, any size)",
+        "pencil",
+        "pen or fine-tip marker",
+        "eraser",
+        "ruler",
+        "colored pencils or crayons"
+      ],
+      "helpful": [
+        "sticky notes",
+        "scissors",
+        "small household objects for tracing or arranging"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Introduce Hunayn",
+        "text": "Before touching materials, spend two or three minutes telling the student about Hunayn ibn Ishaq — a ninth-century Christian scholar in Baghdad who translated hundreds of Greek medical and philosophical texts into Arabic and Syriac. Ask: when Hunayn chose one Arabic word over another for a Greek idea, was he just copying, or was he making a decision? Let the student sit with that question."
+      },
+      {
+        "n": 2,
+        "title": "Choose a Concept",
+        "text": "Invite the student to name one idea from any subject studied this week — a math rule, a science process, a historical event, a Quranic theme. Write nothing yet; just have the student say the concept aloud in a sentence or two so you both understand what they are working with."
+      },
+      {
+        "n": 3,
+        "title": "Sketch Without Letters",
+        "text": "Set a timer for fifteen minutes and ask the student to represent that concept using only diagrams, symbols, arrows, shapes, or arrangements of objects — absolutely no letters, numerals, or words in any language. Encourage first attempts on scratch paper. Remind the student that Hunayn had to decide what to keep and what to change; the student faces the same choice about which features of the concept are essential."
+      },
+      {
+        "n": 4,
+        "title": "Refine and Compose",
+        "text": "After the rough sketch, ask the student to choose the strongest elements and produce a cleaner final version on a fresh sheet. Prompt them to think about layout and visual hierarchy: what the eye should notice first, what is background, what is relationship. Allow another ten to fifteen minutes for this stage."
+      },
+      {
+        "n": 5,
+        "title": "The Decoding Test",
+        "text": "Have the student turn their finished piece face-down. You — or another household member — should attempt to read it cold, narrating aloud what you think it means. The student must stay silent during this test. Note where your interpretation matches theirs and where it diverges; these gaps are the most important data of the session."
+      },
+      {
+        "n": 6,
+        "title": "Debrief the Gaps",
+        "text": "Discuss the mismatches openly. Ask the student: what did you intend that I missed? Why do you think the gap appeared — was information missing, or did a symbol mean something different to you than to me? Connect this back to Hunayn: every translation contains gaps that the translator fills with judgment. Ask whether that makes translation less trustworthy or more human."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Give the student ten minutes to complete their Sahifa entry, responding to the prompt below. Encourage them to name the specific concept they translated and to be honest about one thing the visual could not carry."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should choose a simple, concrete concept — the water cycle, addition, a story sequence — and build their visual from pictures and arrows rather than abstract symbols. During the decoding test, sit beside them and let them point and gesture rather than staying fully silent; the goal is noticing that pictures still need interpretation.",
+      "m58": "Students in this band should work with a genuinely abstract concept from their Grade 7 math or science context — for example, how an equation balances, or how a scientific diagram encodes a process — and be asked to justify each symbol choice in the debrief. Push them to identify at least one thing their visual system cannot express, naming it precisely.",
+      "h912": "Older students should treat this as a design problem with explicit constraints: create a visual notation that could be handed to a stranger from a different background and still decoded correctly. After the session, ask them to write a short paragraph comparing their choices to the translator's dilemma — drawing on what they know about semiotics, mathematical notation history, or the translation movement of the Abbasid period."
+    },
+    "sahifaPrompt": "Today I tried to translate _______ without using any words, the way Hunayn ibn Ishaq translated Greek ideas into Arabic without a perfect word-for-word match. The part of the concept my visual carried well was _______, but the part that got lost in translation was _______.",
+    "townSystem": "knowledge",
+    "townNeed": "An important text arrived from another settlement in a language no one reads. The town needs someone to convert its core idea into a visual form so the knowledge doesn't stay locked."
+  },
+  "12": {
+    "week": 12,
+    "discipline": "Natural History",
+    "scholar": "Al-Jahiz",
+    "title": "Sorting Nature from Scratch",
+    "prompt": "[Natural History] Your own classification system: Collect 20 natural objects or images. Create your own classification system from first principles. Justify every category boundary. Then look up how Al-Jahiz classified similar objects. Where does your system agree? Where does it diverge?",
+    "time": {
+      "prepare": 20,
+      "make": 55,
+      "document": 15,
+      "total": 90
+    },
+    "materials": {
+      "essential": [
+        "20 natural objects or printed/drawn images of natural things (leaves, pebbles, seeds, feathers, shells, bark pieces, dried flowers, insects if available)",
+        "Large sheet of paper or poster board for arranging the classification layout",
+        "Pencil and markers",
+        "Index cards or sticky notes for category labels",
+        "Scissors",
+        "Ruler",
+        "Sahifa (student journal)"
+      ],
+      "helpful": [
+        "Magnifying glass for close observation",
+        "Printed or hand-copied excerpts from Al-Jahiz's Kitab al-Hayawan (Book of Animals) — short passages available in translation online",
+        "Camera or phone to photograph the final arrangement",
+        "Colored pencils for color-coding categories"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Gather the Collection",
+        "text": "Before the session, invite the student to spend 10–15 minutes of the prepare time collecting 20 natural objects from around the home, garden, or neighborhood — leaves, pebbles, seeds, shells, bark, feathers, and so on. If objects are scarce, supplement with hand-drawn sketches or printed images. Lay everything out on a clean surface so the student can see the full collection at once."
+      },
+      {
+        "n": 2,
+        "title": "First Observation Round",
+        "text": "Ask the student to handle each object silently for a few minutes and notice as many properties as possible — texture, color, size, smell, origin, whether it was once living, whether it moves in nature, and so on. Encourage the student to jot a few descriptive words about each object on a sticky note placed beside it. Do not suggest any categories yet; the goal is raw observation before sorting begins."
+      },
+      {
+        "n": 3,
+        "title": "Build Categories from Scratch",
+        "text": "Now ask the student to sort the 20 objects into groups using only their own reasoning — no textbook categories allowed. Prompt them to name each group and write the name on an index card. The key facilitation question is: 'Why does this object belong here and not there?' Push the student to articulate the rule for every boundary, not just the label. Expect and welcome regrouping; rearranging is part of the thinking."
+      },
+      {
+        "n": 4,
+        "title": "Map and Justify the System",
+        "text": "Once the student is satisfied with their groupings, help them draw a visual map on the large sheet of paper — placing category names as headings and listing or sketching the objects beneath each. For each category boundary, the student should write one justification sentence explaining what distinguishes it from neighboring categories. If two groups feel very similar, prompt: 'What is the one thing that makes these different enough to separate?'"
+      },
+      {
+        "n": 5,
+        "title": "Introduce Al-Jahiz",
+        "text": "Share a brief introduction to Al-Jahiz (c. 776–868 CE), the Basran scholar whose Kitab al-Hayawan classified animals by behavior, habitat, diet, and social structure — not just by physical appearance. Read aloud one or two short translated passages if you have them, or describe his key organizing ideas: animals that hunt vs. are hunted, animals that live in groups vs. alone, animals of water, land, and air. Ask the student to listen for the logic behind his choices rather than just the categories themselves."
+      },
+      {
+        "n": 6,
+        "title": "Compare and Interrogate",
+        "text": "Guide the student to place their own classification map next to what they now know of Al-Jahiz's approach and look for agreements and divergences. Useful prompts: 'Did you both separate water creatures from land creatures?' and 'Al-Jahiz cared a lot about how an animal survives — did you have a survival-based category?' Encourage honest disagreement: where the student's system differs, ask them to defend their choice rather than immediately deferring to Al-Jahiz."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Direct the student to the Sahifa for the closing documentation period. They should record: a sketch or description of their final classification map, the one category boundary they found hardest to justify, and their response to the Sahifa prompt. Remind them that Al-Jahiz himself revised his ideas across his writing — changing your mind after comparison is scholarship, not failure."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should work with 10 objects instead of 20 and sort into no more than 3 groups using a single visible property they can point to, such as color, size, or rough vs. smooth. The facilitator scribes the category labels and justification sentences while the student dictates. Skip the formal Al-Jahiz comparison and instead tell one story about how Al-Jahiz watched animals carefully before writing about them, connecting observation to the student's own sorting experience.",
+      "m58": "Students work with the full 20 objects and are challenged to create at least two different valid classification systems for the same collection — for example, one based on physical traits and one based on ecological origin — then explain which system is more useful and why. When comparing to Al-Jahiz, they should identify at least one specific point of agreement and one divergence in writing, using set notation (e.g., 'My group A overlaps with Al-Jahiz's category of…') to connect to the math context on sets.",
+      "h912": "Students build their classification system and then formally evaluate it against two criteria: internal consistency (does every object fit exactly one category?) and explanatory power (does the system predict anything about an object's behavior or relationships?). They should write a structured comparison paragraph arguing whether Al-Jahiz's behavioral-ecological approach or their own approach is epistemically stronger, citing specific category choices as evidence. As an extension, they may research how Linnaean taxonomy later formalized biological classification and consider what Al-Jahiz's method anticipated or missed."
+    },
+    "sahifaPrompt": "Al-Jahiz believed that careful observation — watching how an animal lives, hunts, and survives — reveals more than appearance alone. When I sorted my collection, I decided to separate ________ from ________ because ________. If Al-Jahiz had held these same objects, I think he would have agreed with me about ________, but he might have questioned my choice to ________ because his system cared most about ________.",
+    "townSystem": "food",
+    "townNeed": "The town's market has no system — fruits, grains, herbs, and roots are mixed together. Someone must create a classification system so vendors and buyers can find what they need."
+  },
+  "13": {
+    "week": 13,
+    "discipline": "Architecture",
+    "scholar": "Al-Ghazali",
+    "title": "Designing Spaces That Teach",
+    "prompt": "[Architecture] Structure that embodies wisdom: Design (on paper) a space for learning — a room, a garden, a courtyard. Every design decision must be justified: why this size, why this light, why this material? Al-Ghazali wrote about the conditions that make knowledge possible. Make those conditions physical.",
+    "time": {
+      "prepare": 10,
+      "make": 55,
+      "document": 15,
+      "total": 80
+    },
+    "materials": {
+      "essential": [
+        "Large blank paper or graph paper (at least A3 or two taped A4 sheets)",
+        "Pencil and eraser",
+        "Ruler",
+        "Colored pencils or markers (at least 3 colors)",
+        "Pen for annotation",
+        "Scrap paper for sketching thumbnails",
+        "A chosen scale reference (e.g., 1 cm = 1 metre)"
+      ],
+      "helpful": [
+        "Compass or round object for drawing curved walls or arches",
+        "Tracing paper for overlaying iterations",
+        "A printed or hand-drawn human figure silhouette for scale reference",
+        "Sticky notes for movable design labels"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Open with Al-Ghazali",
+        "text": "Before touching paper, read aloud or paraphrase this idea from Al-Ghazali's Ihya Ulum al-Din: knowledge requires the right inner conditions — quiet, sincerity, and freedom from distraction. Ask the student: if those conditions were a room, what would it feel like to stand inside it? Let them describe it in words before drawing anything."
+      },
+      {
+        "n": 2,
+        "title": "Choose a Space Type",
+        "text": "Invite the student to choose one learning space to design: a private study room, an open courtyard, or a garden. Encourage them to pick the one that matches the feeling they described in Step 1. Remind them that all three are valid Islamic architectural traditions — the madrasa had all of them."
+      },
+      {
+        "n": 3,
+        "title": "Establish Scale and Boundary",
+        "text": "Guide the student to set a scale before drawing — suggest 1 cm equals 1 metre as a starting point for Grade 5 and up, or simply 'this whole page is the room' for younger students. Have them draw the outer boundary of their space on the large paper, then place a small human figure silhouette inside to feel whether the space is too vast or too intimate. Prompt: does a learner feel held by this space, or lost in it?"
+      },
+      {
+        "n": 4,
+        "title": "Place Light, Air, and Quiet",
+        "text": "Ask the student to mark where windows, openings, or gaps for light and air will go — and then require them to write a one-phrase justification next to each one (e.g., 'morning light from the east, so it is gentle when you first sit'). Prompt them to think about the science of environment: how does temperature, brightness, and air movement change how a person feels and thinks? Each opening must earn its place."
+      },
+      {
+        "n": 5,
+        "title": "Add Elements and Justify Each",
+        "text": "Have the student populate the space — seating, a water feature, planting, a mihrab direction marker, shelving, a threshold. After placing each element, pause and ask: why is it that size? Why is it in that corner? Write every justification directly onto the drawing in small annotation labels. This annotation layer is the heart of the session — a beautiful drawing with no reasoning is incomplete."
+      },
+      {
+        "n": 6,
+        "title": "Name the Design Principles",
+        "text": "Once the drawing feels complete, ask the student to read back through all their annotations and extract two or three overarching principles they followed — for example, 'light should be soft, not sharp,' or 'the learner should never face a wall with nothing to see.' Have them write these principles as a short list in the margin or on a separate scrap paper. Tell them: Al-Ghazali wrote his conditions down too — these are yours."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Give the student 15 minutes for quiet written reflection in their Sahifa notebook. Use the Sahifa prompt below. Encourage them to sketch a tiny version of their final design in the margin of the entry if they wish."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should work at the scale of 'the whole page is the room' without worrying about numeric scale. Focus the session on three choices only — where you sit, where the light comes in, and one special thing in the room — and have the student draw and verbally explain each choice to the facilitator, who scribes the justifications onto the drawing for them.",
+      "m58": "Students in this band should apply a chosen numeric scale (1 cm = 1 m is appropriate) and calculate the actual dimensions of their space, checking that the room is a realistic size for a human being. They should write at least six annotated justifications and explicitly connect two of their design decisions to the science of how environment affects concentration, mood, or physical comfort.",
+      "h912": "Older students should research one historical Islamic learning space (such as the Qarawiyyin in Fes or the courtyard of the Madrasa al-Attarine) and identify at least two design principles from that building, then consciously adopt or consciously reject each one in their own design with written reasoning. Their annotation layer should function as a design argument — a written case that their space optimises the conditions Al-Ghazali identified as necessary for the acquisition of knowledge."
+    },
+    "sahifaPrompt": "Al-Ghazali believed that the conditions around us shape whether knowledge can enter the heart. In my design, I chose _______ because I wanted the learner to feel _______. The hardest decision was _______, and what it taught me about learning is _______.",
+    "townSystem": "knowledge",
+    "townNeed": "The town's school space is chaotic — students crowd, distract each other, and leave early. Someone must redesign the layout so the space itself encourages focus."
+  },
+  "14": {
+    "week": 14,
+    "discipline": "Pharmacy",
+    "scholar": "Jabir ibn Hayyan",
+    "title": "Reactions Jabir Would Record",
+    "prompt": "[Pharmacy] Observable reactions: Combine at least three safe household materials and record what happens: colour change, temperature change, gas production, texture change, smell. Document each combination like Jabir ibn Hayyan would: materials, quantities, procedure, result. Which changes were reversible? Which were not?",
+    "time": {
+      "prepare": 10,
+      "make": 35,
+      "document": 15,
+      "total": 60
+    },
+    "materials": {
+      "essential": [
+        "White vinegar",
+        "Baking soda",
+        "Whole milk or cream",
+        "Lemon juice",
+        "Table salt",
+        "Measuring spoons (teaspoon and tablespoon)",
+        "Three or four small clear glasses or jars",
+        "Pencil and blank paper or a notebook"
+      ],
+      "helpful": [
+        "Food thermometer or an indoor thermometer",
+        "Food colouring (any colour)",
+        "Measuring cup",
+        "Extra small bowls for staging measured amounts"
+      ]
+    },
+    "safety": "Keep all combinations away from eyes. Remind students not to taste any mixture even though all ingredients are food-safe, because combinations can be unpleasant. Supervise younger children when pouring liquids.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Scholar's Stage",
+        "text": "Before any mixing begins, tell students that Jabir ibn Hayyan insisted that no observation had value unless it was written down precisely — quantity, order, and result. Hand the student the notebook and ask them to draw three column headers before touching any material: 'What I combined,' 'Quantities,' and 'What I observed.' This primes the habit of documentation first, action second."
+      },
+      {
+        "n": 2,
+        "title": "Run Experiment One: Vinegar and Baking Soda",
+        "text": "Have the student measure exactly one tablespoon of vinegar into a clear glass, then add exactly one teaspoon of baking soda and observe immediately. Prompt them to note gas production (the fizzing), any temperature change they can feel through the glass, and smell. Ask: 'Can you get the baking soda back out of this mixture?' — plant the reversibility question early. Record everything in the notebook columns."
+      },
+      {
+        "n": 3,
+        "title": "Run Experiment Two: Lemon Juice and Milk",
+        "text": "Have the student measure two tablespoons of milk into a fresh glass and add one tablespoon of lemon juice, stirring gently. Ask them to watch for texture change (curdling) and note the smell. Give it two minutes — the change is slow enough to observe in stages. Prompt: 'Is this a new substance, or the same substance rearranged?' Record the result."
+      },
+      {
+        "n": 4,
+        "title": "Run Experiment Three: Salt and Vinegar (or a Student-Chosen Combination)",
+        "text": "Invite the student to choose their own third combination from the materials on the table — this is Jabir's spirit of systematic curiosity. A reliable option if they are unsure is dissolving salt in vinegar and observing that no dramatic change occurs (an equally important result). If food colouring is available, let them add a drop to any mixture to track how colour distributes. Remind them that 'nothing happened' is a valid scientific result and must be documented honestly."
+      },
+      {
+        "n": 5,
+        "title": "Test Reversibility Deliberately",
+        "text": "Return to experiment one and ask the student whether they think letting the mixture sit and evaporate would return it to vinegar and baking soda. Let it sit while they work on documentation — checking back at the end gives a real-time partial answer. For the curdled milk, ask whether stirring or warming could restore it to liquid milk. Guide them toward the distinction: physical changes can often be undone, chemical changes usually cannot."
+      },
+      {
+        "n": 6,
+        "title": "Build the Ratio Connection",
+        "text": "Once all three experiments are documented, ask the student to pick one experiment and double every quantity on paper (no need to redo it physically unless time allows). Ask: 'If you used twice as much vinegar with twice as much baking soda, what would you predict?' This surfaces proportional reasoning — the ratio of reactants stays constant even as scale changes. For older students, introduce the phrase 'proportional relationship' and have them write a ratio for their favourite combination."
+      },
+      {
+        "n": 7,
+        "title": "Close with the Scholar's Question",
+        "text": "Gather all notebooks and read one or two entries aloud, praising specificity of quantity and language. Ask the student to write a final sentence answering: 'Which of my changes were reversible, and how do I know?' Connect back to Jabir — his recorded procedures allowed later scholars to repeat and verify his work. Ask: 'If someone read your notes in 100 years, could they repeat your experiment exactly?'"
+      }
+    ],
+    "differentiation": {
+      "k4": "Focus only on experiments one and two, and simplify documentation to a drawing of before and after rather than written columns. Ask the student to describe what they see using their five senses aloud while you scribe their words. Skip the formal reversibility vocabulary — ask simply 'Can we make it go back?' and let them try stirring or waiting.",
+      "m58": "Have students complete all three experiments and write full documentation in Jabir's style, including units for every quantity. Introduce the terms 'chemical change' and 'physical change' and ask them to classify each experiment with a written justification. Add the ratio extension in Step 6 and have them calculate what quantities would be needed to run each experiment at a 3:1 scale.",
+      "h912": "Challenge students to design a fourth experiment themselves, hypothesise the type of change before running it, and evaluate their hypothesis afterward. Require documentation in a formal lab-note format with variables identified. Ask them to research why curdling milk is used in cheesemaking and connect it to Jabir's broader contribution to early chemistry and pharmacological preparation — then write a paragraph on how systematic documentation advanced Islamic scientific tradition."
+    },
+    "sahifaPrompt": "Today I worked like Jabir ibn Hayyan, recording every material and quantity before I made any change. The most surprising reaction I observed was _____, because _____. When I asked myself whether the change could be reversed, I discovered that _____.",
+    "townSystem": "health",
+    "townNeed": "Two plants from the surrounding land reacted unexpectedly when combined during a remedy attempt. The town needs someone to document the reaction and determine whether it is useful or dangerous."
+  },
+  "15": {
+    "week": 15,
+    "discipline": "Calligraphy",
+    "scholar": "Ibn al-Nafis",
+    "title": "Speaking Without Words",
+    "prompt": "[Calligraphy] Communicate without shared language: You must communicate a scientific concept to someone who does not share your language. You may use diagrams, symbols, mathematical notation, and objects — but no words. Create the artefact. Test it: can another student decode your meaning?",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 15,
+      "total": 70
+    },
+    "materials": {
+      "essential": [
+        "White cardstock or thick paper (at least A5 size)",
+        "Black fine-tip marker or pen",
+        "Pencil and eraser",
+        "Ruler",
+        "Coloured pencils or markers (at least 3 colours)",
+        "Scissors",
+        "Scrap paper for drafting"
+      ],
+      "helpful": [
+        "Compass or circular object for drawing curves",
+        "Sticky notes for the decode-testing phase",
+        "A printed reference of common scientific symbols (℃, →, ∴, ≈, etc.)",
+        "Tape or glue stick for adding small cut-out elements"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Meet Ibn al-Nafis",
+        "text": "Spend two or three minutes telling the student about Ibn al-Nafis — the 13th-century Syrian physician who described pulmonary blood circulation in writing that crossed linguistic and cultural borders for centuries. Ask: if he wanted to show how blood moves through the heart and lungs without using Arabic or Latin words, what might he have drawn? Let the student speculate freely before moving on."
+      },
+      {
+        "n": 2,
+        "title": "Choose a Concept",
+        "text": "Invite the student to pick one scientific concept they know well enough to explain — photosynthesis, gravity, the water cycle, blood circulation, or a mathematical relationship such as area or proportion are all good candidates. On scrap paper, have them write the concept name and jot down the three or four core ideas inside it. This written list stays private; it becomes the 'answer key' for the decode test later."
+      },
+      {
+        "n": 3,
+        "title": "Draft the Visual Language",
+        "text": "Guide the student to draft a wordless layout on scrap paper first. Encourage them to think like a calligrapher composing a page: Where does the eye enter? How does sequence flow across the surface? Remind them that arrows, numerals, geometric shapes, colour coding, and scale relationships are all permitted — but not a single word or abbreviation. Give them ten minutes for rough drafting before committing to the final card."
+      },
+      {
+        "n": 4,
+        "title": "Craft the Final Artefact",
+        "text": "Have the student transfer their draft to the cardstock with care — pencil first, then ink over the lines they want to keep. Encourage deliberate mark-making: line weight, colour choice, and spatial arrangement all carry meaning, just as a calligrapher's stroke thickness and spacing carry rhythm. Facilitate, but resist the urge to suggest corrections; the decode test will reveal gaps organically."
+      },
+      {
+        "n": 5,
+        "title": "Run the Decode Test",
+        "text": "Hand the finished artefact to a second person — a sibling, the other parent, or you yourself acting as a naive reader. Ask the decoder to say aloud what they think the artefact is communicating, pointing to specific symbols as they interpret them. The student listens without speaking; they may only observe. Have the decoder write their interpretation on a sticky note placed beside the artefact."
+      },
+      {
+        "n": 6,
+        "title": "Analyse the Gap",
+        "text": "Bring the student back into conversation. Compare the decoder's sticky note with the private answer key from Step 2. Where did meaning transfer successfully? Where did it break down? Ask the student to circle one symbol or area on the artefact that caused the most confusion, and have them annotate the back of the card with a brief explanation of what they intended and why they think it was misread."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Direct the student to their Sahifa journal for the final fifteen minutes. Prompt them to reflect in writing: What did this process reveal about the difference between a symbol that feels clear to its maker and one that actually communicates? Connect their reflection back to Ibn al-Nafis and to the mathematical idea that some symbols — like an equals sign or an arrow — have become genuinely universal over centuries of shared use."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should choose a very concrete, visual concept — a rainbow, a seed growing, day and night. Limit the artefact to three panels drawn in sequence, like a comic strip without words. The facilitator may act as scribe for the answer key and should read the decode test aloud to the child rather than asking for written responses.",
+      "m58": "Students at this level should choose a concept with a measurable or proportional relationship — such as the relationship between distance and time, or the input and output of photosynthesis — and must include at least one piece of mathematical notation (an equation, inequality, or ratio) within their wordless composition. During the gap analysis in Step 6, ask them to identify which element functioned most like a universal symbol and why.",
+      "h912": "Older students should select a multi-step physiological or physical process (Ibn al-Nafis's pulmonary circulation is an excellent choice) and must construct a visual grammar — a small legend on the reverse of the card that defines their symbols without using words, using only other symbols and spatial relationships. After the decode test, they should write a one-paragraph formal reflection comparing their invented visual language to standardised scientific notation systems and evaluating the conditions under which universality is achieved."
+    },
+    "sahifaPrompt": "Ibn al-Nafis described the movement of blood through the lungs at a time when scholars across many languages had to find ways to share ideas across great distances. Today I tried to communicate __________ without any words, and I discovered that __________. What this taught me about the difference between a private symbol and a shared language is __________.",
+    "townSystem": "knowledge",
+    "townNeed": "The town's announcement system relies on one person shouting — it fails in wind, distance, or when that person is absent. Someone must design a silent communication method for public messages."
+  },
+  "16": {
+    "week": 16,
+    "discipline": "Astronomy",
+    "scholar": "Al-Tusi",
+    "title": "Circles That Make a Line",
+    "prompt": "[Astronomy] Model the Tusi couple: Using two circles of the right sizes (one twice the radius of the other), show how Al-Tusi proved that linear motion can be produced from two circular motions. Build it with cardboard and a pin. Document what you observe.",
+    "time": {
+      "prepare": 10,
+      "make": 40,
+      "document": 15,
+      "total": 65
+    },
+    "materials": {
+      "essential": [
+        "Corrugated cardboard (two pieces, at least 20 cm × 20 cm each)",
+        "Compass or two circular objects to trace (e.g., a jar lid and a bottle cap with exactly 2:1 diameter ratio)",
+        "Scissors",
+        "One brass fastener (brad / split pin)",
+        "Ruler and pencil",
+        "Marker or colored pen",
+        "Tape (masking or scotch)"
+      ],
+      "helpful": [
+        "Protractor (for marking degree intervals on the outer circle)",
+        "Graph paper (to lay under the model and trace the point's path)",
+        "A second color marker (to trace the path of the moving point)",
+        "Thin skewer or toothpick (to mark the tracing point on the inner circle's edge)"
+      ]
+    },
+    "safety": "Use scissors carefully when cutting cardboard; supervise younger students with the pointed brad fastener.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Find Your Circle Sizes",
+        "text": "Help the student find two circular household objects where one is as close to exactly twice the diameter of the other as possible — for example, a 10 cm jar lid and a 5 cm bottle cap. Emphasize that the 2:1 ratio is not a random choice: Al-Tusi proved this specific proportion is what generates straight-line motion. Trace both circles onto cardboard and cut them out carefully."
+      },
+      {
+        "n": 2,
+        "title": "Mark the Tracing Point",
+        "text": "On the smaller circle (the inner one), have the student draw a clear dot at the very edge of the circle — this is the point whose path you will track. Mark the center of both circles clearly. Explain that this single point on the rim of the inner circle is what Al-Tusi was watching: he claimed it moves in a perfect straight line."
+      },
+      {
+        "n": 3,
+        "title": "Assemble the Couple",
+        "text": "Pierce the center of the small circle and the edge of the large circle at one point using the brad fastener, so the small circle is pinned inside the large circle's rim and can spin freely. The inner circle should sit flush against the inside edge of the outer circle. If the cardboard is stiff, press the brad through gently while holding the circles flat on a table."
+      },
+      {
+        "n": 4,
+        "title": "Rotate and Observe",
+        "text": "Place the large circle flat on a piece of graph paper or plain paper, and hold it still. Ask the student to slowly rotate the small circle inside the large one, keeping the two circles touching at their edges (no slipping). Watch what happens to the marked dot on the rim of the inner circle — have the student describe aloud what path they see before writing anything down."
+      },
+      {
+        "n": 5,
+        "title": "Trace the Path",
+        "text": "Repeat the rotation while the student uses a marker to mark the position of the tracing dot every 30 degrees or so, pressing gently through to the paper below. Connect those marks after a full rotation. Guide a discussion: does the path look curved or straight? How close to a perfect line did they get, and what might cause any wobble in their physical model?"
+      },
+      {
+        "n": 6,
+        "title": "Connect to Al-Tusi's Problem",
+        "text": "Explain that Al-Tusi invented this device around 1247 CE to solve a crisis in Ptolemy's planetary model — Ptolemy needed planets to move in straight lines at certain points in their orbits, but only assumed circular motion was 'perfect.' Al-Tusi showed that two circles together can produce linear motion, rescuing the principle of circular motion. Ask the student: why would a 13th-century astronomer care whether motion was circular or straight?"
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Give the student 15 minutes to complete their Sahifa entry. They should sketch their traced path, label the two circles with their measurements, and respond to the writing prompt. Encourage them to tape or glue their traced-path paper directly into the Sahifa as evidence of the experiment."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should focus on the wonder of observation: let them spin the inner circle freely and finger-trace where the dot travels, describing the motion in their own words ('it goes back and forth like a swing'). Skip the precise tracing step and instead count how many times the small circle spins for every one trip around the inside of the large circle, turning it into a simple counting game.",
+      "m58": "Students in this band should measure both circles, confirm the 2:1 ratio with a ruler, and make a prediction in writing before rotating — will the point move in a circle, a line, or something else? After tracing, they should measure the length of the resulting line and compare it to the diameter of the large circle, discovering that the line length equals the large circle's diameter.",
+      "h912": "Older students should research the parametric equations for the hypocycloid (x = (R−r)cos θ + r·cos((R−r)θ/r), y = (R−r)sin θ − r·sin((R−r)θ/r)) and verify algebraically that when R = 2r these equations reduce to pure linear motion (x = R·cos θ, y = 0). They should also write a short analysis connecting Al-Tusi's geometric proof to Copernicus's later use of the same device, discussing the transmission of mathematical ideas across cultures."
+    },
+    "sahifaPrompt": "Al-Tusi built something invisible — a mathematical proof — and then made it visible with moving circles. Today I built his Tusi couple and discovered that the tracing point moved in a path that looked like _______________. What surprised me most was _______________. Like Al-Tusi, I think the reason circular motion can hide inside what looks like straight motion is because _______________.",
+    "townSystem": "navigation",
+    "townNeed": "The town's clock system drifts and loses time. Someone must find a geometric method to correct it — the solution cannot rely on electricity or outside tools."
+  },
+  "17": {
+    "week": 17,
+    "discipline": "Cartography",
+    "scholar": "Ibn Battuta",
+    "title": "Map What You Know",
+    "prompt": "[Cartography] Map the knowledge journey: Create a map — not of a place, but of a journey through knowledge. Map this year's learning: what were the territories? What were the borders? What remained unexplored? Ibn Battuta mapped 120,000km of the known world. Map what you know.",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 15,
+      "total": 70
+    },
+    "materials": {
+      "essential": [
+        "Large blank paper (A3 or two taped A4 sheets)",
+        "Pencil and eraser",
+        "Colored pencils or markers (at least 4 colors)",
+        "Ruler",
+        "Student's year-to-date notebooks or a subject list",
+        "Black pen for final linework"
+      ],
+      "helpful": [
+        "Compass or small circular object for drawing borders",
+        "Gold or yellow marker for highlighting 'well-explored' territories",
+        "Sticky notes for drafting region labels before committing to ink",
+        "Watercolor paints or diluted food coloring for terrain shading"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Orient the Traveler",
+        "text": "Before the student touches paper, spend three to five minutes looking at an image of Ibn Battuta's route map together (easily found in any atlas or online). Ask: what do you notice about how he showed what he knew versus what lay beyond? Then tell the student that today they are Ibn Battuta, and this year's learning is their world to chart."
+      },
+      {
+        "n": 2,
+        "title": "Inventory the Territories",
+        "text": "Have the student flip through their notebooks or read aloud from a list of subjects and topics covered this year. As they name each area of learning, ask them to sort it into one of three rough piles — 'I know this land well,' 'I passed through but did not linger,' and 'I glimpsed it but never arrived.' Sticky notes or a quick spoken list both work here; the goal is to surface the raw material before any drawing begins."
+      },
+      {
+        "n": 3,
+        "title": "Sketch the Continents in Pencil",
+        "text": "Prompt the student to lightly pencil large landmass shapes for their biggest or most familiar knowledge territories — these might be named 'Mathematics,' 'Quran Study,' 'History,' or whatever feels right to them. Encourage them to let the shapes reflect their feeling about the subject: a broad open plain for something comfortable, a mountain range for something challenging, a narrow peninsula for something they only just began. Remind them this is a draft — full erasing is allowed and expected."
+      },
+      {
+        "n": 4,
+        "title": "Draw the Borders and the Edges",
+        "text": "Once the major territories are placed, guide the student to add border features: dotted lines for uncertain edges, bold lines for firm understanding, and a deliberate 'here be dragons' region at the margins of the map for topics not yet studied. Introduce the idea of scale informally — does the size of each territory reflect how much time was spent there, how much is known, or how important it feels? Let the student choose their own logic and label it in a small map key."
+      },
+      {
+        "n": 5,
+        "title": "Chart the Journey Route",
+        "text": "Ask the student to draw a single traveling line — like Ibn Battuta's route — that traces the order in which they moved through these territories across the year. The line can loop, backtrack, or branch. Prompt them to mark two or three significant stops with a small symbol (a star, an anchor, a question mark) representing a moment of discovery, struggle, or surprise. These become the map's narrative."
+      },
+      {
+        "n": 6,
+        "title": "Ink, Color, and Name",
+        "text": "Once the pencil composition feels complete, the student traces their final lines in black pen and adds color: guide them to use one color family for well-known territories, a second for in-progress lands, and a deliberately sparse or misty treatment for unexplored regions. Finally, they write a title, a compass rose, and a short legend. Celebrate the cartographic convention of a border frame — even a simple ruled rectangle makes it feel official."
+      },
+      {
+        "n": 7,
+        "title": "The Rihla Reading",
+        "text": "Seat the student across from you and ask them to 'read' their map aloud as if presenting to a fellow traveler. Listen for the moments they hesitate or say 'I'm not sure' — these are the unexplored territories worth noting in the Sahifa entry. Close by asking: if Ibn Battuta could see your map, what question do you think he would ask you first?"
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should work from a short pre-written list of just four or five subjects rather than generating the inventory themselves. Instead of freeform landmasses, they can draw a simple road or river path with named stops (like stations on a train), decorating each stop with a small picture of something they learned. The facilitator can scribe labels and the legend while the student focuses entirely on drawing and coloring.",
+      "m58": "Grade 5-8 students should engage directly with the math context by building a simple coordinate grid on their map and placing each knowledge territory at a deliberate (x, y) position — for example, x-axis representing time across the year, y-axis representing confidence level. They should also apply a written scale (e.g., 1 cm = 2 weeks of study) and practice calculating the 'distance' their route traveled, connecting to Ibn Battuta's 120,000 km as a comparative anchor.",
+      "h912": "High school students should extend the map into a systems-thinking analysis: after drawing, they annotate connection arrows between territories to show how one area of knowledge fed or depended on another, identifying feedback loops and isolated nodes. They should write a one-paragraph cartographer's note on the reverse that reflects formally on epistemology — what does the shape of their map reveal about how they learn, and what assumptions did they make in choosing what counted as a 'territory' versus a 'border'?"
+    },
+    "sahifaPrompt": "Ibn Battuta once wrote that travel leaves you speechless, then turns you into a storyteller. Looking at my knowledge map, the territory I explored most deeply this year was ___, and I know this because ___. The region that still waits at the edge of my map — the place marked 'unexplored' — is ___, and what I hope to discover there is ___.",
+    "townSystem": "navigation",
+    "townNeed": "A returned traveler arrived with stories but no map. The town needs someone to sit with them and reconstruct the route from memory before the details fade."
+  },
+  "18": {
+    "week": 18,
+    "discipline": "Astronomy",
+    "scholar": "Al-Kashi",
+    "title": "Chasing 108 Degrees",
+    "prompt": "[Astronomy] Precision construction: Using compass and straightedge, construct a regular pentagon. Document every step. Measure the resulting angles. Al-Kashi calculated π to 16 decimal places — precision was his discipline. How close did your construction come to the theoretical 108°?",
+    "time": {
+      "prepare": 5,
+      "make": 40,
+      "document": 15,
+      "total": 60
+    },
+    "materials": {
+      "essential": [
+        "Compass (standard school compass with pencil)",
+        "Ruler or straightedge (at least 20 cm)",
+        "Blank white paper (at least 2 sheets)",
+        "Sharp pencil (HB or 2H preferred for precision)",
+        "Protractor",
+        "Eraser",
+        "Pencil sharpener"
+      ],
+      "helpful": [
+        "Graph paper or dot paper for reference alignment",
+        "Colored pencils to trace construction arcs",
+        "A second sheet for scratch work and practice",
+        "Magnifying glass to inspect intersection points"
+      ]
+    },
+    "safety": "Remind the student that compass points are sharp. When carrying the compass, hold it by the hinge, not the point. Keep the cap on when not in use.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Stage",
+        "text": "Before the student touches the compass, spend two or three minutes discussing Al-Kashi together. Explain that he worked in Samarkand in the 15th century and computed π to 16 decimal places using nothing but careful geometric reasoning — no calculator, no computer. Ask the student: what does it feel like to care that much about getting something exactly right? Let that question sit while you set out the materials."
+      },
+      {
+        "n": 2,
+        "title": "Establish the Circle",
+        "text": "Have the student draw a circle of comfortable size — roughly 6–8 cm radius works well. Instruct them to mark the center point clearly and label it O. Emphasize that this center must be a single, clean dot, not a smudge; Al-Kashi's precision started with foundational points. Have the student also mark one point on the circle's circumference and label it A — this will be the first vertex of the pentagon."
+      },
+      {
+        "n": 3,
+        "title": "Step the Compass Around",
+        "text": "Guide the student through the classical compass-stepping method: keeping the compass set to the same radius as the circle, place the needle at A and mark a new point on the circumference; move the needle to that new point and mark again, continuing around until six points are marked. Explain that a regular hexagon divides naturally this way — and that the pentagon is hidden inside it. Watch carefully that the student does not readjust the compass width between steps; this is the most common source of error and a rich moment to discuss how one tiny slip compounds."
+      },
+      {
+        "n": 4,
+        "title": "Extract the Pentagon",
+        "text": "Show the student how to use every other point from the six hexagon points to locate the five vertices of a regular pentagon. Have them label these five vertices A through E in order, then use the straightedge to draw all five sides. Encourage them to draw each line in a single confident stroke rather than sketching back and forth — precision of line matters. If the last side does not quite close, note the gap honestly; it becomes data."
+      },
+      {
+        "n": 5,
+        "title": "Measure Every Interior Angle",
+        "text": "Ask the student to place the protractor carefully at each vertex and measure all five interior angles, recording each one in a simple table. Coach them on protractor alignment: the baseline must sit exactly on one side of the angle, and the center hole must sit exactly on the vertex point. The theoretical interior angle of a regular pentagon is 108°. Have the student record the error for each angle — how many degrees off is each measurement? Which vertex came closest?"
+      },
+      {
+        "n": 6,
+        "title": "Calculate and Reflect",
+        "text": "Have the student add all five measured angles and compare the sum to the theoretical 540°. Ask them to compute their average angle and find the difference from 108°. Introduce the phrase 'tolerance' — the acceptable range of error in a measurement — and ask: what tolerance do they think Al-Kashi would have accepted? This is also a good moment to connect to astronomy: telescopes, star charts, and navigational tables all depended on geometric constructions being this precise or better."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Invite the student to tape or glue their best pentagon construction into the Sahifa alongside their angle-measurement table. Then give them the Sahifa prompt to complete in writing. Encourage them to be honest about where their construction drifted and what they would do differently — Al-Kashi himself revised calculations across multiple sessions. The willingness to name error and try again is the discipline."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should skip the compass-stepping method and instead trace a pre-drawn circle, then use a printed pentagon template to cut out and glue into their Sahifa. Focus the activity on measuring the angles with a protractor and counting: are all five angles the same? Use only whole-number measurements and celebrate getting within 5° of 108°.",
+      "m58": "Students work through the full compass-and-straightedge construction as described and complete the angle table and sum calculation. Push them to express their error as a percentage: (measured − 108) ÷ 108 × 100. Ask them to hypothesize which step introduced the most error and how they could redesign the process to reduce it.",
+      "h912": "After completing the construction and error analysis, students research why the regular pentagon cannot be constructed by simple compass-stepping (unlike the hexagon) and write a short explanation of the geometric relationship between the pentagon and the golden ratio φ. Challenge them to derive the exact interior angle of 108° from first principles using the exterior angle theorem, and to express Al-Kashi's iterative approach to π as a parallel to their own iterative precision in this construction."
+    },
+    "sahifaPrompt": "Al-Kashi believed that precision was not stubbornness — it was respect for truth. When I measured my pentagon's angles, the one that came closest to 108° was __________, and the one that drifted the most was __________. What I learned about my own patience with precision is that __________.",
+    "townSystem": "research",
+    "townNeed": "The town wants to build a sundial in the central square but doesn't know the exact angle for this latitude. Someone must chase down 108 degrees to set it correctly."
+  },
+  "19": {
+    "week": 19,
+    "discipline": "Cartography",
+    "scholar": "Ibn Majid",
+    "title": "Map What You Know",
+    "prompt": "[Cartography] Map an unknown territory: Choose a space you have never mapped — the inside of a drawer, the floor plan of a room from memory, a route you walk without thinking. Map it. Then walk/check it. What did you get wrong? What did your memory emphasize?",
+    "time": {
+      "prepare": 5,
+      "make": 45,
+      "document": 15,
+      "total": 65
+    },
+    "materials": {
+      "essential": [
+        "Several sheets of blank white paper (at least 4)",
+        "Pencil with eraser",
+        "Ruler or straight edge",
+        "Colored pencils or markers (at least 3 colors)",
+        "A measuring tape or a piece of string for measuring",
+        "A clipboard or hard surface to draw on"
+      ],
+      "helpful": [
+        "Graph paper (for scale drawing work)",
+        "A compass or protractor",
+        "Sticky notes for annotations",
+        "A second color of pen for corrections"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Choose the Territory",
+        "text": "Before the student touches paper, ask them to choose one unmapped space: the contents and layout of a kitchen drawer, a room drawn entirely from memory while sitting elsewhere, or a familiar walking route sketched without retracing it first. Remind them that Ibn Majid charted coastlines sailors had already sailed but never precisely recorded — known places made strange by close attention. The student should commit to their choice and sit away from the space if possible."
+      },
+      {
+        "n": 2,
+        "title": "Draw from Memory First",
+        "text": "Invite the student to draw their map entirely from memory on the first sheet of paper, without checking or measuring anything. Encourage them to add as much detail as they can recall — relative sizes, positions, landmarks, labels. Let them work in silence for at least five to eight minutes. If they get stuck, prompt them gently: 'What do you notice first when you enter or open it? What is in the corner farthest from you?'"
+      },
+      {
+        "n": 3,
+        "title": "Add a Scale and a Key",
+        "text": "Once the memory map is complete, ask the student to assign a rough scale — for example, one centimeter on paper equals thirty centimeters in the real space — and add a simple legend with at least three symbols. This does not need to be accurate yet; the goal is to build the habit of explicit notation that navigators like Ibn Majid used to make charts readable by strangers. Guide older students to choose their scale deliberately and write it as a ratio."
+      },
+      {
+        "n": 4,
+        "title": "Observe and Measure the Real Space",
+        "text": "Now send the student to the actual space with a measuring tape or knotted string and a fresh sheet of paper for field notes. Ask them to measure at least four key distances or dimensions and record them as numbers, not drawings. Encourage them to notice features they left off the memory map entirely. The facilitator may accompany younger students; older students should work independently and return with raw measurements."
+      },
+      {
+        "n": 5,
+        "title": "Draw the Corrected Map",
+        "text": "Using their measurements and field notes, the student now draws a second, corrected map on a clean sheet, applying a consistent scale. Prompt them to use a different color for anything that differs from the memory map. Circulate and ask: 'Where did your memory compress a distance? Where did it expand one?' Help the student align their ruler and transfer measurements carefully before committing to ink or dark pencil."
+      },
+      {
+        "n": 6,
+        "title": "Compare and Annotate",
+        "text": "Place the memory map and the corrected map side by side. Ask the student to mark three to five specific discrepancies directly on the memory map in a contrasting color, writing a brief label for each: 'too wide,' 'missing entirely,' 'wrong position.' Guide a short conversation: What patterns appear in the errors? Were objects near a door or focal point more accurate than those at the edges? This mirrors how early cartographers discovered the systematic biases of their own instruments and habits."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Transition the student to their Sahifa for the documentation period. Ask them to respond to the prompt in writing or annotated drawing, connecting their experience of cartographic error to Ibn Majid's life work as a navigator who trusted — and corrected — accumulated knowledge. Encourage them to tape or fold in a small version of both maps if they wish."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should choose the simplest territory — a single drawer or one tabletop — and draw with pictures rather than symbols. Skip the formal scale step and instead have them cut a piece of string the length of the real object and lay it against their drawing to see the difference. Focus the reflection on one thing they forgot and one thing they remembered well.",
+      "m58": "Middle students should attempt a full room floor plan and apply a written scale ratio (e.g., 1 cm = 50 cm). Ask them to calculate the actual area of the room from their corrected map using the scale and compare it to the area suggested by the memory map. Connect the exercise to systematic observation by asking them to design a more reliable measurement procedure they could repeat.",
+      "h912": "High school students should map a multi-room route or an outdoor path and work with a consistent representative fraction scale (e.g., 1:100). Ask them to quantify their errors — measuring the percentage difference in at least two distances between the memory and corrected maps — and write a short analysis of whether their errors were random or showed a directional bias. They may also research how Ibn Majid described the limits of dead reckoning in the Kitab al-Fawa'id and connect his epistemic humility to their own findings."
+    },
+    "sahifaPrompt": "Ibn Majid spent his life charting waters that sailors had crossed for generations but never precisely drawn. Today I mapped _____ from memory before I checked it. The biggest difference between my memory map and the real space was _____. This makes me think that what I pay attention to every day is not the same as _____.",
+    "townSystem": "navigation",
+    "townNeed": "Two families disagree about which path to the river is safer after the rains. The town needs a map drawn from both accounts so the council can decide."
+  },
+  "20": {
+    "week": 20,
+    "discipline": "Engineering",
+    "scholar": "Al-Jazari",
+    "title": "Redirect the Force",
+    "prompt": "[Engineering] Build a redirecting machine: Build a device — from any available materials — that redirects force: a lever, a pulley, a ramp, a waterwheel, a crank. The device must visibly change the direction or magnitude of a force. Document the mechanical principle.",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 15,
+      "total": 70
+    },
+    "materials": {
+      "essential": [
+        "Cardboard or a sturdy cereal box",
+        "Wooden pencil or dowel rod (for axle or fulcrum)",
+        "String or twine (at least 60 cm)",
+        "Empty thread spool or toilet-paper tube",
+        "Ruler or stiff flat stick",
+        "Small weights (coins, a filled film canister, or a bag of rice)",
+        "Scissors",
+        "Masking tape"
+      ],
+      "helpful": [
+        "Hole punch or skewer for piercing clean axle holes",
+        "Protractor for measuring ramp angles",
+        "Kitchen scale for comparing effort vs. load forces",
+        "Extra spools, tubes, or bottle caps for compound designs"
+      ]
+    },
+    "safety": "Use scissors and skewers with care — adult should pierce any holes through cardboard for younger students. Keep the work surface clear so weighted objects cannot fall onto hands.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Meet Al-Jazari",
+        "text": "Before touching materials, spend three to five minutes introducing Al-Jazari: a 12th-century Muslim engineer who designed automata, water-raising machines, and elaborate clocks in his Book of Knowledge of Ingenious Mechanical Devices. Ask the student what problem they think engineers in a desert palace would most need to solve, guiding them toward water and heavy loads. This frames the session as solving a real problem, not a craft project."
+      },
+      {
+        "n": 2,
+        "title": "Choose Your Machine Type",
+        "text": "Lay out the available materials and invite the student to pick one simple machine to build: a lever (ruler on a pencil fulcrum), a fixed pulley (spool threaded on a pencil suspended between two stacks of books), a ramp (cardboard incline), or a crank (pencil through a spool attached to a cardboard arm). Ask them to say aloud, before building, which direction or size of force they expect to change — this prediction becomes their hypothesis."
+      },
+      {
+        "n": 3,
+        "title": "Build the Device",
+        "text": "Give the student ownership of construction while you assist only with structural integrity — piercing holes, steadying tape joints, or holding pieces while adhesive sets. Encourage them to test the mechanism partially as they build rather than completing it before any trial; iterative testing mirrors Al-Jazari's own design-and-refine process documented in his manuscripts."
+      },
+      {
+        "n": 4,
+        "title": "Test With Real Loads",
+        "text": "Once the device holds together, place a small weight (a few coins) on the load end and have the student apply effort at the other end, asking them to describe what they feel and observe — does the force feel smaller, larger, or does it move in a different direction? For a pulley or lever, compare lifting the weight directly by hand versus through the machine. If a kitchen scale is available, measure the effort force in both cases and calculate the difference."
+      },
+      {
+        "n": 5,
+        "title": "Reveal the Principle",
+        "text": "After the student has described their observations, introduce the vocabulary that names what they experienced: mechanical advantage (the ratio of load force to effort force), force redirection, and trade-off (a machine that reduces effort usually increases the distance you must move). Connect this explicitly to Al-Jazari's water-raising devices, which used cranks and gears to convert rotational motion into the vertical lifting of buckets — the same trade-offs in a palace courtyard as on the student's desk."
+      },
+      {
+        "n": 6,
+        "title": "Document the Mechanism",
+        "text": "Ask the student to open their Sahifa and draw the device from the side, labeling the effort force (arrow showing direction), the load force (arrow), the fulcrum or axle, and the mechanical advantage they calculated or estimated. Encourage them to draw a second sketch showing what the machine would look like if they doubled the effort-arm length — what would change? This moves documentation from recording to predicting."
+      },
+      {
+        "n": 7,
+        "title": "Reflect and Extend",
+        "text": "Close the session by asking the student where they have seen this same machine principle in the home or neighborhood — a door handle, a wheelbarrow, a flagpole pulley, a car's steering wheel. For older students, ask whether two simple machines could be combined to gain even greater mechanical advantage, planting the seed for compound machines and Al-Jazari's more complex automata."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should build a single first-class lever using a ruler balanced on a pencil and explore how moving the fulcrum changes which side feels heavier. The facilitator should name 'push down here, it goes up there' as force redirection without requiring formal calculation. Documentation is a crayon drawing with arrows labeled 'push' and 'lift.'",
+      "m58": "Students should build their chosen machine and measure the effort force versus the load force using a kitchen scale or hanging weights, then calculate mechanical advantage as a ratio. They should record whether their measured advantage matched their prediction and write one sentence explaining the trade-off between force and distance. This directly supports the Grade 7 math context of ratios and the science context of simple machines.",
+      "h912": "Students should build a device and then derive the theoretical mechanical advantage from geometry (lever arm ratio, pulley radius, or ramp angle via trigonometry) before measuring experimentally. They should calculate efficiency as the ratio of theoretical to actual mechanical advantage, attribute losses to friction, and write a short analysis connecting their findings to Al-Jazari's engineering constraints — materials, water pressure, or palace aesthetics — and how those constraints shaped his design choices."
+    },
+    "sahifaPrompt": "Al-Jazari spent years designing machines that moved water and weight through clever redirection of force. Today I built a ______, which changed force by ______. The most surprising thing I discovered was that when I moved my effort farther from the fulcrum (or axle), the load felt ______, which taught me that every machine involves a trade-off between ______ and ______.",
+    "townSystem": "water",
+    "townNeed": "The town's water must travel uphill from the river to the upper quarter but the current system requires four settlers to operate it full-time. The town needs a mechanical solution that redirects the force of the water itself."
+  },
+  "21": {
+    "week": 21,
+    "discipline": "Architecture",
+    "scholar": "Ibn Battuta",
+    "title": "Archive What Mattered Most",
+    "prompt": "[Architecture] Archive this year: Create an archive of your work from this academic year — select, organize, and present it. An archive is not a collection; it is an argument about what mattered. Justify every inclusion. Ibn Battuta's Rihla was an archive of 30 years of travel.",
+    "time": {
+      "prepare": 15,
+      "make": 60,
+      "document": 15,
+      "total": 90
+    },
+    "materials": {
+      "essential": [
+        "All available work from the academic year (papers, drawings, photos, projects)",
+        "A sturdy folder, binder, or cardboard box to serve as the archive container",
+        "Index cards or small squares of paper for labels and justification notes",
+        "Scissors and tape or glue stick",
+        "Ruler",
+        "Pen and pencil",
+        "A single sheet of paper for a title page or introduction"
+      ],
+      "helpful": [
+        "Sticky notes in two colors (one for categories, one for questions)",
+        "A phone or tablet to photograph oversized or fragile work",
+        "Colored pencils or markers for section dividers",
+        "Hole punch if using a binder"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Lay Everything Out",
+        "text": "Before the student touches anything, ask them to spread every piece of available work across a large flat surface — table, floor, bed. Resist the urge to sort yet. Let them simply look. Ask: 'What do you notice? What surprises you that it's here?'"
+      },
+      {
+        "n": 2,
+        "title": "Name the Question",
+        "text": "Tell the student that Ibn Battuta did not write down everything he saw — he made choices. Ask them to state, out loud or in writing, one sentence that begins: 'This archive is an argument that this year I...' This sentence will anchor every decision they make next."
+      },
+      {
+        "n": 3,
+        "title": "Sort and Ruthlessly Curate",
+        "text": "Guide the student to make three piles: definitely include, maybe, and leave out. Remind them that leaving things out is not failure — it is editing, which is an act of intelligence. Each 'definitely include' piece must earn its place: prompt the student to say aloud why each one belongs before it goes in the pile."
+      },
+      {
+        "n": 4,
+        "title": "Build the Architecture of the Archive",
+        "text": "Now help the student decide on an organizing structure — this is the architectural move. Chronological, by subject, by difficulty, by what changed their mind? Have them write a category label on an index card for each section and arrange the chosen work within those sections. The structure should reflect the argument, not just convenience."
+      },
+      {
+        "n": 5,
+        "title": "Write a Justification for Each Piece",
+        "text": "For every included item, the student writes a brief justification on an index card (two to four sentences): what it is, why it was chosen, and what it proves about the archive's argument. Facilitate by asking 'What would be lost if this weren't here?' for any card the student finds hard to write."
+      },
+      {
+        "n": 6,
+        "title": "Compose the Introduction",
+        "text": "Ask the student to write a one-paragraph introduction to the archive on the title page — the equivalent of Ibn Battuta's opening, which named his purpose and invited the reader in. The introduction should state the archive's argument and briefly describe how it is organized. Read it back to them once they finish and ask: does this match what is actually inside?"
+      },
+      {
+        "n": 7,
+        "title": "Present and Defend",
+        "text": "Have the student present the completed archive to you as if you are an unfamiliar reader encountering their year for the first time. Ask at least two genuine questions — things you actually want to know — and at least one challenge: 'Why did this make it in when that did not?' Treat this as a real intellectual exchange, not a performance review."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should limit their archive to five to seven items and draw a simple picture next to each justification card rather than writing full sentences. The facilitator can scribe the student's spoken justifications. The organizing structure should be chosen from two options the facilitator offers — for example, 'things I made' versus 'things I learned' — rather than invented from scratch.",
+      "m58": "Students in this band should engage directly with the Math 7 context by creating a visual categorization map before building the archive — a hand-drawn chart or grid showing categories and how pieces are distributed across them. They should also write one sentence per item connecting it to the Science 7 documentation standard: what evidence does this piece provide, and how reliable is it?",
+      "h912": "High school students should treat the introduction as a formal curatorial statement of at least two paragraphs, explicitly naming the criteria by which items were included or excluded. They should also write a one-page reflection comparing their archival logic to Ibn Battuta's Rihla — considering what Ibn Battuta chose to emphasize, what he left out, and what that reveals about the argument his archive was making about Islamic civilization in the 14th century."
+    },
+    "sahifaPrompt": "Ibn Battuta spent thirty years traveling and then made choices about what to record in his Rihla — he did not write everything down, only what he believed mattered. After building my own archive, I think the argument my year is making is that I ___. The piece I almost left out but chose to keep was ___, and I am glad I kept it because it shows that ___.",
+    "townSystem": "knowledge",
+    "townNeed": "The town is in its third year. Important decisions, failures, and breakthroughs have happened but nothing has been archived. Someone must select what mattered most and preserve it before memory fades."
+  },
+  "22": {
+    "week": 22,
+    "discipline": "Geometry",
+    "scholar": "Al-Maqrizi",
+    "title": "Shapes That Share Justly",
+    "prompt": "[Geometry] The geometry of justice: Design a system for distributing a resource — water, light, space, food — among people with different needs. The system must be geometrically describable. Draw it. Justify why it is fair. Al-Maqrizi wrote about distribution of resources in 15th century Egypt.",
+    "time": {
+      "prepare": 10,
+      "make": 40,
+      "document": 15,
+      "total": 65
+    },
+    "materials": {
+      "essential": [
+        "Large blank paper or graph paper (at least 2 sheets)",
+        "Ruler",
+        "Pencil and eraser",
+        "Colored pencils or markers (at least 3 colors)",
+        "Compass or circular lid for drawing circles",
+        "Scissors",
+        "Sticky notes or small paper scraps for labeling"
+      ],
+      "helpful": [
+        "Protractor",
+        "Calculator",
+        "Tracing paper for iterating designs",
+        "String (for exploring radius and area hands-on)"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Scene",
+        "text": "Open by reading aloud a one-sentence introduction: 'In 15th-century Egypt, a scholar named Al-Maqrizi watched his city suffer through famine and flood, and he wrote carefully about how resources were — and were not — shared fairly.' Ask the student: 'If you had to give water to five families with different numbers of people, how would you start thinking about it?' Let them talk freely for two or three minutes before touching any materials."
+      },
+      {
+        "n": 2,
+        "title": "Choose a Resource and Community",
+        "text": "Invite the student to pick one resource (water channels, garden light, floor space, food portions) and invent a small community of three to six people or groups with clearly different needs — for example, a nursing mother, an elder, two children, and a farmer. Have them write each person's name or role on a sticky note and arrange these on the paper before drawing anything. This grounds the geometry in real human stakes."
+      },
+      {
+        "n": 3,
+        "title": "Draft the Distribution Shape",
+        "text": "Ask the student to draw a geometric system that shows how the resource reaches each person — this might be a network of branching rectangles like irrigation channels, a set of concentric circles dividing a garden, a partitioned polygon for floor space, or a pie-like sector diagram for food. Encourage them to label each region or path with the person it serves. Remind them that the shape itself must carry the logic of fairness, not just decorate it."
+      },
+      {
+        "n": 4,
+        "title": "Calculate and Annotate",
+        "text": "Once a draft shape exists, prompt the student to assign actual numbers: areas, lengths, or proportions. Ask guiding questions such as 'What fraction of the total does this family receive?' and 'If the farmer needs twice as much water as the elder, does your channel width reflect that?' Have the student write ratios or calculations directly onto the diagram in a second color so the math is visible inside the design."
+      },
+      {
+        "n": 5,
+        "title": "Stress-Test the Fairness Claim",
+        "text": "Play gentle devil's advocate: point to one person in the diagram and ask, 'Could this person argue your system is unfair? Why or why not?' Encourage the student to revise the geometry if they spot an injustice — a channel that is proportionally too narrow, a sector that ignores a family's larger size. This iteration step mirrors Al-Maqrizi's own analytical method of exposing hidden inequities."
+      },
+      {
+        "n": 6,
+        "title": "Write the Justice Justification",
+        "text": "Ask the student to write three to five sentences directly on or beside the diagram explaining why the system is fair. The explanation must reference the geometric features — not just 'everyone gets some,' but 'the sector angle for the farmer is twice that of the child because the ratio of their need is 2:1.' If the student is verbal rather than written, you may scribe while they dictate."
+      },
+      {
+        "n": 7,
+        "title": "Document in the Sahifa",
+        "text": "Transition to the Sahifa by asking the student to reflect on what they discovered about the relationship between shapes and fairness. Give them the Sahifa prompt and allow quiet writing or drawing time. Display the finished diagram somewhere visible and, if possible, share it with another family member who can ask one genuine question about the design."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should work with a concrete, physical resource they can touch — such as dividing a sheet of paper representing a garden into colored zones for three toy figures. Focus on the idea of 'more need, more space' and let them cut and arrange paper shapes rather than draw precise geometry. The facilitator writes the labels and numbers while the student dictates the reasoning.",
+      "m58": "Students in this band should connect the diagram directly to ratio and proportion: require that every region's size be expressed as a fraction of the whole, and that at least one proportion be verified by calculation. Challenge them to explain what would happen to the geometry if one person's need doubled — would they redraw, or could the system flex?",
+      "h912": "Older students should engage with the formal tension between equity and equality, defining each term precisely before designing. Require them to write a short proof or logical argument — not just an explanation — showing that their allocation satisfies a chosen fairness criterion (proportional allocation, leximin, or need-based priority). They may also research Al-Maqrizi's Ighatha al-Umma and connect one historical observation he made to a feature of their design."
+    },
+    "sahifaPrompt": "Al-Maqrizi looked at his city and saw that the shape of a society — who lived where, who received what — could be read like a map. Today I designed a system for sharing ________, and I decided it was fair because ________. The hardest part of turning justice into a shape was ________.",
+    "townSystem": "housing",
+    "townNeed": "Three families need to share one plot of land fairly. The council asked a student to use geometry — not guessing — to divide it so no one is shorted."
+  },
+  "23": {
+    "week": 23,
+    "discipline": "Engineering",
+    "scholar": "Fatima al-Fihri",
+    "title": "Bridge the Gap Yourself",
+    "prompt": "[Engineering] Build from no instructions: You will be given materials and a constraint but no instructions: the structure must hold weight AND span a gap. Figure out the rest. Fatima al-Fihri built the world's first university without a precedent to follow.",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 15,
+      "total": 70
+    },
+    "materials": {
+      "essential": [
+        "20 popsicle sticks or craft sticks",
+        "1 meter of masking tape",
+        "10 index cards or pieces of cardstock",
+        "2 stacks of books (to create the gap, equal height)",
+        "Small plastic bag filled with coins or dried beans (test weight)",
+        "Ruler or measuring tape",
+        "Pencil and paper for sketching"
+      ],
+      "helpful": [
+        "Rubber bands (3-5)",
+        "Scissors",
+        "A second bag of coins to increase load",
+        "Kitchen scale to weigh the test load"
+      ]
+    },
+    "safety": "Supervise younger students when stacking heavy books — ensure the two book stacks are stable on a flat surface before the student works between them.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Set the Stage",
+        "text": "Place two equal stacks of books on a flat table, exactly 20 centimeters apart (gap edge to edge). Without any additional explanation, present the student with the materials and state only the two constraints: the structure must span the full 20 cm gap and hold the weight bag for at least 10 seconds without touching the table below. Resist the urge to hint at any approach — let the open problem land fully."
+      },
+      {
+        "n": 2,
+        "title": "Invite Observation and Sketching",
+        "text": "Ask the student to spend five minutes looking at the materials and sketching at least two different ideas before touching anything. Prompt with open questions: 'What shapes do you think might be strong?' and 'Where do you think the weight will push hardest?' Encourage labeling of the sketches with predicted strengths and weaknesses."
+      },
+      {
+        "n": 3,
+        "title": "First Build Attempt",
+        "text": "Let the student choose one sketch and begin building with no further guidance. Your role is to observe and narrate what you notice — 'I see you're layering the sticks' — without evaluating or correcting. Allow up to 15 minutes for this attempt, including the weight test."
+      },
+      {
+        "n": 4,
+        "title": "Test and Analyze Failure",
+        "text": "Conduct the load test together: gently set the weight bag at the center of the span. Whether the structure holds or collapses, pause and ask the student to describe exactly where and how it failed or held. Guide them to identify the weakest point by examining bent, shifted, or torn materials — this is the engineering design loop in action."
+      },
+      {
+        "n": 5,
+        "title": "Revise and Rebuild",
+        "text": "Invite the student to revise their design using what they learned from the test. They may reuse materials, recombine them, or try a completely different sketch. Encourage them to articulate one specific change and the reasoning behind it before they rebuild. Allow 15 minutes for this iteration."
+      },
+      {
+        "n": 6,
+        "title": "Final Test and Measurement",
+        "text": "Run a formal final test: place the weight bag at center span and time 10 seconds aloud. If the structure passes, try adding a second weight bag. Record the maximum load held, the span achieved, and whether the structure remained above the table throughout. Celebrate the result regardless of outcome — iteration is the discipline."
+      },
+      {
+        "n": 7,
+        "title": "Document and Connect",
+        "text": "Direct the student to their Sahifa. Ask them to draw their final structure with labels, record the load it held, and complete the Sahifa prompt. Close the session by briefly sharing that Fatima al-Fihri founded the University of al-Qarawiyyin in 859 CE with no model to copy — she had to imagine an institution that had never existed and build it anyway."
+      }
+    ],
+    "differentiation": {
+      "k4": "Reduce the gap to 10 cm and provide only index cards and tape — fewer variables make the challenge tractable. Skip the sketching phase and instead ask the student to describe their plan aloud before building. Focus praise and documentation on the observation of where the structure felt 'wobbly' versus 'strong.'",
+      "m58": "Hold the gap at 20 cm and require the student to estimate in writing how much weight their design will hold before each test, then compare prediction to result. Introduce the vocabulary of compression and tension and ask them to label which forces are acting where in their sketch. Challenge them to improve their load-held-per-stick ratio across the two attempts.",
+      "h912": "Require the student to produce a labeled engineering diagram with force-direction arrows before building and to calculate the estimated load distribution at the center span using ratios. After both builds, ask them to write a short design rationale explaining their structural choices in terms of triangulation, arch action, or beam theory. Optionally, introduce the concept of factor of safety and have them estimate theirs."
+    },
+    "sahifaPrompt": "Fatima al-Fihri built something the world had never seen before, starting only with a vision and a commitment. Today I built a bridge that had to span _______ and hold _______. The moment I understood what was failing was when _______, and that changed how I thought about the whole problem.",
+    "townSystem": "infrastructure",
+    "townNeed": "The town's two neighborhoods are separated by a seasonal stream that floods every spring. Someone must design a crossing that holds without imported materials."
+  },
+  "24": {
+    "week": 24,
+    "discipline": "Natural History",
+    "scholar": "Ibn Khaldun",
+    "title": "Before, Process, After",
+    "prompt": "[Natural History] Restore something: Take something broken, worn, or neglected and restore it — repair an object, revive a plant, clean and document an artefact. Document the before, the process, the after. Ibn Khaldun wrote that civilisations decline and can be restored. What did restoration require?",
+    "time": {
+      "prepare": 15,
+      "make": 50,
+      "document": 20,
+      "total": 85
+    },
+    "materials": {
+      "essential": [
+        "A chosen subject for restoration (one of: a neglected houseplant, a tarnished coin or piece of cutlery, a scuffed or broken small object, a stained or torn book)",
+        "Notebook or blank paper for documentation",
+        "Pencil and coloured pencils or markers",
+        "Ruler and measuring tape",
+        "Smartphone or camera for before/after photographs",
+        "Cleaning supplies appropriate to the chosen subject (soft cloth, mild soap, water)",
+        "Adhesive (white glue or tape) if repairing a torn or broken object"
+      ],
+      "helpful": [
+        "Magnifying glass for close inspection",
+        "Small paintbrush for gentle cleaning",
+        "Old toothbrush for scrubbing crevices",
+        "Graph paper for measurement recording"
+      ]
+    },
+    "safety": "If cleaning metal with vinegar or baking soda, ensure the workspace is ventilated and students wash hands afterwards. Supervise younger students when using scissors or adhesive.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Choose and Observe",
+        "text": "Help the student select one subject for restoration from around the home — something genuinely worn, neglected, or broken rather than merely old. Before touching it, have them slow down and observe it closely, then document its current state in writing and sketch, noting at least three specific details about its condition. Prompt them: 'What happened here? How did it get this way?'"
+      },
+      {
+        "n": 2,
+        "title": "Measure the Decline",
+        "text": "Guide the student to take at least two measurable observations of the before-state — for example, the height of a wilting plant, the surface area of a stain, or the length of a crack. Record these numbers alongside the sketch. Explain that Ibn Khaldun was careful to record conditions precisely so he could understand causes, not just effects."
+      },
+      {
+        "n": 3,
+        "title": "Plan the Restoration",
+        "text": "Before beginning any work, ask the student to write a brief plan: What needs to happen? In what order? What materials will be used? This planning step mirrors Ibn Khaldun's emphasis on understanding the conditions required for revival — restoration is not random effort but reasoned intervention."
+      },
+      {
+        "n": 4,
+        "title": "Restore with Attention",
+        "text": "Have the student carry out the restoration slowly, pausing every few minutes to note what they are doing in a process log — three to five short entries capturing what changed and why. Encourage them to notice what resists being restored and what responds quickly, and to record both honestly."
+      },
+      {
+        "n": 5,
+        "title": "Measure the After",
+        "text": "Once the restoration is complete or reaches a natural stopping point, repeat the same measurements taken in Step 2 and record them beside the original figures. Take a photograph or draw a fresh after-sketch at the same angle and scale as the before-sketch so the comparison is meaningful."
+      },
+      {
+        "n": 6,
+        "title": "Analyse the Gap",
+        "text": "Sit with the student and look at the before and after together. Ask: 'Was it fully restored? What could not be recovered? What did restoration require — time, effort, knowledge, materials, care?' Let the student answer in their own words before connecting to Ibn Khaldun's argument that civilisational renewal requires the same ingredients."
+      },
+      {
+        "n": 7,
+        "title": "Write the Sahifa Entry",
+        "text": "Invite the student to complete their Sahifa entry using the prompt below, drawing directly from what they observed and did today. Allow quiet time — this is reflection, not a test."
+      }
+    ],
+    "differentiation": {
+      "k4": "Young students should choose a simple, visible subject — a muddy stone, a wilting plant, a dusty shelf object. Focus entirely on observational drawing: one before-sketch and one after-sketch, with the student dictating what they notice to the facilitator. The Ibn Khaldun connection can be told as a story: 'A long time ago, a scholar noticed that great cities can fall apart — and also come back. Today you noticed that too.'",
+      "m58": "Students in this band should complete the full measurement cycle and write their own process log entries. Introduce the concept of rate of change: how much did the subject improve per minute of effort? Ask them to calculate the difference between before and after measurements and express it as a percentage change, connecting to the Grade 7 math context.",
+      "h912": "High school students should research Ibn Khaldun's concept of 'asabiyyah (social cohesion) and write a structured paragraph arguing whether their restoration project is a physical analogy for civilisational renewal — identifying what conditions were necessary, what was irreversible, and what the limits of restoration reveal about decline. They should also consider the science context: how does decomposition interact with restoration, and at what point does restoration become impossible?"
+    },
+    "sahifaPrompt": "Ibn Khaldun believed that things — and even whole civilisations — can decline and be restored, but only if the right conditions are present. Today I tried to restore __________, and what I found was that restoration required __________. What surprised me most about the process was __________.",
+    "townSystem": "food",
+    "townNeed": "The town started a composting process but abandoned it midway and now no one knows what state it's in. Someone must document what it looked like before, what happened during, and what it is now."
+  },
+  "25": {
+    "week": 25,
+    "discipline": "Calligraphy",
+    "scholar": "Ibn al-Haytham",
+    "title": "The Object That Teaches",
+    "prompt": "[Calligraphy] Teach through making: Make something — a diagram, a model, a labelled illustration — that teaches one concept from this year to someone who has not studied it. No words of explanation allowed beyond labels. Test it: does the object teach without you present?",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 15,
+      "total": 70
+    },
+    "materials": {
+      "essential": [
+        "Thick paper or card stock (at least A4 / letter size)",
+        "Black marker or ink pen for labels",
+        "Pencil and eraser for drafting",
+        "Ruler and compass (or round objects for tracing circles)",
+        "Coloured pencils or markers (at least 3 colours)",
+        "Fine-tipped pen for detail lines",
+        "Scissors"
+      ],
+      "helpful": [
+        "Calligraphy pen or nib pen with ink",
+        "Tracing paper for refining diagrams",
+        "Adhesive tape or glue stick for multi-panel layouts",
+        "A spare sheet for testing with a family member"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Name the Concept",
+        "text": "Ask the student to spend two minutes silently thinking: which single concept from this year felt like a discovery — something that changed how they see the world? Encourage them to pick something visual or spatial rather than purely verbal. Remind them that Ibn al-Haytham filled his Book of Optics with diagrams precisely because some truths resist words."
+      },
+      {
+        "n": 2,
+        "title": "Draft in Pencil",
+        "text": "Have the student sketch a rough diagram in pencil without any concern for neatness. Guide them to ask: what is the minimum a viewer needs to see in order to understand this? Push back gently if they reach for sentences — point to any written phrase and ask whether a label, arrow, or second image could replace it."
+      },
+      {
+        "n": 3,
+        "title": "Apply Calligraphic Labels",
+        "text": "Now the student inks their labels using careful, deliberate lettering — this is where calligraphy enters the session. Explain that Ibn al-Haytham treated the labelling of diagrams as a craft: every letter had to be legible at a glance, because a reader following a proof could not stop to decipher handwriting. Encourage the student to letter slowly, treating each label as a word worth making beautiful."
+      },
+      {
+        "n": 4,
+        "title": "Add Colour as Meaning",
+        "text": "Prompt the student to use colour intentionally, not decoratively: one colour for one category of thing, a second for another, a third for a process or direction. Ask them to make a small colour key at the corner of their diagram using the same careful lettering. No colour should appear without a labelled reason."
+      },
+      {
+        "n": 5,
+        "title": "The Silent Test",
+        "text": "Before final inking, place the draft face-up on a table and leave the room — or ask the student to hand it to another family member with no spoken explanation. When they return, they ask the viewer: what does this show? The student listens without correcting. Any confusion becomes a revision note, not a conversational fix."
+      },
+      {
+        "n": 6,
+        "title": "Revise and Finalise",
+        "text": "The student makes targeted revisions based only on what the silent test revealed: adding a missing label, clarifying an arrow, adjusting scale. Encourage restraint — they may only add what the test proved was missing, not everything they wish they could explain aloud. Final lines are inked cleanly over the pencil draft."
+      },
+      {
+        "n": 7,
+        "title": "Document the Making",
+        "text": "Ask the student to turn the finished diagram over and write or draw a brief Sahifa entry on the back: what did they discover about their own understanding by trying to remove all explanation? Point out that Ibn al-Haytham tested his optical models against observation — this session asked the student to do the same with their own knowledge."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students choose a concrete, countable concept — the water cycle, the parts of a plant, place value — and build a large labelled illustration using simple shapes and no more than five labels. The facilitator scribes the labels as the student dictates the exact words, then the student traces over the lettering in their own hand. The silent test is conducted with a sibling or parent who gives a thumbs-up or thumbs-down for each element.",
+      "m58": "Students at this level are expected to choose a relational concept — fractions as division, the angle of reflection, ratio — and represent it as a true diagram with at least two labelled components that interact. They must include a scale, an axis, or a directional arrow that carries meaning without words. After the silent test, they write a one-paragraph analysis on a separate sheet explaining what the test revealed about gaps in their own mental model.",
+      "h912": "Older students select an abstract concept — a geometric proof, a model of scientific reasoning, a mathematical relationship — and produce a diagram rigorous enough to stand as a reference illustration. They must include a formal notation system (variables, symbols, or a legend) rendered in calligraphic lettering. After the silent test, they write a short comparative note connecting their diagram's purpose to Ibn al-Haytham's methodology in the Kitab al-Manazir, arguing whether a model can ever fully replace verbal explanation."
+    },
+    "sahifaPrompt": "Ibn al-Haytham believed that a diagram could carry proof without a single spoken word. When I tried to teach _______ using only my diagram, the silent test showed me that _______ was still missing — and that told me something true about how well I actually understood it.",
+    "townSystem": "knowledge",
+    "townNeed": "The town wants to teach younger children about a tool or process but has no written explanation. Someone must select one object and design it to teach itself — no instructor required."
+  },
+  "26": {
+    "week": 26,
+    "discipline": "Geometry",
+    "scholar": "Al-Khwarizmi",
+    "title": "Proving Shapes With Hands",
+    "prompt": "[Geometry] Physical proof: Choose a geometric theorem and prove it physically — not on paper, but with objects, string, shadows, or measurement. The Pythagorean theorem can be proved with square tiles. What can you prove with what you have?",
+    "time": {
+      "prepare": 10,
+      "make": 45,
+      "document": 15,
+      "total": 70
+    },
+    "materials": {
+      "essential": [
+        "Ball of string or twine",
+        "Ruler or measuring tape",
+        "Scissors",
+        "Masking tape or painter's tape",
+        "Square tiles, sticky notes, or index cards (at least 20 same-sized units)",
+        "Flat surface — table or floor",
+        "Marker or pen",
+        "Graph paper or plain paper for documentation"
+      ],
+      "helpful": [
+        "A flashlight or desk lamp (for shadow-angle experiments)",
+        "Protractor",
+        "Colored tape or yarn in two contrasting colors",
+        "Small weights or coins to hold string taut"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Choose Your Theorem",
+        "text": "Before the session begins, lay out the materials and invite the student to name one geometric fact they already believe is true — the Pythagorean theorem, the angle-sum of a triangle, or that a square's diagonal is longer than its side. Tell them: today they will not write a proof, they will build one. Let them pick the theorem they find most surprising or most satisfying."
+      },
+      {
+        "n": 2,
+        "title": "State the Claim Out Loud",
+        "text": "Ask the student to say the theorem in plain language before touching any material — for example, 'In a right triangle, the area of the square on the longest side equals the areas of the squares on the other two sides combined.' Write or tape this claim to the edge of the workspace so it stays visible as the anchor of everything that follows."
+      },
+      {
+        "n": 3,
+        "title": "Build the Physical Model",
+        "text": "Guide the student to construct the theorem using objects. For the Pythagorean theorem, have them arrange square tiles into three squares built on each side of a 3-4-5 right-triangle made from string measured and taped to the table — counting tiles to verify 9 + 16 = 25. For the triangle angle-sum, have them tear the three corners off a paper triangle and arrange the points together at a straight line. Encourage the student to build more than one example to test whether the theorem holds generally, not just once."
+      },
+      {
+        "n": 4,
+        "title": "Stress-Test the Proof",
+        "text": "Once the first example works, prompt the student to try to break it — change the triangle's proportions, use a non-right angle, or rearrange the tiles differently. Ask: 'Does the pattern still hold, or did we find an exception?' This mirrors how Al-Khwarizmi approached mathematical claims: a result that survives many cases is far stronger than one tested only once. If an exception appears, celebrate it — that is real inquiry."
+      },
+      {
+        "n": 5,
+        "title": "Name What Was Proven and What Was Not",
+        "text": "Sit with the student and ask two questions: 'What did we actually show?' and 'What would we still need to do to be fully certain?' Help them articulate the difference between empirical verification — we checked many cases and it always worked — and deductive proof, where logic alone guarantees the result. This is the heart of the session's science context: measurement confirms, but reasoning explains."
+      },
+      {
+        "n": 6,
+        "title": "Document the Proof",
+        "text": "Ask the student to draw or photograph their physical model and then annotate it in their Sahifa — labeling the parts, writing the theorem claim, and noting which cases they tested. Encourage a short written reflection: what made this feel more or less convincing than a proof on paper? Allow 15 minutes for this documentation step."
+      }
+    ],
+    "differentiation": {
+      "k4": "Give younger students a 3-4-5 right triangle already measured and taped to the table, and provide pre-cut square tiles so they focus entirely on counting and comparing areas. Ask them to simply observe and narrate: 'How many tiles fit here? How many fit there? What do you notice?' Recording their finding as a drawing with numbers is sufficient documentation.",
+      "m58": "Students at this level should measure and construct their own right triangle using string and the 3-4-5 ratio, then independently build and count the tile squares on each side. Push them to test at least two different right triangles (e.g., 5-12-13) and to write a sentence explaining why they think the pattern holds beyond the cases they tested.",
+      "h912": "Challenge older students to choose a theorem beyond the Pythagorean — such as the exterior angle theorem or Thales' theorem — and design their own physical proof from scratch using available materials. Require them to write a formal argument distinguishing their empirical evidence from what a deductive proof would require, and to identify any assumptions their physical model cannot eliminate."
+    },
+    "sahifaPrompt": "Al-Khwarizmi believed that mathematical truth should be demonstrated, not just stated. Today I tried to prove __________ without using paper — I used __________ to show that the theorem held. What surprised me was that empirical verification felt __________ because __________.",
+    "townSystem": "infrastructure",
+    "townNeed": "The town's builders keep debating whether a corner is truly square. Someone must demonstrate with their hands — using only rope and sand — that the proof works every time."
+  },
+  "27": {
+    "week": 27,
+    "discipline": "Optics",
+    "scholar": "Al-Farabi",
+    "title": "What the Eye Believes",
+    "prompt": "[Optics] Light and truth: Create an optical illusion — a drawing, an arrangement of objects, or a mirror setup — that makes something appear to be what it is not. Document: what does the eye believe? What does the mind know? Al-Farabi distinguished between what the senses report and what reason concludes.",
+    "time": {
+      "prepare": 10,
+      "make": 40,
+      "document": 15,
+      "total": 65
+    },
+    "materials": {
+      "essential": [
+        "Two small mirrors (compact mirrors or a hinged makeup mirror work well)",
+        "White printer paper (several sheets)",
+        "Pencil and ruler",
+        "Markers or colored pencils",
+        "A clear drinking glass filled with water",
+        "A straight object such as a pencil or straw",
+        "Tape"
+      ],
+      "helpful": [
+        "A flashlight or phone torch",
+        "Black construction paper",
+        "Scissors",
+        "A printed Müller-Lyer or Ponzo illusion reference image"
+      ]
+    },
+    "safety": "If using a flashlight or phone torch directed at mirrors, remind the student not to aim reflected beams toward anyone's eyes.",
+    "steps": [
+      {
+        "n": 1,
+        "title": "Open with Al-Farabi's Question",
+        "text": "Before any materials come out, ask the student: 'Can your eyes lie to you?' Let them respond freely, then share that Al-Farabi, the tenth-century philosopher and polymath, argued that the senses are reliable reporters but incomplete witnesses — reason must interpret what the senses deliver. Tell them today they will catch the senses in the act of being wrong."
+      },
+      {
+        "n": 2,
+        "title": "The Bending Pencil",
+        "text": "Have the student place a pencil or straw in the glass of water and observe it from the side. Ask them to describe exactly what they see, then lift the pencil out and hold it at the same angle in air. Prompt them: the eye says the pencil bends at the waterline — what does the mind say about whether pencils actually bend? Introduce the word 'refraction' naturally here without requiring them to define it yet."
+      },
+      {
+        "n": 3,
+        "title": "Mirror Multiplication Setup",
+        "text": "Help the student stand the two mirrors upright facing each other at roughly a 90-degree angle, using tape or books to prop them. Place a small object — a coin, an eraser, a finger — in the corner where the mirrors meet and count the reflections together. Then slowly change the angle between mirrors and watch the number of reflections change. Guide the student to notice that the mirrors are reporting something true (reflections exist) but something that is not the full reality (there is only one object)."
+      },
+      {
+        "n": 4,
+        "title": "Design an Illusion Drawing",
+        "text": "Invite the student to create their own illusion on paper — at minimum a classic size illusion such as two lines of equal length that appear unequal, or a shape that appears to tilt when drawn on a grid of diagonal lines. The facilitator should demonstrate the basic technique for whichever illusion type the student chooses, then step back and let them construct it with ruler and pencil. Encourage them to test it on another family member whose fresh eyes have not seen the construction process."
+      },
+      {
+        "n": 5,
+        "title": "Name the Gap",
+        "text": "Sit with the student and ask them to put into their own words: what is the difference between what happened in their eye and what they know in their mind? Write their phrasing down together — this is the core intellectual move of the session. If they are ready, introduce Al-Farabi's distinction: sensation (hiss) gives raw data; reason ('aql) interprets it toward truth. The illusion works by feeding the sensation system correct data that reason has not yet corrected."
+      },
+      {
+        "n": 6,
+        "title": "Sahifa Documentation",
+        "text": "Give the student their Sahifa journal and the documentation prompt below. Ask them to sketch at least one of the illusions they made alongside their written response. Encourage them to draw arrows or labels on their sketch that show 'what the eye sees' versus 'what is actually there.'"
+      },
+      {
+        "n": 7,
+        "title": "Close with a Real-World Bridge",
+        "text": "End by asking the student where in real life this distinction between sensation and reason matters — medicine, engineering, law, news, personal conflict are all fair answers. Let the conversation run for a few minutes without pushing toward a single correct answer. The goal is for the student to leave feeling that Al-Farabi's question is not an old question but a living one."
+      }
+    ],
+    "differentiation": {
+      "k4": "Focus only on the bending pencil and the mirror multiplication activity — keep the making concrete and sensory. Skip the drawing construction and instead ask the student to use words or a simple sketch to show 'what my eye thought' and 'what was really true.' The Sahifa entry can be dictated aloud and transcribed by the facilitator.",
+      "m58": "Students should complete all three illusion activities and attempt to measure or describe the geometry involved — for instance, measuring the two 'unequal' lines to confirm they are equal, or recording how many reflections appear at 90°, 60°, and 45° mirror angles and looking for a numerical pattern. The documentation should include both a labeled diagram and a written paragraph distinguishing sensation from reason in their own words.",
+      "h912": "After completing the activities, ask the student to research Snell's Law in brief and write a short explanation of why refraction causes the pencil illusion, connecting the geometry of angle of incidence to what the eye perceives. They should also write a one-page reflection engaging seriously with Al-Farabi's epistemology: if the senses can be systematically wrong, what is the proper relationship between empirical observation and rational analysis in scientific inquiry?"
+    },
+    "sahifaPrompt": "Al-Farabi taught that the senses are like messengers — they bring news from the world, but reason must decide whether that news tells the whole truth. Today I made an illusion that tricked the eye into believing _______________. When I used my mind to check, I discovered _______________. This makes me wonder whether I have ever trusted my senses about something important without stopping to let reason ask questions.",
+    "townSystem": "research",
+    "townNeed": "The town's lookout post is giving false distance readings — nearby things seem far, far things seem close. Someone must investigate whether the problem is in the eye, the angle, or the surface."
+  },
+  "28": {
+    "week": 28,
+    "discipline": "Calligraphy",
+    "scholar": "Al-Idrisi",
+    "title": "One Stroke, One Idea",
+    "prompt": "[Calligraphy] Create a new symbol: Invent a symbol — a single mark — that encodes a complex idea from this year's learning. The symbol must be drawable in one stroke, universally readable by anyone who knows the rule, and memorable. Document the rule. Test it.",
+    "time": {
+      "prepare": 10,
+      "make": 40,
+      "document": 15,
+      "total": 65
+    },
+    "materials": {
+      "essential": [
+        "Blank white paper (several sheets)",
+        "Pencil with eraser",
+        "Black marker or fine-tip pen",
+        "Ruler",
+        "Index cards (at least 4)",
+        "Notebook or Sahifa journal"
+      ],
+      "helpful": [
+        "Calligraphy pen or brush pen",
+        "Tracing paper",
+        "Colored markers for annotation",
+        "Compass or coin for drawing circles"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Anchor in Al-Idrisi",
+        "text": "Open by telling the student that Al-Idrisi, the 12th-century cartographer, invented a visual language for his world maps — symbols that encoded landforms, distances, and relationships so that any trained reader could decode them instantly. Ask the student: what is one idea from this year that feels too big for words alone? Give them two minutes to brainstorm silently and write three candidate ideas on scratch paper."
+      },
+      {
+        "n": 2,
+        "title": "Choose the Idea",
+        "text": "Have the student read their three ideas aloud and choose one. Encourage them to pick something with genuine complexity — a scientific concept, a mathematical relationship, or a moral idea — not just a word. Prompt them to say in one sentence what the idea *does* or *means*, because a symbol must carry that action or meaning in its shape."
+      },
+      {
+        "n": 3,
+        "title": "Sketch Without Lifting",
+        "text": "Give the student a fresh sheet and ask them to fill it with at least ten quick one-stroke sketches — each attempt a single continuous mark with no pen lifts. Remind them that the stroke can loop, angle, curve, or cross itself, but the pen must never leave the paper. Circulate and prompt them to vary scale, direction, and proportion across attempts rather than repeating the same mark."
+      },
+      {
+        "n": 4,
+        "title": "Select and Refine",
+        "text": "Ask the student to circle the two or three sketches that feel most *intentional* — where the shape actually seems to carry the idea rather than just looking interesting. Guide them to choose one and redraw it three times on fresh paper, each time more deliberately, paying attention to where the stroke begins and ends. A calligraphy pen or brush pen works beautifully here for a final version."
+      },
+      {
+        "n": 5,
+        "title": "Write the Rule",
+        "text": "On an index card, have the student write the symbol's decoding rule in precise language — something like: 'The loop represents X; the crossing line represents Y; together they encode Z.' This is the discipline of Al-Idrisi's map legend. The rule must be complete enough that a stranger could read the symbol correctly after reading only the card. Encourage revision until the language is tight."
+      },
+      {
+        "n": 6,
+        "title": "Test It",
+        "text": "Hand another family member or the facilitator only the symbol card and the rule card — not the original idea. Ask them to describe what idea the symbol encodes. Note where the reading matches and where it diverges. The student should treat this as data: if the test reader misunderstands, the symbol or its rule needs revision, not the test reader."
+      },
+      {
+        "n": 7,
+        "title": "Document in Sahifa",
+        "text": "Have the student glue or draw their final symbol into their Sahifa journal and write the completed Sahifa entry below it. They should also note what the test revealed and whether they revised anything as a result. Remind them that Al-Idrisi revised his great map across years — first documentation is rarely final."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should choose a concrete idea they can act out physically — such as 'things that grow' or 'big and small together.' Help them trace their finger in a single sweep before touching pen to paper, so the body learns the stroke before the hand commits. The rule card can be dictated to the facilitator and written collaboratively.",
+      "m58": "Students at this level should anchor their symbol in a specific concept from math or science — for example, the relationship between a base and its exponent in scientific notation, or the meaning of a variable in an equation. Challenge them to explain why the stroke's shape is *not arbitrary* but structurally mirrors the idea it encodes.",
+      "h912": "High school students should treat this as a semiotic design problem: after testing, they must write a one-paragraph analysis comparing their invented symbol to an existing mathematical or scientific symbol (such as the integral sign or a chemical notation) and argue whether their symbol meets the same standards of universality and economy. A second round of revision based on that analysis is expected."
+    },
+    "sahifaPrompt": "Al-Idrisi made marks that carried whole landscapes inside them. My symbol encodes the idea of __________, and the rule that unlocks it is __________. When I tested it, I discovered that __________.",
+    "townSystem": "knowledge",
+    "townNeed": "The town's visual sign system has grown inconsistent — each family uses a different stroke for the same symbol. Someone must establish one standard mark that all can repeat."
+  },
+  "29": {
+    "week": 29,
+    "discipline": "Architecture",
+    "scholar": "Al-Biruni",
+    "title": "Return, Finish, Account For",
+    "prompt": "[Architecture] Complete an unfinished project: Return to a project from earlier this year that you abandoned or left incomplete. Finish it — or document honestly why it cannot be finished and what would be required. Al-Biruni spent 40 years on some of his calculations.",
+    "time": {
+      "prepare": 15,
+      "make": 60,
+      "document": 20,
+      "total": 95
+    },
+    "materials": {
+      "essential": [
+        "The original unfinished project or its remains",
+        "Pencil and eraser",
+        "Ruler",
+        "Blank paper and graph paper",
+        "Scissors",
+        "Tape or glue stick",
+        "Colored pencils or markers"
+      ],
+      "helpful": [
+        "Photographs of the original project if the physical object is gone",
+        "Cardstock or cardboard for structural reinforcement",
+        "A compass for arcs and curves",
+        "Sticky notes for annotation"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Retrieve and Assess",
+        "text": "Ask the student to locate the unfinished project — physical object, drawings, notes, or photographs. Give them five quiet minutes to look it over and reconnect with what they were originally trying to make. Do not prompt them to explain yet; let the reunion happen first."
+      },
+      {
+        "n": 2,
+        "title": "Honest Diagnosis",
+        "text": "Invite the student to name, in their own words, exactly where the project stalled and why. Encourage specificity: was it a technical problem, a missing material, a lost idea, or simply time? Record their answer together on a sticky note or scrap paper — this diagnosis becomes part of the final artifact."
+      },
+      {
+        "n": 3,
+        "title": "Choose a Path",
+        "text": "Together, decide which of two routes fits the project's reality: (A) complete it today by simplifying or adapting the original vision, or (B) produce a detailed completion document — a honest written and drawn account of what the finished version would require. Both outcomes are equally valid; remind the student that Al-Biruni revised his geodetic calculations across decades without treating incompleteness as failure."
+      },
+      {
+        "n": 4,
+        "title": "Make or Map",
+        "text": "If the student chose path A, support active making: help them set a modest, achievable finishing goal for the session rather than recovering every original ambition. If they chose path B, guide them to produce a written materials list, a labeled sketch of the intended final state, and a realistic time estimate — treating this document with the same care they would give a finished model."
+      },
+      {
+        "n": 5,
+        "title": "Mark the Evidence of Time",
+        "text": "Ask the student to add a visible annotation to the project — a small label, a margin note, or a dated corner stamp — that shows when work began, when it paused, and when it resumed or was assessed today. This physical mark makes the project's timeline legible and honors the duration of the work."
+      },
+      {
+        "n": 6,
+        "title": "Reflect Aloud",
+        "text": "Before documentation begins, ask the student one open question: 'What does this project know now that it didn't know when you started it?' Listen without correcting; their answer will seed the Sahifa entry. Students who struggle to answer can respond to a simpler version: 'What would you do differently on the first day?'"
+      },
+      {
+        "n": 7,
+        "title": "Document and Display",
+        "text": "Have the student photograph or carefully draw the current state of the project — finished or completion-mapped — and write their Sahifa entry. Place the project somewhere visible for at least a week; unfinished or newly finished work deserves the same display as anything else produced this year."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should choose a project that exists as a physical object they can hold and touch. Guide them to add one new element to the original rather than finishing it completely, and let them narrate their completion document to you as you write it down. The focus is on the feeling of returning, not on technical resolution.",
+      "m58": "Students in this band should write the honest diagnosis themselves and produce either a genuinely completed artifact or a structured completion document with labeled drawings, a materials list, and a time estimate. Encourage them to connect the experience to Al-Biruni's iterative calculation process: what changed in their understanding between the first attempt and today?",
+      "h912": "Older students should treat this session as a formal design critique of their own earlier work. They should produce a written analysis identifying the conceptual, material, and methodological reasons the project stalled, alongside a completion specification rigorous enough that someone else could theoretically execute it. Ask them to consider how Al-Biruni's willingness to revise over decades reflects an epistemological stance — what does it mean to treat a problem as never fully closed?"
+    },
+    "sahifaPrompt": "Al-Biruni returned to his hardest problems again and again across a lifetime, because he believed careful work takes the time it actually takes. When I came back to my unfinished project today, the first thing I noticed was ___. I realized the work had stopped because ___, and what I understand now that I did not understand before is ___.",
+    "townSystem": "housing",
+    "townNeed": "A building project that started two years ago was never finished or accounted for. The town needs someone to return to it, document what was completed and what wasn't, and close the record properly."
+  },
+  "30": {
+    "week": 30,
+    "discipline": "Astronomy",
+    "scholar": "Al-Battani",
+    "title": "Your Year as Orbit",
+    "prompt": "[Astronomy] The year as a circle: Create a visual representation of this entire academic year as a single circle — the weeks, the scholars, the themes, the connections you see now that you did not see in September. The circle is Al-Battani's instrument. Make it yours.",
+    "time": {
+      "prepare": 10,
+      "make": 55,
+      "document": 15,
+      "total": 80
+    },
+    "materials": {
+      "essential": [
+        "Large sheet of paper or poster board (at least 12×12 inches)",
+        "Compass or circular template (large bowl, plate, or lid)",
+        "Pencil and eraser",
+        "Ruler or straightedge",
+        "Colored pencils, markers, or watercolor paints",
+        "Student's Sahifa journal or notes from earlier weeks",
+        "Fine-tip black pen for final linework"
+      ],
+      "helpful": [
+        "Protractor (for dividing the circle into equal segments)",
+        "Sticky notes for planning layout before committing to paper",
+        "Gold or metallic marker for highlighting key scholars or moments",
+        "Printed list of the year's 30 weekly scholars and disciplines"
+      ]
+    },
+    "safety": null,
+    "steps": [
+      {
+        "n": 1,
+        "title": "Orient to Al-Battani",
+        "text": "Before any drawing begins, share briefly with the student that Al-Battani spent decades tracking the sun's apparent path and refined the length of the solar year to within seconds of today's accepted value — he used circular star maps called zij tables to hold an entire year of sky data in one image. Ask the student: what would it mean to hold your entire year of learning in a single circle?"
+      },
+      {
+        "n": 2,
+        "title": "Plan the Skeleton",
+        "text": "Have the student use the compass or circular template to draw the largest circle that fits their paper, then lightly divide it into 30 roughly equal arcs — one per week of the academic year. A protractor makes this precise (12° per week); if none is available, encourage estimation by halving and quartering first. This skeleton is pencil-only; remind the student everything can be adjusted before inking."
+      },
+      {
+        "n": 3,
+        "title": "Populate the Weeks",
+        "text": "Invite the student to work around the circle, writing or sketching one brief symbol, word, or tiny image into each week's arc — the scholar's name, a key idea, or a memory from that session. Encourage them to use their Sahifa journal to jog memories for earlier weeks rather than leaving gaps. The facilitator's role here is to prompt, not to fill: ask 'what do you remember from that week?' rather than supplying answers."
+      },
+      {
+        "n": 4,
+        "title": "Draw the Connections",
+        "text": "Once all 30 weeks are populated, ask the student to look for threads that cross the circle — disciplines that echoed each other, scholars who shared a method, themes that returned. Have them draw lines or arcs across the interior of the circle connecting these related points, using different colors for different types of connection (e.g., blue for mathematical methods, green for nature-and-cycles themes). This web of chords is the heart of the instrument."
+      },
+      {
+        "n": 5,
+        "title": "Add a Center and a Title",
+        "text": "Direct the student to the center of the circle — the 'sun' of their year — and ask them to place there the single word, phrase, or image that feels like the core of what they have learned. Then have them title the whole piece somewhere on the page in their own hand. Encourage them to think of this as the caption Al-Battani would write on his own zij if it were theirs."
+      },
+      {
+        "n": 6,
+        "title": "Ink and Color",
+        "text": "Now the student traces their pencil work in pen and adds color intentionally: perhaps warmer colors for disciplines they loved, cooler ones for those that challenged them, or seasonal colors that match where the weeks actually fell in the calendar year. Encourage restraint — white space is part of the instrument. The facilitator should step back and allow this phase to be quiet and individual."
+      },
+      {
+        "n": 7,
+        "title": "Document and Reflect",
+        "text": "Set a 15-minute timer for the Sahifa entry. Have the student write about one connection they drew across the circle that surprised them, and one thing they would want to tell their September self. Invite them to date the entry and note that Al-Battani's observations were valuable precisely because he recorded them carefully — their circle is only complete when the reflection is written."
+      }
+    ],
+    "differentiation": {
+      "k4": "Younger students should work with a pre-divided circle prepared by the facilitator, with only 10–12 sections representing major units or memorable scholars rather than all 30 weeks. Instead of writing, they draw one small picture per section and use stickers or stamps to mark their favorites. The connecting lines can be replaced by a single piece of colored yarn taped across the circle to show their biggest discovery of the year.",
+      "m58": "Students at this level work with all 30 weeks and are challenged to color-code by discipline, then calculate what percentage of the circle each discipline occupies — connecting the visual to actual data. They should draw at least five cross-circle connections and label each with a one-phrase explanation of the link they see, practicing the skill of evidence-based synthesis.",
+      "h912": "Older students extend the activity into formal analysis: after constructing the circle, they write a one-page annotation identifying at least three systems or cycles visible in the year's arc (e.g., how scientific method recurred across disciplines) and evaluate whether their year's curriculum was balanced or weighted. They may also research Al-Battani's actual zij format and deliberately echo one structural feature of his instrument in their own design, citing the connection in their Sahifa entry."
+    },
+    "sahifaPrompt": "Al-Battani spent years watching the sky in careful circles so that one image could hold an entire year of truth. When I look at my own circle today, the connection I never expected to find is _______________. If I could go back to Week 1 and whisper one thing to myself, it would be _______________.",
+    "townSystem": "navigation",
+    "townNeed": "The town has now completed one full cycle. The students who began in Year 1 are finishing in Year 30. The town needs someone to chart the year as an orbit — to show where the community started, where it travelled, and how the arc closes."
+  }
+}

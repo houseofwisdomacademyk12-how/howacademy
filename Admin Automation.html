@@ -831,6 +831,22 @@ function getSlideCount(grade){ var g=parseInt(grade)||0; return g<=5?7:g<=8?9:12
 function getGradeBand_peer(g){ return g<=5?'K-5':g<=8?'G6-8':'G9-12'; }
 
 // ── Robust JSON repairer ──────────────────────────────────────────────────────
+async function callAPIWithRetry(sys,usr,maxTok,attempts,delay){
+  attempts=attempts||3; delay=delay||3000;
+  var lastErr;
+  for(var _a=0;_a<attempts;_a++){
+    if(_a>0) await new Promise(function(r){setTimeout(r,delay);});
+    try{
+      var raw=await callAPI(sys,usr,maxTok);
+      var parsed=parseJSON(cleanAIJson(raw));
+      if(!parsed||typeof parsed!=='object'||Object.keys(parsed).length===0)
+        throw new Error('Empty or invalid JSON response');
+      return parsed;
+    }catch(e){ lastErr=e; }
+  }
+  throw lastErr||new Error('Generation failed after '+attempts+' attempts');
+}
+
 function cleanAIJson(raw){
   if(!raw) return '{}';
   var s=raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
@@ -867,45 +883,93 @@ function getSysPrompt(s, g, sessionNum){
   base+='\n\nVOICE RULES:\n';
   base+='1. Use "I", "me", "when I learned this" — first person throughout.\n';
   base+='2. Include one honest moment of confusion and exactly how you resolved it.\n';
-  base+='3. Keep language conversational.\n';
-  base+='4. Title slide must show your name: '+persona+'\n';
+  base+='3. Mention what this concept reminded you of, or connected to.\n';
+  base+='4. Keep language conversational — contractions, direct address, genuine enthusiasm.\n';
+  base+='5. Title slide must show your name: '+persona+' \n';
   base+='\nCRITICAL RULES:\n';
-  base+='1. Use ONLY the specific scholar named in the context.\n';
-  base+='2. LESSON TITLE: Use the Subject topic verbatim.\n';
-  base+='3. UNITS: US customary units only.\n';
-  base+='4. US spelling throughout.\n';
-  base+='5. Standards code calibrates cognitive demand — target that exact standard.\n';
-  base+='\nANNOTATIONS: Every slide must include an "annotation" field (15-25 words, first person, '+persona+'\'s voice).\n';
-  base+='SKETCHES: For content and worked slides include a "sketch" field — coordinate_plane, number_line, triangle, wave, table, or none.\n';
+  base+='1. Use ONLY the specific scholar named in the context. Do not substitute or add others.\n';
+  base+='2. Use ONLY the Name of the week and its story as provided. Do not invent spiritual connections.\n';
+  base+='3. The opening question provided is the week central inquiry — it appears on the PROVOCATION slide (slide 2), not the title slide.\n';
+  base+='4. Islamic names in word problems: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha.\n';
+  base+='5. LESSON TITLE: Use the Subject topic for this session text verbatim. Do not rename or reframe it.\n';
+  base+='6. CROSS-CURRICULAR CONNECTIONS come ONLY from: the Juz theme, the Hadith, and the Scholar of the week.\n';
+  base+='7. UNITS: US customary units only — inches, feet, miles, pounds, gallons, Fahrenheit. Never metric.\n';
+  base+='8. US spelling throughout (color, meter, liter).\n';
+  base+='9. STANDARDS: Use the standards code to calibrate cognitive demand — target that exact standard.\n';
+  base+='\nANNOTATIONS — CRITICAL:\n';
+  base+='Every slide must include an "annotation" field: a short note (15-25 words) in '+persona+'\'s voice — ';
+  base+='what they would write in the margin if reading this. First person. Genuine. Varies per slide.\n';
+  base+='Example annotations: "This is where I got confused the first time — the sign flips here!" | ';
+  base+='"Al-Kashi did exactly this kind of approximation for pi — blew my mind." | ';
+  base+='"Try covering the answer and doing this yourself first." \n';
+  base+='\nSKETCHES — for content and worked slides only:\n';
+  base+='For slides of type "content" and "worked", include a "sketch" field with ONE of these types:\n';
+  base+='  {"type":"coordinate_plane","xRange":[-3,3],"yRange":[-2,4],"functions":[{"expr":"2*x+1","label":"y=2x+1"}],"points":[{"x":0,"y":1,"label":"(0,1)"}],"annotations":["slope=2"]}\n';
+  base+='  {"type":"number_line","min":-5,"max":5,"marks":[{"value":3,"label":"3","type":"closed"}],"highlighted":[{"from":-2,"to":3}]}\n';
+  base+='  {"type":"triangle","vertices":[{"x":40,"y":180,"label":"A"},{"x":200,"y":180,"label":"B"},{"x":120,"y":40,"label":"C"}],"sides":[{"label":"4 in"},{"label":"5 in"},{"label":"3 in"}],"angles":[{"vertex":"A","label":"90°"}]}\n';
+  base+='  {"type":"wave","amplitude":2,"period":4,"label":"Sound wave","annotations":["amplitude=2 ft","wavelength=4 ft"]}\n';
+  base+='  {"type":"table","headers":["x","y"],"rows":[[1,3],[2,6],[3,9]],"annotation":"ratio is always 3"}\n';
+  base+='  {"type":"none"} — use this for ELA, Writing, Social Studies slides where a sketch would not help.\n';
+  base+='For Science, use wave, table, or geometric as appropriate to the discipline.\n';
+  base+='For Math K-5: prefer number_line and table. For G6-8: prefer table and coordinate_plane. For G9-12: prefer coordinate_plane.\n';
 
   var p={
-    math: base+'SUBJECT: Mathematics. SLIDE COUNT: '+slideCount+' slides.\n'+
-      'SKILL PRECISION: Target the EXACT standard in the context.\n'+
-      (slideCount>=9?'Add a "mistake" slide — exact error '+persona+' made and how they caught it.\n':'')+
-      (slideCount>=12?'Add three worked examples (basic→intermediate→AP). Add "connection", "practice_preview", "whats_next" slides.\n':'')+
-      'SCHOLAR CONNECTION: Show how the scholar actually used this mathematical concept.',
+    math: base+
+      'SUBJECT: Mathematics. SLIDE COUNT: '+slideCount+' slides.\n'+
+      'SKILL PRECISION: Read "Mathematics content this week" carefully — target the EXACT skill, not the broader topic. '+
+      'Your worked examples must address this specific skill at this level of complexity.\n'+
+      (slideCount>=9?'EXTRA SLIDES for G6+: Add a "Common Mistake" slide (type:"mistake") — the exact error you made and how you caught it. '+
+      'Add a second worked example that is harder than the first.\n':'')+
+      (slideCount>=12?'EXTRA SLIDES for G9+: Add three worked examples (basic→intermediate→AP-level). '+
+      'Add a "Connection" slide (type:"connection") linking this to the scholar and the Juz. '+
+      'Add a "Practice Preview" slide (type:"practice_preview") with one problem to try. '+
+      'Add a "What\'s Next" slide (type:"whats_next") — what does mastering this unlock?\n':'')+
+      'GRADE CALIBRATION: Use the standards code to set the right difficulty.\n'+
+      'SCHOLAR CONNECTION: Show how the scholar actually used this mathematical concept — not as decoration, as history.',
 
-    ela: base+'SUBJECT: ELA / Reading. SLIDE COUNT: '+slideCount+' slides.\n'+
-      'Write an original 4-6 sentence passage featuring the scholar. Build the skill around it.\n'+
-      (slideCount>=9?'Add a "mistake" slide showing a misreading and correction.\n':''),
+    ela: base+
+      'SUBJECT: ELA / Reading. SLIDE COUNT: '+slideCount+' slides.\n'+
+      'SKILL PRECISION: Read "ELA content this week" to find the reading SKILL and text type. '+
+      'Build the lesson around that specific skill.\n'+
+      'PASSAGE: Write an original 4-6 sentence passage featuring the scholar. Make the skill necessary to understand it.\n'+
+      'DISCUSSION: Progress from literal → craft/skill → interpretive.\n'+
+      (slideCount>=9?'Add a "Common Mistake" slide showing a misreading and how to correct it.\n':''),
 
-    writing: base+'SUBJECT: Writing. SLIDE COUNT: '+slideCount+' slides.\n'+
-      'Mentor text must visibly demonstrate the specific craft move. A student should point to the exact sentence.\n'+
-      (slideCount>=9?'Add a "mistake" slide — the writing error '+persona+' made first.\n':''),
+    writing: base+
+      'SUBJECT: Writing. SLIDE COUNT: '+slideCount+' slides.\n'+
+      'SKILL PRECISION: Read "Writing content this week" — it names BOTH the genre AND the craft element. '+
+      'The mentor text must visibly demonstrate that specific craft move. '+
+      'A student should be able to point to the exact sentence and say "that is the technique."\n'+
+      'LESSON SEQUENCE: mentor text → name the move → analyse why it works → student attempts → revision focus.\n'+
+      (slideCount>=9?'Add a "Common Mistake" slide — the writing error you made when first attempting this genre.\n':''),
 
-    science: base+'SUBJECT: Science. SLIDE COUNT: '+slideCount+' slides.\n'+
-      'DISCIPLINE AWARENESS: Read the science topic — Chemistry/Biology/Physics/Heritage.\n'+
-      'INQUIRY CYCLE: phenomenon → question → investigation → conclusion.\n'+
-      (slideCount>=9?'Add a "mistake" slide — common misconception and correction.\n':''),
+    science: base+
+      'SUBJECT: Science. SLIDE COUNT: '+slideCount+' slides.\n'+
+      'DISCIPLINE AWARENESS: Read "Science content this week" — it starts with the discipline (Biology/Chemistry/Physics/Heritage).\n'+
+      '  Chemistry: phenomenon is a chemical change. Investigation involves substances and molecular reasoning.\n'+
+      '  Biology: phenomenon is a living system. Investigation involves observation and systems thinking.\n'+
+      '  Physics: phenomenon is a force, motion, or energy transfer. Investigation uses measurement and math.\n'+
+      '  Heritage: this is the G12 Islamic intellectual heritage capstone — present the scholar\'s discovery as a story of inquiry.\n'+
+      'INQUIRY CYCLE: phenomenon → question → investigation → conclusion — adapted to the discipline.\n'+
+      (slideCount>=9?'Add a "Common Mistake" slide — a common misconception about this phenomenon and how to correct it.\n':'')+
+      (slideCount>=12?'Add a "Connection" slide and a "Practice Preview" investigation step.\n':''),
 
-    social: base+'SUBJECT: Social Studies. SLIDE COUNT: '+slideCount+' slides.\n'+
-      'SCHOLAR: Show the methodological contribution — not just the name.\n'+
-      (slideCount>=9?'Add a "mistake" slide — common misconception about this period.\n':''),
+    social: base+
+      'SUBJECT: Social Studies. SLIDE COUNT: '+slideCount+' slides.\n'+
+      'DISCIPLINE AWARENESS: Read "Social Studies content this week" — identify the CONTENT and the DISCIPLINARY SKILL.\n'+
+      '  History: anchor to a specific moment. Push students toward a historical claim, not just information.\n'+
+      '  Geography: maps and spatial relationships as primary sources. Argument must involve place.\n'+
+      '  Economics: a real scarcity or market problem. Students reason through trade-offs.\n'+
+      '  Civics: a real decision or policy question. Students take and defend a position.\n'+
+      'SCHOLAR: The scholar\'s METHODOLOGICAL contribution — not just their name. '+
+      'Al-Idrisi invented systematic geographic reasoning. Ibn Khaldun invented causal-structural historical analysis.\n'+
+      (slideCount>=9?'Add a "Common Mistake" slide — a common misconception about this historical period or concept.\n':''),
   };
 
   var prompt=p[s]||p.science;
   if(sessionNum===2){
-    prompt+='\n\nSESSION 2 DEEPENING: Do not re-introduce. Push harder. Challenge with harder problems or more nuanced analysis. End with a genuinely contestable claim. Deepen annotations — reflect on what you understand NOW that you did not in Session 1.';
+    prompt+='\n\nSESSION 2 DEEPENING: Do not re-introduce. Push harder. Challenge with harder problems or more nuanced analysis. End with a genuinely contestable claim. '+
+      'Deepen annotations — reflect on what you understand NOW that you did not in Session 1.';
   }
   return prompt;
 }
@@ -914,69 +978,82 @@ function getDeckSchema(s, g){
   var grade=parseInt(g)||0;
   var n=getSlideCount(grade);
   var persona=getPeerPersona(grade,s);
-  var annInstr='"annotation":"15-25 word margin note in '+persona+'\'s voice — first person"';
+  var annInstr='"annotation":"15-25 word margin note in '+persona+'\'s voice — first person, honest, varies per slide"';
   var skInstr='"sketch":{"type":"coordinate_plane|number_line|triangle|wave|table|none","...":"see schema"}';
   var skNone='"sketch":{"type":"none"}';
 
-  var b='{\n  "title":"Use the Subject topic verbatim",\n'+
+  var b='{\n  "title":"Use the Subject topic for this session verbatim",\n'+
     '  "objective":"string",\n'+
     '  "persona":"'+persona+'",\n'+
     '  "slides":[\n'+
-    '    {"type":"title","heading":"topic verbatim","objective":"...","peer":"'+persona+'",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"provocation","question":"Opening question from context","parentNote":"...",'+annInstr+','+skNone+'},\n';
+    '    {"type":"title","heading":"Use the Subject topic verbatim","objective":"...","juzTheme":"...","juzArabic":"...","peer":"'+persona+'",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"provocation","heading":"Opening Question","question":"The exact openingQ from context","parentNote":"Students write first response before teaching begins",'+annInstr+','+skNone+'},\n';
 
-  var mistakeSlide=n>=9?'    {"type":"mistake","heading":"Where I Went Wrong","content":"...","correction":"...",'+annInstr+','+skNone+'},\n':'';
-  var connSlide=n>=12?'    {"type":"connection","heading":"The Bigger Picture","content":"...","scholarLink":"...",'+annInstr+','+skNone+'},\n':'';
-  var pracSlide=n>=12?'    {"type":"practice_preview","heading":"Try One","question":"...","hint":"optional",'+annInstr+','+skNone+'},\n':'';
-  var nextSlide=n>=12?'    {"type":"whats_next","heading":"What This Unlocks","content":"...",'+annInstr+','+skNone+'},\n':'';
+  var mistakeSlide=n>=9?
+    '    {"type":"mistake","heading":"Where I Went Wrong","content":"The exact error '+persona+' made when first learning this","correction":"How to spot and fix this mistake","parentNote":"Common error — acknowledge it directly",'+annInstr+','+skNone+'},\n'
+    :'';
 
-  var j='    {"type":"juz","arabic":"Arabic Name","name":"transliteration and meaning","story":"...","reflection":"...",'+annInstr+'},\n  ]\n}';
+  var connSlide=n>=12?
+    '    {"type":"connection","heading":"The Bigger Picture","content":"How this connects to the scholar and the Juz theme","scholarLink":"The specific methodological connection","parentNote":"The Islamic intellectual heritage angle",'+annInstr+','+skNone+'},\n'
+    :'';
+
+  var pracSlide=n>=12?
+    '    {"type":"practice_preview","heading":"Try One","question":"One problem at the target difficulty","hint":"Optional hint from '+persona+'","parentNote":"Expected approach",'+annInstr+','+skNone+'},\n'
+    :'';
+
+  var nextSlide=n>=12?
+    '    {"type":"whats_next","heading":"What This Unlocks","content":"One sentence: what mastering this topic enables next","parentNote":"Forward connection",'+annInstr+','+skNone+'},\n'
+    :'';
+
+  var j='    {"type":"juz","arabic":"Arabic text","name":"Name transliteration and meaning","story":"Story paragraph exactly as provided","reflection":"Carrying question exactly as provided",'+annInstr+'},\n'+
+        '  ]\n}';
 
   if(s==='math') return b+
-    '    {"type":"content","heading":"Here\'s What I Learned","content":"...","example":"US units",'+annInstr+','+skInstr+'},\n'+
-    '    {"type":"worked","heading":"Worked Example 1","steps":["Step 1","Step 2"],"parentNote":"...",'+annInstr+','+skInstr+'},\n'+
-    (n>=9?'    {"type":"worked","heading":"Worked Example 2","steps":["..."],"parentNote":"...",'+annInstr+','+skInstr+'},\n':'')+
-    (n>=12?'    {"type":"worked","heading":"Worked Example 3","steps":["..."],"parentNote":"...",'+annInstr+','+skInstr+'},\n':'')+
+    '    {"type":"content","heading":"Here\'s What I Learned","question":"What specific concept or question does this slide address? (one sentence)","content":"2-3 sentences in peer voice","example":"example with US units",'+annInstr+','+skInstr+'},\n'+
+    '    {"type":"worked","heading":"Worked Example 1","content":"Basic — US units only","steps":["Step 1","Step 2","Step 3"],"parentNote":"Common error",'+annInstr+','+skInstr+'},\n'+
+    (n>=9?'    {"type":"worked","heading":"Worked Example 2","content":"Harder than Example 1","steps":["Step 1","Step 2"],"parentNote":"What mastery looks like",'+annInstr+','+skInstr+'},\n':'')+
+    (n>=12?'    {"type":"worked","heading":"Worked Example 3","content":"AP-level difficulty","steps":["Step 1","Step 2","Step 3"],"parentNote":"Exam-level thinking",'+annInstr+','+skInstr+'},\n':'')+
     mistakeSlide+
-    '    {"type":"activity","heading":"Your Turn","question":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"activity","heading":"Your Turn","question":"Practice problem","parentNote":"Expected answer",'+annInstr+','+skNone+'},\n'+
     (n>=9?connSlide+pracSlide+nextSlide:'')+
-    '    {"type":"content","heading":"The Scholar\'s Connection","content":"...","scholarNote":"...",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"The Scholar\'s Connection","question":"How did the scholar apply or discover this concept?","content":"How scholar used this","scholarNote":"Historical context",'+annInstr+','+skNone+'},\n'+
     j;
 
   if(s==='ela') return b+
-    '    {"type":"content","heading":"The Skill","content":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"passage","heading":"The Text","passage":"Original 4-6 sentence passage",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"discussion","heading":"First Read","question":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"discussion","heading":"Second Read","question":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"discussion","heading":"Discussion","question":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"The Skill","content":"What reading skill we\'re practising and why it matters",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"passage","heading":"The Text","passage":"Original 4-6 sentence passage featuring the scholar",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"discussion","heading":"First Read","question":"Literal question","parentNote":"Listen for",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"discussion","heading":"Second Read","question":"Craft/skill question","parentNote":"Tip",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"discussion","heading":"Discussion","question":"Rich open question","parentNote":"Facilitate",'+annInstr+','+skNone+'},\n'+
     (n>=9?mistakeSlide:'')+
     j;
 
   if(s==='writing') return b+
-    '    {"type":"mentor","heading":"Mentor Text","passage":"3-5 sentence exemplar by '+persona+'",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"content","heading":"Notice It","content":"...","question":"What do you notice?",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"content","heading":"Name the Technique","content":"...","example":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"activity","heading":"Your Turn","question":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"content","heading":"Revision Focus","content":"...",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"mentor","heading":"Mentor Text","passage":"3-5 sentence exemplar by '+persona+' using the scholar\'s context",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"Notice It","content":"What the writer does — the exact craft move","question":"What do you notice?",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"Name the Technique","content":"Name and define the craft element","example":"example",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"activity","heading":"Your Turn","question":"Writing prompt using the same technique",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"Revision Focus","content":"One revision strategy",'+annInstr+','+skNone+'},\n'+
     (n>=9?mistakeSlide:'')+
     j;
 
   if(s==='science') return b+
-    '    {"type":"phenomenon","heading":"Here\'s What I Noticed","content":"...","question":"...",'+annInstr+','+skInstr+'},\n'+
-    '    {"type":"discussion","heading":"Our Question","question":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"content","heading":"The Science","content":"...","scholarNote":"...",'+annInstr+','+skInstr+'},\n'+
-    '    {"type":"activity","heading":"Investigation","materials":["..."],"steps":["..."],"parentNote":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"content","heading":"What We Found","content":"...",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"phenomenon","heading":"Here\'s What I Noticed","content":"Observable phenomenon — what made '+persona+' curious","question":"What do YOU observe?",'+annInstr+','+skInstr+'},\n'+
+    '    {"type":"discussion","heading":"Our Question","question":"Investigation question","parentNote":"Tip",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"The Science","question":"What scientific concept explains this phenomenon?","content":"2-3 sentences","example":"example","scholarNote":"Scholar connection",'+annInstr+','+skInstr+'},\n'+
+    '    {"type":"activity","heading":"Investigation","materials":["item1"],"steps":["Step 1","Step 2","Step 3"],"parentNote":"Expected result",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"What We Found","question":"What does the evidence tell us?","content":"Conclusion from evidence",'+annInstr+','+skNone+'},\n'+
     (n>=9?mistakeSlide:'')+
     (n>=12?connSlide:'')+
     j;
 
+  // Social Studies
   return b+
-    '    {"type":"content","heading":"Setting the Scene","content":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"source","heading":"The Story","passage":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"content","heading":"Key People","content":"...","scholarNote":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"content","heading":"What and Why","content":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
-    '    {"type":"discussion","heading":"Discussion","question":"...","parentNote":"...",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"Setting the Scene","question":"What is the historical context for this topic?","content":"Context in '+persona+'\'s voice",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"source","heading":"The Story","question":"What primary source or story illustrates this?","passage":"3-5 sentence story","parentNote":"Grade notes",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"Key People","question":"Who were the key people and what were their roles?","content":"Who and role","scholarNote":"Islamic figure — methodological connection",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"content","heading":"What and Why","question":"What happened and why did it matter?","content":"Events and causes","parentNote":"Tip",'+annInstr+','+skNone+'},\n'+
+    '    {"type":"discussion","heading":"Discussion","question":"Evidence-based question","parentNote":"Listen for",'+annInstr+','+skNone+'},\n'+
     (n>=9?mistakeSlide:'')+
     j;
 }
@@ -1056,10 +1133,8 @@ async function generateLesson(g,w,subj,sessionNum){
   var ctx=buildCtx(g,w,subj,sessionNum);
   var sys=getSysPrompt(subj,g,sessionNum)+'\n\nRespond with ONLY valid JSON. No markdown. No backticks.';
   var gp=getGradePrefix(g);
-  var dRaw=await callAPI(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(subj,g)+'\n\nReturn '+getSlideCount(g)+' slides. JSON only.',16000);
-  var deck=parseJSON(cleanAIJson(dRaw));
-  var wRaw=await callAPI(sys,gp+'Generate the student workbook:\n\n'+ctx+'\nLesson: '+(deck.title||topic)+'\n\n'+getWBSchema(subj,g)+'\n\nJSON only — return object with single "workbook" key.');
-  var wb=parseJSON(cleanAIJson(wRaw));
+  var deck=await callAPIWithRetry(sys,gp+'Generate the lesson deck slides:\n\n'+ctx+'\n\n'+getDeckSchema(subj,g)+'\n\nReturn '+getSlideCount(g)+' slides. JSON only.',16000,3,4000);
+  var wb=await callAPIWithRetry(sys,gp+'Generate the student workbook:\n\n'+ctx+'\nLesson: '+(deck.title||topic)+'\n\n'+getWBSchema(subj,g)+'\n\nJSON only — return object with single "workbook" key.',6000,3,3500);
   var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
   if(sessionNum===1){
     slides.forEach(function(sl){if(sl.type==='juz'){sl.arabic=juz.arabic||juz.tr||'';sl.name=(juz.tr||'')+(juz.meaning?' — '+juz.meaning:'');sl.story=juz.story||'';sl.reflection=juz.q||'';delete sl.theme;}});
@@ -1081,8 +1156,9 @@ async function generateTestSubject(g,w,subj){
   var bandDesc=band==='k2'?'K-2: ALL questions must be type:"mcq" only.':band==='35'?'Grades 3-5: clear language, familiar contexts.':band==='68'?'Grades 6-8: analytical thinking, evidence-based.':'Grades 9-12: sophisticated analysis.';
   var sys='You are generating a mastery assessment for a K-12 Islamic education platform.\nUS customary units. US spelling. Tests ONLY Session 1 + Session 2 content.\nGrade band: '+bandDesc+'\n'+(band==='k2'?'CRITICAL: Return ONLY type:"mcq" questions.\n':'')+'Return ONLY valid JSON. No markdown.';
   var usr='Grade: '+gl+'\nWeek: '+w+'\nScholar: '+(how.scholar||'')+'\nJuz theme: '+(juz.theme||'')+'\nOpening question: '+(how.openingQ||'')+'\nSubject: '+(SLABELS[subj]||subj)+'\nLearning objectives: '+objectives+'\n\n'+getTestSchema(subj,g);
-  var raw=await callAPI(sys,usr,3000);
-  var parsed=parseJSON(raw);
+  var band2=getGradeBand(g);
+  var _testTok=(band2==='68'||band2==='912')?3500:3000;
+  var parsed=await callAPIWithRetry(sys,usr,_testTok,3,3000);
   var qs=parsed.questions||[];
   if(band==='k2') qs=qs.filter(function(q){return q.type==='mcq';});
   return {questions:qs,subjLabel:SLABELS[subj]||subj,totalMarks:qs.reduce(function(a,q){return a+(q.marks||1);},0)};
@@ -1106,8 +1182,7 @@ async function generateThursday(g,w){
   if(how.munazaraClaim) ctx+='Munazara claim: '+how.munazaraClaim+'\n';
   ctx+='\n── THURSDAY SYNTHESIS INSTRUCTIONS ──\nFACILITATOR-LED all-subjects synthesis for Thursday. Purpose: make the week\'s thread visible — show how each subject expressed the same Juz theme and Name of Allah.\nGrade level: '+gl+'. Calibrate all language to this grade.\nNames: Yusuf, Fatima, Omar, Nadia, Khalid, Leila, Hassan, Aisha.\nSLIDE STRUCTURE (9 slides total):\n1. THREAD QUESTION (type:title) — one surprising question that runs through all five subjects.\n2-6. CONNECTION slides (type:concept, one per subject) — how that subject\'s content expressed the Juz theme.\n7. CAPSTONE QUESTION (type:practice) — can ONLY be answered by connecting two or more subjects.\n8. MUHASABA (type:concept) — one-sentence self-examination prompt.\n9. JUZ REFLECTION (type:juz) — Name, hadith, carrying question exactly as provided.\n';
   var sys='You are generating a Thursday all-subjects synthesis deck for the Bayt al-Hikmah K-12 platform.\nUS customary units. US spelling.\nFacilitator-led — return ONLY valid JSON, no markdown.\nSchema: {"title":"string","objective":"string","slides":[{"type":"title"|"concept"|"practice"|"juz","heading":"string","content":"string","bullets":["string"],"example":"string","scholarNote":"string"}]}';
-  var raw=await callAPI(sys,gp+'Generate the Thursday synthesis deck:\n\n'+ctx+'\n\nJSON only.');
-  var deck=parseJSON(raw);
+  var deck=await callAPIWithRetry(sys,gp+'Generate the Thursday synthesis deck:\n\n'+ctx+'\n\nJSON only.',3200,3,3500);
   var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
   slides.forEach(function(sl){if(sl.body&&!sl.content) sl.content=sl.body;if(sl.teacherNote&&!sl.scholarNote) sl.scholarNote=sl.teacherNote;if(sl.type==='juz'){sl.arabic=juz.arabic||juz.tr||'';sl.name=(juz.tr||'')+(juz.meaning?' — '+juz.meaning:'');sl.story=juz.story||'';sl.reflection=juz.q||'';delete sl.theme;}});
   if(!slides.some(function(sl){return sl.type==='juz';})) slides.push({type:'juz',arabic:juz.arabic||juz.tr||'',name:(juz.tr||'')+(juz.meaning?' — '+juz.meaning:''),story:juz.story||'',reflection:juz.q||''});
@@ -1148,8 +1223,7 @@ async function generateWedReview(gi,g){
     });
     var sys='You are generating a Wednesday review lesson deck for a K-12 Islamic homeschool platform. US customary units. US spelling.\nThe deck targets ONLY misconceptions from wrong answers. RULES:\n- One slide per subject with errors (max 5 subjects)\n- Name the SPECIFIC misconception, then ask ONE correcting question\n- Do NOT re-teach the whole concept — target the exact error\n- Connect one slide to the week\'s scholar, one to the Juz theme\n- Final slide: muhasaba — what does understanding this correctly change?\nReturn ONLY valid JSON. Schema: {"title":"string","objective":"string","slides":[{"type":"string","heading":"string","content":"string","question":"string","parentNote":"string"}]}';
     var usr=gl+' · Week '+w+' · Scholar: '+(how.scholar||'')+'\nJuz: '+(juz.tr||'')+' — '+(juz.meaning||'')+'\nCarrying question: '+(how.openingQ||'')+'\n\nTest results:'+scoreCtx;
-    var raw=await callAPI(sys,usr,4000);
-    var deck=parseJSON(raw);
+    var deck=await callAPIWithRetry(sys,usr,4000,3,3000);
     var slides=(deck.slides||[]).filter(function(sl){return sl&&typeof sl==='object';});
     var entry={household_id:hid,grade:g,week:w,subject:'review',session:4,title:deck.title||'Wednesday Review',objective:deck.objective||'',slides:slides,workbook:{},created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
     var r=await sb.from('lesson').upsert(entry,{onConflict:'household_id,grade,week,subject,session'}).select();
@@ -1665,8 +1739,7 @@ function podSysPrompt(g){
 
 async function generatePodcastScript(gi,si,g,w,subjKey,ps){
   setPodStatus(gi,si,ps,'running');
-  var raw=await callAPI(podSysPrompt(g), buildPodcastPrompt(g,w,subjKey,ps)+'\nWrite the episode. JSON only.', 6000);
-  var ep=parseJSON(raw);
+  var ep=await callAPIWithRetry(podSysPrompt(g), buildPodcastPrompt(g,w,subjKey,ps)+'\nWrite the episode. JSON only.', 6000, 3, 3500);
   if(!ep||!ep.segments||!ep.segments.length) throw new Error('no segments returned');
   var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
   var payload={title:ep.title||'',hook:ep.hook||'',runtime:ep.runtime||'',segments:ep.segments,closingQuestion:ep.closingQuestion||'',
@@ -1950,8 +2023,9 @@ async function generateAndExportSlides(g,w,subjKey,sessionNum,collectOnly){
   var LABELS={math:'Mathematics',science:'Science',ela:'ELA / Reading',writing:'Writing',social:'Social Studies'};
   var ctx=buildCtx(g,w,subjKey,sessionNum);
   var sys=getSysPrompt(subjKey,sessionNum)+'\n\nReturn ONLY valid JSON. No markdown.';
-  var raw=await callAPI(sys,getGradePrefix(g)+'Generate slides:\n\n'+ctx+'\n\n'+getDeckSchema(subjKey,g)+'\n\nJSON only.',3000);
-  var deck=parseJSON(raw);
+  var _band=getGradeBand(g);
+  var _slideTok=(_band==='68'||_band==='912')?3800:3000;
+  var deck=await callAPIWithRetry(sys,getGradePrefix(g)+'Generate slides:\n\n'+ctx+'\n\n'+getDeckSchema(subjKey,g)+'\n\nJSON only.',_slideTok,3,3500);
   var html=renderSlideHTML(gl,LABELS[subjKey],'Session '+sessionNum,deck,juz,how);
   var fname=(g===0?'K':'Grade_'+g)+'_'+LABELS[subjKey].replace(/ \//g,'').replace(/ /g,'_')+'_Session_'+sessionNum+'.html';
   if(!collectOnly){
@@ -2040,8 +2114,7 @@ async function generateAndExportS3(g,w,subjKey,collectOnly){
   var s1=await fetchSessionText(g,w,subjKey,1);
   var s2=await fetchSessionText(g,w,subjKey,2);
   var sys='You generate interactive synthesis activities for a K-12 Islamic education platform. US customary units, US spelling. Return ONLY valid JSON, no markdown.';
-  var raw=await callAPI(sys,s3Prompt(g,w,subjKey,s1,s2),8000);
-  var parsed=parseJSON(raw);
+  var parsed=await callAPIWithRetry(sys,s3Prompt(g,w,subjKey,s1,s2),8000,3,4000);
   var rounds=parsed.rounds||[];
   if(rounds.length<3) throw new Error('Only '+rounds.length+' rounds returned');
   rounds=rounds.map(function(r){

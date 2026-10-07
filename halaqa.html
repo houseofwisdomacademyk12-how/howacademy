@@ -415,9 +415,12 @@ try{
       <p class="cc-meta" id="cc-meta">The Learning Circle</p>
     </div>
     <div class="cc-seats" id="cc-seats"></div>
-    <div class="cc-foot">
-      <div class="phase-badge ph-opening" id="ph-badge">Opening</div>
-      <p class="stimer" id="stimer">0:00</p>
+    <div class="cc-foot" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="phase-badge ph-opening" id="ph-badge">Opening</div>
+        <p class="stimer" id="stimer">0:00</p>
+      </div>
+      <button id="end-save-btn" onclick="endHalaqaSession()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;font-weight:600">✓ End &amp; save</button>
     </div>
   </div>
 
@@ -430,7 +433,6 @@ try{
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
         <button onclick="toggleROEOverlay()" title="Rules of Engagement" style="background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);color:var(--gold,#d4af37);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit">⚖ Rules</button>
-        <button id="end-save-btn" onclick="endHalaqaSession()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">✓ End &amp; save</button>
       </div>
     </div>
     <div class="mc-msgs" id="mc-msgs"></div>

@@ -138,52 +138,6 @@ textarea.setup-input{resize:vertical;min-height:80px;line-height:1.6}
 .k2-icon{font-size:24px;flex-shrink:0;width:36px;text-align:center}
 .k2-listen-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:4px 10px;background:var(--cream2);border:1px solid var(--cream3);border-radius:12px;font-size:11px;cursor:pointer;font-family:inherit}
 .k2-listen-btn:hover{background:var(--teal-pale)}
-
-/* ═══════════════════════════════════════════════════
-   MUNAZARA — MOBILE RESPONSIVE
-   ═══════════════════════════════════════════════════ */
-@media(max-width:600px){
-  .app{ padding:14px 12px 40px; }
-
-  /* Claim text */
-  .claim-text{ font-size:15px; }
-
-  /* Position row — stack vertically on small screens */
-  .position-row{ flex-direction:column; gap:8px; }
-
-  /* Buttons — full width, min tap target */
-  .btn-primary{ padding:13px; font-size:14px; min-height:44px; }
-
-  /* Debate moves */
-  .move-text{ font-size:14px; }
-  .move-header{ padding:10px 12px; gap:8px; }
-  .move-num{ width:24px; height:24px; font-size:11px; }
-
-  /* Write box */
-  .write-textarea{
-    min-height:120px;
-    font-size:14px !important; /* prevent iOS zoom */
-  }
-  .write-context{ font-size:13px; padding:10px 12px; }
-
-  /* Footer row — stack on mobile */
-  .write-footer{ flex-direction:column; align-items:flex-start; gap:8px; }
-
-  /* AI response */
-  .synthesis-block{ font-size:13px; padding:12px; }
-  .fp-text{ font-size:14px; }
-
-  /* K-2 choices — full width */
-  .k2-choice-btn{ padding:12px 14px; }
-  .k2-icon{ font-size:20px; }
-
-  /* Inputs — prevent iOS zoom */
-  .setup-input{ font-size:14px !important; }
-  input, textarea, select{ font-size:14px !important; }
-
-  /* Status bar */
-  .status-bar{ font-size:12px; padding:8px 12px; }
-}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -192,7 +146,6 @@ var sb = null;
 try{
   if(typeof supabase !== 'undefined'){
     sb = supabase.createClient('https://apallkuclqcqxnbmjuqu.supabase.co','sb_publishable_2BiWGqs9AfvWKw4N69TSGw_iCvnslJ9');
-    // Restore session from platform tokens so RLS policies resolve    }catch(e){ console.warn('Session restore failed:',e.message); }
   }
 }catch(e){}
 /* ─────────────────────────────────────────────────── */
@@ -320,7 +273,7 @@ try{
 
     <div class="text-center mt-16 no-print" id="synthesis-btn-wrap" style="display:none">
       <button class="btn-primary" onclick="generateSynthesis()" style="max-width:360px;margin:0 auto">
-        📊 Generate Thursday synthesis
+        📊 Generate Wednesday synthesis
       </button>
     </div>
 
@@ -332,7 +285,7 @@ try{
   <!-- Synthesis screen -->
   <div id="screen-synthesis" class="hidden">
     <div class="claim-box">
-      <div class="claim-label">Debate complete — Thursday synthesis</div>
+      <div class="claim-label">Debate complete — Wednesday synthesis</div>
       <div class="claim-text" id="synth-claim"></div>
     </div>
 
@@ -379,7 +332,9 @@ var D = {
   complete: false,
   synthesis: null,
   k2Choices: null,       // AI-generated choice sets for K-2 mode
-  k2ChoicesApproved: false
+  k2ChoicesApproved: false,
+  townNeed: '',          // town need from this week's studio card
+  townSystem: ''         // town system this debate serves
 };
 
 var MOVE_SEQUENCE = [
@@ -438,6 +393,19 @@ window.addEventListener('load', function(){
 function loadPlatformClaim(){
   try{
     var stored=localStorage.getItem(PLATFORM_CLAIM_KEY);
+    // Fallback: search all grade+week keys for most recent
+    if(!stored){
+      var best=null;
+      for(var _g=0;_g<=12;_g++){
+        for(var _w=1;_w<=30;_w++){
+          try{
+            var _s=localStorage.getItem('how_munazara_claim_'+_g+'_'+_w);
+            if(_s){ var _d=JSON.parse(_s); if(!best||(_d.generatedAt&&_d.generatedAt>best.generatedAt)) best=_d; }
+          }catch(e){}
+        }
+      }
+      if(best) stored=JSON.stringify(best);
+    }
     if(stored){
       var d=JSON.parse(stored);
       document.getElementById('claim-text-display').textContent=d.claim||'No claim found';
@@ -784,6 +752,9 @@ async function startDebate(){
   D.started=Date.now();
   D.complete=false;
   D.synthesis=null;
+  // Pull town context from studio card (written by HOW platform when launching Munazara)
+  D.townNeed = localStorage.getItem('how_studio_town_need') || '';
+  D.townSystem = localStorage.getItem('how_studio_town_system') || '';
   if(_munMode==='challenge'){
     // Side identities for live rendering (creator = side A)
     D._studentAName = D.studentName;
@@ -838,7 +809,7 @@ function renderDebate(){
   var statusText=document.getElementById('status-text');
   if(isComplete){
     statusDot.className='status-dot complete';
-    statusText.textContent='Debate complete — ready for Thursday synthesis';
+    statusText.textContent='Debate complete — ready for Wednesday synthesis';
   } else {
     var next=MOVE_SEQUENCE[currentIdx];
     statusDot.className='status-dot active';
@@ -1010,7 +981,14 @@ async function generateUstadhMove(idx){
     '- 2-4 paragraphs. Direct. No flowery preamble.\n'+
     '- For Opening: establish your position and its strongest grounds clearly\n'+
     '- For Rebuttal: engage what the student said — grant what deserves granting, press what remains\n'+
-    '- For Closing: name the central disagreement honestly and what evidence or argument would resolve it';
+    '- For Closing: name the central disagreement honestly and what evidence or argument would resolve it' +
+    (D.townNeed ? (
+      '\n\nTOWN STAKES \u2014 additional context:\n' +
+      'This debate connects to a real need in Hayy al-Hikmah' +
+      (D.townSystem ? ', specifically the ' + D.townSystem + ' system' : '') + '.\n' +
+      'Town need: "' + D.townNeed + '"\n' +
+      'Where it is natural \u2014 without forcing it \u2014 connect the argument to this real-world need. The student chose this position partly because they believe it serves the town. Let that give the debate concrete stakes.'
+    ) : '');
 
   var usr='Current stage: '+seq.label+'\n\n'+
     'Debate transcript so far:\n'+transcript+'\n\n'+
@@ -1043,7 +1021,7 @@ function buildTranscript(upToIdx){
 }
 
 // ═══════════════════════════════════════════════════
-//  THURSDAY SYNTHESIS
+//  WEDNESDAY SYNTHESIS
 // ═══════════════════════════════════════════════════
 async function addSpectatorReflection(){
   var text = 'I watched the debate on: "' + D.claim + '"\n\n';
@@ -1081,12 +1059,12 @@ async function generateSynthesis(){
   document.getElementById('synth-claim').textContent=D.claim;
   document.getElementById('synthesis-content').innerHTML=
     '<div class="ustadh-gen" style="padding:20px 0"><div class="spinner"></div>'+
-    '<span>Generating Thursday synthesis…</span></div>';
+    '<span>Generating Wednesday synthesis…</span></div>';
 
   var transcript=buildTranscript(6);
   var ustadhPos=D.studentPosition==='for'?'against':'for';
 
-  var sys='You are generating a Thursday synthesis for a Munazara (structured inquiry) in an Islamic K-12 education platform.\n'+
+  var sys='You are generating a Wednesday synthesis for a Munazara (structured inquiry) in an Islamic K-12 education platform.\n'+
     'The inquiry was between '+D.studentName+' (Grade '+D.grade+', arguing '+D.studentPosition+') and the Ustadh (arguing '+ustadhPos+').\n'+
     'The claim was: "'+D.claim+'"\n\n'+
     'The goal of a munazara is not to win but to find what is true. Evaluate accordingly.\n\n'+
@@ -1096,11 +1074,11 @@ async function generateSynthesis(){
     '  "where_understanding_shifted": "string — a moment where one debater\'s thinking visibly moved, or where the most important concession was made",\n'+
     '  "what_remains_open": "string — the central question the inquiry could not settle, and why it is genuinely hard",\n'+
     '  "adab_moments": ["string","string"] — up to 3 verbatim quotes (max 25 words each) where a debater showed intellectual virtue: conceding a point (insaf), expressing genuine uncertainty (tawadu), crediting the other\'s argument (amana), or honestly revising a position (sidq). Empty array if none occurred.",\n'+
-    '  "facilitator_prompt": "string — one question to open Thursday discussion, pointing toward what the inquiry left unresolved"\n'+
+    '  "facilitator_prompt": "string — one question to open Wednesday discussion, pointing toward what the inquiry left unresolved"\n'+
     '}\n'+
     'Return ONLY valid JSON. No markdown.';
 
-  var usr='Full debate transcript:\n\n'+transcript+'\n\nGenerate the Thursday synthesis JSON now.';
+  var usr='Full debate transcript:\n\n'+transcript+'\n\nGenerate the Wednesday synthesis JSON now.';
 
   try{
     var raw=await callAPI(sys,usr,1000);
@@ -1144,12 +1122,12 @@ function renderSynthesis(s){
   }
 
   html+='<div class="facilitator-prompt">';
-  html+='<div class="fp-label">Thursday opening question for the facilitator</div>';
+  html+='<div class="fp-label">Wednesday opening question for the facilitator</div>';
   html+='<div class="fp-text">'+escHtml(s.facilitator_prompt||'')+'</div>';
   html+='</div>';
 
   html+='<div class="synthesis-block sacred" style="margin-top:20px;font-size:13px">';
-  html+='<strong>How to use this on Thursday:</strong> Read the insight and the open question aloud. ';
+  html+='<strong>How to use this on Wednesday:</strong> Read the insight and the open question aloud. ';
   html+='If any moments of intellectual virtue are listed, read those too — name the virtue. ';
   html+='Ask the facilitator prompt and let the student respond without preparation. ';
   html+='The question that remained open becomes the seed for next week\'s munazara claim.';
@@ -1530,8 +1508,7 @@ function speak(text){
 //  API
 // ═══════════════════════════════════════════════════
 async function callAPI(sys, usr, maxTokens){
-  var _munJwt=localStorage.getItem('how_jwt');
-  if(!_munJwt) return null;
+
   var resp=await fetch('https://how-proxy-production.up.railway.app/api/generate',{
     method:'POST',
     headers:{'Content-Type':'application/json'},

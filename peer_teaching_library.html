@@ -544,7 +544,34 @@ async function togglePublish(id, currentState, evt){
     toast(serverOK||!isUUID2 ? 'Unpublished — visible to you only' : '⚠ Unpublished locally, but the server still shows it: '+serverWhy, 4000);
   }
 }
-function saveTeachings(t){S.set('teachings',t);updateCounts()}
+function _stripDrawings(teachings){
+  return (teachings||[]).map(function(t){
+    return Object.assign({},t,{
+      annotatedSlides:(t.annotatedSlides||[]).map(function(sl){
+        return Object.assign({},sl,{drawing: sl.drawing?'[drawing]':''});
+      })
+    });
+  });
+}
+function saveTeachings(t){
+  var stripped = _stripDrawings(t);
+  try{
+    S.set('teachings', stripped);
+  } catch(e){
+    // Quota hit — trim to the 10 most recent and retry
+    try{
+      var trimmed = stripped.slice(-10);
+      S.set('teachings', trimmed);
+      console.warn('saveTeachings: quota hit — trimmed to last 10 entries');
+    } catch(e2){
+      // If still failing, clear entirely so the app doesn't break
+      try{ localStorage.removeItem('ptl_teachings'); } catch(e3){}
+      console.warn('saveTeachings: quota still exceeded after trim — cleared teachings cache');
+      throw e2; // Let caller decide what to show
+    }
+  }
+  updateCounts();
+}
 function getSettings(){return S.get('settings')||{name:'',grade:'',apiKey:''}}
 function toast(m,ms){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._hid);t._hid=setTimeout(()=>t.classList.remove('show'),ms||2200)}
 
@@ -933,11 +960,6 @@ function _renderTeachingDetail(t){
   </div>
 
   <div class="highlight">${t.keyIdea||''}</div>
-
-  <div class="detail-section">
-    <span class="detail-section-label">Summary</span>
-    <p class="detail-body">${t.summary||''}</p>
-  </div>
 
   <hr style="border:none;border-top:1px solid var(--ink-5);margin:18px 0">
 
@@ -1585,7 +1607,7 @@ function renderRecStep5(c){
 async function publishTeaching(){
   const s = getSettings();
   const teachings = getTeachings();
-  const name = s.name||'Anonymous';
+  const name = draftTeaching.teacherName || getLearnerIdentity().name || s.name || 'Anonymous';
   const initials = name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'??';
   const entry = {
     ...draftTeaching,
@@ -1617,7 +1639,8 @@ async function publishTeaching(){
   const shared = await pushTeachingToSupabase(entry);
   if(shared && shared.id){
     // Adopt the server uuid so future publish-toggles update the real row
-    var list = getTeachings().map(function(t){ return t.id===entry.id ? Object.assign({},t,{id:shared.id, fromSupabase:true, keyIdea:shared.keyIdea||t.keyIdea, summary:shared.summary||t.summary, scholar:shared.scholar||t.scholar, juz:shared.juz||t.juz, openQuestion:shared.openQuestion||t.openQuestion, annotatedSlides:shared.annotatedSlides||t.annotatedSlides||[]}) : t; });
+    var list = getTeachings().map(function(t){ return t.id===entry.id ? Object.assign({},t,{id:shared.id, fromSupabase:true, keyIdea:shared.keyIdea||t.keyIdea, summary:shared.summary||t.summary, scholar:shared.scholar||t.scholar, juz:shared.juz||t.juz, openQuestion:shared.openQuestion||t.openQuestion}) : t; });
+    // Note: annotatedSlides deliberately not merged from Supabase response — drawings live in Supabase only
     saveTeachings(list);
     toast('✓ Published to the shared library — it can now be verified on the Isnād Map.');
   } else {
@@ -1802,6 +1825,7 @@ setTimeout(function(){
     scholar:     deck.scholar  || '',
     juz:         deck.juz      || '',
     isTeachIt:   true,
+    teacherName: deck.studentName || '',   // carry student name from HOW platform
     // Store the slide data for the HOW flow
     _howDeckSlides: deck.slides
   };
@@ -1873,11 +1897,20 @@ function renderAnnotatedDeck(t){
     if(hasDrawing){ dIdx = drawingIndex++; drawingData.push(s.drawing); }
 
     html += '<div style="margin:12px 18px;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)">';
-    html += '<div style="background:'+color+';padding:5px 14px">';
-    html += '<span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.9)">' + (s.heading||s.type) + '</span>';
+    html += '<div style="background:'+color+';padding:5px 14px 6px">';
+    if(s.type && s.type.toLowerCase()!=='title' && s.type.toLowerCase()!=='teach_it'){
+      html += '<div style="font-size:.52rem;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:2px">' + s.type + '</div>';
+    }
+    html += '<span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.95)">' + (s.heading||s.type) + '</span>';
     html += '</div>';
     html += '<div style="padding:10px 14px 12px 42px;position:relative;background:repeating-linear-gradient(white 0,white 27px,#e8f0fe 28px);border-left:4px solid '+color+';min-height:60px">';
     html += '<div style="position:absolute;left:38px;top:0;bottom:0;width:1px;background:#fca5a5;opacity:.5"></div>';
+
+    // Original question / topic prompt — shown above the peer's answer
+    if(s.origQuestion){
+      html += '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:'+color+';opacity:.75;margin-bottom:4px;margin-top:2px">Topic</div>';
+      html += '<p style="font-size:.82rem;line-height:1.6;color:#374151;margin:0 0 10px;font-style:italic;border-bottom:1px dashed #e0e0e0;padding-bottom:8px">'+s.origQuestion+'</p>';
+    }
 
     if(hasUstadh){
       if(s.ustadhResponse){
@@ -2060,19 +2093,32 @@ async function _howLoadSlide(n){
     _howRenderSlideBody(n, _howAICache[n]);
     return;
   }
-  var prompts = await _howGeneratePrompts(n);
+  var deckSlide = (draftTeaching._howDeckSlides || [])[n - 1] || null;
+  var prompts = await _howGeneratePrompts(n, deckSlide);
   _howAICache[n] = prompts;
   _howRenderSlideBody(n, prompts);
 }
 
 // ── AI prompt generation ──────────────────────────────────────────────────────
-async function _howGeneratePrompts(n){
+async function _howGeneratePrompts(n, deckSlide){
   var band    = _ptlTeacherBand();
   var subject = draftTeaching.subject || 'general';
   var scholar = draftTeaching.scholar || '';
   var juz     = draftTeaching.juz    || '';
   var title   = draftTeaching.title  || '';
   var slideType = HOW_SLIDE_TYPES[n] || 'Content';
+
+  // Build a short content summary from the actual slide so prompts are slide-specific
+  var slideContent = '';
+  if(deckSlide){
+    var parts = [];
+    if(deckSlide.heading)  parts.push('Heading: ' + deckSlide.heading);
+    if(deckSlide.content)  parts.push('Content: ' + String(deckSlide.content).slice(0,200));
+    if(deckSlide.question) parts.push('Question: ' + deckSlide.question);
+    if(deckSlide.passage)  parts.push('Passage: ' + String(deckSlide.passage).slice(0,200));
+    if(deckSlide.steps && deckSlide.steps.length) parts.push('Steps: ' + deckSlide.steps.slice(0,3).join(' / '));
+    slideContent = parts.join('. ');
+  }
 
   // Previous responses for slide 8 context
   var prevContext = '';
@@ -2106,6 +2152,7 @@ async function _howGeneratePrompts(n){
   var prompt = isJuz ?
     'Slide type: Juz Connection (Slide 8 of 8).\n' +
     'Lesson title: "'+title+'". Subject: '+subject+'. Scholar: '+scholar+'. Juz: '+juz+'.' +
+    (slideContent ? '\nSlide content: '+slideContent : '') +
     prevContext + '\n\n' +
     'Generate JSON with this exact shape:\n' +
     '{\n' +
@@ -2120,7 +2167,8 @@ async function _howGeneratePrompts(n){
     'The approaches and work prompts must be specific to this slide type and the student\'s previous teaching. work2 may be empty string if one prompt is enough.' :
 
     'Slide type: "'+slideType+'" (Slide '+n+' of 8).\n' +
-    'Lesson title: "'+title+'". Subject: '+subject+'. Scholar: '+scholar+'. Juz: '+juz+'.' + '\n\n' +
+    'Lesson title: "'+title+'". Subject: '+subject+'. Scholar: '+scholar+'. Juz: '+juz+'.' +
+    (slideContent ? '\nSlide content: '+slideContent : '') + '\n\n' +
     'Generate JSON with this exact shape:\n' +
     '{\n' +
     '  "approaches": [\n' +
@@ -2388,9 +2436,18 @@ function _howSaveSlide(n){
   var apps     = (prompts.approaches) || [];
   var app      = apps[saved.approachIdx] || {};
 
+  // Capture the original slide's question/topic so compiled view can show it
+  var _origSlide = (draftTeaching._howDeckSlides || [])[n - 1] || null;
+  var _origQuestion = '';
+  if(_origSlide){
+    _origQuestion = _origSlide.question || _origSlide.heading || _origSlide.content || '';
+    if(typeof _origQuestion === 'string') _origQuestion = _origQuestion.slice(0, 300);
+  }
+
   var slide = {
     type:      HOW_SLIDE_TYPES[n] || 'content',
     heading:   (app.label||''),
+    origQuestion: _origQuestion,   // NEW: original slide question / topic
     content:   (saved.work1||'') + (saved.work2 ? '\n' + saved.work2 : ''),
     studentNote: saved.paragraph || '',
     drawing:   saved.drawing || ''
