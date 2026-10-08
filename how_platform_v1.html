@@ -1779,7 +1779,7 @@ body.lg-active #lg-root .toast.show { display:block !important; }
       <span class="sb-nav-label">Peer Library</span>
     </button>
 
-    <button class="sb-nav-item auth-only" onclick="openSahifa()">
+    <button class="sb-nav-item auth-only" onclick="window.open('sahifa_prototype.html','_blank')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
       <span class="sb-nav-label">Sahifa</span>
     </button>
@@ -2612,7 +2612,7 @@ async function renderHomeDashboard(){
           '<div class="dash-card-sub">' + gradeLabel + ' · Week ' + week + '</div>' +
           '<div class="dash-card-link">Open →</div>' +
         '</div>' +
-        '<div class="dash-card" onclick="openSahifa()">' +
+        '<div class="dash-card" onclick="window.open(\'sahifa_prototype.html\',\'_blank\')">' +
           '<div class="dash-card-title">📜 My Sahifa</div>' +
           '<div class="dash-card-sub">This week\'s reflection</div>' +
           '<div class="dash-card-link">Write →</div>' +
@@ -2659,11 +2659,20 @@ async function renderHomeDashboard(){
     }).join('') :
     '<div style="padding:16px;color:var(--ink3);font-size:13px">No students added yet.</div>';
 
+    // Build week pills for the report selector (weeks 1-30, highlight current)
+    var _weekPills = '';
+    for(var _wp=1;_wp<=30;_wp++){
+      var _isW = (_wp===week);
+      _weekPills += '<button id="rpt-wk-'+_wp+'" onclick="refreshParentReports('+_wp+')" style="'+
+        'border:none;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:'+(_isW?'700':'500')+';cursor:pointer;'+
+        'background:'+(_isW?'var(--teal,#1d6f6f)':'var(--p3,#e8e8e8)')+';'+
+        'color:'+(_isW?'white':'var(--ink3)')+';transition:all .15s">Wk '+_wp+'</button>';
+    }
+
     var reportsHtml = await buildParentReports(students, week);
 
-    // Store students list + current view week for re-render
+    // Store students list for re-render on week change
     window._parentDashStudents = students;
-    window._parentDashViewWeek = week;
 
     var navTo = function(page){
       return "(function(){var b=document.querySelector('.sb-nav-item[data-p="+page+"]');if(b)howSP(b);})()";
@@ -2681,17 +2690,10 @@ async function renderHomeDashboard(){
       '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:18px 0 10px">Children</div>' +
       '<div class="dash-cards">' + studentCardsHtml + '</div>' +
 
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:24px 0 8px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin:24px 0 8px">' +
         '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)">Reports</div>' +
-        '<div style="display:flex;align-items:center;gap:5px">' +
-          '<button onclick="stepReportWeek(-1)" style="background:none;border:1px solid var(--border,#ddd);border-radius:6px;color:var(--ink3);cursor:pointer;font-size:14px;line-height:1;padding:2px 8px;transition:border-color .15s,color .15s" onmouseover="this.style.borderColor=\'var(--teal,#1d6f6f)\';this.style.color=\'var(--teal,#1d6f6f)\'" onmouseout="this.style.borderColor=\'\';this.style.color=\'\'">‹</button>' +
-          '<button id="rpt-week-label" onclick="toggleReportWeekSelect()" style="background:var(--teal,#1d6f6f);color:white;border:none;border-radius:99px;padding:4px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;min-width:80px">Week ' + week + '</button>' +
-          '<button onclick="stepReportWeek(1)" style="background:none;border:1px solid var(--border,#ddd);border-radius:6px;color:var(--ink3);cursor:pointer;font-size:14px;line-height:1;padding:2px 8px;transition:border-color .15s,color .15s" onmouseover="this.style.borderColor=\'var(--teal,#1d6f6f)\';this.style.color=\'var(--teal,#1d6f6f)\'" onmouseout="this.style.borderColor=\'\';this.style.color=\'\'">›</button>' +
-        '</div>' +
+        '<div style="display:flex;gap:4px;flex-wrap:wrap;max-width:100%;overflow-x:auto;padding-bottom:2px">' + _weekPills + '</div>' +
       '</div>' +
-      '<select id="rpt-week-select" onchange="refreshParentReports(parseInt(this.value))" style="display:none;width:100%;margin-bottom:8px;border:1px solid var(--teal,#1d6f6f);border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit;color:var(--ink);background:var(--p2);cursor:pointer">' +
-        (function(){ var o=''; for(var _i=30;_i>=1;_i--) o+='<option value="'+_i+'"'+((_i===week)?' selected':'')+'>Week '+_i+(_i===week?' (current)':'')+(_i===week-1?' (last week)':'')+(_i===week-2?' (2 weeks ago)':'')+(_i===week-3?' (3 weeks ago)':'')+'</option>'; return o; })() +
-      '</select>' +
       '<div id="parent-reports-body">' + reportsHtml + '</div>' +
 
       '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">My Teachings</div>' +
@@ -2775,7 +2777,7 @@ async function renderHomeDashboard(){
     '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px">Tools</div>' +
     '<div class="dash-tools">' +
       '<a class="dash-tool" href="murshid.html" target="_blank"><div class="dash-tool-icon" style="font-family:\'Amiri\',serif;color:var(--teal)">م</div><div class="dash-tool-name">Murshid</div><div class="dash-tool-desc">AI scholarly guide</div></a>' +
-      '<a class="dash-tool" href="#" onclick="openSahifa();return false"><div class="dash-tool-icon">📜</div><div class="dash-tool-name">Sahifa</div><div class="dash-tool-desc">Living manuscript</div></a>' +
+      '<a class="dash-tool" href="sahifa_prototype.html" target="_blank"><div class="dash-tool-icon">📜</div><div class="dash-tool-name">Sahifa</div><div class="dash-tool-desc">Living manuscript</div></a>' +
       '<a class="dash-tool" href="halaqa.html" target="_blank"><div class="dash-tool-icon">🕌</div><div class="dash-tool-name">Halaqa</div><div class="dash-tool-desc">Learning circle</div></a>' +
       '<a class="dash-tool" href="studio_digital_twin.html" target="_blank"><div class="dash-tool-icon">🏗</div><div class="dash-tool-name">Studio</div><div class="dash-tool-desc">Digital twin</div></a>' +
       '<a class="dash-tool" href="peer_teaching_library.html" target="_blank"><div class="dash-tool-icon">📚</div><div class="dash-tool-name">Peer Library</div><div class="dash-tool-desc">Teach & learn</div></a>' +
@@ -2847,7 +2849,7 @@ async function renderHomeDashboard(){
     var ql=q.toLowerCase();
     // ── Smart routing ──────────────────────────────────────────────
     if(/sahifa|journal|notebook/.test(ql)){
-      openSahifa(); goto('generate'); return;
+      window.open('sahifa_prototype.html','_blank'); goto('generate'); return;
     }
     if(/murshid|guide|tutor|mentor/.test(ql)){
       window.open('murshid.html','_blank'); goto('generate'); return;
@@ -3441,17 +3443,6 @@ function getCURRICULUM(){
 // ═══ CURRICULUM BROWSER ═══════════════════════════════
 let currentGrade='7', currentWeek=null;
 
-function openSahifa(){
-  // Stamp current week + grade into sahifa_settings before opening so Sahifa shows the right week
-  try{
-    var _ss=JSON.parse(localStorage.getItem('sahifa_settings')||'{}');
-    if(currentWeek) _ss.juz=String(currentWeek);
-    if(currentGrade) _ss.grade=String(currentGrade);
-    localStorage.setItem('sahifa_settings',JSON.stringify(_ss));
-  }catch(e){}
-  window.open('sahifa_prototype.html','_blank');
-}
-
 function selectGrade(g){
   currentGrade=g; currentWeek=null;
   localStorage.setItem('how_curr_grade', g);
@@ -3868,7 +3859,7 @@ async function schedLaunch(action, opts){
     window.open('halaqa.html','_blank');
 
   } else if(action==='sahifa'){
-    openSahifa();
+    window.open('sahifa_prototype.html','_blank');
   } else if(action==='aafiya'){
     // Pass current schedule day so Al-Aafiya shows correct session
     var _activeDay=document.querySelector('.day-tab.active');
@@ -3878,7 +3869,7 @@ async function schedLaunch(action, opts){
     window.open('al_aafiya.html','_blank');
 
   } else if(action==='sahifa-sun'){
-    openSahifa();
+    window.open('sahifa_prototype.html','_blank');
 
   } else if(action==='studio-twin'){
     window.open('studio_digital_twin.html','_blank');
@@ -8748,7 +8739,7 @@ function renderTestTaker(t){
 
     // Read-aloud button for K-2
     if(q.readAloud){
-      html+='<button onclick="speak('+JSON.stringify(q.question)+',this)" style="margin-bottom:10px;background:var(--sacred,#5c2080);color:white;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s">🔊 Listen to question</button>';
+      html+='<button onclick="speak('+JSON.stringify(q.question)+')" style="margin-bottom:10px;background:var(--sacred,#5c2080);color:white;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">🔊 Listen to question</button>';
     }
 
     if(q.type==='mcq'){
@@ -12551,52 +12542,12 @@ function buildAndSubmitK2(moveType){
   }
 }
 
-function speak(text,btn){
-  if(!window.speechSynthesis){if(btn){btn.textContent='🔊 Listen to question';}return;}
-  // Stop if already speaking the same button (toggle off)
-  if(btn&&btn._speaking){window.speechSynthesis.cancel();btn._speaking=false;btn.textContent='🔊 Listen to question';return;}
+function speak(text){
+  if(!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   var u=new SpeechSynthesisUtterance(text);
-  u.rate=0.85; u.pitch=1.0; u.lang='en-US';
-  // Prefer a natural English voice when available
-  var voices=window.speechSynthesis.getVoices();
-  var enVoice=voices.find(function(v){return v.lang.startsWith('en')&&v.localService;})
-    ||voices.find(function(v){return v.lang.startsWith('en');});
-  if(enVoice) u.voice=enVoice;
-  if(btn){
-    btn._speaking=true;
-    btn.textContent='⏹ Stop';
-    u.onend=function(){btn._speaking=false;btn.textContent='🔊 Listen to question';};
-    u.onerror=function(){btn._speaking=false;btn.textContent='🔊 Listen to question';};
-  }
-  function doSpeak(){
-    // iOS Safari fix: resume if paused (happens after page interaction gap)
-    if(window.speechSynthesis.paused) window.speechSynthesis.resume();
-    window.speechSynthesis.speak(u);
-    // iOS Safari sometimes stalls mid-utterance — keep it alive with a periodic resume
-    if(/iPhone|iPad|iPod/.test(navigator.userAgent)){
-      var keepAlive=setInterval(function(){
-        if(!window.speechSynthesis.speaking){clearInterval(keepAlive);return;}
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
-      },5000);
-      u.onend=function(){clearInterval(keepAlive);if(btn){btn._speaking=false;btn.textContent='🔊 Listen to question';}};
-      u.onerror=function(){clearInterval(keepAlive);if(btn){btn._speaking=false;btn.textContent='🔊 Listen to question';}};
-    }
-  }
-  if(voices.length){doSpeak();}
-  else{
-    // Android Chrome / some desktop browsers load voices async
-    window.speechSynthesis.onvoiceschanged=function(){
-      window.speechSynthesis.onvoiceschanged=null;
-      var v=window.speechSynthesis.getVoices();
-      var ev=v.find(function(x){return x.lang.startsWith('en')&&x.localService;})||v.find(function(x){return x.lang.startsWith('en');});
-      if(ev) u.voice=ev;
-      doSpeak();
-    };
-    // iOS Safari sometimes never fires onvoiceschanged — fire anyway after 300ms
-    setTimeout(function(){if(!window.speechSynthesis.speaking)doSpeak();},300);
-  }
+  u.rate=0.88; u.pitch=1.0;
+  window.speechSynthesis.speak(u);
 }
 
 // ═══════════════════════════════════════════════════
@@ -14145,21 +14096,31 @@ function onWeekChange(el){
 // ── PARENT REPORTS BUILDER ──────────────────────────────────────────────────
 async function buildParentReports(students, currentWeek){
   var rows = '';
-  var SUBJ_SHORT = {math:'Math',science:'Science',ela:'ELA',writing:'Writing',ss:'Social Studies',arabic:'Arabic',english:'English',history:'History',islamic:'Islamic'};
+  var subjectLabels = typeof SUBJ_LABELS !== 'undefined' ? SUBJ_LABELS : {
+    math:'Mathematics', english:'English', science:'Science',
+    history:'History', arabic:'Arabic', islamic:'Islamic Studies'
+  };
 
-  // ── For each student, show the selected week only (Option A style) ──────
+  // ── For each student, look for test scores across recent weeks ────────────
   students.forEach(function(st){
     var sg=(function(){var _g=st.current_grade!=null?st.current_grade:st.grade_start!=null?st.grade_start:st.grade;return(_g!=null&&!isNaN(_g))?parseInt(_g):7;})();
     var sw=(st.current_week!=null?st.current_week:st.week)||currentWeek;
     var sname = st.name || 'Student';
     var semoji = st.emoji || '🧒';
-    var _viewWk = currentWeek || sw;
 
-    // ── Test score for selected week ───────────────────────────────────────
-    var tk = sg + '_' + _viewWk;
-    var sc = S.scores && S.scores[tk];
-    var scoreHtml = '';
-    if(sc){
+    // Collect test scores (up to 4 weeks back from the selected view week)
+    // Key format matches pullScores: grade_week (NOT grade_week_test)
+    var _viewWk = currentWeek || sw;
+    var scoreCards = '';
+    var hasAnyScore = false;
+    for(var w = _viewWk; w >= Math.max(1, _viewWk-3); w--){
+      var tk = sg + '_' + w;                          // fixed: was sg+'_'+w+'_test'
+      var sc = S.scores && S.scores[tk];
+      if(!sc) continue;
+      hasAnyScore = true;
+
+      // sc may be full scoreObj {grandTotal,grandMax,subjects:{…}} OR just the subjects map
+      // Handle both formats:
       var scSubjects = sc.subjects || sc;
       var grandTotal = 0, grandMax = 0;
       Object.keys(scSubjects).forEach(function(subj){
@@ -14167,77 +14128,102 @@ async function buildParentReports(students, currentWeek){
         (sd.details||[]).forEach(function(d){ grandTotal+=d.awarded>=0?d.awarded:0; grandMax+=d.marks||0; });
       });
       var pct = grandMax ? Math.round(grandTotal/grandMax*100) : null;
-      var pctColour = pct===null?'var(--ink3)':pct>=90?'#1d6f6f':pct>=75?'#1a3d8a':pct>=60?'#b8922a':'#c0392b';
-      var pctBg    = pct===null?'var(--p3)':pct>=90?'#d0eaea':pct>=75?'#ddeaf8':pct>=60?'#fef3cd':'#fde8e8';
+      var pctLabel = pct !== null ? pct+'%' : '—';
+      var pctColour = pct===null?'#888':pct>=90?'#1d6f6f':pct>=75?'#1a3d8a':pct>=60?'#b8922a':'#c0392b';
+      var pctBg    = pct===null?'#f5f5f5':pct>=90?'#d0eaea':pct>=75?'#ddeaf8':pct>=60?'#fef3cd':'#fde8e8';
       var perfLabel = pct===null?'No data':pct>=90?'Excellent':pct>=75?'Proficient':pct>=60?'Developing':'Needs support';
+      var isThisWeek = (w===_viewWk);
 
-      // Overall badge
-      scoreHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
-        '<div style="font-size:24px;font-weight:800;color:'+pctColour+';line-height:1;font-variant-numeric:tabular-nums">' + (pct!==null?pct+'%':'—') + '</div>' +
-        '<div style="background:'+pctBg+';color:'+pctColour+';font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px">' + perfLabel + '</div>' +
-      '</div>';
-
-      // Subject pills row
-      scoreHtml += '<div style="display:flex;flex-wrap:wrap;gap:5px">';
+      // Per-subject progress bars
+      var subjectBars = '';
+      var SUBJ_SHORT = {math:'Math',science:'Science',ela:'ELA',writing:'Writing',ss:'Social Studies',arabic:'Arabic'};
       Object.keys(scSubjects).forEach(function(subj){
         var sd = scSubjects[subj]||{};
         var e=0,t=0;
         (sd.details||[]).forEach(function(d){ e+=d.awarded>=0?d.awarded:0; t+=d.marks||0; });
         if(!t) return;
         var sp=Math.round(e/t*100);
-        var pc=sp>=90?'#1d6f6f':sp>=75?'#1a3d8a':sp>=60?'#b8922a':'#c0392b';
-        var pb=sp>=90?'#d0eaea':sp>=75?'#ddeaf8':sp>=60?'#fef3cd':'#fde8e8';
-        scoreHtml += '<span style="display:inline-flex;align-items:center;gap:3px;background:'+pb+';color:'+pc+';border-radius:99px;padding:3px 9px;font-size:11px;font-weight:700">' +
-          (SUBJ_SHORT[subj]||subj)+' '+sp+'%</span>';
+        var bc=sp>=90?'#1d6f6f':sp>=75?'#1a3d8a':sp>=60?'#b8922a':'#c0392b';
+        subjectBars +=
+          '<div style="margin-bottom:6px">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">' +
+              '<span style="font-size:10px;color:#555;font-weight:500">' + (SUBJ_SHORT[subj]||subj) + '</span>' +
+              '<span style="font-size:10px;font-weight:700;color:'+bc+'">' + sp + '%</span>' +
+            '</div>' +
+            '<div style="height:5px;background:#e8e8e8;border-radius:3px;overflow:hidden">' +
+              '<div style="width:'+sp+'%;height:100%;background:'+bc+';border-radius:3px;transition:width .4s"></div>' +
+            '</div>' +
+          '</div>';
       });
-      scoreHtml += '</div>';
-    } else {
-      scoreHtml = '<div style="font-size:12px;color:var(--ink3);padding:4px 0">No test recorded for Week ' + _viewWk + '.</div>';
+
+      scoreCards +=
+        '<div style="background:'+(isThisWeek?'white':'#fafafa')+';border:1.5px solid '+(isThisWeek?pctColour:'#e0e0e0')+';border-radius:10px;padding:12px 14px;margin-bottom:8px">' +
+          '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
+            '<div>' +
+              '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888">Week '+w+(isThisWeek?' <span style=\'background:'+pctBg+';color:'+pctColour+';font-size:9px;padding:1px 6px;border-radius:99px;margin-left:4px\'>This week</span>':'')+'</div>' +
+            '</div>' +
+            '<div style="margin-left:auto;text-align:right">' +
+              '<div style="font-size:22px;font-weight:800;color:'+pctColour+';line-height:1">' + pctLabel + '</div>' +
+              '<div style="font-size:10px;color:'+pctColour+';font-weight:500">' + perfLabel + '</div>' +
+            '</div>' +
+          '</div>' +
+          subjectBars +
+        '</div>';
     }
 
-    // ── Munazara for selected week (parse JSON if needed) ──────────────────
-    var munHtml = '';
-    var _rawClaim = localStorage.getItem('how_munazara_claim_' + sg + '_' + _viewWk);
-    if(!_rawClaim && _viewWk === sw) _rawClaim = localStorage.getItem('how_munazara_claim');
-    if(_rawClaim){
-      var _claimText = _rawClaim;
-      try{ var _co = JSON.parse(_rawClaim); _claimText = _co.claim || _rawClaim; }catch(e){}
-      munHtml = '<div style="border-left:2px solid var(--gold,#b8922a);padding-left:8px;margin-top:10px">' +
-        '<div style="font-size:10px;font-weight:700;color:var(--gold,#b8922a);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">⚖️ Munazara</div>' +
-        '<div style="font-size:12px;color:var(--ink);font-style:italic;line-height:1.5">"' + _claimText.substring(0,150) + (_claimText.length>150?'…':'') + '"</div>' +
-      '</div>';
-    } else {
-      munHtml = '<div style="font-size:12px;color:var(--ink3);border-left:2px solid var(--p3,#ddd);padding-left:8px;margin-top:10px;font-style:italic">No Munazara claim for Week ' + _viewWk + '.</div>';
+    // ── Munazara summaries ──────────────────────────────────────────────────
+    var munRows = '';
+    for(var mw = _viewWk; mw >= Math.max(1, _viewWk-3); mw--){
+      var claim = localStorage.getItem('how_munazara_claim_' + sg + '_' + mw);
+      if(!claim) claim = mw === sw ? localStorage.getItem('how_munazara_claim') : null;
+      if(claim){
+        munRows += '<div style="padding:8px 0;border-bottom:1px solid var(--p3)">' +
+          '<div style="font-size:10px;color:var(--ink3);margin-bottom:3px">Week ' + mw + ' claim</div>' +
+          '<div style="font-size:12px;color:var(--ink);font-style:italic">"' + claim.substring(0,120) + (claim.length>120?'…':'') + '"</div>' +
+        '</div>';
+      }
     }
 
-    // ── Workbook grade for selected week ───────────────────────────────────
-    var wbHtml = '';
+    // ── Workbook grades ─────────────────────────────────────────────────────
+    var wbRows = '';
     var wbGrade = localStorage.getItem('how_pending_grade');
     if(wbGrade){
       try {
         var wbG = JSON.parse(wbGrade);
-        if(wbG && wbG.grade === sg && (wbG.week||sw) === _viewWk){
-          wbHtml = '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 10px;background:var(--p3,#e8e8e8);border-radius:8px">' +
-            '<div style="font-size:11px;color:var(--ink3);flex:1">📝 Workbook</div>' +
-            '<div style="font-size:13px;font-weight:700;color:var(--teal,#1d6f6f)">' + (wbG.pct||'?') + '%</div>' +
+        if(wbG && wbG.grade === sg){
+          wbRows = '<div style="padding:8px 0;border-bottom:1px solid var(--p3);display:flex;align-items:center;gap:10px">' +
+            '<div style="font-size:11px;color:var(--ink3);flex:1">Week ' + (wbG.week||sw) + ' workbook</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--teal)">' + (wbG.pct||'?') + '%</div>' +
             '<div style="font-size:10px;color:var(--ink3)">' + (wbG.label||'') + '</div>' +
           '</div>';
         }
       } catch(e){}
     }
 
-    rows += '<div style="background:var(--p2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px">' +
+    var hasAnyMun = munRows.length > 0;
+    var hasAnyWb  = wbRows.length > 0;
+
+    rows += '<div style="background:var(--p2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px">' +
+      // Student header
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
         '<span style="font-size:20px">' + semoji + '</span>' +
         '<div>' +
           '<div style="font-size:14px;font-weight:700;color:var(--ink)">' + sname + '</div>' +
-          '<div style="font-size:11px;color:var(--ink3)">' + (sg===0?'Kindergarten':'Grade '+sg) + ' · Week ' + _viewWk + '</div>' +
+          '<div style="font-size:11px;color:var(--ink3)">' + (sg===0?'Kindergarten':'Grade '+sg) + ' · Week ' + sw + '</div>' +
         '</div>' +
       '</div>' +
-      '<div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📊 Weekly Test</div>' +
-      scoreHtml +
-      wbHtml +
-      munHtml +
+
+      // Test scores section
+      '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📊 Weekly Tests</div>' +
+      (hasAnyScore ? scoreCards : '<div style="font-size:12px;color:var(--ink3);padding:6px 0">No test scores yet — complete the Wednesday test.</div>') +
+
+      // Workbook
+      (hasAnyWb ? ('<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">📝 Workbook</div>' + wbRows) : '') +
+
+      // Munazara
+      '<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin:' + (hasAnyScore||hasAnyWb?'12':'0') + 'px 0 6px">⚖️ Munazara Claims</div>' +
+      (hasAnyMun ? munRows : '<div style="font-size:12px;color:var(--ink3);padding:6px 0">No Munazara sessions recorded yet.</div>') +
+
     '</div>';
   });
 
@@ -14335,28 +14321,20 @@ async function buildParentReports(students, currentWeek){
 
 // Refresh only the reports body when the user picks a different week
 async function refreshParentReports(viewWeek){
-  window._parentDashViewWeek = viewWeek;
-  // Update label button
-  var _lbl = document.getElementById('rpt-week-label');
-  if(_lbl) _lbl.textContent = 'Week ' + viewWeek;
-  // Sync select value and hide it
-  var _sel = document.getElementById('rpt-week-select');
-  if(_sel){ _sel.value = viewWeek; _sel.style.display = 'none'; }
+  // Update pill styles
+  for(var _i=1;_i<=30;_i++){
+    var _btn=document.getElementById('rpt-wk-'+_i);
+    if(!_btn) continue;
+    var _active=(_i===viewWeek);
+    _btn.style.background=_active?'var(--teal,#1d6f6f)':'var(--p3,#e8e8e8)';
+    _btn.style.color=_active?'white':'var(--ink3)';
+    _btn.style.fontWeight=_active?'700':'500';
+  }
   var _body=document.getElementById('parent-reports-body');
   if(_body) _body.innerHTML='<div style="padding:20px;color:var(--ink3);font-size:13px">Loading…</div>';
   var _students=window._parentDashStudents||[];
   var _html=await buildParentReports(_students, viewWeek);
   if(_body) _body.innerHTML=_html;
-}
-function stepReportWeek(delta){
-  var cur = window._parentDashViewWeek || (S && S.week) || 1;
-  var nw = Math.max(1, Math.min(30, cur + delta));
-  refreshParentReports(nw);
-}
-function toggleReportWeekSelect(){
-  var _sel = document.getElementById('rpt-week-select');
-  if(!_sel) return;
-  _sel.style.display = _sel.style.display === 'block' ? 'none' : 'block';
 }
 
 // ═══ ACADEMIC CALENDAR 1448 AH ═══════════════════════════════════════════

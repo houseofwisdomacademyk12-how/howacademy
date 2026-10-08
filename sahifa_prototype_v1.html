@@ -114,26 +114,6 @@ body {
   border-radius: 99px; padding: 3px 10px;
   font-size: 11px; color: var(--gold); font-weight: 500; margin-bottom: 6px;
 }
-.week-picker { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
-.week-picker-btn {
-  background: none; border: 1px solid var(--ink-5); border-radius: 6px;
-  color: var(--ink-3); cursor: pointer; font-size: 14px; line-height: 1;
-  padding: 2px 7px; transition: border-color .15s, color .15s; flex-shrink: 0;
-}
-.week-picker-btn:hover { border-color: var(--gold); color: var(--gold); }
-.week-picker-label {
-  flex: 1; text-align: center; font-size: 11px; font-weight: 600;
-  color: var(--gold); background: var(--gold-pale); border: 1px solid var(--gold-light);
-  border-radius: 99px; padding: 3px 8px; cursor: pointer;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.week-picker-select {
-  display: none; width: 100%; margin-bottom: 6px;
-  border: 1px solid var(--gold-light); border-radius: 8px;
-  padding: 6px 8px; font-size: 12px; font-family: inherit;
-  color: var(--ink); background: var(--parchment); cursor: pointer;
-}
-.week-picker-select.open { display: block; }
 
 /* ── MAIN CONTENT ── */
 .main { padding: 28px 36px; max-width: 820px; }
@@ -485,14 +465,7 @@ try{
     </div>
 
     <div class="sidebar-footer">
-      <select class="week-picker-select" id="week-picker-select" onchange="setWeekFromSelect(this)">
-        ${Array.from({length:30},(_,i)=>`<option value="${i+1}">Week ${i+1} — Juz ${i+1}</option>`).join('')}
-      </select>
-      <div class="week-picker">
-        <button class="week-picker-btn" onclick="stepWeek(-1)" title="Previous week">‹</button>
-        <span class="week-picker-label" id="juz-display" onclick="toggleWeekSelect()" title="Tap to jump to any week">Juz 1</span>
-        <button class="week-picker-btn" onclick="stepWeek(1)" title="Next week">›</button>
-      </div>
+      <div class="juz-badge" id="juz-display">Juz 1</div>
       <p id="entry-count-footer">0 entries total</p>
     </div>
   </aside>
@@ -532,52 +505,9 @@ function updateMeta(){
   document.getElementById('avatar-initials').textContent = initials;
   document.getElementById('sidebar-student-name').textContent = name;
   document.getElementById('sidebar-student-meta').textContent = `sahifa · year ${s.grade || 7} of 13 · ${countEntries()} entries`;
-  var _wk = parseInt(s.juz)||1;
-  document.getElementById('juz-display').textContent = `Week ${_wk} — Juz ${_wk}`;
-  var _sel = document.getElementById('week-picker-select');
-  if(_sel) _sel.value = String(_wk);
+  document.getElementById('juz-display').textContent = `Juz ${s.juz || 1}`;
   document.getElementById('entry-count-footer').textContent = `${countEntries()} entries total`;
 }
-
-// ── WEEK PICKER ────────────────────────────────────────────────────
-function setWeek(n){
-  n = Math.max(1, Math.min(30, parseInt(n)||1));
-  var s = getSettings();
-  s.juz = String(n);
-  saveSettings(s);
-  updateMeta();
-  // Re-render the current active section so entries reflect the new week
-  var active = document.querySelector('.nav-item.active');
-  if(active) renderSection(active.dataset.section);
-}
-function stepWeek(delta){
-  var cur = parseInt(getSettings().juz)||1;
-  setWeek(cur + delta);
-}
-function setWeekFromSelect(sel){
-  setWeek(sel.value);
-  sel.classList.remove('open');
-}
-function toggleWeekSelect(){
-  var sel = document.getElementById('week-picker-select');
-  var cur = parseInt(getSettings().juz)||1;
-  sel.value = String(cur);
-  sel.classList.toggle('open');
-}
-function toggleWeekSelectMain(){
-  var sel = document.getElementById('week-select-main');
-  if(!sel) return;
-  sel.style.display = sel.style.display === 'block' ? 'none' : 'block';
-}
-function setWeekFromMain(sel){
-  sel.style.display = 'none';
-  setWeek(sel.value);
-}
-// Close the dropdown when clicking outside
-document.addEventListener('click', function(e){
-  var sel = document.getElementById('week-picker-select');
-  if(sel && !sel.contains(e.target) && e.target.id !== 'juz-display') sel.classList.remove('open');
-});
 
 // ── NAV ────────────────────────────────────────────────────────────
 function nav(btn){
@@ -1055,19 +985,8 @@ function renderWeekly(mc){
   const day = _sahifaDay || todayDayId();
   _sahifaDay = day;
 
-  const _wkNum = parseInt(s.juz)||1;
   const header = `<div style="margin-bottom:1.5rem">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.5rem;flex-wrap:wrap">
-      <p style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-4);margin:0">${s.weekTitle||'Weekly entry'}</p>
-      <div style="display:flex;align-items:center;gap:5px;margin-left:auto">
-        <button onclick="stepWeek(-1)" title="Previous week" style="background:none;border:1px solid var(--ink-5);border-radius:6px;color:var(--ink-3);cursor:pointer;font-size:14px;padding:1px 7px;line-height:1.4">‹</button>
-        <span onclick="toggleWeekSelectMain()" style="font-size:11px;font-weight:600;color:var(--gold);background:var(--gold-pale);border:1px solid var(--gold-light);border-radius:99px;padding:3px 10px;cursor:pointer;white-space:nowrap" title="Tap to jump to any week">Week ${_wkNum}</span>
-        <button onclick="stepWeek(1)" title="Next week" style="background:none;border:1px solid var(--ink-5);border-radius:6px;color:var(--ink-3);cursor:pointer;font-size:14px;padding:1px 7px;line-height:1.4">›</button>
-      </div>
-    </div>
-    <select id="week-select-main" onchange="setWeekFromMain(this)" style="display:none;width:100%;border:1px solid var(--gold-light);border-radius:8px;padding:6px 8px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--parchment);margin-bottom:.6rem">
-      ${Array.from({length:30},(_,i)=>`<option value="${i+1}"${i+1===_wkNum?' selected':''}>Week ${i+1} — Juz ${i+1}</option>`).join('')}
-    </select>
+    <p style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-4)">Week ${s.juz||'?'} · ${s.weekTitle||'Weekly entry'}</p>
     <h1 style="font-family:serif;font-size:1.6rem;font-weight:600;color:var(--ink);margin:.2rem 0 .3rem">الصحيفة — My Sahifa</h1>
     <p style="font-size:.85rem;color:var(--ink-3)">Your 13-year record of learning and becoming. Write today's entry below.</p>
   </div>`;
